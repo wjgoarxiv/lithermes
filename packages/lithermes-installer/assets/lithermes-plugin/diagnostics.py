@@ -22,6 +22,11 @@ except (ImportError, ModuleNotFoundError):
     import provider_metrics as _provider_metrics  # type: ignore
 
 try:
+    from . import jev_hint as _jev_hint
+except (ImportError, ModuleNotFoundError):
+    import jev_hint as _jev_hint  # type: ignore
+
+try:
     from .core_contract import KOREAN_PROSE_ALIASES, KOREAN_PROSE_COMMANDS
 except (ImportError, ModuleNotFoundError):
     from core_contract import KOREAN_PROSE_ALIASES, KOREAN_PROSE_COMMANDS  # type: ignore
@@ -477,6 +482,7 @@ def status_report(host_version: str | None = None) -> str:
         "litgoal state: .hermes/lithermes/litgoal/   (drive via: hermes lithermes goal status)",
         _knowledge.status_line(Path.cwd()),
         _provider_metrics.capability_line(),
+        _jev_hint.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
         f"scientific visualization: {_science.dependency_summary()}",
         *_motion_runtime_lines(),
@@ -562,6 +568,9 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     )
     healthy = healthy and knowledge_ok
     lines.append(f"[NOTE] {_provider_metrics.capability_line()}")
+    jev_state = _jev_hint.status()
+    jev_tag = {"on": "OK", "off": "NOTE"}.get(jev_state, "WARN")
+    lines.append(f"[{jev_tag}] {_jev_hint.status_line()}")
     if version != "unknown":
         lines.append(f"[OK] Hermes host detected (v{version})")
     else:

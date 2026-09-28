@@ -433,6 +433,19 @@ LitHermes:
 
 For Telegram gateway dispatch, use `/lit_loop` and `/lit_plan`. The complete command examples and hook behavior are in the [operating guide](./docs/guide.md). A route acknowledgement is a host message; it does not prove that the work or visual checks are complete.
 
+### Jev skill hint (optional)
+
+LitHermes can ask Jev, TypeSafe's hosted decision model, which bundled LitHermes skill fits a plain prompt. The answer becomes one advisory line in that turn's context. The Hermes model still decides whether to load the skill; the hint grants no permission and starts no tool. Slash commands and prompts that an existing LitHermes route already handles are left alone.
+
+It is off by default. To turn it on, set both variables, with your own TypeSafe key, in the environment Hermes runs in:
+
+```sh
+export LITHERMES_JEV=1
+export TYPESAFE_API_KEY=<your key>
+```
+
+When it is on, each eligible prompt is sent to TypeSafe (typesafe.ai), truncated to 2,000 characters, with home paths, email addresses and token-shaped strings redacted. Anything in the prompt without a token shape is sent as written, such as hostnames, customer names, and passwords not written as `password=...`. In Hermes gateway mode, messages from other participants in a chat are eligible prompts too. Nothing else from the session is sent. Because `TYPESAFE_API_KEY` is exported in the shell that starts Hermes, the agent's own tools can read it, so use a key dedicated to this feature with a low spend limit. TypeSafe bills your account, at about $0.04 per million input tokens. Each request has a 1.5-second limit and no retry; on any failure the turn continues unchanged, with one short note per session. While it is on, the first reply of each session starts with the plain line `✦ Jev skill hint ON`, so you can tell at a glance that it is enabled. You see it in `hermes lithermes status` and `hermes lithermes doctor`: `Jev skill hint: on — last hint lit-humanizer (0.43s)` names the last hinted skill and how long Jev took, `on — no hint yet` means no hint so far, and otherwise the line reads `off` or `flag on but TYPESAFE_API_KEY missing`. To turn it off, unset `LITHERMES_JEV` or set it to any value other than `1`.
+
 ## Troubleshooting
 
 ### Safety and host limits

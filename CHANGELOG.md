@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- Add an optional Jev skill hint, off by default: with `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY`, a plain prompt can get one advisory line naming the LitHermes skill that likely fits. Enabling it sends each eligible prompt, redacted and truncated, to TypeSafe. `hermes lithermes status` and `doctor` show the last hinted skill and its latency, and the first reply of each session starts with `✦ Jev skill hint ON` while it is enabled.
+
 ## [1.0.9] - 2026-09-28
 
 - Add the `lit-humanizer` workflow, detector, and always-on rule. It replaces `lit-korean`: the legacy Korean prose commands now route to it, and upgrades keep any old skill copy you modified.

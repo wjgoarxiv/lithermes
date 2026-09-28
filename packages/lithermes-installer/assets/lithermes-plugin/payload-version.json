@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-09-27T15:37:16.086Z",
+  "syncedAt": "2026-09-28T12:19:15.672Z",
   "source": "bundled-payload",
-  "sourceHash": "fa295d297cc5aab838c7385b6737fd929c36038892c44bef8e455a7bd5b42bb8",
+  "sourceHash": "00012e3ff4f87bab7a1335be49e937e59997f7c2345928d92acccbb2ed8916a0",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "9a63a21fd7a5b936c97983a3d44733c98ec01fc702da18e0ae51410f08ff7fc4"
+      "sha256": "d5e86062162e985d606b0ca4d8a53fdc6a4d527ddf63fb493a8ec693e9c00ca8"
     },
     {
       "path": "__init__.py",
-      "sha256": "1333523e882ac6acbaa4cde7c9f3c6695e8f94b9f8d1e80e2069aa0df72dd871"
+      "sha256": "f5dc1b38aa13977312c8c773dcd8b31f9df878826f9210737d76f9d19dc9dcb1"
     },
     {
       "path": "auto_update.py",
@@ -85,7 +85,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "0fba9bdf9c6e23432f28df5dda489b982c1e9068a92578776466073bcb7450e9"
+      "sha256": "07d7b9b2399475481a6c593761e0e34a8a94a3a17c86ebc55a2afbd4d51cfc9d"
     },
     {
       "path": "handoff.py",
@@ -102,6 +102,10 @@
     {
       "path": "humanizer_office.py",
       "sha256": "97ea96c5eb688e298d57ba7991bbd4bd8d92f969a2ad608add877aefa5de7128"
+    },
+    {
+      "path": "jev_hint.py",
+      "sha256": "1216f8494d58f8c27fe7ca4986d62e23822efaf8e9a14a9d50dda1e9318b139e"
     },
     {
       "path": "knowledge.py",

@@ -12,6 +12,7 @@ from . import bounded_work
 from . import bounded_work_tools
 from . import deliverable_hedge_guard
 from . import handoff
+from . import jev_hint
 from . import knowledge
 from . import knowledge_tools
 from . import scientific_visualization
@@ -367,9 +368,24 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         parts.append(str(base["context"]))
     elif isinstance(base, str) and base.strip():
         parts.append(base)
+    routed = bool(parts)
     snapshot = litgoal_hook.snapshot_context(**kwargs)
     if snapshot:
         parts.append(snapshot)
+    if not routed:
+        # No deterministic route claimed this turn; the optional Jev hint may
+        # add one advisory line. It is inert unless LITHERMES_JEV and the key are set,
+        # and an unexpected failure there never costs the turn its other context.
+        try:
+            skill_hint = jev_hint.pre_llm_call(
+                session_id=str(kwargs.get("session_id") or ""),
+                user_message=str(kwargs.get("user_message") or ""),
+                catalog=PORTED_SKILLS,
+            )
+        except Exception:  # noqa: BLE001 - advisory only
+            skill_hint = ""
+        if skill_hint:
+            parts.append(skill_hint)
     if not parts:
         return _merge_knowledge(_merge_post_edit(None, post_edit), knowledge_context)
     return _merge_knowledge(
@@ -527,12 +543,20 @@ def _command_handler(ctx, handler, route=None):
 
 def _transform_llm_output(**kwargs: Any) -> str | None:
     named = handoff.transform_llm_output(**kwargs)
-    if named is not None:
+    if named is None:
+        named = scientific_visualization.transform_llm_output(**kwargs)
+    if named is None:
+        named = core.transform_llm_output(**kwargs)
+    # The reply transform is the plugin's only user-visible channel, so the
+    # once-per-session Jev banner and fallback note are prefixed here, banner
+    # first; the reply stays intact.
+    session_id = str(kwargs.get("session_id") or "")
+    lines = (jev_hint.consume_banner(session_id), jev_hint.consume_note(session_id))
+    prefix = "\n".join(line for line in lines if line)
+    if not prefix:
         return named
-    named = scientific_visualization.transform_llm_output(**kwargs)
-    if named is not None:
-        return named
-    return core.transform_llm_output(**kwargs)
+    reply = named if named is not None else str(kwargs.get("response_text") or "")
+    return f"{prefix}\n\n{reply}"
 
 
 def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
@@ -568,6 +592,7 @@ def _release_bounded_session(**kwargs: Any) -> None:
     core.release_browser_drive_state(raw_session_id)
     session_id = raw_session_id if isinstance(raw_session_id, str) else ""
     bounded_work.release_bounded_session(session_id)
+    jev_hint.release_session(session_id)
     # A finalized/reset session must not leave its rule dedup ledger behind: the
     # next session reusing the id would see every rule as "already injected".
     core.release_rules_session(session_id)

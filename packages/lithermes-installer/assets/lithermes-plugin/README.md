@@ -110,6 +110,29 @@ CLI/plugin name, not the npm package name.
   path. Noninteractive, CI, JSON, dry-run, HUD/help/version/uninstall, and
   delegate sessions remain no-op. The update bridge never receives npm
   credentials and never uses the unsupported `--home` option.
+- Optional Jev skill hint (`jev_hint.py`), off by default. When
+  `LITHERMES_JEV=1` and `TYPESAFE_API_KEY` are both set in the environment,
+  `pre_llm_call` sends a top-level prompt that no LitHermes route claimed (not a
+  slash command, not a command envelope, at least 4 non-space characters) to
+  TypeSafe's Jev: one POST that refuses redirects, redacted over an
+  8,000-character window and then cut to 2,000, with the `PORTED_SKILLS`
+  catalog plus `none`, a 1.5 s deadline and no retry. A hook failure there
+  never costs the turn its other context. Only an exact catalog id
+  at confidence 0.35 or higher becomes one fixed advisory line naming
+  `lithermes:<id>`; response text never enters context. Failures leave the turn
+  unchanged, and `transform_llm_output` prefixes one short note per session.
+  While both switches are on, the same transform also opens the first reply of
+  each session with the plain line `✦ Jev skill hint ON` (banner first, note on
+  the next line when both are due); it is released with the session.
+  `LITHERMES_JEV_MODEL`, `_TIMEOUT_MS` (max 3000), `_MAX_CALLS` (default 200
+  per session) and `_MIN_CONFIDENCE` tune it; `LITHERMES_JEV_TRACE=1` appends
+  the redacted prompt's hash, ids and timings (no text, key or body) to Hermes home
+  `lithermes/jev-trace.jsonl`. Status and doctor print `Jev skill hint: ...`;
+  when on, they add the last hinted skill id and latency (`on — last hint
+  lit-humanizer (0.43s)`) or `on — no hint yet`. The CLI runs in its own
+  process, so an accepted hint also writes only that id, the latency and a
+  timestamp to Hermes home `lithermes/jev-last.json` (mode 0600, atomic).
+  Neither file is written through a symlink.
 - The `post_tool_call` hook is an observer — Hermes discards its return value — so
   it records the paths a completed `write_file` / `patch` call mutated and
   `pre_llm_call` renders them on the next turn. A source-code edit names

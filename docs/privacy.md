@@ -10,13 +10,15 @@ Fetching a package through npm contacts the configured registry and follows npm'
 
 See [updateNotifier.js](../packages/lithermes-installer/src/lib/updateNotifier.js) for exact eligibility, registry request and transaction behavior. Workflows that fetch sources or use browser/tools follow the permissions and services selected for that task.
 
+The optional Jev skill hint is off by default. Only when you set both `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` does the plugin send each eligible prompt to TypeSafe (`api.typesafe.ai`), truncated to 2,000 characters with home paths, email addresses and token-shaped strings redacted, together with the list of LitHermes skill names and descriptions. Anything in the prompt without a token shape is sent as written, such as hostnames, customer names, and passwords not written as `password=...`. In Hermes gateway mode, messages from other participants in a chat reach LitHermes as user turns, so they are eligible prompts too. It sends no files, tool output or history, never writes the key anywhere, and bills your TypeSafe account. Because `TYPESAFE_API_KEY` is exported in the shell that starts Hermes, the agent's own tools can read it; use a key dedicated to this feature, with a low spend limit. Unset `LITHERMES_JEV` to stop it. While it is on, each accepted hint overwrites Hermes home `lithermes/jev-last.json` (mode 0600) with only the skill id, the latency in milliseconds and a timestamp, so `hermes lithermes status` can show it; the opt-in `LITHERMES_JEV_TRACE=1` trace appends a hash of the redacted prompt, ids and timings to `lithermes/jev-trace.jsonl`. Neither file holds prompt text, the key or response text, and neither is written through a symlink. See [jev_hint.py](../packages/lithermes-installer/assets/lithermes-plugin/jev_hint.py).
+
 ## Files and retention
 
 | Location | What it can contain |
 |---|---|
 | Hermes home `plugins/lithermes/` | Installed Python plugin and skill payload |
 | Hermes home `config.yaml` | Plugin enablement and managed model/display settings alongside existing host settings |
-| Hermes home `lithermes/` | Install manifest, event log, update cache, transaction receipts and backups |
+| Hermes home `lithermes/` | Install manifest, event log, update cache, transaction receipts and backups; with the Jev skill hint on, `jev-last.json` and the opt-in `jev-trace.jsonl` |
 | Hermes home `lithermes/retained-python-cache-*/` | Relocated Python cache bytes and a `retention.json` inventory |
 | Workspace `.hermes/lithermes/` | Run state, ledgers, goal/evidence records and knowledge claims |
 | Workspace `plans/` and task-selected output paths | Plans and artifacts created by the requested workflow |

@@ -439,6 +439,19 @@ LitHermes:
 
 Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 사용합니다. 전체 명령 예시와 훅 동작은 [운영 안내](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md)에 있습니다. 경로 확인 메시지는 호스트 메시지이며 작업이나 화면 검토가 끝났다는 증거가 아닙니다.
 
+### Jev 스킬 힌트(선택)
+
+LitHermes는 TypeSafe가 호스팅하는 결정 모델 Jev에게 평범한 프롬프트에 맞는 LitHermes 스킬을 물어볼 수 있습니다. 답은 그 턴의 컨텍스트에 조언 한 줄로만 들어갑니다. 스킬을 불러올지는 여전히 Hermes 모델이 정하며, 힌트는 권한을 주거나 도구를 실행하지 않습니다. 슬래시 명령과 기존 LitHermes 경로가 이미 처리하는 프롬프트에는 관여하지 않습니다.
+
+기본값은 꺼짐입니다. 켜려면 Hermes가 실행되는 환경에 두 변수를 모두 설정하고, 키는 본인의 TypeSafe 키를 사용하세요.
+
+```sh
+export LITHERMES_JEV=1
+export TYPESAFE_API_KEY=<your key>
+```
+
+켜 두면 조건에 맞는 프롬프트마다 2,000자로 자르고 홈 경로, 이메일 주소, 토큰 형태의 문자열을 가린 뒤 TypeSafe(typesafe.ai)로 보냅니다. 토큰 형태가 아닌 내용은 쓴 그대로 전송됩니다. 호스트 이름, 고객 이름, `password=...` 형식이 아닌 비밀번호가 그렇습니다. Hermes 게이트웨이 모드에서는 대화방의 다른 참여자가 보낸 메시지도 전송 대상입니다. 세션의 다른 내용은 보내지 않습니다. `TYPESAFE_API_KEY`는 Hermes를 시작하는 셸에 export되어 있으므로 에이전트의 도구도 이 값을 읽을 수 있습니다. 이 기능 전용 키를 쓰고 사용 한도를 낮게 잡으세요. 비용은 TypeSafe가 본인 계정에 청구하며, 입력 토큰 100만 개당 약 0.04달러입니다. 요청마다 1.5초 제한이 있고 재시도하지 않습니다. 실패하면 턴은 그대로 진행되고, 짧은 안내가 세션마다 한 번만 표시됩니다. 켜져 있는 동안에는 세션의 첫 답변 맨 위에 `✦ Jev skill hint ON` 한 줄이 표시되어, 기능이 켜져 있다는 것을 바로 알 수 있습니다. 힌트는 `hermes lithermes status`와 `hermes lithermes doctor`에서 확인합니다. `Jev skill hint: on — last hint lit-humanizer (0.43s)`는 마지막으로 힌트한 스킬과 Jev의 응답 시간을, `on — no hint yet`은 아직 힌트가 없다는 뜻이며, 그 밖에는 `off` 또는 `flag on but TYPESAFE_API_KEY missing`이 표시됩니다. 끄려면 `LITHERMES_JEV`를 해제하거나 `1`이 아닌 값으로 바꾸세요.
+
 ## 문제 해결
 
 ### 안전 모델과 호스트 한계
