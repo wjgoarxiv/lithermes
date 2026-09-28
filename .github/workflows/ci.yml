@@ -1,0 +1,91 @@
+name: CI
+
+# No-publish gate. Runs on every push and PR. Contains NO publish step and NO
+# npm token — publishing is a separate, manual, version-guarded workflow.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/lithermes-installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python test dependencies
+        run: python -m pip install PyYAML==6.0.3 jsonschema==4.26.0
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Version lockstep
+        run: npm run check:version
+      - name: Test (JS + Python suite)
+        run: |
+          npm test
+          npm run test:python
+      # These runners use disposable Hermes homes and synthetic adapters; none needs an
+      # external Hermes host binary, credentials, or tmux.
+      # No qa:* script is excluded; each passed locally before this wiring.
+      - name: QA — negative gate matrix
+        run: npm run qa:negative-matrix
+        env:
+          HOME: ${{ runner.temp }}/lithermes-qa-negative-matrix-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-qa-negative-matrix-hermes-home
+      - name: QA — negative gate self-check
+        run: npm run qa:negative-control
+        env:
+          HOME: ${{ runner.temp }}/lithermes-qa-negative-control-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-qa-negative-control-hermes-home
+      - name: QA — behavior replacement probe
+        run: npm run qa:behaviors
+        env:
+          HOME: ${{ runner.temp }}/lithermes-qa-behaviors-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-qa-behaviors-hermes-home
+      - name: QA — real-surface sequence
+        run: npm run qa:real-surface
+        env:
+          HOME: ${{ runner.temp }}/lithermes-qa-real-surface-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-qa-real-surface-hermes-home
+      - name: Scanner — tracked surfaces
+        run: node test/scripts/scan-forbidden-tokens.js --tracked
+      - name: Scanner — package root
+        run: node test/scripts/scan-forbidden-tokens.js --package-root
+      - name: Pack artifact + byte-bound payload scan
+        run: |
+          npm pack --ignore-scripts --json --pack-destination "${RUNNER_TEMP}" > "${RUNNER_TEMP}/pack.json"
+          ARCHIVE="$(node -e 'const fs=require("node:fs"),path=require("node:path"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(path.join(process.env.RUNNER_TEMP,p[0].filename));' "${RUNNER_TEMP}/pack.json")"
+          node test/scripts/scan-forbidden-tokens.js --pack-tar "${ARCHIVE}"
+      - name: No release-command placeholder guard
+        working-directory: .
+        run: |
+          set -euo pipefail
+          terms=(
+            "npm publi""sh"
+            "NPM_""TOKEN"
+            "NODE_AUTH_""TOKEN"
+            "git pu""sh"
+            "git ta""g"
+            "--access publi""c"
+          )
+          found=0
+          for term in "${terms[@]}"; do
+            if grep -R -n -F --exclude-dir=.git -- "$term" .github/workflows/ci.yml; then
+              found=1
+            fi
+          done
+          if [ "$found" -ne 0 ]; then
+            echo "release-command placeholder guard failed" >&2
+            exit 1
+          fi
+          echo "release-command placeholder guard passed"

@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="/lit/fonts.css">
+<style>html,body{margin:0;width:100vw;height:100vh;overflow:hidden;background:#10243a;font-family:"Pretendard"}
+#cap{position:absolute;left:50%;top:300px;transform:translateX(-50%);color:#f4f1ea;font-size:80px;font-weight:700;white-space:nowrap}</style></head>
+<body><div id="cap" data-lit-text="copy"></div><script src="/lit/stage-kit.js"></script>
+<script>
+const COPY = { lines: ["등대의 밤", "빛이 돈다"] };
+const cap = document.getElementById('cap');
+LitStage.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  cap.textContent = COPY.lines[Math.min(1, Math.floor(t / 2))];
+  document.body.style.background = LitStage.mix('#10243a', '#23405e', t / 4);
+} });
+</script></body></html>

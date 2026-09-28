@@ -1,0 +1,7 @@
+{
+  "name": "lithermes-readme-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {"render": "remotion render", "still": "remotion still"},
+  "dependencies": {"@remotion/cli":"4.0.526", "remotion":"4.0.526", "react":"19.3.0", "react-dom":"19.3.0"}
+}

@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="/lit/fonts.css">
+<style>html,body{margin:0;width:100vw;height:100vh;overflow:hidden;background:#111;font-family:"Pretendard"} #v{position:absolute;left:200px;top:400px;font-size:120px;color:#fff}</style></head>
+<body><div id="v"></div><script src="/lit/stage-kit.js"></script>
+<script>
+const v = document.getElementById('v');
+LitStage.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  const bytes = crypto.getRandomValues(new Uint8Array(3));
+  v.textContent = `${bytes[0]}`;
+  document.body.style.background = `rgb(${bytes[0]}, ${bytes[1]}, ${bytes[2]})`;
+} });
+</script></body></html>

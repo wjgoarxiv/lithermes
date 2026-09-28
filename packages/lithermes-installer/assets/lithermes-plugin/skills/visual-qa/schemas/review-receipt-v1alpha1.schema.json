@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "litfamily.review-receipt/v1alpha1",
+  "title": "LitFamily Review Receipt v1alpha1",
+  "type": "object",
+  "required": [
+    "schema_id", "review_id", "fresh_context_id", "reviewer_capability_class",
+    "input_hashes", "reviewed_inventory", "findings", "confidence",
+    "independence_assertion", "started_at", "ended_at", "timed_out", "cancelled", "verdict"
+  ],
+  "properties": {
+    "schema_id": {"const": "litfamily.review-receipt/v1alpha1"},
+    "review_id": {"$ref": "#/$defs/nonempty"},
+    "fresh_context_id": {"$ref": "#/$defs/nonempty"},
+    "reviewer_capability_class": {"$ref": "#/$defs/nonempty"},
+    "input_hashes": {
+      "type": "array", "minItems": 2, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/sha256"}
+    },
+    "reviewed_inventory": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+    "independence_assertion": {"const": true},
+    "started_at": {"type": "string", "format": "date-time", "pattern": "\\S"},
+    "ended_at": {"type": "string", "format": "date-time", "pattern": "\\S"},
+    "timed_out": {"const": false},
+    "cancelled": {"const": false},
+    "verdict": {"enum": ["PASS", "REVISE", "FAIL"]}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "finding": {
+      "type": "object",
+      "required": ["finding_id", "severity", "status", "evidence_pointer"],
+      "properties": {
+        "finding_id": {"$ref": "#/$defs/nonempty"},
+        "severity": {"enum": ["critical", "high", "medium", "low"]},
+        "status": {"enum": ["open", "resolved", "accepted_exception"]},
+        "evidence_pointer": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

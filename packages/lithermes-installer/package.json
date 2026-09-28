@@ -1,0 +1,58 @@
+{
+  "name": "@litfamily/lithermes",
+  "version": "1.0.9",
+  "description": "npx/bunx installer for the LitHermes Hermes plugin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wjgoarxiv/lithermes.git",
+    "directory": "packages/lithermes-installer"
+  },
+  "homepage": "https://www.npmjs.com/package/@litfamily/lithermes",
+  "bugs": {
+    "url": "https://github.com/wjgoarxiv/lithermes/issues"
+  },
+  "bin": {
+    "lithermes": "bin/lithermes.js",
+    "lithermes-ai": "bin/lithermes.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "assets",
+    "assets/lithermes-plugin/vendor/handoff/**",
+    "assets/lithermes-plugin/vendor/scientific-visualization/**",
+    "!assets/**/__pycache__/**",
+    "!assets/**/*.pyc",
+    "!assets/**/.[!.]*/**",
+    "!assets/**/.lit[o]pencode/**",
+    "!assets/**/upstream/**",
+    "README.md",
+    "README_Ko-KR.md",
+    "readme-assets"
+  ],
+  "scripts": {
+    "pretest": "npm run clean:payload",
+    "test": "node --test test/*.test.js",
+    "check:version": "node scripts/check-version-lockstep.js",
+    "test:python": "node scripts/test-python.js",
+    "qa:negative-matrix": "node qa/negative-gate-matrix.js",
+    "qa:negative-control": "node qa/negative-gate-matrix.js --self-check",
+    "qa:behaviors": "node qa/behavior-replacement-probe.js",
+    "qa:real-surface": "npm run qa:negative-matrix && npm run qa:behaviors && npm run qa:negative-control",
+    "sync-plugin": "node scripts/sync-plugin.js",
+    "pack:dry": "npm run clean:payload && npm pack --dry-run --ignore-scripts --json",
+    "clean:payload": "find assets -name __pycache__ -type d -prune -exec rm -rf {} + && find assets -name '*.py[co]' -delete",
+    "prepublishOnly": "node scripts/prepublish-guard.js",
+    "prepack": "npm run clean:payload"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

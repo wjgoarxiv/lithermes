@@ -1,0 +1,154 @@
+{
+  "sourceCommit": "ca251e3dddda422b364385eb484b5a3593a0990d",
+  "entries": [
+    {
+      "path": "fonts/Galmuri9.ttf",
+      "url": "https://raw.githubusercontent.com/quiple/galmuri/v2.40.4/dist/Galmuri9.ttf",
+      "sha256": "5cb68052ee0a15571747e91c20f145e24b51bb459c6cd58226fafee78d9c0b16",
+      "license": "licenses/Galmuri-OFL.md"
+    },
+    {
+      "path": "fonts/VT323-Regular.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/vt323/VT323-Regular.ttf",
+      "sha256": "cf4de751ada78ceac033dbe16a687742939995b77bc2a052ae17a4957958594d",
+      "license": "licenses/VT323-OFL.txt"
+    },
+    {
+      "path": "fonts/Silkscreen-Regular.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/silkscreen/Silkscreen-Regular.ttf",
+      "sha256": "c845473330b94c2079ce9af01c51ac8ba2d99c24f4d14c039843bbb8e642ebd8",
+      "license": "licenses/Silkscreen-OFL.txt"
+    },
+    {
+      "path": "fonts/Silkscreen-Bold.ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/silkscreen/Silkscreen-Bold.ttf",
+      "sha256": "768476aa712d4f5c3e18d3bce80f980a8bd3f72b7094d22ec5e768df3acfed61",
+      "license": "licenses/Silkscreen-OFL.txt"
+    },
+    {
+      "path": "fonts/MesloLGS-NF-Regular.ttf",
+      "url": "https://raw.githubusercontent.com/romkatv/powerlevel10k-media/145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d/MesloLGS%20NF%20Regular.ttf",
+      "sha256": "d97946186e97f8d7c0139e8983abf40a1d2d086924f2c5dbf1c29bd8f2c6e57d",
+      "license": "licenses/Meslo-Notice.txt"
+    },
+    {
+      "path": "fonts/Archivo-w750-500.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w750-500.ttf",
+      "sha256": "12a3814c240d98fbd3e12db49d87d9e8f7d303241450d2ce7a0d78fc2aff877d",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w750-700.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w750-700.ttf",
+      "sha256": "dd9741079f1f5dd5ad9842bc5152dcab9b01e52f1f1b545bcf347edd6858fcb7",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w750-900.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w750-900.ttf",
+      "sha256": "e544dc863d11d50b6b159f2459204b4f994fecf46f75d428c8ebfc118cc9e00f",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1000-500.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1000-500.ttf",
+      "sha256": "bafcdd01342208afee59debeb1264abaeaedf7efcb067d96fe4ff20cf204cc22",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1000-700.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1000-700.ttf",
+      "sha256": "c19fb7f90860e8e6e5e7795a8b7ec603fc788c69cef7fbfa47d69674a4ce5847",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1000-900.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1000-900.ttf",
+      "sha256": "df7f620345ceaf9307c4c021d486d567035c3c3af9e29b12a892f7e5d4d8be48",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1250-500.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1250-500.ttf",
+      "sha256": "36a7bf442a40583b42272084a7fd036467dea5a54a9a106820083e48413851d3",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1250-700.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1250-700.ttf",
+      "sha256": "55a4492a5a97a6134ec83e289fbc2510d40031a432881a72ef6dd8ae302a380c",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/Archivo-w1250-900.ttf",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/Archivo-w1250-900.ttf",
+      "sha256": "97954352b2fcb9d4a5917d658fc71a27db5bd6dad4fe1a8a77c171211860f286",
+      "license": "licenses/Archivo-OFL.txt"
+    },
+    {
+      "path": "fonts/stroke/EMSAllure.svg",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/stroke/EMSAllure.svg",
+      "sha256": "55ed2de9c602229f32dd2784aae704023a5594eb8d208131f2552fae330a2a67",
+      "license": "licenses/EMS-OFL.txt"
+    },
+    {
+      "path": "fonts/stroke/EMSFelix.svg",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/stroke/EMSFelix.svg",
+      "sha256": "e7b2463c6cb2a2cbef59db9b1f9f5a20a0ecd9158eeb8f01f2015c9e5be7dca4",
+      "license": "licenses/EMS-OFL.txt"
+    },
+    {
+      "path": "fonts/stroke/EMSOsmotron.svg",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/stroke/EMSOsmotron.svg",
+      "sha256": "158b0f247a005ca5b6b8556f85684ad10cbb04c41ebbd394b9090c8ea2f16c52",
+      "license": "licenses/EMS-OFL.txt"
+    },
+    {
+      "path": "fonts/stroke/EMSReadability.svg",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/stroke/EMSReadability.svg",
+      "sha256": "eebece4f2a47b9d3a8f40cab2b0f689ca60902997abd5c81064ef0d2a3a05522",
+      "license": "licenses/EMS-OFL.txt"
+    },
+    {
+      "path": "fonts/stroke/EMSTech.svg",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/stroke/EMSTech.svg",
+      "sha256": "7b5a420d4e16285213e7e2b1d187d086835c2dd7a7f64c5b8057434f082fc46f",
+      "license": "licenses/EMS-OFL.txt"
+    },
+    {
+      "path": "licenses/Galmuri-OFL.md",
+      "url": "https://raw.githubusercontent.com/quiple/galmuri/v2.40.4/ofl.md",
+      "sha256": "9a9e5a342c430c3fcf01a408b680f4405d5bf4ac659c931be35f8a1b27ea69c9"
+    },
+    {
+      "path": "licenses/VT323-OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/vt323/OFL.txt",
+      "sha256": "27d9af34210253e7ca1251fbace86c6f65b40031d6ce1a75493a1b2093631298"
+    },
+    {
+      "path": "licenses/Silkscreen-OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/silkscreen/OFL.txt",
+      "sha256": "86c5e9c9382cdcc5948704fdfe60f2aa164a719746931219a42736ecd9cefbd3"
+    },
+    {
+      "path": "licenses/Meslo-Notice.txt",
+      "url": "https://raw.githubusercontent.com/romkatv/powerlevel10k-media/145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d/MesloLGS%20NF%20License.txt",
+      "sha256": "0eb25f1a4e86320ceae5f650cb75e628117c3f575bc2e332bb13cd08c3be438e"
+    },
+    {
+      "path": "licenses/Meslo-Apache.txt",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "licenses/Meslo-Vera-Arev.txt",
+      "url": "https://raw.githubusercontent.com/dejavu-fonts/dejavu-fonts/version_2_37/LICENSE",
+      "sha256": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93"
+    },
+    {
+      "path": "licenses/Archivo-OFL.txt",
+      "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/src/OFL.txt",
+      "sha256": "108b4e57c9c796d3d38d0428ca7ee39de47ad93187302718d9b2d8864b9b716b"
+    }
+  ]
+}

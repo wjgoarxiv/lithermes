@@ -1,0 +1,9 @@
+{
+  "status": "unpinned",
+  "reason": "no Korean-capable forced-alignment checkpoint with a licence-clean licence and a recorded revision is pinned for this product yet; MMS_FA (CC-BY-NC) and madmom weights are never used, so Tier 3 stays fail-closed",
+  "downloadBytes": 0,
+  "models": [
+    { "role": "transcription", "id": null, "revision": null, "license": null, "note": "a multilingual Whisper checkpoint (MIT) would be pinned here with its revision" },
+    { "role": "korean-alignment", "id": null, "revision": null, "license": null, "note": "must be Korean-capable and commercially licensed; non-commercial licences fail closed" }
+  ]
+}

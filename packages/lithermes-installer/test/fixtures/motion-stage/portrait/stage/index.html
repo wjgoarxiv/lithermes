@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="/lit/fonts.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #0b1d33; font-family: "Pretendard"; }
+  svg { position: absolute; inset: 0; }
+  #cap { position: absolute; left: 50%; top: 260px; transform: translateX(-50%); padding: 28px 48px; border-radius: 28px; background: rgba(11,29,51,0.88); color: #f4f1ea; font-size: 88px; font-weight: 700; white-space: nowrap; }
+  #scene2 { position: absolute; inset: 0; background: #f2c87a; }
+</style></head>
+<body>
+<div id="scene2"></div>
+<svg viewBox="0 0 1080 1920" width="1080" height="1920">
+  <path id="tower" d="M470 1500 L610 1500 L590 900 L490 900 Z" fill="#f4f1ea"/>
+  <path id="outline" d="M300 1600 C 420 1500, 660 1500, 780 1600" stroke="#f7e7a1" stroke-width="10" fill="none"/>
+  <path id="shape" fill="#f7e7a1" opacity="0.8"/>
+</svg>
+<div id="cap" data-lit-text="copy">등대의 밤</div>
+<script src="/lit/stage-kit.js"></script>
+<script>
+const COPY = { lines: ["등대의 밤", "빛이 돈다", "새벽"] };
+const cap = document.getElementById('cap'), scene2 = document.getElementById('scene2');
+const shape = document.getElementById('shape'), outline = document.getElementById('outline');
+const m = LitStage.morph('M540 700 L600 820 L480 820 Z', 'M540 640 C 640 640, 700 760, 540 880 C 380 760, 440 640, 540 640 Z');
+const pop = LitStage.spring({ from: 0.6, to: 1, stiffness: 160, damping: 14 });
+LitStage.define({ width: 1080, height: 1920, fps: 60, duration: 4, render(t) {
+  const i = Math.min(2, Math.floor(t / (4 / 3)));
+  if (cap.__line !== i) { cap.textContent = COPY.lines[i]; cap.__line = i; }
+  const words = LitStage.splitText(cap, { by: 'word' });
+  words.forEach((w, k) => { w.style.opacity = String(LitStage.at(t - i * 4 / 3, LitStage.stagger(k, { each: 0.12 }), 0.3, 'outCubic')); });
+  LitStage.drawPath(outline, LitStage.at(t, 0.2, 1.4, 'inOutSine'));
+  shape.setAttribute('d', m(LitStage.at(t, 1.4, 1.2, LitStage.bezier(0.2, 0.8, 0.2, 1))));
+  shape.setAttribute('transform', `translate(540 760) scale(${pop(t - 1.4).toFixed(4)}) translate(-540 -760)`);
+  LitStage.clipCircle(scene2, LitStage.at(t, 2.8, 1.0, 'inOutCubic'), '50%', '40%');
+  document.body.style.background = LitStage.mix('#0b1d33', '#1d3b5c', LitStage.at(t, 0, 4));
+} });
+</script></body></html>

@@ -1,0 +1,8 @@
+**/__pycache__/
+**/*.pyc
+**/HANDOFF.md
+**/.hermes/
+**/.lit[c]odex/
+**/.lit[o]pencode/
+**/plans/
+assets/**/.*

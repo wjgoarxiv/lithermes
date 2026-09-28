@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-fps="60" data-theme="dark" data-layout="wide">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local README cover</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+#cover{position:relative;width:1600px;height:800px;background:#111d25;color:#f4f1e9;overflow:hidden}
+#background-far,#background-near{position:absolute;inset:-24px;background:url("assets/background.png") center/cover no-repeat;pointer-events:none}
+#background-far{filter:blur(18px);transform:scale(1.06);z-index:0}
+#background-near{inset:-12px;background-position:right center;clip-path:polygon(38% 0,100% 0,100% 100%,32% 100%);filter:blur(5px);transform:scale(1.035);opacity:.82;z-index:1}
+#light{position:absolute;inset:0;background:radial-gradient(ellipse at 80% 30%,#bade9f66,transparent 65%);opacity:.6;z-index:2}
+#rim-light{position:absolute;inset:0;background:linear-gradient(118deg,transparent 61%,#bade9f66 67%,#f4f1e988 69%,transparent 75%);mix-blend-mode:screen;opacity:.82;filter:blur(8px);pointer-events:none;z-index:3}
+#foreground-plane{position:absolute;left:0;top:0;width:64%;height:100%;background:#111d25;border-right:1px solid #bade9f55;box-shadow:18px 0 48px #111d2533;z-index:4}
+#grain{position:absolute;inset:0;width:100%;height:100%;opacity:.035;pointer-events:none;z-index:5}
+.rule{position:absolute;left:112px;right:112px;top:112px;border-top:2px solid currentColor;opacity:.5;z-index:6}.rule.bottom{top:auto;bottom:112px}
+#label,#title,#subtitle{position:absolute;left:112px;object-fit:contain;object-position:left center;z-index:6}
+#label{top:148px;width:460px;height:30px}
+#title{top:265px;width:730px;height:150px;animation:entry 5s cubic-bezier(.25,.8,.25,1) both}
+#subtitle{top:475px;width:680px;height:62px}
+#pixel{position:absolute;right:104px;top:240px;width:410px;height:360px;filter:drop-shadow(16px 22px 0 #111d2522);animation:float 5s ease-in-out both;z-index:6}
+html[data-theme=light] #cover,html[data-theme=light] #foreground-plane{background:#f4f1e9;color:#111d25}
+html[data-layout=mobile] #cover{width:1080px;height:1350px}
+html[data-layout=mobile] #foreground-plane{width:100%;height:53%}
+html[data-layout=mobile] .rule{left:86px;right:86px;top:86px}
+html[data-layout=mobile] .rule.bottom{top:auto;bottom:86px}
+html[data-layout=mobile] #label{left:86px;top:122px;width:540px}
+html[data-layout=mobile] #title{left:86px;top:230px;width:880px;height:175px}
+html[data-layout=mobile] #subtitle{left:86px;top:460px;width:840px}
+html[data-layout=mobile] #pixel{right:245px;top:755px;width:580px;height:500px}
+@keyframes float{0%,100%{transform:translateY(0)}25%{transform:translateY(-7px)}75%{transform:translateY(7px)}}
+@keyframes entry{0%,18%,100%{transform:translateY(0)}4%{transform:translateY(12px)}}
+@media(prefers-reduced-motion:reduce){#background-far,#background-near,#rim-light{animation:none}#title,#pixel{animation:none;transform:none}}
+</style>
+</head>
+<body>
+<main id="cover" data-composition-id="readme-cover" data-start="0" data-duration="5" data-width="1600" data-height="800" data-no-timeline aria-label="Project cover">
+  <div id="background-far" aria-hidden="true"></div>
+  <div id="background-near" aria-hidden="true"></div>
+  <div id="light" aria-hidden="true"></div>
+  <div id="rim-light" aria-hidden="true"></div>
+  <div id="foreground-plane" aria-hidden="true"></div>
+  <svg id="grain" aria-hidden="true"><filter id="noise"><feTurbulence baseFrequency=".65" numOctaves="2" seed="23"/></filter><rect width="100%" height="100%" filter="url(#noise)"/></svg>
+  <div class="rule"></div>
+  <img id="label" src="assets/label-light-ink.svg" alt="">
+  <img id="title" src="assets/title-light-ink.svg" alt="">
+  <img id="subtitle" src="assets/subtitle-light-ink.svg" alt="">
+  <svg id="pixel" viewBox="0 0 448 384" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M96 0h256v32h32v32h32v32h32v256h-32v32H64v-32H32V96h32V64h32z"/><path fill="#acdb88" d="M96 96h224v32H96zm0 96h96v32H96zm0 64h96v32H96zm160-64h64v32h-64zm0 64h64v32h-64zM384 0h32v32h-32z"/></svg>
+  <div class="rule bottom"></div>
+</main>
+</body>
+</html>

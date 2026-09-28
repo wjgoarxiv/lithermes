@@ -1,0 +1,11 @@
+{
+  "fps": 60,
+  "frames": 300,
+  "blurPx": 2,
+  "grainSeed": 23,
+  "grainOpacity": 0.035,
+  "themes": {
+    "light": {"field": "#f4f1e9", "ink": "#111d25", "outlineSuffix": "dark-ink"},
+    "dark": {"field": "#111d25", "ink": "#f4f1e9", "outlineSuffix": "light-ink"}
+  }
+}

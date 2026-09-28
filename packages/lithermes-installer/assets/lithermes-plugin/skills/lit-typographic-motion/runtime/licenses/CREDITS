@@ -1,0 +1,20 @@
+EMS single-stroke SVG fonts, fetched from mexicat/pdoom-video at commit
+ca251e3dddda422b364385eb484b5a3593a0990d (app/public/fonts/stroke/). Each
+file's own metadata states the SIL Open Font License; the full OFL 1.1 text
+is in EMS-OFL.txt next to this file. Restated metadata credits:
+
+EMSAllure.svg
+  Font name: EMS Allure. Created by: Sheldon B. Michaels. SVG font conversion by: Windell H. Oskay.
+  A derivative of: Allura. Designer: Rob Leuschke, TypeSETit.
+EMSFelix.svg
+  Font name: EMS Felix. Created by: Sheldon B. Michaels. SVG font conversion by: Windell H. Oskay.
+  A derivative of: Felipa. Designer: Fontstage.
+EMSOsmotron.svg
+  Font name: EMS Osmotron. Created by: Sheldon B. Michaels. SVG font conversion by: Windell H. Oskay.
+  A derivative of: Orbitron (Regular). Designer: Matt McInerney, the League of Moveable Type.
+EMSReadability.svg
+  Font name: EMS Readability. Created by: Sheldon B. Michaels. SVG font conversion by: Windell H. Oskay.
+  A derivative of: Source Sans Pro-Light. Designer: Paul D. Hunt, Adobe.
+EMSTech.svg
+  Font name: EMS Tech. Created by: Sheldon B. Michaels. SVG font conversion by: Windell H. Oskay.
+  A derivative of: Architects Daughter. Designer: Kimberly Geswein, Kimberly Geswein Fonts.

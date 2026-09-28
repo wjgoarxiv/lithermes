@@ -1,0 +1,22 @@
+*.tgz
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+\# REFERENCE/
+evidence/
+/test/
+.hermes/
+.[o]mo/
+.lit[c]odex/
+.lit[o]pencode/
+plans/
+test.md
+HANDOFF.md
+!packages/lithermes-installer/assets/lithermes-plugin/skills/lit-handoff/original/022_handoff/templates/HANDOFF.md
+!packages/lithermes-installer/assets/lithermes-plugin/vendor/handoff/templates/HANDOFF.md
+
+# LitClaude runtime state: other LitClaude writers still use this directory.
+# Tracking it makes every agent run dirty the worktree, which the prepublish guard
+# then refuses. It is never part of the npm payload. Matches the other four products.
+.litclaude/

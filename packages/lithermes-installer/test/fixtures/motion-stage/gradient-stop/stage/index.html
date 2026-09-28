@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #1d2a3a; font-family: "Pretendard"; }
+  .scene { position: absolute; inset: 0; }
+  svg { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  #meadow { background: linear-gradient(#bfe0f0 0%, #eaf4e8 58%, #6fa86b 58.2%, #4f8a55 100%); }
+  .copy { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); padding: 26px 56px; border-radius: 30px;
+          background: rgba(29, 42, 58, 0.9); color: #f7f1e1; font-size: 64px; font-weight: 700; white-space: nowrap; }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="bee">
+      <ellipse cx="-6" cy="-26" rx="30" ry="18" fill="#f7f1e1" opacity="0.72" transform="rotate(-20)"/>
+      <ellipse cx="10" cy="-24" rx="26" ry="15" fill="#f7f1e1" opacity="0.62" transform="rotate(18)"/>
+      <ellipse cx="0" cy="0" rx="40" ry="24" fill="#f4b83f"/>
+      <path d="M-18 -22 Q-12 0 -18 22 M0 -24 Q6 0 0 24 M18 -21 Q23 0 18 21" stroke="#1d2a3a" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <circle cx="44" cy="-2" r="15" fill="#1d2a3a"/>
+      <circle cx="50" cy="-7" r="4" fill="#f7f1e1"/>
+      <path d="M52 -14 Q64 -34 74 -32 M48 -15 Q52 -38 62 -42" stroke="#1d2a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M-40 0 L-54 0" stroke="#1d2a3a" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <g id="flower">
+      <circle cx="0" cy="-18" r="13" fill="#e8715a"/><circle cx="17" cy="-6" r="13" fill="#e8715a"/><circle cx="11" cy="14" r="13" fill="#e8715a"/>
+      <circle cx="-11" cy="14" r="13" fill="#e8715a"/><circle cx="-17" cy="-6" r="13" fill="#e8715a"/><circle cx="0" cy="0" r="10" fill="#f4b83f"/>
+    </g>
+  </defs>
+</svg>
+<div id="meadow" class="scene">
+  <svg viewBox="0 0 1920 1080">
+    <path d="M0 640 C 400 560, 800 700, 1300 600 S 1920 620, 1920 620 L1920 1080 L0 1080 Z" fill="#5e9a62"/>
+    <g id="farFlowers"></g>
+    <path id="flightA" d="M160 820 C 520 520, 900 900, 1260 560 S 1640 520, 1700 600" fill="none" stroke="#1d2a3a" stroke-width="4" stroke-dasharray="4 18" stroke-linecap="round" opacity="0.5"/>
+    <use id="beeA" href="#bee"/>
+  </svg>
+</div>
+<div id="cap" class="copy" data-lit-text="copy"></div>
+<script src="/lit/stage-kit.js"></script>
+<script>
+const COPY = { lines: ["등대의 밤", "빛이 돈다", "새벽"] };
+const $ = (id) => document.getElementById(id);
+const K = LitStage, cap = $('cap'), SVGNS = 'http://www.w3.org/2000/svg';
+const rand = K.rand(40);
+for (let i = 0; i < 14; i++) {
+  const u = document.createElementNS(SVGNS, 'use');
+  u.setAttribute('href', '#flower');
+  u.setAttribute('transform', `translate(${1560 + rand() * 260} ${560 + rand() * 90}) scale(${0.5 + rand() * 0.4})`);
+  $('farFlowers').appendChild(u);
+}
+function placeBee(el, x, y, heading, scale = 1, wing = 0) {
+  el.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${(heading * 180 / Math.PI).toFixed(2)}) scale(${scale.toFixed(3)}, ${(scale * (1 - 0.06 * wing)).toFixed(3)})`);
+}
+K.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  const b = Math.min(2, Math.floor(t / (4 / 3)));
+  if (cap.textContent !== COPY.lines[b]) cap.textContent = COPY.lines[b];
+  const path = $('flightA');
+  const L = path.getTotalLength();
+  const fp = K.at(t, 0, 4, 'inOutSine');
+  const p0 = path.getPointAtLength(L * fp), p1 = path.getPointAtLength(Math.min(L, L * fp + 4));
+  placeBee($('beeA'), p0.x, p0.y, Math.atan2(p1.y - p0.y, p1.x - p0.x), 1.4, Math.sin(t * 90) ** 2);
+  path.style.strokeDashoffset = String(-t * 40);
+} });
+</script>
+</body></html>

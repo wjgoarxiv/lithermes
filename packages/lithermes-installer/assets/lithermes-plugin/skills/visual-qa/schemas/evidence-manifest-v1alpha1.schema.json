@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "litfamily.evidence-manifest/v1alpha1",
+  "title": "LitFamily Evidence Manifest v1alpha1",
+  "type": "object",
+  "required": [
+    "schema_id", "design_contract_sha256", "source_revision", "captures", "inventory",
+    "mechanical_results", "accessibility_results", "tui_results", "reviewer_receipt_hashes",
+    "open_findings", "exception_references", "cleanup", "final_verdict"
+  ],
+  "properties": {
+    "schema_id": {"const": "litfamily.evidence-manifest/v1alpha1"},
+    "design_contract_sha256": {"$ref": "#/$defs/sha256"},
+    "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "captures": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/capture"}
+    },
+    "inventory": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/inventoryItem"}
+    },
+    "mechanical_results": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/result"}
+    },
+    "accessibility_results": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/accessibilityResult"}
+    },
+    "tui_results": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/result"}
+    },
+    "reviewer_receipt_hashes": {
+      "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/sha256"}
+    },
+    "open_findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "exception_references": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "cleanup": {
+      "type": "object",
+      "required": ["state", "process_terminated", "auth_session_closed", "transient_paths_removed"],
+      "properties": {
+        "state": {"const": "complete"},
+        "process_terminated": {"const": true},
+        "auth_session_closed": {"const": true},
+        "transient_paths_removed": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "final_verdict": {"const": "PASS"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "viewport": {
+      "type": "object", "required": ["width", "height"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1, "maximum": 16384},
+        "height": {"type": "integer", "minimum": 1, "maximum": 16384}
+      },
+      "additionalProperties": false
+    },
+    "capture": {
+      "type": "object",
+      "required": [
+        "capture_id", "source_sha256", "capture_sha256", "created_at", "maximum_age_seconds",
+        "viewport", "dpr", "os", "runtime", "runtime_version", "font_set", "locale",
+        "reduced_motion", "animation_settling_policy", "color_scheme", "auth_owner", "process_owner"
+      ],
+      "properties": {
+        "capture_id": {"$ref": "#/$defs/nonempty"},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "capture_sha256": {"$ref": "#/$defs/sha256"},
+        "created_at": {"type": "string", "format": "date-time", "pattern": "\\S"},
+        "maximum_age_seconds": {"type": "integer", "minimum": 1, "maximum": 86400},
+        "viewport": {"$ref": "#/$defs/viewport"},
+        "dpr": {"type": "number", "exclusiveMinimum": 0, "maximum": 8},
+        "os": {"$ref": "#/$defs/nonempty"},
+        "runtime": {"$ref": "#/$defs/nonempty"},
+        "runtime_version": {"$ref": "#/$defs/nonempty"},
+        "font_set": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
+        "locale": {"$ref": "#/$defs/nonempty"},
+        "reduced_motion": {"type": "boolean"},
+        "animation_settling_policy": {"$ref": "#/$defs/nonempty"},
+        "color_scheme": {"enum": ["light", "dark", "system"]},
+        "auth_owner": {"$ref": "#/$defs/nonempty"},
+        "process_owner": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "inventoryItem": {
+      "type": "object", "required": ["id", "status", "evidence_path", "evidence_sha256"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["captured", "not_applicable", "accepted_exception", "blocked"]},
+        "evidence_path": {"$ref": "#/$defs/nonempty"},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object", "required": ["check_id", "status", "evidence_pointer"],
+      "properties": {
+        "check_id": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE"]},
+        "evidence_pointer": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "accessibilityResult": {
+      "type": "object", "required": ["criterion", "status", "evidence_pointer"],
+      "properties": {
+        "criterion": {"$ref": "#/$defs/nonempty"},
+        "status": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE"]},
+        "evidence_pointer": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object", "required": ["finding_id", "severity", "status", "evidence_pointer"],
+      "properties": {
+        "finding_id": {"$ref": "#/$defs/nonempty"},
+        "severity": {"enum": ["critical", "high", "medium", "low"]},
+        "status": {"enum": ["open", "resolved", "accepted_exception"]},
+        "evidence_pointer": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

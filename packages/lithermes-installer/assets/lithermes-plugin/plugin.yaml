@@ -1,0 +1,40 @@
+name: lithermes
+version: 1.0.9
+description: "Hermes-native workflow toolkit: litgoal durable runtime, 5-lane review orchestrator, Litwork commands, skills, and prompt steering."
+author: "LitHermes contributors"
+kind: standalone
+auto_load: true
+hooks:
+  - on_session_start
+  - pre_llm_call
+  - pre_tool_call
+  - pre_command
+  - post_tool_call
+  - post_api_request
+  - subagent_stop
+  - transform_llm_output
+  - on_session_finalize
+  - on_session_reset
+provides_tools:
+  - goal_status
+  - goal_set
+  - goal_add_criterion
+  - goal_evidence
+  - goal_criterion_status
+  - goal_steer
+  - goal_status_set
+  - goal_checkpoint
+  - goal_complete
+  - lithermes_work_progress
+  - lithermes_knowledge_capture
+provides_hooks:
+  - on_session_start
+  - pre_llm_call
+  - pre_tool_call
+  - pre_command
+  - post_tool_call
+  - post_api_request
+  - subagent_stop
+  - transform_llm_output
+  - on_session_finalize
+  - on_session_reset

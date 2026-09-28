@@ -1,0 +1,12 @@
+{
+  "schema": "lithermes.semantic-family-origin/v1",
+  "family": "wikify",
+  "source": "owner-source:llm-wikify",
+  "commit": "dfe8f8bc372c3bc153dd57697f4a36f366a63e74",
+  "tree": "ca02699317261cf36f9f89e96186728013778da6",
+  "anonymousRetrieval": "claimed via public pinned URL",
+  "publicPinnedUrl": "https://github.com/wjgoarxiv/llm-wikify/tree/dfe8f8bc372c3bc153dd57697f4a36f366a63e74",
+  "integrity": "package-local via bundled MIT license and payload hashes",
+  "port": "Hermes-native semantic closure",
+  "excluded": ["tests", "docs", "examples", "installer", "build", "TUI", "release files", "caches", "generated debris"]
+}

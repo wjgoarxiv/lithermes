@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root {
+  --bg: #fafafa; --fg: #1a1a2e; --muted: #6b7280;
+  --border: #e5e7eb; --accent: #2563eb; --accent-bg: #eff6ff;
+  --ok: #059669; --ok-bg: #ecfdf5; --warn: #d97706; --warn-bg: #fffbeb;
+  --bad: #dc2626; --bad-bg: #fef2f2;
+  --add-bg: #dcfce7; --del-bg: #fee2e2;
+  --code-bg: #f3f4f6; --pre-bg: #f8fafc;
+  --quiz-btn: #e5e7eb; --quiz-correct: #059669; --quiz-wrong: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a; --fg: #e2e8f0; --muted: #94a3b8;
+    --border: #334155; --accent: #60a5fa; --accent-bg: #1e293b;
+    --ok: #34d399; --ok-bg: #064e3b; --warn: #fbbf24; --warn-bg: #451a03;
+    --bad: #f87171; --bad-bg: #450a0a;
+    --add-bg: #064e3b; --del-bg: #450a0a;
+    --code-bg: #1e293b; --pre-bg: #1e293b;
+    --quiz-btn: #334155; --quiz-correct: #34d399; --quiz-wrong: #f87171;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--fg);
+  max-width: 52rem; margin: 0 auto; padding: 1.5rem;
+  line-height: 1.7;
+}
+h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
+h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 0.4rem; }
+h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+h4 { font-size: 1rem; margin: 1rem 0 0.25rem; color: var(--muted); }
+header.doc { margin-bottom: 2rem; }
+header.doc .subtitle { color: var(--muted); font-size: 0.95rem; }
+nav.toc { background: var(--accent-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+nav.toc ol { margin: 0; padding-left: 1.25rem; }
+nav.toc li { margin: 0.25rem 0; }
+nav.toc a { color: var(--accent); text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+code { background: var(--code-bg); padding: 0.15em 0.35em; border-radius: 3px; font-size: 0.9em; }
+pre { background: var(--pre-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; white-space: pre-wrap; font-size: 0.88em; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+.add { background: var(--add-bg); }
+.del { background: var(--del-bg); text-decoration: line-through; }
+.note { border-radius: 6px; padding: 0.75rem 1rem; margin: 0.75rem 0; font-size: 0.92em; }
+.note.ok { background: var(--ok-bg); border-left: 4px solid var(--ok); }
+.note.warn { background: var(--warn-bg); border-left: 4px solid var(--warn); }
+.note.bad { background: var(--bad-bg); border-left: 4px solid var(--bad); }
+.skippable { border: 1px dashed var(--border); border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0; color: var(--muted); }
+.skippable summary { cursor: pointer; font-weight: 600; color: var(--fg); }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 30rem; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+th { background: var(--accent-bg); font-weight: 600; }
+.pipe { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 1rem 0; }
+.box { background: var(--accent-bg); border: 2px solid var(--accent); border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600; white-space: nowrap; }
+.arrow { width: 2rem; height: 2px; background: var(--accent); position: relative; margin: 0 0.25rem; }
+.arrow::after { content: ""; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left-color: var(--accent); }
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.side { border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; }
+.side h4 { margin-top: 0; }
+@media (max-width: 640px) { .ba { grid-template-columns: 1fr; } }
+.world { background: var(--accent-bg); border: 2px solid var(--accent); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+.world input[type="text"], .world input[type="number"] { padding: 0.4rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95em; background: var(--bg); color: var(--fg); }
+.world button { padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--fg); cursor: pointer; }
+.world button:hover { background: var(--accent-bg); }
+.quiz-q { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border); border-radius: 6px; }
+.quiz-q p { margin: 0 0 0.75rem; font-weight: 600; }
+.opt { display: block; width: 100%; text-align: left; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid var(--border); border-radius: 4px; background: var(--quiz-btn); color: var(--fg); cursor: pointer; font-size: 0.95em; }
+.opt:hover { border-color: var(--accent); }
+.opt.correct { border-color: var(--quiz-correct); background: var(--ok-bg); }
+.opt.wrong { border-color: var(--quiz-wrong); background: var(--bad-bg); }
+.fb { display: none; padding: 0.5rem 0.8rem; margin: 0.2rem 0; border-radius: 4px; font-size: 0.9em; }
+.fb.show { display: block; background: var(--accent-bg); }
+.ui-mock { border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin: 1rem 0; }
+.mock-header { background: var(--accent-bg); padding: 0.5rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); }
+.mock-body { padding: 1rem; }
+</style>
+</head>
+<body>
+<header class="doc">
+  <h1>__TITLE__</h1>
+  <p class="subtitle">__SUBTITLE__</p>
+</header>
+
+<nav class="toc">
+  <strong>목차</strong>
+  __TOC__
+</nav>
+
+__CONTENT__
+
+<script>
+(function() {
+  document.querySelectorAll('.quiz-q').forEach(function(q) {
+    var answer = parseInt(q.dataset.answer, 10);
+    var answered = false;
+    q.querySelectorAll('.opt').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (answered) return;
+        answered = true;
+        var chosen = parseInt(btn.dataset.i, 10);
+        btn.classList.add(chosen === answer ? 'correct' : 'wrong');
+        q.querySelectorAll('.opt').forEach(function(b) {
+          if (parseInt(b.dataset.i, 10) === answer) b.classList.add('correct');
+        });
+        var fb = q.querySelector('.fb[data-i="' + chosen + '"]');
+        if (fb) fb.classList.add('show');
+        var correctFb = q.querySelector('.fb[data-i="' + answer + '"]');
+        if (correctFb && chosen !== answer) correctFb.classList.add('show');
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

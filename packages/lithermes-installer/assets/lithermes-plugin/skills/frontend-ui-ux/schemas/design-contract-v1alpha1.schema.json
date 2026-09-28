@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "litfamily.design-contract/v1alpha1",
+  "title": "LitFamily Design Contract v1alpha1",
+  "description": "Document shape only. scripts/design_contract_validation.py is the authority: typed id prefixes, referential integrity, auth-safety coupling, document-wide id uniqueness, timestamp round-tripping, duplicate-JSON-key rejection, canonical form, and bounded input cannot be expressed here and are enforced there.",
+  "type": "object",
+  "required": [
+    "schema_id", "contract_id", "source_hash", "intent", "direction", "inventory",
+    "accessibility", "localization", "performance", "evidence_policy", "omissions",
+    "accepted_exceptions"
+  ],
+  "properties": {
+    "schema_id": {"const": "litfamily.design-contract/v1alpha1"},
+    "contract_id": {"$ref": "#/$defs/id"},
+    "source_hash": {"$ref": "#/$defs/sha256"},
+    "intent": {
+      "type": "object",
+      "required": ["audiences", "tasks", "qualities", "constraints", "non_goals"],
+      "properties": {
+        "audiences": {"$ref": "#/$defs/nonemptyStrings"},
+        "tasks": {"$ref": "#/$defs/nonemptyStrings"},
+        "qualities": {"$ref": "#/$defs/nonemptyStrings"},
+        "constraints": {"$ref": "#/$defs/stringList"},
+        "non_goals": {"$ref": "#/$defs/stringList"}
+      },
+      "additionalProperties": false
+    },
+    "direction": {
+      "type": "object",
+      "required": ["name", "principles", "token_strategy", "voice"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonempty"},
+        "principles": {
+          "type": "array", "minItems": 3, "maxItems": 7, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        },
+        "token_strategy": {"enum": ["reuse", "extend", "create"]},
+        "voice": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "inventory": {"$ref": "#/$defs/inventory"},
+    "accessibility": {
+      "type": "object",
+      "required": [
+        "target", "keyboard", "screen_reader", "reduced_motion", "forced_colors", "zoom_percent"
+      ],
+      "properties": {
+        "target": {"const": "WCAG 2.2 AA"},
+        "keyboard": {"type": "boolean"},
+        "screen_reader": {"type": "boolean"},
+        "reduced_motion": {"type": "boolean"},
+        "forced_colors": {"type": "boolean"},
+        "zoom_percent": {"type": "integer", "minimum": 200, "maximum": 400}
+      },
+      "additionalProperties": false
+    },
+    "localization": {
+      "type": "object",
+      "required": [
+        "locales", "text_expansion_percent", "cjk_line_break_review", "font_fallback_review",
+        "ime_review", "rtl_review"
+      ],
+      "properties": {
+        "locales": {"$ref": "#/$defs/nonemptyStrings"},
+        "text_expansion_percent": {"type": "integer", "minimum": 0, "maximum": 300},
+        "cjk_line_break_review": {"type": "boolean"},
+        "font_fallback_review": {"type": "boolean"},
+        "ime_review": {"type": "boolean"},
+        "rtl_review": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "required": ["lcp_ms", "cls", "inp_ms", "initial_js_kb", "initial_css_kb"],
+      "properties": {
+        "lcp_ms": {"type": "integer", "minimum": 1, "maximum": 60000},
+        "cls": {"type": "number", "minimum": 0, "maximum": 1},
+        "inp_ms": {"type": "integer", "minimum": 1, "maximum": 60000},
+        "initial_js_kb": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "initial_css_kb": {"type": "integer", "minimum": 0, "maximum": 1048576}
+      },
+      "additionalProperties": false
+    },
+    "evidence_policy": {
+      "type": "object",
+      "required": ["independent_review_required", "required_channels", "cleanup_required"],
+      "properties": {
+        "independent_review_required": {"type": "boolean"},
+        "required_channels": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {
+            "enum": [
+              "tests", "browser", "keyboard", "accessibility-tree", "screen-reader",
+              "performance", "localization"
+            ]
+          }
+        },
+        "cleanup_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "omissions": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/disclosure"}
+    },
+    "accepted_exceptions": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/disclosure"}
+    }
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*:[a-z0-9][a-z0-9._/-]*$"},
+    "utcInstant": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "nonemptyStrings": {
+      "type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "stringList": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "pixels": {"type": "integer", "minimum": 1, "maximum": 16384},
+    "inventory": {
+      "type": "object",
+      "required": [
+        "routes", "regions", "components", "interactions", "states", "viewports",
+        "references", "authenticated_surfaces"
+      ],
+      "properties": {
+        "routes": {
+          "type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/route"}
+        },
+        "regions": {
+          "type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/region"}
+        },
+        "components": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/component"}
+        },
+        "interactions": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/interaction"}
+        },
+        "states": {
+          "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/state"}
+        },
+        "viewports": {
+          "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/viewport"}
+        },
+        "references": {
+          "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/reference"}
+        },
+        "authenticated_surfaces": {
+          "type": "array", "uniqueItems": true,
+          "items": {"$ref": "#/$defs/authenticatedSurface"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "route": {
+      "type": "object",
+      "required": ["id", "path", "priority", "auth_required"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/nonempty"},
+        "priority": {"enum": ["primary", "secondary"]},
+        "auth_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "region": {
+      "type": "object",
+      "required": ["id", "route_id", "purpose"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "route_id": {"$ref": "#/$defs/id"},
+        "purpose": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "required": ["id", "region_id", "role"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "region_id": {"$ref": "#/$defs/id"},
+        "role": {"$ref": "#/$defs/nonempty"}
+      },
+      "additionalProperties": false
+    },
+    "interaction": {
+      "type": "object",
+      "required": ["id", "route_id", "trigger", "outcome", "criticality", "input_modes"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "route_id": {"$ref": "#/$defs/id"},
+        "trigger": {"$ref": "#/$defs/nonempty"},
+        "outcome": {"$ref": "#/$defs/nonempty"},
+        "criticality": {"enum": ["critical", "supporting"]},
+        "input_modes": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"enum": ["keyboard", "pointer", "touch", "voice", "switch"]}
+        }
+      },
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "object",
+      "required": ["id", "route_id", "kind"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "route_id": {"$ref": "#/$defs/id"},
+        "kind": {
+          "enum": [
+            "loading", "empty", "error", "success", "disabled", "permission", "offline", "ready"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "viewport": {
+      "type": "object",
+      "required": ["id", "category", "width_px", "height_px"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "category": {"enum": ["compact", "medium", "expanded"]},
+        "width_px": {"$ref": "#/$defs/pixels"},
+        "height_px": {"$ref": "#/$defs/pixels"}
+      },
+      "additionalProperties": false
+    },
+    "reference": {
+      "type": "object",
+      "required": ["id", "kind", "sha256"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["user-provided", "repo-local", "generated", "measured"]},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "authenticatedSurface": {
+      "type": "object",
+      "required": ["route_id", "safe_test_account"],
+      "properties": {
+        "route_id": {"$ref": "#/$defs/id"},
+        "safe_test_account": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "disclosure": {
+      "type": "object",
+      "required": ["id", "reason", "owner"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "reason": {"$ref": "#/$defs/nonempty"},
+        "owner": {"$ref": "#/$defs/nonempty"},
+        "expires_at": {"$ref": "#/$defs/utcInstant"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

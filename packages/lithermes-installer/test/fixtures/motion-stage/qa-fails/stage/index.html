@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="/lit/fonts.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #1a2230; font-family: "Pretendard"; }
+  .line { position: absolute; font-size: 72px; font-weight: 700; white-space: nowrap; opacity: 0; }
+  #a { left: 700px; top: 480px; color: #2a3444; }
+  #b { left: 20px; top: 480px; color: #f4f1ea; }
+  #c { left: 800px; top: 480px; color: #f4f1ea; }
+  #hill { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: #2f5d50; border-radius: 50% 50% 0 0; }
+</style></head>
+<body><div id="hill"></div>
+<div id="a" class="line" data-lit-text="copy"></div><div id="b" class="line" data-lit-text="copy"></div><div id="c" class="line" data-lit-text="copy"></div>
+<script src="/lit/stage-kit.js"></script>
+<script>
+const COPY = { lines: ["등대의 밤", "빛이 돈다", "새벽"] };
+const [a, b, c] = ['a', 'b', 'c'].map((id) => document.getElementById(id));
+a.textContent = COPY.lines[0]; b.textContent = COPY.lines[1]; c.textContent = COPY.lines[2];
+LitStage.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  a.style.opacity = t < 4 / 3 ? '1' : '0';
+  b.style.opacity = t >= 4 / 3 && t < 8 / 3 ? '1' : '0';
+  c.style.opacity = t >= 2.8 && t < 3.1 ? '1' : '0';
+  document.getElementById('hill').style.transform = `translateY(${(20 * Math.sin(t)).toFixed(2)}px)`;
+} });
+</script></body></html>

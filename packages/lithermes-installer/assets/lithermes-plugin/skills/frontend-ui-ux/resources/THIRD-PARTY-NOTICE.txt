@@ -1,0 +1,29 @@
+UI/UX Pro Max design data
+
+This package includes a normalized subset of design data from
+nextlevelbuilder/ui-ux-pro-max-skill at Git commit
+1307d97a72e6c1cda572cb65471ae5ce82995218.
+
+The reused data is licensed under the MIT License. The full pinned license is
+distributed beside this notice as LICENSE. Source-file hashes, the deterministic
+repair receipt, selected columns, record counts, and canonical dataset hash are
+recorded in PROVENANCE.json.
+
+No upstream scripts, templates, CLI, installers, manifests, screenshots, previews,
+documentation, premium features, host integrations, code-example columns,
+documentation-URL columns, or google-fonts.csv data are included.
+
+Craft-floor and slop-register mechanisms were independently re-expressed after
+studying pbakaus/impeccable (https://github.com/pbakaus/impeccable), by Paul
+Bakaus, Apache License, Version 2.0, consulted at commit 9d715cc. No source
+file, prose, or fixture from that project is reproduced here.
+
+Mode, review-format, and routing-governance mechanisms were independently
+re-expressed after studying jakubkrehel/skills
+(https://github.com/jakubkrehel/skills), Copyright (c) 2026 Jakub Krehel,
+MIT License, consulted at commit 267330e. No source or prose is reproduced.
+
+Anti-slop catalogue and responsive value checks were independently re-expressed
+after studying the ui-skills.com playbook (https://www.ui-skills.com/playbook),
+sourced from github.com/ibelick/ui-skills, Copyright (c) 2026 Julien Thibeaut,
+MIT License. No source or prose from the site or repository is reproduced.

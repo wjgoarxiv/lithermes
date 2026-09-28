@@ -1,0 +1,12 @@
+{
+  "status": "input-required",
+  "title": "Replace with verified project name",
+  "subtitle": "Replace with supported purpose",
+  "technicalLabel": "Replace with relevant technical label",
+  "background": {"origin": "supplied-or-native", "path": "", "sha256": "", "inspected": false},
+  "fonts": [],
+  "engine": null,
+  "artifacts": [],
+  "renderState": "not-started",
+  "publicRenderer": "POST_PUBLICATION_UNVERIFIED"
+}

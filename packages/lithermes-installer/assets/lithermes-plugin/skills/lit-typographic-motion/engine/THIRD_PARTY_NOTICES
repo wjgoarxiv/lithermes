@@ -1,0 +1,55 @@
+LitHermes lit-typographic-motion: third-party notices
+
+Engine: portions adapted from mexicat/pdoom-video, commit
+ca251e3dddda422b364385eb484b5a3593a0990d (MIT, Giacomo Magnanini). The full
+MIT permission text is in engine/NOTICE next to this file.
+
+Fonts. Nothing below is bundled in this package. `lithermes motion-runtime
+install` fetches each file from its pinned URL, verifies its sha256 against
+runtime/fonts.json, and stores it with its licence file in the product cache.
+<cache> means that cache directory (printed by `lithermes motion-runtime status`).
+
+font: <cache>/assets/fonts/Galmuri9.ttf
+  licence: <cache>/assets/licenses/Galmuri-OFL.md (SIL OFL 1.1, Reserved Font Name; used unmodified)
+font: <cache>/assets/fonts/VT323-Regular.ttf
+  licence: <cache>/assets/licenses/VT323-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Silkscreen-Regular.ttf
+  licence: <cache>/assets/licenses/Silkscreen-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Silkscreen-Bold.ttf
+  licence: <cache>/assets/licenses/Silkscreen-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/MesloLGS-NF-Regular.ttf
+  licence: <cache>/assets/licenses/Meslo-Notice.txt (Apache-2.0 notice)
+  licence: <cache>/assets/licenses/Meslo-Apache.txt (Apache License 2.0 text)
+  licence: <cache>/assets/licenses/Meslo-Vera-Arev.txt (inherited Bitstream Vera and Arev notices)
+font: <cache>/assets/fonts/Archivo-w750-500.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w750-700.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w750-900.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1000-500.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1000-700.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1000-900.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1250-500.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1250-700.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/Archivo-w1250-900.ttf
+  licence: <cache>/assets/licenses/Archivo-OFL.txt (SIL OFL 1.1)
+font: <cache>/assets/fonts/stroke/EMSAllure.svg
+  licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: <cache>/assets/fonts/stroke/EMSFelix.svg
+  licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: <cache>/assets/fonts/stroke/EMSOsmotron.svg
+  licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: <cache>/assets/fonts/stroke/EMSReadability.svg
+  licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: <cache>/assets/fonts/stroke/EMSTech.svg
+  licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: ../lit-pptx/pretendard-font/public/static/PretendardGOV-Regular.otf (reused by path, unmodified)
+  licence: ../lit-pptx/fonts/PRETENDARD-OFL.txt (SIL OFL 1.1)
+font: ../lit-pptx/pretendard-font/public/static/PretendardGOV-Bold.otf (reused by path, unmodified)
+  licence: ../lit-pptx/fonts/PRETENDARD-OFL.txt (SIL OFL 1.1)

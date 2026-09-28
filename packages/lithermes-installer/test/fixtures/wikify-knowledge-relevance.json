@@ -1,0 +1,18 @@
+{
+  "query": "Which database and retry policy does this project use?",
+  "events": [
+    {
+      "kind": "decision",
+      "text": "The project uses SQLite for local durable state.",
+      "source": "wikify",
+      "evidence_ref": "docs/architecture.md#storage"
+    },
+    {
+      "kind": "rule",
+      "text": "Retry interrupted writes with the same stable event identity.",
+      "source": "litwork",
+      "evidence_ref": "docs/architecture.md#recovery"
+    }
+  ],
+  "repeated_project_context": "Project context: The project uses SQLite for local durable state. Retry interrupted writes with the same stable event identity. The knowledge store is local to this project. Accepted records include a product-local evidence reference. Every captured record begins in review-needed state. An explicit save or review operation promotes a record. Rejected and stale records never enter model context. The append-only claims file is authoritative. A query computes relevance from that authority without a network service, vector database, embedding model, daemon, or watcher. A no-match query emits no knowledge block. The normal context budget is 2048 bytes. The hard context limit is 4096 bytes."
+}

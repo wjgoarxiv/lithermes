@@ -1,0 +1,18 @@
+{
+  "profile": "editorial-pixel",
+  "authorship": "Original starting values, adjusted to content and existing brand",
+  "spacing": {"step": 8, "microStep": 4, "desktopSection": [80,128], "mobileSection": [40,64]},
+  "display": {"desktop": [56,104], "mobile": [36,56], "latinLeading": [0.95,1.05], "koreanLeading": [1.12,1.25]},
+  "bodyLeading": [1.5,1.7],
+  "composition": ["oversized editorial title", "deliberate line breaks", "terminal micro-label", "thin rules", "atmospheric depth", "intentional asymmetry"],
+  "pixel_illustration": {
+    "default_when_unspecified": true,
+    "original_task_specific": true,
+    "primary_visual_anchor": true,
+    "minimum_rendered_cell_px": 6,
+    "rendering": "crisp integer-grid nearest-neighbor",
+    "smooth_scaling": false
+  },
+  "pixelArt": {"original": true, "integerGrid": true, "limitedPalette": true, "crispEdges": true},
+  "checks": ["320px no clipping", "keyboard focus", "working primary action", "empty and error recovery", "reduced motion"]
+}

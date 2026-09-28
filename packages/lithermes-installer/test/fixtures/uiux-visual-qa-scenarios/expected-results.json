@@ -1,0 +1,42 @@
+{
+  "schema_id": "litfamily.uiux-visual-qa-expected/v1",
+  "results": {
+    "public-service-form-ko": {
+      "finding_codes": ["A11Y_FOCUS_VISIBLE_MISSING", "WCAG_1_4_3_CONTRAST_INSUFFICIENT"],
+      "verdict": "FAIL"
+    },
+    "fintech-dashboard": {
+      "finding_codes": ["CHART_COLOR_ONLY", "CHART_NONVISUAL_FALLBACK_MISSING"],
+      "verdict": "FAIL"
+    },
+    "healthcare-mobile": {
+      "finding_codes": ["DESTRUCTIVE_ACTION_UNSAFE", "TOUCH_TARGET_UNDERSIZED"],
+      "verdict": "FAIL"
+    },
+    "saas-landing-responsive": {
+      "finding_codes": ["RESPONSIVE_MOBILE_OVERFLOW", "REDUCED_MOTION_IGNORED"],
+      "verdict": "FAIL"
+    },
+    "brownfield-design-system": {
+      "finding_codes": ["DESIGN_TOKEN_BYPASS", "COMPONENT_PRIMITIVE_DUPLICATED"],
+      "verdict": "FAIL"
+    },
+    "reference-fidelity": {
+      "finding_codes": ["REFERENCE_DIMENSION_MISMATCH", "SCREENSHOT_SUBSTITUTION"],
+      "verdict": "FAIL"
+    },
+    "cjk-terminal-dashboard": {
+      "finding_codes": ["TUI_BORDER_TOPOLOGY_INVALID"],
+      "verdict": "FAIL"
+    },
+    "missing-capture-auth-review": {
+      "blocked_codes": [
+        "BLOCKED_RENDERER_UNAVAILABLE",
+        "BLOCKED_AUTH_UNAVAILABLE",
+        "BLOCKED_INDEPENDENT_REVIEW_UNAVAILABLE"
+      ],
+      "finding_codes": [],
+      "verdict": "BLOCKED"
+    }
+  }
+}

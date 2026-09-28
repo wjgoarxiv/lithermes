@@ -1,0 +1,11 @@
+{
+  "schema": "lithermes.semantic-family-origin/v1",
+  "family": "autoresearch",
+  "source": "owner-source:060_autoresearch-skill",
+  "commit": "58a65afc174cd8c2fa162bb0d1953b0a88e5d419",
+  "tree": "9102dfeba13a738d23971b69b6b6ad7bf425c923",
+  "anonymousRetrieval": "not claimed",
+  "integrity": "package-local via bundled MIT license and payload hashes",
+  "port": "Hermes-native semantic closure",
+  "excluded": ["tests", "docs", "guide", "examples", "release files", "caches", "generated debris"]
+}

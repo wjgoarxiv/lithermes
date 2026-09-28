@@ -1,0 +1,11 @@
+{
+  "schema": "lithermes.semantic-family-origin/v1",
+  "family": "autoconference",
+  "source": "owner-source:064_autoconference-skill",
+  "commit": "58a65afc174cd8c2fa162bb0d1953b0a88e5d419",
+  "tree": "8e73d89cefd9ca136f9c45a918517cc5e809fd57",
+  "anonymousRetrieval": "not claimed",
+  "integrity": "package-local via bundled MIT license and payload hashes",
+  "port": "Hermes-native semantic closure",
+  "excluded": ["tests", "docs", "guide", "examples", "release files", "caches", "generated debris"]
+}

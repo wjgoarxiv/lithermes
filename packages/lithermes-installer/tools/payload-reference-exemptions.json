@@ -1,0 +1,73 @@
+{
+  "schema": "litfamily.payload-references/v1",
+  "surfaces": [
+    {
+      "token": "./target",
+      "reason": "The target path is a consuming-project binary or build artifact, not a file supplied by the skill package."
+    },
+    {
+      "prefix": "~/.hermes/",
+      "reason": "The Hermes user directory and its runtime state are host-managed and intentionally outside the npm payload."
+    },
+    {
+      "prefix": "~/.lithermes/",
+      "reason": "The user-level LitHermes state directory is created by the host and is not an installed skill resource."
+    },
+    {
+      "prefix": ".hermes/",
+      "reason": "Project Hermes runs, ledgers, and evidence are host-provided state rather than package files."
+    },
+    {
+      "prefix": ".lithermes/",
+      "reason": "Project LitHermes state is created by the host runtime and is intentionally outside the installed payload."
+    },
+    {
+      "prefix": "/.hermes/",
+      "reason": "This absolute Hermes state path belongs to the host runtime and cannot be shipped in the package."
+    },
+    {
+      "prefix": "test/",
+      "reason": "These are consuming-repository test paths used by verification commands; they are not installed skill assets."
+    },
+    {
+      "prefix": "src/",
+      "reason": "Source paths in the instructions refer to the consuming project implementation, not this package payload."
+    },
+    {
+      "prefix": "dist/",
+      "reason": "Build output is produced by the consuming project and is deliberately not an installed skill resource."
+    },
+    {
+      "prefix": "api/",
+      "reason": "Example API source paths belong to the consuming application and are not package-provided resources."
+    },
+    {
+      "prefix": "path/to/",
+      "reason": "These illustrative paths stand for a consuming-project file and are not claims about packaged assets."
+    },
+    {
+      "prefix": "SESSION_DIR/",
+      "reason": "SESSION_DIR is a runtime-owned temporary workspace whose evidence files are created by the host."
+    },
+    {
+      "prefix": "HERMES_HOME/",
+      "reason": "HERMES_HOME is a host-selected installation root and its files are not part of this package payload."
+    },
+    {
+      "prefix": ".github/",
+      "reason": "Repository workflow and Copilot instruction files belong to the consuming project's host checkout."
+    },
+    {
+      "prefix": "/tmp/",
+      "reason": "Absolute temporary paths are created by the host process and cannot be part of an npm package payload."
+    },
+    {
+      "prefix": "/github.com/",
+      "reason": "These absolute paths are documentation links to public repositories, not files in the package payload."
+    },
+    {
+      "prefix": "/plugins/lithermes/",
+      "reason": "The absolute plugin installation path is supplied by the Hermes host and is not package-relative content."
+    }
+  ]
+}

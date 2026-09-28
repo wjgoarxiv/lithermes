@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #10243a; font-family: "Pretendard"; }
+  .card { position: absolute; width: 360px; height: 220px; border-radius: 28px; }
+  #blur { left: 80px; top: 80px; background: #e8a33d; filter: blur(12px); }
+  #glass { left: 300px; top: 160px; background: rgba(255,255,255,0.12); backdrop-filter: blur(18px) saturate(1.4); }
+  #blend { left: 700px; top: 90px; background: #3dd6c6; mix-blend-mode: screen; }
+  #shadow { left: 1150px; top: 120px; background: #f4efe6; box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 6px #e8a33d; }
+  svg { position: absolute; left: 1500px; top: 60px; }
+  canvas { position: absolute; left: 0; bottom: 0; }
+</style></head>
+<body>
+<div id="blur" class="card"></div><div id="glass" class="card"></div><div id="blend" class="card"></div><div id="shadow" class="card"></div>
+<svg width="360" height="360" viewBox="0 0 360 360"><defs><filter id="soft"><feGaussianBlur stdDeviation="9"/></filter></defs>
+  <circle id="orb" cx="180" cy="180" r="90" fill="#e85d75" filter="url(#soft)"/></svg>
+<div id="cap" data-lit-text="copy" style="position:absolute;left:160px;top:420px;color:#f4f1ea;font-size:64px;font-weight:700"></div>
+<canvas id="c2d" width="960" height="560"></canvas>
+<canvas id="gl" width="960" height="560" style="left:960px"></canvas>
+<script src="/lit/stage-kit.js"></script>
+<script>
+const c = document.getElementById('c2d').getContext('2d');
+const gl = document.getElementById('gl').getContext('webgl');
+const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }'); gl.compileShader(vs);
+const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, 'precision mediump float; uniform float t; void main(){ vec2 u = gl_FragCoord.xy / vec2(960.0, 560.0); gl_FragColor = vec4(0.5 + 0.5 * sin(u.x * 9.0 + t * 2.0), u.y, 0.5 + 0.5 * cos(t + u.y * 6.0), 1.0); }'); gl.compileShader(fs);
+const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog); gl.useProgram(prog);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const tu = gl.getUniformLocation(prog, 't');
+const COPY = { lines: ["등대의 밤", "빛이 돈다", "새벽"] };
+const cap = document.getElementById('cap');
+const blend = document.getElementById('blend'), orb = document.getElementById('orb'), shadow = document.getElementById('shadow');
+LitStage.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  cap.textContent = COPY.lines[Math.min(2, Math.floor(t / (4 / 3)))];
+  blend.style.transform = `translateX(${(120 * Math.sin(t * 1.7)).toFixed(2)}px)`;
+  shadow.style.transform = `rotate(${(8 * Math.sin(t)).toFixed(2)}deg)`;
+  orb.setAttribute('r', (70 + 30 * Math.sin(t * 2)).toFixed(2));
+  c.clearRect(0, 0, 960, 560);
+  c.shadowColor = 'rgba(232,163,61,0.9)'; c.shadowBlur = 30;
+  c.fillStyle = '#f4efe6'; c.beginPath(); c.arc(480 + 200 * Math.sin(t), 280, 90, 0, Math.PI * 2); c.fill();
+  gl.uniform1f(tu, t); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+} });
+</script></body></html>

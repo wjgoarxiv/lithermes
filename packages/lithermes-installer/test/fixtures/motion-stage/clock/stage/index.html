@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #0b1d33; font-family: "Pretendard"; }
+  #tower { position: absolute; left: 12%; bottom: 0; width: 8%; height: 60%; background: #f4f1ea; clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); }
+  #beam { position: absolute; left: 16%; top: 38%; width: 70%; height: 4%; background: linear-gradient(90deg, #f7e7a1, transparent); transform-origin: 0 50%; }
+  #cap { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); color: #f4f1ea; font-size: 72px; font-weight: 700; white-space: nowrap; }
+  #sky { position: absolute; inset: 0; background: #f2c87a; opacity: 0; animation: dawn 1.2s linear 2.6s forwards; }
+  @keyframes dawn { to { opacity: 0.55; } }
+</style></head>
+<body>
+<div id="sky"></div><div id="tower"></div><div id="beam"></div><div id="cap" data-lit-text="copy"></div>
+<canvas id="c" width="1920" height="1080" style="position:absolute;inset:0"></canvas>
+<script src="/lit/stage-kit.js"></script>
+<script>
+const COPY = { lines: ["등대의 밤", "빛이 돈다", "새벽"] };
+const beam = document.getElementById('beam'), cap = document.getElementById('cap');
+const ctx = document.getElementById('c').getContext('2d');
+const dots = (() => { const r = LitStage.rand(11); return Array.from({ length: 60 }, () => [r() * 1920, 700 + r() * 380, 1 + r() * 3]); })();
+LitStage.define({ width: 1920, height: 1080, fps: 60, duration: 4, render(t) {
+  beam.style.transform = `rotate(${(-20 + 40 * Math.sin(t * 1.5)).toFixed(3)}deg)`;
+  const i = Math.min(2, Math.floor(t / (4 / 3)));
+  cap.textContent = COPY.lines[i];
+  cap.style.opacity = String(LitStage.at(t - i * 4 / 3, 0, 0.35, 'outCubic'));
+  ctx.clearRect(0, 0, 1920, 1080);
+  ctx.fillStyle = '#f7e7a1';
+  for (const [x, y, s] of dots) { ctx.globalAlpha = 0.3 + 0.3 * Math.sin(t * 3 + x); ctx.fillRect(x, y, s, s); }
+  ctx.globalAlpha = 1;
+} });
+</script>
+</body></html>

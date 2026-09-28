@@ -1,0 +1,22 @@
+{
+  "schema": "litfamily.payload-substance/v1",
+  "skills": {
+    "lit-burnoff-file": "A single-file smell taxonomy, safety exceptions, process, and report contract is complete for this procedural review.",
+    "comment-checker": "Intent, accuracy, necessity, maintenance checks, and the native route and evidence behavior are fully bounded.",
+    "deep-interview": "Ambiguity scoring, question loops, state and resume, readiness, and approval gates form a complete interview procedure.",
+    "lit-commit": "The document provides inventory, operation classification, isolation, history, staging, and receipt discipline for Git work.",
+    "lit-crucible": "Native parallel discovery, cross-review, defense, synthesis, and handoff rules form a complete bounded planning procedure.",
+    "lit-init": "Discovery, scoring, instruction placement, conflict analysis, generation, and verification are fully specified as a workflow.",
+    "lit-plan": "Objective-achievable planning, exploration, authority, adaptive checklists, review, and handoff are complete without a corpus.",
+    "lit-recap": "Read-only state and evidence reconstruction, stale-state precedence, output shape, and limitations are complete in one file.",
+    "litresearch": "The body defines a bounded research workflow and the only extra file is attribution metadata; no unshipped corpus is claimed.",
+    "litwork": "The body names the native progress hooks and fully specifies bounded delivery, evidence, cleanup, and failure handling.",
+    "lsp": "The document defines the host LSP tool and configuration workflow, capability checks, and evidence without bundling a server.",
+    "refactor": "Intent gating, characterization, safe structural moves, validation, and review are fully bounded by the single instruction.",
+    "lit-burnoff": "Test-first behavior locking, categorized cleanup, scope boundaries, and verification are all present without a corpus.",
+    "review-work": "Plan review, completion review, evidence skepticism, registration, and receipts form a complete bounded contract.",
+    "rules": "Supported locations, discovery order, precedence, hook behavior, and checks form a complete rules explanation.",
+    "start-work": "Approved-plan resume, state and ledger gates, native progress tooling, verification, and cleanup are fully specified.",
+    "structural-search": "The honest native fallback and its intent gating, bounded search, review, and evidence contract are complete instructions."
+  }
+}
