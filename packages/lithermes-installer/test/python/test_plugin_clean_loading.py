@@ -123,3 +123,20 @@ class CleanPluginLoadingTests(unittest.TestCase):
                     if tok.type == start:
                         quotes.append(opener)
         self.assertEqual(found, [])
+
+    def test_payload_compiles_without_invalid_escape_warnings(self):
+        # Python 3.12 and later print a SyntaxWarning for an invalid escape such as
+        # "\s" in a plain string; 3.11 raises the same as a DeprecationWarning.
+        import warnings
+
+        found = []
+        for path in sorted(PLUGIN.rglob("*.py")):
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                compile(path.read_text(encoding="utf-8"), str(path), "exec")
+            found.extend(
+                f"{path.relative_to(PLUGIN)}:{item.lineno}: {item.message}"
+                for item in caught
+                if issubclass(item.category, (SyntaxWarning, DeprecationWarning))
+            )
+        self.assertEqual(found, [])

@@ -316,10 +316,9 @@ test("RELEASE_CHECKLIST requires isolated QA evidence without claiming a live ev
   assert.doesNotMatch(text, /before=.*after=.*SHA-256/i);
 });
 
-test("CI and manual publish bootstrap dependencies before complete test gates", () => {
+test("CI bootstraps dependencies before complete test gates", () => {
   const workflows = [
     [".github/workflows/ci.yml", read(".github/workflows/ci.yml")],
-    [".github/workflows/publish.yml", read(".github/workflows/publish.yml")],
   ];
   for (const [label, text] of workflows) {
     assert.match(
@@ -342,77 +341,33 @@ test("CI and manual publish bootstrap dependencies before complete test gates", 
   }
 });
 
-test("publish workflow stays manual-only and is never tag-triggered", () => {
-  const text = read(".github/workflows/publish.yml");
-  assert.match(text, /^\s{2}workflow_dispatch:\s*$/m);
-  assert.doesNotMatch(text, /^\s{2}(?:push|pull_request):\s*$/m);
-  assert.doesNotMatch(text, /^\s+tags(?:-ignore)?:\s*$/m);
+test("no tracked workflow publishes to npm or reads a publish secret", () => {
+  const directory = path.join(repoRoot, ".github", "workflows");
+  const names = fs.readdirSync(directory);
+  assert.deepEqual(names.filter((name) => /publish|release/i.test(name)), [], "releases are published by hand");
+  for (const name of names) {
+    const text = fs.readFileSync(path.join(directory, name), "utf8");
+    assert.doesNotMatch(text, /npm publish|NPM_TOKEN|NODE_AUTH_TOKEN|secrets\./, `${name} must not publish or read a publish secret`);
+  }
+  assert.doesNotMatch(read("RELEASE_CHECKLIST.md"), /gh workflow run/, "the checklist must not dispatch a publish workflow");
 });
 
-test("publish workflow binds dispatch to one canonical reviewed main commit", () => {
-  const text = read(".github/workflows/publish.yml");
-  assert.match(text, /^\s{6}commit:\s*\n\s{8}description:.*full.*SHA.*\n\s{8}required:\s*true\s*$/mi);
-  assert.match(text, /^\s{10}DISPATCH_REF:\s*\$\{\{ github\.ref \}\}\s*$/m);
-  assert.match(text, /^\s{10}DISPATCH_SHA:\s*\$\{\{ github\.sha \}\}\s*$/m);
-  assert.match(text, /^\s{10}REQUESTED_COMMIT:\s*\$\{\{ github\.event\.inputs\.commit \}\}\s*$/m);
-  assert.match(text, /\[ "\$DISPATCH_REF" != "refs\/heads\/main" \]/);
-  assert.match(text, /\[\[ "\$REQUESTED_COMMIT" =~ \^\[0-9a-f\]\{40\}\$ \]\]/);
-  assert.match(text, /\[ "\$REQUESTED_COMMIT" != "\$DISPATCH_SHA" \]/);
-
-  const lines = text.split("\n");
-  let runIndent = null;
-  for (const line of lines) {
-    const indent = line.match(/^\s*/)[0].length;
-    if (/^\s+run:\s*(?:\||>)?\s*$/.test(line)) {
-      runIndent = indent;
-      continue;
-    }
-    if (runIndent !== null && line.trim() && indent <= runIndent) runIndent = null;
-    if (runIndent !== null) {
-      assert.doesNotMatch(line, /\$\{\{/, `GitHub expressions must enter shell through env: ${line.trim()}`);
-    }
-  }
-});
-
-test("the release checklist retains the sealed workflow and guarded local path", () => {
-  const capture = 'REVIEWED_SHA="$(git rev-parse --verify \'origin/main^{commit}\')"';
-  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"';
-  const docs = [
-    ["RELEASE_CHECKLIST.md", read("RELEASE_CHECKLIST.md")],
-  ];
-  for (const [label, text] of docs) {
-    const dispatchAt = text.indexOf(dispatch);
-    assert.ok(dispatchAt >= 0, `${label} must expose the exact approved workflow dispatch`);
-    const captureAt = text.indexOf(capture);
-    assert.ok(captureAt >= 0 && captureAt < dispatchAt, `${label} must capture the reviewed origin/main commit before dispatch`);
-    const prerequisites = text.slice(Math.max(0, dispatchAt - 1400), dispatchAt);
-    assert.match(prerequisites, /HUMAN-ONLY/, `${label} must mark release dispatch HUMAN-ONLY`);
-    assert.match(prerequisites, /remote HEAD/i, `${label} must check the remote HEAD before dispatch`);
-    assert.match(prerequisites, /version[^\n]*1\.0\.10/i, `${label} must check the exact version before dispatch`);
-    assert.match(prerequisites, /explicit(?:ly)?[^\n]*approv/i, `${label} must require explicit approval before dispatch`);
-    assert.match(
-      prerequisites,
-      /^\s*git fetch --quiet origin refs\/heads\/main:refs\/remotes\/origin\/main$/m,
-      `${label} must refresh origin/main explicitly before capture`,
-    );
-    assert.deepEqual(
-      findDirectNpmPublishCommands(text),
-      ["npm publish --access public"],
-      `${label} must expose exactly one guarded local publication command`,
-    );
-    assert.match(text, /prepublishOnly/i, `${label} must name the source-only prepublish guard`);
-    assert.match(text, /not byte-identical/i, `${label} must explain that npm repacks after preflight`);
-    assert.match(text, /never blind-retry/i, `${label} must prohibit blind retries after a nonzero result`);
-    assert.match(text, /published artifact/i, `${label} must require inspection of the registry artifact`);
-    assert.match(text, /NPM_TOKEN/, `${label} must retain the workflow credential prerequisite`);
-  }
-
-  const workflow = read(".github/workflows/publish.yml");
-  assert.equal(
-    (workflow.match(/npm publish "\$SEALED_ARCHIVE" --access public/g) || []).length,
-    1,
-    "the tracked workflow must remain the sole sealed-artifact npm publication surface",
+test("the release checklist retains the guarded local path", () => {
+  const text = read("RELEASE_CHECKLIST.md");
+  const label = "RELEASE_CHECKLIST.md";
+  assert.deepEqual(
+    findDirectNpmPublishCommands(text),
+    ["npm publish --access public"],
+    `${label} must expose exactly one guarded local publication command`,
   );
+  const publishAt = text.indexOf("npm publish --access public");
+  const prerequisites = text.slice(Math.max(0, publishAt - 1400), publishAt);
+  assert.match(prerequisites, /HUMAN-ONLY/, `${label} must mark publication HUMAN-ONLY`);
+  assert.match(prerequisites, /explicit(?:ly)?[^\n]*approv/i, `${label} must require explicit approval before publication`);
+  assert.match(text, /prepublishOnly/i, `${label} must name the source-only prepublish guard`);
+  assert.match(text, /not byte-identical/i, `${label} must explain that npm repacks after preflight`);
+  assert.match(text, /never blind-retry/i, `${label} must prohibit blind retries after a nonzero result`);
+  assert.match(text, /published artifact/i, `${label} must require inspection of the registry artifact`);
 });
 
 test("0.8.39 release history records both human-only publication policies", () => {
@@ -433,13 +388,6 @@ test("0.8.39 release history records both human-only publication policies", () =
   }
 });
 
-test("publish workflow labels the stronger Linux exact-artifact policy without changing its seal", () => {
-  const workflow = read(".github/workflows/publish.yml");
-  assert.match(workflow, /stronger Linux descriptor-sealed exact-artifact option/i);
-  assert.match(workflow, /requires[^\n]*NPM_TOKEN/i);
-  assert.equal((workflow.match(/npm publish "\$SEALED_ARCHIVE" --access public/g) || []).length, 1);
-});
-
 test("real-surface QA fails closed on blocked rows", () => {
   const { exitCodeForSummary } = require(path.join(
     repoRoot,
@@ -449,44 +397,6 @@ test("real-surface QA fails closed on blocked rows", () => {
   assert.equal(exitCodeForSummary({ failed: 1, blocked: 0, profileUnchanged: true }), 1);
   assert.equal(exitCodeForSummary({ failed: 0, blocked: 1, profileUnchanged: true }), 1);
   assert.equal(exitCodeForSummary({ failed: 0, blocked: 0, profileUnchanged: false }), 1);
-});
-
-test("publish workflow enforces real-surface QA before npm publish", () => {
-  const text = read(".github/workflows/publish.yml");
-  const qa = text.indexOf("npm run qa:real-surface");
-  const publish = text.indexOf('npm publish "$SEALED_ARCHIVE" --access public');
-  assert.ok(qa >= 0, "publish workflow must run qa:real-surface");
-  assert.ok(qa < publish, "qa:real-surface must run before npm publish");
-});
-
-test("publish workflow scans and publishes one exact sealed snapshot with failure cleanup", () => {
-  const text = read(".github/workflows/publish.yml");
-  const actualPack = text.indexOf('npm pack --ignore-scripts --json --pack-destination "$PACK_DIR"');
-  const tarScan = text.indexOf('scan-forbidden-tokens.js --pack-tar "$ARCHIVE" --snapshot-out "$VALIDATED_ARCHIVE" --json');
-  const cleanup = text.indexOf("trap cleanup EXIT");
-  const openPublishFd = text.indexOf('exec {PUBLISH_FD}<"$VALIDATED_ARCHIVE"');
-  const unlink = text.indexOf('rm -f "$VALIDATED_ARCHIVE"');
-  const publishEndpoint = text.indexOf('PUBLISH_ENDPOINT="/proc/$$/fd/$PUBLISH_FD"');
-  const sealedLink = text.indexOf('ln -s "$PUBLISH_ENDPOINT" "$SEALED_ARCHIVE"');
-  const lockDirectory = text.indexOf('chmod 500 "$HANDOFF_DIR"');
-  const digestCheck = text.indexOf('sha256sum "$PUBLISH_ENDPOINT"');
-  const publish = text.indexOf('npm publish "$SEALED_ARCHIVE" --access public');
-  const validatedOpens = text.match(/exec \{[A-Z_]+_FD\}<"\$VALIDATED_ARCHIVE"/g) || [];
-  assert.ok(actualPack >= 0, "publish workflow must create the actual npm tarball");
-  assert.ok(tarScan > actualPack, "publish workflow must byte-scan the created tarball");
-  assert.ok(cleanup >= 0 && cleanup < actualPack, "publish workflow must register cleanup before packing");
-  assert.deepEqual(validatedOpens, ['exec {PUBLISH_FD}<"$VALIDATED_ARCHIVE"'], "validated snapshot must have exactly one descriptor open");
-  assert.ok(openPublishFd > tarScan && unlink > openPublishFd, "validated snapshot pathname must be unlinked after its sole descriptor opens");
-  assert.ok(publishEndpoint > unlink, "publish endpoint must name the sole open descriptor after unlink");
-  assert.ok(sealedLink > publishEndpoint && lockDirectory > sealedLink, "npm tar path must resolve only to the exact publish endpoint");
-  assert.ok(digestCheck > lockDirectory && publish > digestCheck, "sealed bytes must match the scanner digest before publish");
-  assert.doesNotMatch(text, /VERIFY_FD/, "a second verification descriptor would reintroduce an exact-artifact gap");
-  assert.equal((text.match(/npm publish/g) || []).length, 1, "workflow must expose exactly one publish invocation");
-  assert.doesNotMatch(text, /npm publish --access public/, "workflow must never repack by publishing the source directory");
-  assert.doesNotMatch(text, /npm publish "\$ARCHIVE"/, "mutable pack pathname must never be published");
-  assert.match(text, /cleanup\(\)[\s\S]*chmod 700 "\$HANDOFF_DIR"[\s\S]*rm -rf "\$PACK_DIR"/, "failure cleanup must unlock and remove the handoff directory");
-  assert.doesNotMatch(text, /npm pack --dry-run/);
-  assert.doesNotMatch(text, /scan-forbidden-tokens\.js --pack-json/);
 });
 
 test("QA scripts name measured isolated-profile state without presenting it as a live-profile fingerprint", () => {

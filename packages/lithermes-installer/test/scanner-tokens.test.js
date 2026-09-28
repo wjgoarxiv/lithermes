@@ -717,68 +717,6 @@ test("pack capture scans a private safe snapshot and rejects equal-size in-captu
   assert.ok(rejected.hits.some((hit) => hit.where === "pack-tar-capture-failed"), JSON.stringify(rejected));
 });
 
-test("linux sole publish descriptor bytes equal the scanner receipt through the npm endpoint", (t) => {
-  if (process.platform !== "linux" || !fs.existsSync("/proc/self/fd")) {
-    t.skip("Linux /proc descriptor handoff probe");
-    return;
-  }
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-pack-linux-fd-"));
-  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
-  const packed = spawnSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], {
-    cwd: packageRoot,
-    encoding: "utf8",
-  });
-  assert.equal(packed.status, 0, packed.stderr || packed.stdout);
-  const archive = path.join(temp, JSON.parse(packed.stdout)[0].filename);
-  const snapshot = path.join(temp, "validated.tgz");
-  const script = path.join(__dirname, "scripts", "scan-forbidden-tokens.js");
-  const scan = spawnSync(process.execPath, [
-    script, "--pack-tar", archive, "--snapshot-out", snapshot, "--json",
-  ], { cwd: packageRoot, encoding: "utf8" });
-  assert.equal(scan.status, 0, scan.stdout + scan.stderr);
-  const receipt = JSON.parse(scan.stdout);
-  assert.equal(receipt.ok, true);
-  assert.equal(scan.stdout.includes(temp), false);
-
-  const originalOpen = fs.openSync;
-  let snapshotOpens = 0;
-  fs.openSync = function countSnapshotOpen(file, ...args) {
-    if (path.resolve(file) === path.resolve(snapshot)) snapshotOpens += 1;
-    return originalOpen.call(this, file, ...args);
-  };
-  let publishFd;
-  try {
-    publishFd = fs.openSync(snapshot, "r");
-  } finally {
-    fs.openSync = originalOpen;
-  }
-  try {
-    fs.unlinkSync(snapshot);
-    const publishPath = `/proc/${process.pid}/fd/${publishFd}`;
-    fs.writeFileSync(snapshot, Buffer.from("replacement pathname bytes\n"));
-    const publishedBytes = fs.readFileSync(publishPath);
-    const sealedDigest = crypto.createHash("sha256").update(publishedBytes).digest("hex");
-    assert.equal(snapshotOpens, 1, "validated snapshot must be opened exactly once");
-    assert.equal(sealedDigest, receipt.validatedArchive.sha256);
-    assert.equal(publishedBytes.length, receipt.validatedArchive.bytes);
-    assert.notEqual(crypto.createHash("sha256").update(fs.readFileSync(snapshot)).digest("hex"), sealedDigest);
-    const handoff = path.join(temp, "handoff");
-    const sealedArchive = path.join(handoff, "validated.tgz");
-    fs.mkdirSync(handoff, { mode: 0o700 });
-    fs.symlinkSync(publishPath, sealedArchive);
-    fs.chmodSync(handoff, 0o500);
-    assert.deepEqual(fs.readFileSync(sealedArchive), publishedBytes, "npm tar path must expose the exact hashed descriptor bytes");
-    const dryRun = spawnSync("npm", [
-      "publish", sealedArchive, "--dry-run", "--ignore-scripts", "--json",
-    ], { cwd: packageRoot, encoding: "utf8" });
-    assert.equal(dryRun.status, 0, dryRun.stderr || dryRun.stdout);
-  } finally {
-    const handoff = path.join(temp, "handoff");
-    if (fs.existsSync(handoff)) fs.chmodSync(handoff, 0o700);
-    fs.closeSync(publishFd);
-  }
-});
-
 test("pack scanning enforces compressed, member, aggregate, and deadline limits with small fixtures", (t) => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-pack-limits-"));
   t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
@@ -796,6 +734,54 @@ test("pack scanning enforces compressed, member, aggregate, and deadline limits 
   for (const [limits, expected] of cases) {
     const hits = scanPackArchive(archive, repoRoot, { requirePackageIdentity: false, limits });
     assert.ok(hits.some((hit) => hit.where === expected), `${expected}: ${JSON.stringify(hits)}`);
+  }
+});
+
+test("pack deadline scales with member count while a hung tar call still fails closed", (t) => {
+  if (process.platform === "win32") {
+    t.skip("POSIX shell tar shim");
+    return;
+  }
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-pack-deadline-"));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const realTar = spawnSync("sh", ["-c", "command -v tar"], { encoding: "utf8" }).stdout.trim();
+  assert.ok(realTar, "tar must be on PATH");
+  const bin = path.join(temp, "bin");
+  fs.mkdirSync(bin);
+  // Every member read is slowed as on a loaded machine; reading package/hang.txt never finishes.
+  fs.writeFileSync(path.join(bin, "tar"), [
+    "#!/bin/sh",
+    'case "$*" in',
+    "  *package/hang.txt*) exec sleep 30 ;;",
+    "  *-xOzf*) sleep 0.1 ;;",
+    "esac",
+    `exec "${realTar}" "$@"`,
+    "",
+  ].join("\n"), { mode: 0o755 });
+  const members = Array.from({ length: 20 }, (_, index) => ({ name: `package/m${index}.txt`, body: `member ${index}\n` }));
+  const slow = path.join(temp, "slow.tgz");
+  const hung = path.join(temp, "hung.tgz");
+  writeTar(slow, members);
+  writeTar(hung, [...members.slice(0, 2), { name: "package/hang.txt", body: "never read\n" }]);
+  const originalPath = process.env.PATH;
+  process.env.PATH = `${bin}${path.delimiter}${originalPath}`;
+  try {
+    // Twenty slowed reads need about two seconds: past the one-second base, inside the per-member allowance.
+    const slowHits = scanPackArchive(slow, repoRoot, {
+      requirePackageIdentity: false,
+      limits: { deadlineMs: 1000, perMemberMs: 1000 },
+    });
+    assert.deepEqual(slowHits, []);
+
+    const started = Date.now();
+    const hungHits = scanPackArchive(hung, repoRoot, {
+      requirePackageIdentity: false,
+      limits: { deadlineMs: 600000, perMemberMs: 600000, spawnTimeoutMs: 500 },
+    });
+    assert.ok(hungHits.some((hit) => hit.where === "pack-tar-deadline"), JSON.stringify(hungHits));
+    assert.ok(Date.now() - started < 20000, "a hung tar call must fail at its per-call cap, not the scaled deadline");
+  } finally {
+    process.env.PATH = originalPath;
   }
 });
 

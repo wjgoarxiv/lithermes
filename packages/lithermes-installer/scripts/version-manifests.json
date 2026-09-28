@@ -29,20 +29,20 @@
     {
       "path": "RELEASE_CHECKLIST.md",
       "kind": "pinned",
-      "occurrences": 9,
-      "why": "Release scope heading plus the exact npm view, npm pack, tarball, scanner and workflow-dispatch commands a releaser copies."
+      "occurrences": 7,
+      "why": "Release scope heading plus the exact npm view, npm pack, tarball and scanner commands a releaser copies."
     },
     {
       "path": "packages/lithermes-installer/README.md",
       "kind": "pinned",
-      "occurrences": 62,
-      "why": "Pinned source version, package artwork, ignition film, the 36 skill-table snapshot URLs and the 12 A/B capture URLs."
+      "occurrences": 11,
+      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, ASCII mark, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
     },
     {
       "path": "packages/lithermes-installer/README_Ko-KR.md",
       "kind": "pinned",
-      "occurrences": 62,
-      "why": "Pinned source version, package artwork, ignition film, the 36 skill-table snapshot URLs and the 12 A/B capture URLs."
+      "occurrences": 11,
+      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, ASCII mark, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
     },
     {
       "path": "packages/lithermes-installer/readme-assets/badge-version.svg",
@@ -95,14 +95,14 @@
     {
       "path": "packages/lithermes-installer/test/readme.test.js",
       "kind": "pinned",
-      "occurrences": 15,
+      "occurrences": 13,
       "why": "Pinned source-version and package-artwork references, plus the exact README contract assertions; updated together when landing assets are added."
     },
     {
       "path": "packages/lithermes-installer/test/release.test.js",
       "kind": "pinned",
-      "occurrences": 3,
-      "why": "Locates the current CHANGELOG release section and the workflow-dispatch command; one site lives inside a regular expression."
+      "occurrences": 1,
+      "why": "Locates the current CHANGELOG release section."
     },
     {
       "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/lit-code/references/typescript/backend-hono.md",
@@ -163,6 +163,17 @@
           "why": "npm resolved @types/estree in the README Studio template, in its version field and tarball URL; this exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
         }
       ]
+    },
+    {
+      "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/lit-pptx/runtime/package-lock.json",
+      "kind": "fixture",
+      "versionParts": [
+        1,
+        0,
+        11
+      ],
+      "occurrences": 2,
+      "why": "npm resolved pako in the lit-pptx runtime, in its version field and tarball URL; this exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
     }
   ]
 }

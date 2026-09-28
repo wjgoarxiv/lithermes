@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-09-28T13:02:05.329Z",
+  "syncedAt": "2026-09-28T15:56:18.519Z",
   "source": "bundled-payload",
-  "sourceHash": "5574bf2c175cdda484aa7c0f00bd7d481b45e1ae96dc59a8da952dfd58d6e93e",
+  "sourceHash": "db0972998aedf0caec987922be11d3bcd0ec7986ff55d9474aaade18d3ca662c",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "d5e86062162e985d606b0ca4d8a53fdc6a4d527ddf63fb493a8ec693e9c00ca8"
+      "sha256": "1802ff4904f841e7da8db7ce0dbb4e8fd867ef1d94493e96dfb40091f7c74df8"
     },
     {
       "path": "__init__.py",
@@ -93,7 +93,7 @@
     },
     {
       "path": "humanizer_detector.py",
-      "sha256": "3dbd066ec213d0fe5e9c99e9d6b0a3a156c7174fec1d4ea901f0b7e5527beb6b"
+      "sha256": "bca68ebaad84ab2fec5a41a91f293abe9e194011669ef03386611c8412561e97"
     },
     {
       "path": "humanizer_ko_metrics.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "jev_hint.py",
-      "sha256": "1216f8494d58f8c27fe7ca4986d62e23822efaf8e9a14a9d50dda1e9318b139e"
+      "sha256": "77238cf88d875f3c1945ad26bf9699c81933711ff675dc19df48215d58884c33"
     },
     {
       "path": "knowledge.py",

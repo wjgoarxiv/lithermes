@@ -128,11 +128,13 @@ CLI/plugin name, not the npm package name.
   per session) and `_MIN_CONFIDENCE` tune it; `LITHERMES_JEV_TRACE=1` appends
   the redacted prompt's hash, ids and timings (no text, key or body) to Hermes home
   `lithermes/jev-trace.jsonl`. Status and doctor print `Jev skill hint: ...`;
-  when on, they add the last hinted skill id and latency (`on — last hint
-  lit-humanizer (0.43s)`) or `on — no hint yet`. The CLI runs in its own
+  when on, they add the last hinted skill id and latency of the session named
+  by `HERMES_SESSION_ID` (`on — last hint lit-humanizer (0.43s)`) or `on — no
+  hint yet`, and `on — no session` outside any session. The CLI runs in its own
   process, so an accepted hint also writes only that id, the latency and a
-  timestamp to Hermes home `lithermes/jev-last.json` (mode 0600, atomic).
-  Neither file is written through a symlink.
+  timestamp to Hermes home `lithermes/jev-last-<session hash>.json` (mode 0600,
+  atomic), one file per session, removed when the session ends. Neither file is
+  written through a symlink.
 - The `post_tool_call` hook is an observer — Hermes discards its return value — so
   it records the paths a completed `write_file` / `patch` call mutated and
   `pre_llm_call` renders them on the next turn. A source-code edit names

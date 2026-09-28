@@ -44,7 +44,7 @@ This checklist covers the 1.0.10 release.
 
 - [ ] The Jev skill hint is off by default and runs only when `LITHERMES_JEV=1` and the user's own `TYPESAFE_API_KEY` are both set; slash commands and prompts an existing route handles are left alone, and the hint grants no permission and starts no tool.
 - [ ] An eligible prompt is sent redacted and truncated to 2,000 characters, with one 1.5-second request that refuses redirects and no retry; any failure leaves the turn unchanged with one short note per session.
-- [ ] `hermes lithermes status` and `doctor` print the `Jev skill hint:` line, the first reply of each enabled session starts with `✦ Jev skill hint ON`, and `jev-last.json` and the opt-in trace hold no prompt text, key or response text and are never written through a symlink.
+- [ ] `hermes lithermes status` and `doctor` print the `Jev skill hint:` line, the first reply of each enabled session starts with `✦ Jev skill hint ON`, and the per-session `jev-last-*.json` files and the opt-in trace hold no prompt text, key or response text and are never written through a symlink.
 - [ ] The README, package README and privacy notes describe what is sent, the billing, and how to turn the hint off; the packed tarball stays under the 12 MiB cap.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass.
 
@@ -340,11 +340,11 @@ This is a local release candidate only; no publish, tag, or push is performed.
 - [ ] STOP before any publish, tag, marketplace action, or release creation.
 - [ ] Refresh `HANDOFF.md` only as local handoff state, not as a package payload.
 
-### HUMAN-ONLY release paths
+### HUMAN-ONLY release path
 
-Both paths require explicit approval. Never log an npm token or OTP.
+Releases are published by hand from a maintainer machine; no CI workflow publishes. Publication requires explicit approval. Never log an npm token or OTP.
 
-#### A. Local macOS or general npm
+#### Local npm publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
@@ -377,19 +377,3 @@ VERIFY_DIR="$(mktemp -d)"
   node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.10.tgz"
 rm -rf "$VERIFY_DIR"
 ```
-
-#### B. GitHub workflow
-
-- [ ] Use the stronger Linux descriptor-sealed exact-artifact option when exact inspected-to-published
-  bytes are required. Confirm the GitHub Actions secret `NPM_TOKEN` exists without printing it.
-- [ ] Confirm the GitHub `main` remote HEAD is the exact reviewed commit.
-- [ ] Confirm the package version and workflow input are both `1.0.10`.
-- [ ] Record explicit approval, then dispatch the tracked workflow:
-
-  ```sh
-  # HUMAN-ONLY — workflow prerequisites verified
-  git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
-  REVIEWED_SHA="$(git rev-parse --verify 'origin/main^{commit}')"
-  git show --no-patch --format='%H %s' "$REVIEWED_SHA"
-  gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"
-  ```

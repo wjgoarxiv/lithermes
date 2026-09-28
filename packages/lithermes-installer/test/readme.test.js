@@ -18,13 +18,13 @@ const localPublishCommand = "npm publish --access public";
 function assertCoverImage(text, label, repository) {
   const staticSrc = repository
     ? "./docs/assets/cover.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover.webp";
   const reducedMotionSrc = repository
     ? "./docs/assets/cover-motion-still.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion-still.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion-still.webp";
   const motionSrc = repository
     ? "./docs/assets/cover-motion.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion.webp";
   assert.ok(
     text.includes('<picture><source media="(prefers-reduced-motion: reduce)" srcset="' + reducedMotionSrc + '" /><img src="' + motionSrc + '" width="100%"'),
     label + " must use the animated cover and its reduced-motion still",
@@ -80,20 +80,22 @@ test("bilingual entry pages preserve the canonical banner and use repository art
     for (const name of ["README.md", "README_Ko-KR.md"]) {
       const file = path.join(directory, name);
       const text = fs.readFileSync(file, "utf8");
-      assertCanonicalHero(text, expectedHero, directory === repoRoot, file);
+      // The copyable banner belongs to the GitHub page; the npm card keeps only the mark image.
+      if (directory === repoRoot) assertCanonicalHero(text, expectedHero, true, file);
+      else assert.doesNotMatch(text, /<details>/, file + " is a short npm card without collapsible sections");
       const markSrc = directory === repoRoot
         ? "./docs/assets/readme/ascii-readme.svg"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ascii-readme.svg";
+        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/ascii-readme.svg";
       assert.ok(text.includes('<p align="center"><img src="' + markSrc + '" width="480"'), file + " must load its ASCII mark from its own surface");
       const coverSrc = directory === repoRoot
         ? "./docs/assets/cover-motion.webp"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp";
+        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion.webp";
       assert.ok(text.includes('src="' + coverSrc + '"'), file + " must resolve artwork from its own surface");
       assertCoverImage(text, file, directory === repoRoot);
       if (directory === repoRoot) {
         assert.doesNotMatch(text, /cdn\.jsdelivr/, "GitHub landing keeps repository-relative artwork");
       } else {
-        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.10\/readme-assets\//, "package landing must load artwork from the published tarball");
+        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.11\/readme-assets\//, "package landing must load artwork from the published tarball");
         assert.doesNotMatch(text, /raw\.githubusercontent/, "package landing must not depend on GitHub raw URLs");
       }
       assert.match(text, /```text\nlit [^\n]+\n```/, `${file} must show first bare lit use`);
@@ -163,17 +165,26 @@ const AB_VERDICT_WORDS = {
   ko: { lit: "LitHermes 승", tie: "무승부", baseline: "기준선 승" },
 };
 
-test("repository and package READMEs follow the shared bilingual skeleton", () => {
+const GITHUB_SECTIONS = {
+  en: ["Why LitHermes", "Install", "Quick start", "Skills", "Does it help? A one-line A/B", "How it works", "Beyond code", "The Ignition skin", "Commands", "Optional: Jev skill hint", "When something goes wrong", "More docs and contributing"],
+  ko: ["왜 LitHermes인가요", "설치", "빠른 시작", "스킬", "정말 도움이 되나요? 한 줄 요청 A/B", "작동 방식", "코드 밖의 결과물", "Ignition 스킨", "명령", "선택 기능: Jev 스킬 힌트", "문제가 생겼을 때", "더 읽을 문서와 기여"],
+};
+const NPM_SECTIONS = {
+  en: ["Install", "Your first task", "Routes you will use most", "Making more than code", "What changes after install", "Does it help?", "Optional: Jev skill hint", "Check, remove, stay safe", "Learn more"],
+  ko: ["설치", "첫 작업", "자주 쓰는 경로", "코드 밖의 결과물", "설치 후 달라지는 것", "정말 도움이 되나요?", "선택 기능: Jev 스킬 힌트", "확인, 삭제, 안전", "더 알아보기"],
+};
+
+test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
   const pages = [
-    [path.join(repoRoot, "README.md"), ["Install", "Quick start", "Key features", "Skills at a glance", "Simple-prompt A/B", "Commands and hooks", "Troubleshooting", "Links"]],
-    [path.join(packageRoot, "README.md"), ["Install", "Quick start", "Key features", "Skills at a glance", "Simple-prompt A/B", "Commands and hooks", "Troubleshooting", "Links"]],
-    [path.join(repoRoot, "README_Ko-KR.md"), ["설치", "빠른 시작", "핵심 기능", "스킬 한눈에 보기", "한 줄 요청 A/B", "명령과 훅", "문제 해결", "링크"]],
-    [path.join(packageRoot, "README_Ko-KR.md"), ["설치", "빠른 시작", "핵심 기능", "스킬 한눈에 보기", "한 줄 요청 A/B", "명령과 훅", "문제 해결", "링크"]],
+    [path.join(repoRoot, "README.md"), GITHUB_SECTIONS.en],
+    [path.join(packageRoot, "README.md"), NPM_SECTIONS.en],
+    [path.join(repoRoot, "README_Ko-KR.md"), GITHUB_SECTIONS.ko],
+    [path.join(packageRoot, "README_Ko-KR.md"), NPM_SECTIONS.ko],
   ];
   for (const [file, expected] of pages) {
     const text = fs.readFileSync(file, "utf8");
     const sections = [...text.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
-    assert.deepEqual(sections, expected, `${file} must use the shared section order`);
+    assert.deepEqual(sections, expected, `${file} must use its section order`);
     assert.match(text, /<picture>[\s\S]*cover-motion-still\.webp[\s\S]*cover-motion\.webp[\s\S]*<\/picture>/);
     assert.equal((text.match(/<img src="[^"]*cover\.webp"/g) || []).length, 0, `${file} must show only the motion cover, not the static robot cover`);
     assert.deepEqual([...text.matchAll(/^\| (S\d+) · /gm)].map((match) => match[1]), Object.keys(FINAL_AB_VERDICTS), `${file} must show every final A/B task`);
@@ -232,7 +243,12 @@ test("skill table and A/B captures ship as identical repository and package copi
     }
   }
   assert.equal(files.skills.length, 36, "one snapshot per user-facing skill");
-  for (const directory of [repoRoot, packageRoot]) {
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    // The npm card links to the GitHub gallery instead of repeating it.
+    const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
+    assert.doesNotMatch(card, /\/(?:ab-simple|skills)\/[a-z0-9-]+\.webp/, `packages/lithermes-installer/${name} must leave the gallery and A/B captures to GitHub`);
+  }
+  for (const directory of [repoRoot]) {
     for (const name of ["README.md", "README_Ko-KR.md"]) {
       const file = path.join(directory, name);
       const text = fs.readFileSync(file, "utf8");
@@ -240,7 +256,7 @@ test("skill table and A/B captures ship as identical repository and package copi
         const used = [...new Set([...text.matchAll(new RegExp(`/${folder}/([a-z0-9-]+\\.webp)`, "g"))].map((match) => match[1]))].sort();
         assert.deepEqual(used, files[folder], `${file} must show every ${folder} image and no missing one`);
       }
-      const skillsAt = text.indexOf(name === "README.md" ? "\n## Skills at a glance\n" : "\n## 스킬 한눈에 보기\n");
+      const skillsAt = text.indexOf(name === "README.md" ? "\n## Skills\n" : "\n## 스킬\n");
       const skillsEnd = text.indexOf("\n## ", skillsAt + 1);
       const rows = [...text.slice(skillsAt, skillsEnd).matchAll(/<td><img src="[^"]*\/skills\/([a-z0-9-]+)\.webp" width="240" alt="[^"]+" \/><\/td>\n<td><code>([a-z0-9-]+)<\/code>/g)];
       assert.equal(rows.length, 36, `${file} skill table must hold 36 illustrated rows`);
@@ -306,6 +322,29 @@ test("repository README links retain local approved artwork, motion and licensed
   }
 });
 
+test("npm READMEs are short install-first cards that send readers to the GitHub README", () => {
+  const install = "npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style";
+  for (const [name, githubReadme] of [
+    ["README.md", "https://github.com/wjgoarxiv/lithermes#readme"],
+    ["README_Ko-KR.md", "https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md"],
+  ]) {
+    const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
+    const full = fs.readFileSync(path.join(repoRoot, name), "utf8");
+    assert.ok(card.includes("](" + githubReadme + ")"), `${name} npm card must link its GitHub README`);
+    const headings = [...card.matchAll(/^## .+$/gm)];
+    assert.ok(headings.length >= 2, `${name} npm card needs sections`);
+    const installAt = card.indexOf(install);
+    assert.ok(installAt > headings[0].index && installAt < headings[1].index, `${name} npm card must put the install command in its first section`);
+    for (const [label, measure] of [["bytes", (text) => Buffer.byteLength(text)], ["words", (text) => text.split(/\s+/).filter(Boolean).length]]) {
+      const ratio = measure(card) / measure(full);
+      assert.ok(ratio >= 0.2 && ratio <= 0.5, `${name} npm card must stay a short card, not a copy of the GitHub page (${label} ratio ${ratio.toFixed(2)})`);
+    }
+    assert.notEqual(card.replace(/https:\/\/cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@[^/]+\/readme-assets\//g, ""), full, `${name} npm card must differ from the GitHub page`);
+    assert.equal(card.match(/^# .+$/m)?.[0], full.match(/^# .+$/m)?.[0], `${name} keeps the same name on both pages`);
+    assert.ok(card.includes("**Keep the work lit.**") && full.includes("**Keep the work lit.**"), `${name} keeps the same tagline on both pages`);
+  }
+});
+
 function localPublishPolicyErrors(text) {
   const errors = [];
   for (const command of findDirectNpmPublishCommands(text)) {
@@ -339,9 +378,9 @@ function localPublishPolicyErrors(text) {
     for (const [pattern, message] of [
       [/nonzero/i, "nonzero-result handling"],
       [/never blind-retry/i, "no blind retry rule"],
-      [/npm view @litfamily\/lithermes@1\.0\.10 version/, "exact-version registry query"],
+      [/npm view @litfamily\/lithermes@1\.0\.11 version/, "exact-version registry query"],
       [/published artifact/i, "published-artifact inspection"],
-      [/npm pack @litfamily\/lithermes@1\.0\.10/, "published-artifact download"],
+      [/npm pack @litfamily\/lithermes@1\.0\.11/, "published-artifact download"],
     ]) {
       if (!pattern.test(followUp)) errors.push(`missing nearby ${message}`);
     }
@@ -419,7 +458,7 @@ test("root README files present polished GitHub landing pages", () => {
     for (const required of [
       "https://github.com/wjgoarxiv/lithermes",
       "https://www.npmjs.com/package/@litfamily/lithermes",
-      "@litfamily/lithermes@1.0.10",
+      "@litfamily/lithermes@1.0.11",
       "Hermes Goal Tools",
       "PREPARING INSTALL",
       "INSTALL RECEIPT",
@@ -474,7 +513,7 @@ test("English and Korean root/package docs explain the bounded Node update notic
 test("package metadata points at the renamed GitHub repository", () => {
   const pkg = require(path.join(packageRoot, "package.json"));
   assert.equal(pkg.name, "@litfamily/lithermes");
-   assert.equal(pkg.version, "1.0.10");
+   assert.equal(pkg.version, "1.0.11");
   assert.equal(pkg.bin.lithermes, "bin/lithermes.js");
   assert.equal(pkg.repository.type, "git");
   assert.equal(pkg.repository.url, "git+https://github.com/wjgoarxiv/lithermes.git");
@@ -530,15 +569,13 @@ guard protects this path, but its inspected preflight archive is not byte-identi
 \`\`\`sh
 npm publish --access public
 \`\`\`
-After any nonzero result, npm view @litfamily\/lithermes@1.0.10 version and never blind-retry. After success,
-download the published artifact with npm pack @litfamily\/lithermes@1.0.10 and inspect it.
+After any nonzero result, npm view @litfamily\/lithermes@1.0.11 version and never blind-retry. After success,
+download the published artifact with npm pack @litfamily\/lithermes@1.0.11 and inspect it.
 `;
   assert.deepEqual(localPublishPolicyErrors(sanctioned), [], "a fully sanctioned HUMAN-ONLY block must pass");
 });
 
-test("the release checklist exposes both guarded HUMAN-ONLY publication paths", () => {
-  const capture = 'REVIEWED_SHA="$(git rev-parse --verify \'origin/main^{commit}\')"';
-  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"';
+test("the release checklist exposes one guarded HUMAN-ONLY publication path", () => {
   const docs = [
     ["RELEASE_CHECKLIST.md", read(path.join(repoRoot, "RELEASE_CHECKLIST.md"))],
   ];
@@ -549,25 +586,7 @@ test("the release checklist exposes both guarded HUMAN-ONLY publication paths", 
       `${label} must expose exactly one sanctioned local publication command`,
     );
     assert.deepEqual(localPublishPolicyErrors(text), [], `${label} has an unsafe local publication block`);
-    const dispatchAt = text.indexOf(dispatch);
-    assert.ok(dispatchAt >= 0, `${label} missing the approved release workflow dispatch`);
-    const captureAt = text.indexOf(capture);
-    assert.ok(captureAt >= 0 && captureAt < dispatchAt, `${label} must capture the reviewed origin/main commit before dispatch`);
-    const prerequisites = text.slice(Math.max(0, dispatchAt - 1400), dispatchAt);
-    assert.match(prerequisites, /HUMAN-ONLY/, `${label} must mark dispatch HUMAN-ONLY`);
-    assert.match(prerequisites, /remote HEAD/i, `${label} must require a remote-head check`);
-    assert.match(prerequisites, /version[^\n]*1\.0\.10/i, `${label} must require a version check`);
-    assert.match(prerequisites, /explicit(?:ly)?[^\n]*approv/i, `${label} must require explicit approval`);
-    assert.match(
-      prerequisites,
-      /^\s*git fetch --quiet origin refs\/heads\/main:refs\/remotes\/origin\/main$/m,
-      `${label} must refresh origin/main explicitly before capture`,
-    );
-    const workflowContext = text.slice(Math.max(0, dispatchAt - 1800), dispatchAt + 1200);
-    assert.match(workflowContext, /Linux/i, `${label} must identify the workflow as the Linux path`);
-    assert.match(workflowContext, /descriptor-sealed/i, `${label} must identify descriptor sealing`);
-    assert.match(workflowContext, /exact-artifact/i, `${label} must identify the exact-artifact guarantee`);
-    assert.match(workflowContext, /NPM_TOKEN/, `${label} must name the workflow credential prerequisite`);
+    assert.doesNotMatch(text, /gh workflow run/, `${label} must not dispatch a publish workflow`);
   }
 });
 
@@ -607,7 +626,7 @@ test("README files document Korean prose cleanup command boundaries", () => {
   ];
   for (const [file, text] of docs) {
     for (const required of [
-     "@litfamily/lithermes@1.0.10",
+     "@litfamily/lithermes@1.0.11",
       "lit-humanizer",
       "/lit-humanizer",
       "/lit-korean",

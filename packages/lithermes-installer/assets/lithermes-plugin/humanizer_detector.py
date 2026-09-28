@@ -20,7 +20,7 @@ VALID_SCOPES = {"line", "sentence", "document"}
 
 
 def _js_compatible_pattern(pattern: str) -> str:
-    """Port JavaScript ASCII word classes without narrowing Unicode ``\s``."""
+    r"""Port JavaScript ASCII word classes without narrowing Unicode ``\s``."""
     result: list[str] = []
     in_class = False
     index = 0

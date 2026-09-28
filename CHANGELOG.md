@@ -6,6 +6,9 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- The Jev skill hint now keeps its last hint per session, so two concurrent sessions no longer see each other's hint. Run `hermes lithermes status` or `doctor` inside a session to see that session's last hint; outside any session they report `on — no session`. Each session's small last-hint file is removed when the session ends.
+- Loading the plugin on Python 3.12 or later no longer prints an invalid escape sequence `SyntaxWarning`.
+
 ## [1.0.10] - 2026-09-28
 
 - Add an optional Jev skill hint, off by default. Turn it on with `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY`; a plain prompt can then get one advisory line naming the LitHermes skill that likely fits. The Hermes model still decides whether to load that skill.

@@ -1,7 +1,7 @@
 name: CI
 
 # No-publish gate. Runs on every push and PR. Contains NO publish step and NO
-# npm token — publishing is a separate, manual, version-guarded workflow.
+# npm token — releases are published by hand (see RELEASE_CHECKLIST.md).
 on:
   push:
     branches: ['**']

@@ -10,9 +10,14 @@ one visible note per session delivered through ``transform_llm_output``. When
 both switches are on, the first reply of each session also opens with one plain
 ``✦ Jev skill hint ON`` line so the user notices the feature is enabled.
 
-Status and doctor show the last accepted hint (skill id and latency only). They
-run as a separate ``hermes`` CLI process, so the hinting process also writes that
-pair, with a timestamp, to Hermes home ``lithermes/jev-last.json``.
+Status and doctor show the last accepted hint (skill id and latency only) of
+one session. They run as a separate ``hermes`` CLI process, so the hinting
+process also writes that pair, with a timestamp, to Hermes home
+``lithermes/jev-last-<session hash>.json``, one file per session, removed when
+the session ends. Status reads the file of the session named by
+``HERMES_SESSION_ID``, which Hermes sets for commands run inside a session;
+outside a session it shows no hint, so concurrent sessions never see each
+other's.
 
 The key is read from the environment and used only in the request header. It
 is never logged, traced, stored, or placed in an error or note.
@@ -41,6 +46,7 @@ except (ImportError, ModuleNotFoundError):
 
 FLAG = "LITHERMES_JEV"
 KEY_ENV = "TYPESAFE_API_KEY"
+SESSION_ENV = "HERMES_SESSION_ID"
 ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 DEFAULT_MODEL = "jev-1.13.0"
 DEFAULT_TIMEOUT_MS = 1500
@@ -53,7 +59,7 @@ MAX_DESCRIPTION_CHARS = 300
 MAX_REQUEST_BYTES = 64 * 1024
 MAX_RESPONSE_BYTES = 64 * 1024
 MAX_TRACKED_SESSIONS = 256
-LAST_HINT_FILE = "jev-last.json"
+LAST_HINT_PREFIX = "jev-last-"
 MAX_LAST_HINT_BYTES = 4096
 NONE_ID = "none"
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
@@ -115,7 +121,7 @@ _CALLS: dict[str, int] = {}
 _NOTED: dict[str, bool] = {}
 _PENDING_NOTE: dict[str, str] = {}
 _BANNERED: dict[str, bool] = {}
-_LAST_HINT: dict[str, Any] = {}
+_LAST_HINT: dict[str, dict[str, Any]] = {}
 _SKILL_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,63}")
 
 
@@ -140,8 +146,10 @@ def status(env: dict[str, str] | None = None) -> str:
     return "on"
 
 
-def _last_hint_path() -> Path:
-    return get_hermes_home() / "lithermes" / LAST_HINT_FILE
+def _last_hint_path(session: str) -> Path:
+    # A hash keeps the raw session id out of the file name and out of the path.
+    key = hashlib.sha256(session.encode("utf-8")).hexdigest()[:32]
+    return get_hermes_home() / "lithermes" / f"{LAST_HINT_PREFIX}{key}.json"
 
 
 def _refuse_symlink(path: Path) -> None:
@@ -159,12 +167,14 @@ def _append_private(path: Path, payload: dict[str, Any]) -> None:
         handle.write(json.dumps(redact_obj(payload), sort_keys=True) + "\n")
 
 
-def _record_hint(skill_id: str, latency_ms: int) -> None:
-    """Keep the last accepted hint for status and doctor: id, latency and time only."""
+def _record_hint(session: str, skill_id: str, latency_ms: int) -> None:
+    """Keep the session's last accepted hint for status and doctor: id, latency and time only."""
+    if not session:
+        return
     record = {"skill": skill_id, "latency_ms": latency_ms, "timestamp": utc_now().isoformat()}
-    _LAST_HINT.clear()
-    _LAST_HINT.update(record)
-    path = _last_hint_path()
+    _LAST_HINT[session] = record
+    _bound_sessions()
+    path = _last_hint_path(session)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
     try:
         assert_within_isolation(path)
@@ -182,12 +192,14 @@ def _record_hint(skill_id: str, latency_ms: int) -> None:
             temporary.unlink()
 
 
-def last_hint() -> tuple[str, int] | None:
-    """Return (skill id, latency ms) of the last accepted hint, or None when unknown or unreadable."""
-    record: Any = dict(_LAST_HINT)
+def last_hint(session: str) -> tuple[str, int] | None:
+    """Return (skill id, latency ms) of the session's last accepted hint, or None when unknown or unreadable."""
+    if not session:
+        return None
+    record: Any = dict(_LAST_HINT.get(session) or {})
     if not record:
         try:
-            with _last_hint_path().open("rb") as handle:
+            with _last_hint_path(session).open("rb") as handle:
                 record = json.loads(handle.read(MAX_LAST_HINT_BYTES + 1)[:MAX_LAST_HINT_BYTES].decode("utf-8"))
         except (OSError, ValueError, UnicodeDecodeError):
             return None
@@ -202,10 +214,14 @@ def last_hint() -> tuple[str, int] | None:
 
 
 def status_line(env: dict[str, str] | None = None) -> str:
-    state = status(env)
+    values = _env(env)
+    state = status(values)
     if state != "on":
         return f"Jev skill hint: {state}"
-    last = last_hint()
+    session = (values.get(SESSION_ENV) or "").strip()
+    if not session:
+        return "Jev skill hint: on — no session (last hints are per session)"
+    last = last_hint(session)
     if last is None:
         return "Jev skill hint: on — no hint yet"
     skill, latency_ms = last
@@ -327,7 +343,7 @@ def _note_failure(session_id: str, reason: str) -> None:
 
 
 def _bound_sessions() -> None:
-    for ledger in (_CALLS, _NOTED, _PENDING_NOTE, _BANNERED):
+    for ledger in (_CALLS, _NOTED, _PENDING_NOTE, _BANNERED, _LAST_HINT):
         while len(ledger) > MAX_TRACKED_SESSIONS:
             ledger.pop(next(iter(ledger)))
 
@@ -435,7 +451,7 @@ def pre_llm_call(
     )
     if not choice:
         return ""
-    _record_hint(choice, latency_ms)
+    _record_hint(session, choice, latency_ms)
     return hint_line(choice)
 
 
@@ -459,3 +475,9 @@ def release_session(session_id: str) -> None:
     _NOTED.pop(session, None)
     _PENDING_NOTE.pop(session, None)
     _BANNERED.pop(session, None)
+    _LAST_HINT.pop(session, None)
+    if session:
+        with contextlib.suppress(OSError, RuntimeError):  # RuntimeError: the isolation root refused the path
+            path = _last_hint_path(session)
+            assert_within_isolation(path)
+            path.unlink()  # removes a planted symlink itself, never its target

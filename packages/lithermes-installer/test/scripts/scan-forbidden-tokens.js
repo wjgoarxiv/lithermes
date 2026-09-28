@@ -32,8 +32,13 @@ const FAMILY_PARITY_RELATIVE = path.join("tools", "payload-substance-parity.json
 const FAMILY_PARITY_SCHEMA = "litfamily.payload-parity/v1";
 const FAMILY_PARITY_PRODUCTS = "p27,p28,p31,p32,p33";
 const MAX_PACK_FILE_BYTES = 4 * 1024 * 1024;
+// The scan reads each member with its own tar call, so its run time grows with the
+// member count and with machine load. The deadline is a base plus an allowance per
+// listed member, and each tar call is capped on its own so a hang still fails fast.
 const DEFAULT_PACK_LIMITS = Object.freeze({
   deadlineMs: 120000,
+  perMemberMs: 250,
+  spawnTimeoutMs: 60000,
   maxArchiveBytes: 12 * 1024 * 1024,
   maxFileBytes: MAX_PACK_FILE_BYTES,
   maxMembers: 2048,
@@ -490,7 +495,7 @@ function portablePackKey(relative) {
 
 function readPackArchiveMembers(archive, requestedLimits = {}) {
   const limits = { ...DEFAULT_PACK_LIMITS, ...requestedLimits };
-  const deadline = requestedLimits.deadlineAt ?? Date.now() + limits.deadlineMs;
+  let deadline = requestedLimits.deadlineAt ?? Date.now() + limits.deadlineMs;
   const remaining = () => {
     const timeout = deadline - Date.now();
     if (timeout <= 0) throw packScanError("pack-tar-deadline");
@@ -500,7 +505,7 @@ function readPackArchiveMembers(archive, requestedLimits = {}) {
     const result = spawnSync("tar", args, {
       encoding,
       maxBuffer,
-      timeout: remaining(),
+      timeout: Math.min(remaining(), limits.spawnTimeoutMs),
     });
     if (result.error?.code === "ETIMEDOUT") throw packScanError("pack-tar-deadline");
     if (result.error || result.status !== 0) throw packScanError("pack-tar-unreadable");
@@ -521,6 +526,7 @@ function readPackArchiveMembers(archive, requestedLimits = {}) {
   const listed = runTar(["-tzf", archive], "utf8", 2 * 1024 * 1024);
   const names = listed.stdout.split(/\r?\n/).filter(Boolean);
   if (names.length > limits.maxMembers) throw packScanError("pack-tar-member-limit");
+  deadline += names.length * limits.perMemberMs;
   const verbose = runTar(["-tvzf", archive], "utf8", 2 * 1024 * 1024);
   const details = verbose.stdout.split(/\r?\n/).filter(Boolean);
   if (names.length !== details.length || names.some((name) => name.includes("\ufffd"))) {
@@ -584,7 +590,7 @@ function readPackArchiveMembers(archive, requestedLimits = {}) {
   }
 
   const filePaths = [...new Set(records.map((record) => record.path))];
-  if (hits.length) return { hits, filePaths, regularFiles: [] };
+  if (hits.length) return { deadlineAt: deadline, hits, filePaths, regularFiles: [] };
   const regularFiles = [];
   let totalBytes = 0;
   for (const record of records) {
@@ -617,7 +623,7 @@ function readPackArchiveMembers(archive, requestedLimits = {}) {
     throw packScanError("pack-tar-unreadable");
   }
   remaining();
-  return { hits, filePaths, regularFiles };
+  return { deadlineAt: deadline, hits, filePaths, regularFiles };
 }
 
 function payloadPackProjection(entries, root) {
@@ -732,7 +738,7 @@ function capturePackArchiveSnapshot(archive, limits, snapshotOut) {
 
 function scanPackSnapshot(archive, root, options = {}) {
   const limits = { ...DEFAULT_PACK_LIMITS, ...(options.limits || {}) };
-  const deadlineAt = options.deadlineAt ?? Date.now() + limits.deadlineMs;
+  let deadlineAt = options.deadlineAt ?? Date.now() + limits.deadlineMs;
   const deadlineHit = () => Date.now() >= deadlineAt;
   let archiveRead;
   try {
@@ -740,6 +746,7 @@ function scanPackSnapshot(archive, root, options = {}) {
   } catch (error) {
     return [{ path: "<pack-tar>", where: error?.where || "pack-tar-unreadable" }];
   }
+  deadlineAt = archiveRead.deadlineAt;
   if (deadlineHit()) return [{ path: "<pack-tar>", where: "pack-tar-deadline" }];
   const files = archiveRead.filePaths;
   const projection = canonicalPackProjection(files, root);
