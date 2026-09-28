@@ -6,7 +6,12 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
-- Add an optional Jev skill hint, off by default: with `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY`, a plain prompt can get one advisory line naming the LitHermes skill that likely fits. Enabling it sends each eligible prompt, redacted and truncated, to TypeSafe. `hermes lithermes status` and `doctor` show the last hinted skill and its latency, and the first reply of each session starts with `✦ Jev skill hint ON` while it is enabled.
+## [1.0.10] - 2026-09-28
+
+- Add an optional Jev skill hint, off by default. Turn it on with `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY`; a plain prompt can then get one advisory line naming the LitHermes skill that likely fits. The Hermes model still decides whether to load that skill.
+- While the hint is on, each eligible prompt is sent to TypeSafe, cut to 2,000 characters, with home paths, email addresses and token-shaped strings redacted. Text without a token shape is sent as written. Nothing else from the session is sent, and TypeSafe bills your account.
+- The first reply of each session starts with `✦ Jev skill hint ON` while the hint is enabled. `hermes lithermes status` and `doctor` show whether it is on and name the last hinted skill with its latency.
+- A failed or slow hint request never blocks the turn: it gives up after 1.5 seconds without retrying, follows no redirects, and leaves one short note per session. The local last-hint and trace files hold no prompt text or key and are never written through a symlink.
 
 ## [1.0.9] - 2026-09-28
 

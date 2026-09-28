@@ -1,6 +1,6 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
 
 <details>
 <summary>Copy ASCII logo</summary>
@@ -30,19 +30,19 @@
 
 </details>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lithermes-wordmark.svg" width="480" alt="LITHERMES display type" /></p>
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lithermes-wordmark.svg" width="480" alt="LITHERMES display type" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/badge-version.svg" alt="1.0.9" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/badge-version.svg" alt="1.0.10" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-book-open.svg" width="16" alt="" /> Docs</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-book-open.svg" width="16" alt="" /> Docs</a> &nbsp;
 <a href="#install">Install</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -51,11 +51,11 @@
 
 **What it is:** LitHermes connects planning, execution, review, and handoff inside **Hermes Agent**.
 
-[한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/README_Ko-KR.md) · [npm](https://www.npmjs.com/package/@litfamily/lithermes) · [GitHub](https://github.com/wjgoarxiv/lithermes)
+[한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/README_Ko-KR.md) · [npm](https://www.npmjs.com/package/@litfamily/lithermes) · [GitHub](https://github.com/wjgoarxiv/lithermes)
 
 ## Install
 
-Source version: `@litfamily/lithermes@1.0.9`. Have Hermes Agent and Node.js 18+ installed, with write access to your Hermes home (normally `~/.hermes`).
+Source version: `@litfamily/lithermes@1.0.10`. Have Hermes Agent and Node.js 18+ installed, with write access to your Hermes home (normally `~/.hermes`).
 
 The installer targets your Hermes home. For an isolated trial, set `HERMES_HOME` to a new empty directory before installation and use that same value when starting Hermes. Keep your existing home and settings. `--no-patch-installed-hermes` also prevents compatibility edits to the detected host installation outside that profile.
 
@@ -153,182 +153,182 @@ Every skill you can call in LitHermes, with the route that starts it. Each one a
 <table>
 <tr><th>What it looks like</th><th>Skill</th><th>What you get</th></tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litwork.webp" width="240" alt="Add lit to a request. A notepad plus a strict RED, GREEN, surface, cleanup loop for each criterion." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litwork.webp" width="240" alt="Add lit to a request. A notepad plus a strict RED, GREEN, surface, cleanup loop for each criterion." /></td>
 <td><code>litwork</code><br /><sub><code>lit &lt;task&gt;</code> · <code>litwork &lt;task&gt;</code></sub></td>
 <td>Add <code>lit</code> to a request. A notepad plus a strict RED, GREEN, surface, cleanup loop for each criterion.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-plan.webp" width="240" alt="A plan file with numbered task rows that start-work can execute. Nothing is edited yet." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-plan.webp" width="240" alt="A plan file with numbered task rows that start-work can execute. Nothing is edited yet." /></td>
 <td><code>lit-plan</code><br /><sub><code>lit plan &lt;what&gt;</code> · <code>/lit-plan</code></sub></td>
 <td>A plan file with numbered task rows that <code>start-work</code> can execute. Nothing is edited yet.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/start-work.webp" width="240" alt="Runs a plan row by row. A box is checked only after all five gates pass." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/start-work.webp" width="240" alt="Runs a plan row by row. A box is checked only after all five gates pass." /></td>
 <td><code>start-work</code><br /><sub><code>/start-work &lt;approved-plan&gt;</code></sub></td>
 <td>Runs a plan row by row. A box is checked only after all five gates pass.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/review-work.webp" width="240" alt="Five independent review lanes read the same change and report findings first." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/review-work.webp" width="240" alt="Five independent review lanes read the same change and report findings first." /></td>
 <td><code>review-work</code><br /><sub><code>lit review &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
 <td>Five independent review lanes read the same change and report findings first.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litgoal.webp" width="240" alt="One objective with checkable criteria, kept on disk so the next session can pick it up." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litgoal.webp" width="240" alt="One objective with checkable criteria, kept on disk so the next session can pick it up." /></td>
 <td><code>litgoal</code><br /><sub><code>lit goal &lt;outcome&gt;</code> · <code>/litgoal</code></sub></td>
 <td>One objective with checkable criteria, kept on disk so the next session can pick it up.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-recap.webp" width="240" alt="A read-only summary: done, in progress, blocked, where the evidence is, what comes next." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-recap.webp" width="240" alt="A read-only summary: done, in progress, blocked, where the evidence is, what comes next." /></td>
 <td><code>lit-recap</code><br /><sub><code>lit-recap</code></sub></td>
 <td>A read-only summary: done, in progress, blocked, where the evidence is, what comes next.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-handoff.webp" width="240" alt="Type handoff to get a continuation file the next session can read and resume from." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-handoff.webp" width="240" alt="Type handoff to get a continuation file the next session can read and resume from." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td>Type <code>handoff</code> to get a continuation file the next session can read and resume from.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/deep-interview.webp" width="240" alt="One question at a time until the idea is clear enough to build. A meter shows how much is still vague." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/deep-interview.webp" width="240" alt="One question at a time until the idea is clear enough to build. A meter shows how much is still vague." /></td>
 <td><code>deep-interview</code><br /><sub><code>deep-interview &lt;idea&gt;</code> · <code>/deep-interview</code></sub></td>
 <td>One question at a time until the idea is clear enough to build. A meter shows how much is still vague.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litresearch.webp" width="240" alt="Splits a research question, sends parallel searchers and follows every lead before answering with sources." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litresearch.webp" width="240" alt="Splits a research question, sends parallel searchers and follows every lead before answering with sources." /></td>
 <td><code>litresearch</code><br /><sub><code>lit research &lt;question&gt;</code></sub></td>
 <td>Splits a research question, sends parallel searchers and follows every lead before answering with sources.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-crucible.webp" width="240" alt="Pressure-tests a brief before planning. Only the risks that survive critique reach the plan." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-crucible.webp" width="240" alt="Pressure-tests a brief before planning. Only the risks that survive critique reach the plan." /></td>
 <td><code>lit-crucible</code><br /><sub><code>lit-crucible &lt;brief&gt;</code></sub></td>
 <td>Pressure-tests a brief before planning. Only the risks that survive critique reach the plan.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-init.webp" width="240" alt="Maps a repository into a root AGENTS.md and short guides for the folders that need one." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-init.webp" width="240" alt="Maps a repository into a root AGENTS.md and short guides for the folders that need one." /></td>
 <td><code>lit-init</code><br /><sub><code>lit-init</code></sub></td>
 <td>Maps a repository into a root AGENTS.md and short guides for the folders that need one.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-comprehend.webp" width="240" alt="An explainer page for agent-written work: intuition first, then the walkthrough, then a short quiz." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-comprehend.webp" width="240" alt="An explainer page for agent-written work: intuition first, then the walkthrough, then a short quiz." /></td>
 <td><code>lit-comprehend</code><br /><sub><code>lit-comprehend</code> · <code>comprehend &lt;range&gt;</code></sub></td>
 <td>An explainer page for agent-written work: intuition first, then the walkthrough, then a short quiz.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-humanizer.webp" width="240" alt="Rewrites stiff model prose in English or Korean. Facts and hedges stay, and no file is edited on its own." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-humanizer.webp" width="240" alt="Rewrites stiff model prose in English or Korean. Facts and hedges stay, and no file is edited on its own." /></td>
 <td><code>lit-humanizer</code><br /><sub><code>humanizer &lt;text&gt;</code> · <code>/lit-humanizer</code></sub></td>
 <td>Rewrites stiff model prose in English or Korean. Facts and hedges stay, and no file is edited on its own.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-diagram-drawer.webp" width="240" alt="A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-diagram-drawer.webp" width="240" alt="A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports." /></td>
 <td><code>lit-diagram-drawer</code><br /><sub><code>lit-diagram-drawer &lt;brief&gt;</code> · <code>/lit-diagram-drawer</code></sub></td>
 <td>A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td>Ask for slides with <code>lit</code> and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-docx.webp" width="240" alt="Ask for a report with lit and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-docx.webp" width="240" alt="Ask for a report with lit and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow." /></td>
 <td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
 <td>Ask for a report with <code>lit</code> and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/frontend-ui-ux.webp" width="240" alt="Builds a working interface, then the installed measured probe renders it in seven views: four widths, dark, reduced motion and 200% zoom." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/frontend-ui-ux.webp" width="240" alt="Builds a working interface, then the installed measured probe renders it in seven views: four widths, dark, reduced motion and 200% zoom." /></td>
 <td><code>frontend-ui-ux</code><br /><sub><code>lit design &lt;target&gt;</code> · <code>frontend-ui-ux &lt;target&gt;</code></sub></td>
 <td>Builds a working interface, then the installed measured probe renders it in seven views: four widths, dark, reduced motion and 200% zoom.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/readme-studio.webp" width="240" alt="A factual README with a moving cover, checked at phone and desktop widths in light and dark." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/readme-studio.webp" width="240" alt="A factual README with a moving cover, checked at phone and desktop widths in light and dark." /></td>
 <td><code>readme-studio</code><br /><sub><code>readme-studio &lt;scope&gt;</code></sub></td>
 <td>A factual README with a moving cover, checked at phone and desktop widths in light and dark.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-typographic-motion.webp" width="240" alt="Ask for a video with lit. A treatment comes first, then drawn scenes or moving type, a generated sound bed and a gate before the film is delivered." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-typographic-motion.webp" width="240" alt="Ask for a video with lit. A treatment comes first, then drawn scenes or moving type, a generated sound bed and a gate before the film is delivered." /></td>
 <td><code>lit-typographic-motion</code><br /><sub><code>lit-typographic-motion &lt;request&gt;</code> · <code>/lit-typographic-motion</code></sub></td>
 <td>Ask for a video with <code>lit</code>. A treatment comes first, then drawn scenes or moving type, a generated sound bed and a gate before the film is delivered.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-scientific-visualization.webp" width="240" alt="A journal-sized figure with vector and 600 DPI exports. The chart type follows the data." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-scientific-visualization.webp" width="240" alt="A journal-sized figure with vector and 600 DPI exports. The chart type follows the data." /></td>
 <td><code>lit-scientific-visualization</code><br /><sub><code>lit-scientific-visualization</code> · <code>/lit-scientific-visualization</code></sub></td>
 <td>A journal-sized figure with vector and 600 DPI exports. The chart type follows the data.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/visual-qa.webp" width="240" alt="Checks a real screen at each viewport and returns an honest verdict, or names exactly what blocked it." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/visual-qa.webp" width="240" alt="Checks a real screen at each viewport and returns an honest verdict, or names exactly what blocked it." /></td>
 <td><code>visual-qa</code><br /><sub><code>visual-qa &lt;target&gt;</code></sub></td>
 <td>Checks a real screen at each viewport and returns an honest verdict, or names exactly what blocked it.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/browser-drive.webp" width="240" alt="Drives a real page after verifying the browser driver. If there is none, it says so." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/browser-drive.webp" width="240" alt="Drives a real page after verifying the browser driver. If there is none, it says so." /></td>
 <td><code>browser-drive</code><br /><sub><code>browser-drive &lt;task&gt;</code></sub></td>
 <td>Drives a real page after verifying the browser driver. If there is none, it says so.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/structural-search.webp" width="240" alt="Finds code by its syntax shape, not its text, and previews rewrites before applying them." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/structural-search.webp" width="240" alt="Finds code by its syntax shape, not its text, and previews rewrites before applying them." /></td>
 <td><code>structural-search</code><br /><sub><code>lit structural &lt;pattern&gt;</code> · <code>structural-search &lt;pattern&gt;</code></sub></td>
 <td>Finds code by its syntax shape, not its text, and previews rewrites before applying them.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/wikify.webp" width="240" alt="Keeps reviewed project knowledge on disk and answers later questions from it, with sources." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/wikify.webp" width="240" alt="Keeps reviewed project knowledge on disk and answers later questions from it, with sources." /></td>
 <td><code>wikify</code><br /><sub><code>wikify &lt;mode&gt;</code> · <code>lit wikify &lt;mode&gt;</code></sub></td>
 <td>Keeps reviewed project knowledge on disk and answers later questions from it, with sources.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/debugging.webp" width="240" alt="Reproduces the bug, tests at least three explanations, and fixes only the confirmed cause." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/debugging.webp" width="240" alt="Reproduces the bug, tests at least three explanations, and fixes only the confirmed cause." /></td>
 <td><code>debugging</code><br /><sub><code>lit debug &lt;symptom&gt;</code> · <code>debugging &lt;symptom&gt;</code></sub></td>
 <td>Reproduces the bug, tests at least three explanations, and fixes only the confirmed cause.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/refactor.webp" width="240" alt="Restructures code while tests pin its behavior before and after every step." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/refactor.webp" width="240" alt="Restructures code while tests pin its behavior before and after every step." /></td>
 <td><code>refactor</code><br /><sub><code>lit refactor &lt;target&gt;</code> · <code>refactor &lt;target&gt;</code></sub></td>
 <td>Restructures code while tests pin its behavior before and after every step.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-burnoff.webp" width="240" alt="Cleans AI-written bloat out of a change set after tests lock what it does." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-burnoff.webp" width="240" alt="Cleans AI-written bloat out of a change set after tests lock what it does." /></td>
 <td><code>lit-burnoff</code><br /><sub><code>lit slop &lt;scope&gt;</code></sub></td>
 <td>Cleans AI-written bloat out of a change set after tests lock what it does.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-burnoff-file.webp" width="240" alt="The same cleanup for one file: fewer narrating comments, less defensive noise, flatter code." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-burnoff-file.webp" width="240" alt="The same cleanup for one file: fewer narrating comments, less defensive noise, flatter code." /></td>
 <td><code>lit-burnoff-file</code><br /><sub><code>ask to clean one file</code></sub></td>
 <td>The same cleanup for one file: fewer narrating comments, less defensive noise, flatter code.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-code.webp" width="240" alt="Strict implementation rules: tests first, typed boundaries, small files." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-code.webp" width="240" alt="Strict implementation rules: tests first, typed boundaries, small files." /></td>
 <td><code>lit-code</code><br /><sub><code>ask for strict implementation</code></sub></td>
 <td>Strict implementation rules: tests first, typed boundaries, small files.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-commit.webp" width="240" alt="Splits your changes into atomic commits in the repo's own style and leaves unrelated work alone." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-commit.webp" width="240" alt="Splits your changes into atomic commits in the repo's own style and leaves unrelated work alone." /></td>
 <td><code>lit-commit</code><br /><sub><code>lit git &lt;task&gt;</code></sub></td>
 <td>Splits your changes into atomic commits in the repo's own style and leaves unrelated work alone.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lsp-setup.webp" width="240" alt="Sets up a language server for your language and proves diagnostics really work." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lsp-setup.webp" width="240" alt="Sets up a language server for your language and proves diagnostics really work." /></td>
 <td><code>lsp-setup</code><br /><sub><code>lsp-setup &lt;language&gt;</code></sub></td>
 <td>Sets up a language server for your language and proves diagnostics really work.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lsp.webp" width="240" alt="Uses Hermes' language server for diagnostics, references and rename checks when you ask." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lsp.webp" width="240" alt="Uses Hermes' language server for diagnostics, references and rename checks when you ask." /></td>
 <td><code>lsp</code><br /><sub><code>lsp &lt;request&gt;</code></sub></td>
 <td>Uses Hermes' language server for diagnostics, references and rename checks when you ask.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/rules.webp" width="240" alt="Explains which rule files Hermes loads, and when." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/rules.webp" width="240" alt="Explains which rule files Hermes loads, and when." /></td>
 <td><code>rules</code><br /><sub><code>rules &lt;question&gt;</code></sub></td>
 <td>Explains which rule files Hermes loads, and when.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/comment-checker.webp" width="240" alt="Reviews the comments an edit added: reasons stay, narration goes. It also runs after source edits." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/comment-checker.webp" width="240" alt="Reviews the comments an edit added: reasons stay, narration goes. It also runs after source edits." /></td>
 <td><code>comment-checker</code><br /><sub><code>comment-checker</code></sub></td>
 <td>Reviews the comments an edit added: reasons stay, narration goes. It also runs after source edits.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/autoresearch.webp" width="240" alt="An approved, budgeted experiment loop. Each round changes one thing and keeps or reverts it." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/autoresearch.webp" width="240" alt="An approved, budgeted experiment loop. Each round changes one thing and keeps or reverts it." /></td>
 <td><code>autoresearch</code><br /><sub><code>autoresearch &lt;mode&gt;</code></sub></td>
 <td>An approved, budgeted experiment loop. Each round changes one thing and keeps or reverts it.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/autoconference.webp" width="240" alt="A budgeted research conference: separate researchers, reviewers, and a synthesis that keeps disagreement." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/autoconference.webp" width="240" alt="A budgeted research conference: separate researchers, reviewers, and a synthesis that keeps disagreement." /></td>
 <td><code>autoconference</code><br /><sub><code>autoconference &lt;mode&gt;</code></sub></td>
 <td>A budgeted research conference: separate researchers, reviewers, and a synthesis that keeps disagreement.</td>
 </tr>
@@ -366,23 +366,23 @@ The motion cover at the top was made with the LitFamily motion skill. That skill
 
 | Baseline | LitHermes |
 |---|---|
-| ![S3 baseline budget dashboard, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s3-ui-baseline-desktop.webp) | ![S3 LitHermes budget dashboard, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s3-ui-lithermes-desktop.webp) |
+| ![S3 baseline budget dashboard, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s3-ui-baseline-desktop.webp) | ![S3 LitHermes budget dashboard, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s3-ui-lithermes-desktop.webp) |
 
 **S4 · LitHermes won.** LitHermes built a tabbed menu with items and prices, six distinct photos and an arched hero; the baseline menu was three mood cards, and it reused one interior photo. Only the baseline gave location and opening hours, and the page check found 7 clipped or off-screen text boxes on the LitHermes page against none on the baseline.
 
 | Baseline | LitHermes |
 |---|---|
-| ![S4 baseline café landing page, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s4-ui-baseline-desktop.webp) | ![S4 LitHermes café landing page, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s4-ui-lithermes-desktop.webp) |
+| ![S4 baseline café landing page, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s4-ui-baseline-desktop.webp) | ![S4 LitHermes café landing page, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s4-ui-lithermes-desktop.webp) |
 
 **S5 · LitHermes won.** Both arms got all 12 checked source facts right. LitHermes noticed that the 2026 review and council deadlines had already passed, where the baseline listed them as upcoming tasks, and it added points the sources support, such as the gap between weekend hub and weekday van use. The baseline's slides are the better designed ones; the LitHermes deck is a plain default template.
 
 Baseline:
 
-![S5 baseline slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s5-office-baseline-slides.webp)
+![S5 baseline slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s5-office-baseline-slides.webp)
 
 LitHermes:
 
-![S5 LitHermes slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s5-office-lithermes-slides.webp)
+![S5 LitHermes slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s5-office-lithermes-slides.webp)
 
 **S6 · LitHermes won (judge: tie).** LitHermes found 3 of 10 reference facts against 1, every link it gave pointed to an official source (a quarter of the baseline's did), and it covered npm 11 applying `--ignore-scripts` to `prepare`, Undici 7 and the dropped ARMv7 builds. The baseline listed more API details but presented the permission-flag rename as new in 24, which the judge called misleading.
 
@@ -390,29 +390,29 @@ LitHermes:
 
 | Baseline | LitHermes |
 |---|---|
-| ASCII boxes in chat; no rendered file | ![S7 LitHermes order, payment and shipping diagram](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s7-lithermes-diagram.webp) |
+| ASCII boxes in chat; no rendered file | ![S7 LitHermes order, payment and shipping diagram](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s7-lithermes-diagram.webp) |
 
 **S8 · LitHermes won (judge: baseline won).** The prompt gave no company and no figures. The baseline made a 7-slide template with placeholders; LitHermes made an 8-slide deck with three charts for a fictional company and marked every figure as an assumed example. The judge preferred the baseline's ready-to-fill template and found the LitHermes charts sparse, without data labels; the maintainer preferred the LitHermes deck.
 
 Baseline:
 
-![S8 baseline slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s8-office-baseline-slides.webp)
+![S8 baseline slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s8-office-baseline-slides.webp)
 
 LitHermes:
 
-![S8 LitHermes slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s8-office-lithermes-slides.webp)
+![S8 LitHermes slides](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s8-office-lithermes-slides.webp)
 
 **S9 · LitHermes won.** The baseline asked which product to plan and wrote no document. LitHermes wrote a 3-page Word plan for a fictional modular desk tray, with the customer problem, price assumptions, a validation schedule and a production decision rule, and the judge found its break-even arithmetic correct.
 
 | Baseline | LitHermes |
 |---|---|
-| No document; it asked which product to plan | ![S9 LitHermes product plan, first pages](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s9-office-lithermes-pages.webp) |
+| No document; it asked which product to plan | ![S9 LitHermes product plan, first pages](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s9-office-lithermes-pages.webp) |
 
 **S11 · LitHermes won (judge: tie).** LitHermes delivered an app with a date overview, a people filter, search, 30-minute slots and four passing logic tests. The judge found the baseline's single timeline across all rooms clearer and noted that it opens straight from `index.html`, while the LitHermes app needs npm and a local server and puts an illustrated banner above the schedule. The maintainer preferred the LitHermes app.
 
 | Baseline | LitHermes |
 |---|---|
-| ![S11 baseline meeting-room booking app, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s11-ui-baseline-desktop.webp) | ![S11 LitHermes meeting-room booking app, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s11-ui-lithermes-desktop.webp) |
+| ![S11 baseline meeting-room booking app, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s11-ui-baseline-desktop.webp) | ![S11 LitHermes meeting-room booking app, desktop](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s11-ui-lithermes-desktop.webp) |
 
 Image URLs are pinned candidate release paths; they do not imply public availability before a separately approved package release.
 

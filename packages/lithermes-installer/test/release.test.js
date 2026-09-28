@@ -153,7 +153,7 @@ test("CHANGELOG documents the 0.8.14 hyperplan release prep", () => {
 test("CHANGELOG assigns the notifier and skill integrity fixes to 0.8.31", () => {
   const text = read("CHANGELOG.md");
   const unreleasedStart = text.indexOf("## [Unreleased]");
-  const currentReleaseStart = text.indexOf("## [1.0.9]");
+  const currentReleaseStart = text.indexOf("## [1.0.10]");
   const releaseStart = text.indexOf("## [0.8.31]");
   const nextReleaseStart = text.indexOf("## [0.8.30]");
   assert.ok(
@@ -376,7 +376,7 @@ test("publish workflow binds dispatch to one canonical reviewed main commit", ()
 
 test("the release checklist retains the sealed workflow and guarded local path", () => {
   const capture = 'REVIEWED_SHA="$(git rev-parse --verify \'origin/main^{commit}\')"';
-  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.9 -f commit="$REVIEWED_SHA"';
+  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"';
   const docs = [
     ["RELEASE_CHECKLIST.md", read("RELEASE_CHECKLIST.md")],
   ];
@@ -388,7 +388,7 @@ test("the release checklist retains the sealed workflow and guarded local path",
     const prerequisites = text.slice(Math.max(0, dispatchAt - 1400), dispatchAt);
     assert.match(prerequisites, /HUMAN-ONLY/, `${label} must mark release dispatch HUMAN-ONLY`);
     assert.match(prerequisites, /remote HEAD/i, `${label} must check the remote HEAD before dispatch`);
-    assert.match(prerequisites, /version[^\n]*1\.0\.9/i, `${label} must check the exact version before dispatch`);
+    assert.match(prerequisites, /version[^\n]*1\.0\.10/i, `${label} must check the exact version before dispatch`);
     assert.match(prerequisites, /explicit(?:ly)?[^\n]*approv/i, `${label} must require explicit approval before dispatch`);
     assert.match(
       prerequisites,

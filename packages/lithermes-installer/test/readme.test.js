@@ -18,13 +18,13 @@ const localPublishCommand = "npm publish --access public";
 function assertCoverImage(text, label, repository) {
   const staticSrc = repository
     ? "./docs/assets/cover.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover.webp";
   const reducedMotionSrc = repository
     ? "./docs/assets/cover-motion-still.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion-still.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion-still.webp";
   const motionSrc = repository
     ? "./docs/assets/cover-motion.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp";
   assert.ok(
     text.includes('<picture><source media="(prefers-reduced-motion: reduce)" srcset="' + reducedMotionSrc + '" /><img src="' + motionSrc + '" width="100%"'),
     label + " must use the animated cover and its reduced-motion still",
@@ -83,17 +83,17 @@ test("bilingual entry pages preserve the canonical banner and use repository art
       assertCanonicalHero(text, expectedHero, directory === repoRoot, file);
       const markSrc = directory === repoRoot
         ? "./docs/assets/readme/ascii-readme.svg"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ascii-readme.svg";
+        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ascii-readme.svg";
       assert.ok(text.includes('<p align="center"><img src="' + markSrc + '" width="480"'), file + " must load its ASCII mark from its own surface");
       const coverSrc = directory === repoRoot
         ? "./docs/assets/cover-motion.webp"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion.webp";
+        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp";
       assert.ok(text.includes('src="' + coverSrc + '"'), file + " must resolve artwork from its own surface");
       assertCoverImage(text, file, directory === repoRoot);
       if (directory === repoRoot) {
         assert.doesNotMatch(text, /cdn\.jsdelivr/, "GitHub landing keeps repository-relative artwork");
       } else {
-        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.9\/readme-assets\//, "package landing must load artwork from the published tarball");
+        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.10\/readme-assets\//, "package landing must load artwork from the published tarball");
         assert.doesNotMatch(text, /raw\.githubusercontent/, "package landing must not depend on GitHub raw URLs");
       }
       assert.match(text, /```text\nlit [^\n]+\n```/, `${file} must show first bare lit use`);
@@ -339,9 +339,9 @@ function localPublishPolicyErrors(text) {
     for (const [pattern, message] of [
       [/nonzero/i, "nonzero-result handling"],
       [/never blind-retry/i, "no blind retry rule"],
-      [/npm view @litfamily\/lithermes@1\.0\.9 version/, "exact-version registry query"],
+      [/npm view @litfamily\/lithermes@1\.0\.10 version/, "exact-version registry query"],
       [/published artifact/i, "published-artifact inspection"],
-      [/npm pack @litfamily\/lithermes@1\.0\.9/, "published-artifact download"],
+      [/npm pack @litfamily\/lithermes@1\.0\.10/, "published-artifact download"],
     ]) {
       if (!pattern.test(followUp)) errors.push(`missing nearby ${message}`);
     }
@@ -419,7 +419,7 @@ test("root README files present polished GitHub landing pages", () => {
     for (const required of [
       "https://github.com/wjgoarxiv/lithermes",
       "https://www.npmjs.com/package/@litfamily/lithermes",
-      "@litfamily/lithermes@1.0.9",
+      "@litfamily/lithermes@1.0.10",
       "Hermes Goal Tools",
       "PREPARING INSTALL",
       "INSTALL RECEIPT",
@@ -474,7 +474,7 @@ test("English and Korean root/package docs explain the bounded Node update notic
 test("package metadata points at the renamed GitHub repository", () => {
   const pkg = require(path.join(packageRoot, "package.json"));
   assert.equal(pkg.name, "@litfamily/lithermes");
-   assert.equal(pkg.version, "1.0.9");
+   assert.equal(pkg.version, "1.0.10");
   assert.equal(pkg.bin.lithermes, "bin/lithermes.js");
   assert.equal(pkg.repository.type, "git");
   assert.equal(pkg.repository.url, "git+https://github.com/wjgoarxiv/lithermes.git");
@@ -530,15 +530,15 @@ guard protects this path, but its inspected preflight archive is not byte-identi
 \`\`\`sh
 npm publish --access public
 \`\`\`
-After any nonzero result, npm view @litfamily\/lithermes@1.0.9 version and never blind-retry. After success,
-download the published artifact with npm pack @litfamily\/lithermes@1.0.9 and inspect it.
+After any nonzero result, npm view @litfamily\/lithermes@1.0.10 version and never blind-retry. After success,
+download the published artifact with npm pack @litfamily\/lithermes@1.0.10 and inspect it.
 `;
   assert.deepEqual(localPublishPolicyErrors(sanctioned), [], "a fully sanctioned HUMAN-ONLY block must pass");
 });
 
 test("the release checklist exposes both guarded HUMAN-ONLY publication paths", () => {
   const capture = 'REVIEWED_SHA="$(git rev-parse --verify \'origin/main^{commit}\')"';
-  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.9 -f commit="$REVIEWED_SHA"';
+  const dispatch = 'gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"';
   const docs = [
     ["RELEASE_CHECKLIST.md", read(path.join(repoRoot, "RELEASE_CHECKLIST.md"))],
   ];
@@ -556,7 +556,7 @@ test("the release checklist exposes both guarded HUMAN-ONLY publication paths", 
     const prerequisites = text.slice(Math.max(0, dispatchAt - 1400), dispatchAt);
     assert.match(prerequisites, /HUMAN-ONLY/, `${label} must mark dispatch HUMAN-ONLY`);
     assert.match(prerequisites, /remote HEAD/i, `${label} must require a remote-head check`);
-    assert.match(prerequisites, /version[^\n]*1\.0\.9/i, `${label} must require a version check`);
+    assert.match(prerequisites, /version[^\n]*1\.0\.10/i, `${label} must require a version check`);
     assert.match(prerequisites, /explicit(?:ly)?[^\n]*approv/i, `${label} must require explicit approval`);
     assert.match(
       prerequisites,
@@ -607,7 +607,7 @@ test("README files document Korean prose cleanup command boundaries", () => {
   ];
   for (const [file, text] of docs) {
     for (const required of [
-     "@litfamily/lithermes@1.0.9",
+     "@litfamily/lithermes@1.0.10",
       "lit-humanizer",
       "/lit-humanizer",
       "/lit-korean",

@@ -1,6 +1,6 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B 마크" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B 마크" /></p>
 
 <details>
 <summary>ASCII 로고 복사</summary>
@@ -30,19 +30,19 @@
 
 </details>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lithermes-wordmark.svg" width="480" alt="LITHERMES 디스플레이 서체" /></p>
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lithermes-wordmark.svg" width="480" alt="LITHERMES 디스플레이 서체" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/badge-version.svg" alt="1.0.9" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/badge-version.svg" alt="1.0.10" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-book-open.svg" width="16" alt="" /> 문서</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-book-open.svg" width="16" alt="" /> 문서</a> &nbsp;
 <a href="#설치">설치</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -51,11 +51,11 @@
 
 무엇인가요: LitHermes는 **Hermes Agent**에서 계획, 실행, 검토, 인계를 이어갑니다.
 
-[English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/README.md) · [npm](https://www.npmjs.com/package/@litfamily/lithermes) · [GitHub](https://github.com/wjgoarxiv/lithermes)
+[English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/README.md) · [npm](https://www.npmjs.com/package/@litfamily/lithermes) · [GitHub](https://github.com/wjgoarxiv/lithermes)
 
 ## 설치
 
-소스 기준 버전은 `@litfamily/lithermes@1.0.9`입니다. Hermes Agent와 Node.js 18+가 필요하며, Hermes 홈(기본 `~/.hermes`)에 쓰기 권한이 있어야 합니다.
+소스 기준 버전은 `@litfamily/lithermes@1.0.10`입니다. Hermes Agent와 Node.js 18+가 필요하며, Hermes 홈(기본 `~/.hermes`)에 쓰기 권한이 있어야 합니다.
 
 설치기는 Hermes 홈을 대상으로 합니다. 별도 체험을 하려면 설치 전에 `HERMES_HOME`을 새 빈 디렉터리로 지정하고 Hermes를 시작할 때도 같은 값을 사용하세요. 기존 홈과 설정은 보관합니다. `--no-patch-installed-hermes`는 해당 프로필 밖에서 감지된 호스트 설치본에 호환성 패치를 적용하지 못하게 합니다.
 
@@ -153,182 +153,182 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <table>
 <tr><th>이렇게 됩니다</th><th>스킬</th><th>얻는 것</th></tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litwork.webp" width="240" alt="요청에 lit만 붙이세요. 노트를 열고, 기준마다 실패 테스트·통과·실제 확인·정리 순서를 엄격히 지킵니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litwork.webp" width="240" alt="요청에 lit만 붙이세요. 노트를 열고, 기준마다 실패 테스트·통과·실제 확인·정리 순서를 엄격히 지킵니다." /></td>
 <td><code>litwork</code><br /><sub><code>lit &lt;task&gt;</code> · <code>litwork &lt;task&gt;</code></sub></td>
 <td>요청에 <code>lit</code>만 붙이세요. 노트를 열고, 기준마다 실패 테스트·통과·실제 확인·정리 순서를 엄격히 지킵니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-plan.webp" width="240" alt="start-work가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 코드는 아직 건드리지 않습니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-plan.webp" width="240" alt="start-work가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 코드는 아직 건드리지 않습니다." /></td>
 <td><code>lit-plan</code><br /><sub><code>lit plan &lt;what&gt;</code> · <code>/lit-plan</code></sub></td>
 <td><code>start-work</code>가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 코드는 아직 건드리지 않습니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/start-work.webp" width="240" alt="계획을 한 줄씩 실행합니다. 다섯 관문을 모두 통과해야 체크 표시가 붙습니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/start-work.webp" width="240" alt="계획을 한 줄씩 실행합니다. 다섯 관문을 모두 통과해야 체크 표시가 붙습니다." /></td>
 <td><code>start-work</code><br /><sub><code>/start-work &lt;approved-plan&gt;</code></sub></td>
 <td>계획을 한 줄씩 실행합니다. 다섯 관문을 모두 통과해야 체크 표시가 붙습니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/review-work.webp" width="240" alt="다섯 갈래 리뷰가 같은 변경을 따로 읽고, 발견한 문제부터 보고합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/review-work.webp" width="240" alt="다섯 갈래 리뷰가 같은 변경을 따로 읽고, 발견한 문제부터 보고합니다." /></td>
 <td><code>review-work</code><br /><sub><code>lit review &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
 <td>다섯 갈래 리뷰가 같은 변경을 따로 읽고, 발견한 문제부터 보고합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litgoal.webp" width="240" alt="목표 하나와 확인 가능한 기준을 디스크에 남겨, 다음 세션이 이어받을 수 있습니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litgoal.webp" width="240" alt="목표 하나와 확인 가능한 기준을 디스크에 남겨, 다음 세션이 이어받을 수 있습니다." /></td>
 <td><code>litgoal</code><br /><sub><code>lit goal &lt;outcome&gt;</code> · <code>/litgoal</code></sub></td>
 <td>목표 하나와 확인 가능한 기준을 디스크에 남겨, 다음 세션이 이어받을 수 있습니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-recap.webp" width="240" alt="읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-recap.webp" width="240" alt="읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다." /></td>
 <td><code>lit-recap</code><br /><sub><code>lit-recap</code></sub></td>
 <td>읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-handoff.webp" width="240" alt="handoff라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-handoff.webp" width="240" alt="handoff라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td><code>handoff</code>라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/deep-interview.webp" width="240" alt="한 번에 한 질문씩 물어 아이디어를 만들 수 있을 만큼 분명하게 다듬습니다. 남은 모호함은 게이지로 보입니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/deep-interview.webp" width="240" alt="한 번에 한 질문씩 물어 아이디어를 만들 수 있을 만큼 분명하게 다듬습니다. 남은 모호함은 게이지로 보입니다." /></td>
 <td><code>deep-interview</code><br /><sub><code>deep-interview &lt;idea&gt;</code> · <code>/deep-interview</code></sub></td>
 <td>한 번에 한 질문씩 물어 아이디어를 만들 수 있을 만큼 분명하게 다듬습니다. 남은 모호함은 게이지로 보입니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/litresearch.webp" width="240" alt="조사 질문을 잘게 나누고 여러 검색을 동시에 돌려, 단서를 끝까지 따라간 뒤 출처와 함께 답합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/litresearch.webp" width="240" alt="조사 질문을 잘게 나누고 여러 검색을 동시에 돌려, 단서를 끝까지 따라간 뒤 출처와 함께 답합니다." /></td>
 <td><code>litresearch</code><br /><sub><code>lit research &lt;question&gt;</code></sub></td>
 <td>조사 질문을 잘게 나누고 여러 검색을 동시에 돌려, 단서를 끝까지 따라간 뒤 출처와 함께 답합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-crucible.webp" width="240" alt="계획 전에 요구사항을 반박해 봅니다. 반박을 견딘 위험만 계획으로 넘어갑니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-crucible.webp" width="240" alt="계획 전에 요구사항을 반박해 봅니다. 반박을 견딘 위험만 계획으로 넘어갑니다." /></td>
 <td><code>lit-crucible</code><br /><sub><code>lit-crucible &lt;brief&gt;</code></sub></td>
 <td>계획 전에 요구사항을 반박해 봅니다. 반박을 견딘 위험만 계획으로 넘어갑니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-init.webp" width="240" alt="저장소를 훑어 루트 AGENTS.md와, 필요한 폴더에만 짧은 안내서를 만듭니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-init.webp" width="240" alt="저장소를 훑어 루트 AGENTS.md와, 필요한 폴더에만 짧은 안내서를 만듭니다." /></td>
 <td><code>lit-init</code><br /><sub><code>lit-init</code></sub></td>
 <td>저장소를 훑어 루트 AGENTS.md와, 필요한 폴더에만 짧은 안내서를 만듭니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-comprehend.webp" width="240" alt="에이전트가 쓴 작업을 이해하도록 돕는 설명 페이지입니다. 직관, 흐름 설명, 짧은 퀴즈 순서입니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-comprehend.webp" width="240" alt="에이전트가 쓴 작업을 이해하도록 돕는 설명 페이지입니다. 직관, 흐름 설명, 짧은 퀴즈 순서입니다." /></td>
 <td><code>lit-comprehend</code><br /><sub><code>lit-comprehend</code> · <code>comprehend &lt;range&gt;</code></sub></td>
 <td>에이전트가 쓴 작업을 이해하도록 돕는 설명 페이지입니다. 직관, 흐름 설명, 짧은 퀴즈 순서입니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-humanizer.webp" width="240" alt="딱딱한 AI 문장을 한국어나 영어로 다시 씁니다. 사실과 단서는 남기고, 파일을 멋대로 고치지 않습니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-humanizer.webp" width="240" alt="딱딱한 AI 문장을 한국어나 영어로 다시 씁니다. 사실과 단서는 남기고, 파일을 멋대로 고치지 않습니다." /></td>
 <td><code>lit-humanizer</code><br /><sub><code>humanizer &lt;text&gt;</code> · <code>/lit-humanizer</code></sub></td>
 <td>딱딱한 AI 문장을 한국어나 영어로 다시 씁니다. 사실과 단서는 남기고, 파일을 멋대로 고치지 않습니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-diagram-drawer.webp" width="240" alt="슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-diagram-drawer.webp" width="240" alt="슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다." /></td>
 <td><code>lit-diagram-drawer</code><br /><sub><code>lit-diagram-drawer &lt;brief&gt;</code> · <code>/lit-diagram-drawer</code></sub></td>
 <td>슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td><code>lit</code>으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-docx.webp" width="240" alt="lit으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-docx.webp" width="240" alt="lit으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다." /></td>
 <td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
 <td><code>lit</code>으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/frontend-ui-ux.webp" width="240" alt="실제로 동작하는 화면을 만들고, 설치된 측정 프로브로 일곱 가지 보기를 렌더링합니다. 네 가지 폭, 다크 모드, 모션 줄이기, 200% 확대입니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/frontend-ui-ux.webp" width="240" alt="실제로 동작하는 화면을 만들고, 설치된 측정 프로브로 일곱 가지 보기를 렌더링합니다. 네 가지 폭, 다크 모드, 모션 줄이기, 200% 확대입니다." /></td>
 <td><code>frontend-ui-ux</code><br /><sub><code>lit design &lt;target&gt;</code> · <code>frontend-ui-ux &lt;target&gt;</code></sub></td>
 <td>실제로 동작하는 화면을 만들고, 설치된 측정 프로브로 일곱 가지 보기를 렌더링합니다. 네 가지 폭, 다크 모드, 모션 줄이기, 200% 확대입니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/readme-studio.webp" width="240" alt="사실에 맞는 README와 움직이는 커버를 만들고, 휴대폰과 데스크톱 폭, 라이트와 다크 모드에서 확인합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/readme-studio.webp" width="240" alt="사실에 맞는 README와 움직이는 커버를 만들고, 휴대폰과 데스크톱 폭, 라이트와 다크 모드에서 확인합니다." /></td>
 <td><code>readme-studio</code><br /><sub><code>readme-studio &lt;scope&gt;</code></sub></td>
 <td>사실에 맞는 README와 움직이는 커버를 만들고, 휴대폰과 데스크톱 폭, 라이트와 다크 모드에서 확인합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-typographic-motion.webp" width="240" alt="lit으로 영상을 요청하면 트리트먼트를 먼저 쓰고, 장면을 그리거나 글자를 움직이고, 사운드를 만든 뒤 검사를 거쳐 영상을 넘깁니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-typographic-motion.webp" width="240" alt="lit으로 영상을 요청하면 트리트먼트를 먼저 쓰고, 장면을 그리거나 글자를 움직이고, 사운드를 만든 뒤 검사를 거쳐 영상을 넘깁니다." /></td>
 <td><code>lit-typographic-motion</code><br /><sub><code>lit-typographic-motion &lt;request&gt;</code> · <code>/lit-typographic-motion</code></sub></td>
 <td><code>lit</code>으로 영상을 요청하면 트리트먼트를 먼저 쓰고, 장면을 그리거나 글자를 움직이고, 사운드를 만든 뒤 검사를 거쳐 영상을 넘깁니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-scientific-visualization.webp" width="240" alt="학술지 규격 그림을 벡터와 600 DPI로 내보냅니다. 그래프 종류는 데이터 성격에 맞춰 고릅니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-scientific-visualization.webp" width="240" alt="학술지 규격 그림을 벡터와 600 DPI로 내보냅니다. 그래프 종류는 데이터 성격에 맞춰 고릅니다." /></td>
 <td><code>lit-scientific-visualization</code><br /><sub><code>lit-scientific-visualization</code> · <code>/lit-scientific-visualization</code></sub></td>
 <td>학술지 규격 그림을 벡터와 600 DPI로 내보냅니다. 그래프 종류는 데이터 성격에 맞춰 고릅니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/visual-qa.webp" width="240" alt="실제 화면을 폭별로 확인해 결과를 정직하게 돌려줍니다. 막히면 무엇이 막았는지 정확히 알려줍니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/visual-qa.webp" width="240" alt="실제 화면을 폭별로 확인해 결과를 정직하게 돌려줍니다. 막히면 무엇이 막았는지 정확히 알려줍니다." /></td>
 <td><code>visual-qa</code><br /><sub><code>visual-qa &lt;target&gt;</code></sub></td>
 <td>실제 화면을 폭별로 확인해 결과를 정직하게 돌려줍니다. 막히면 무엇이 막았는지 정확히 알려줍니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/browser-drive.webp" width="240" alt="브라우저 드라이버를 먼저 확인한 뒤 실제 페이지를 조작합니다. 드라이버가 없으면 그렇다고 말합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/browser-drive.webp" width="240" alt="브라우저 드라이버를 먼저 확인한 뒤 실제 페이지를 조작합니다. 드라이버가 없으면 그렇다고 말합니다." /></td>
 <td><code>browser-drive</code><br /><sub><code>browser-drive &lt;task&gt;</code></sub></td>
 <td>브라우저 드라이버를 먼저 확인한 뒤 실제 페이지를 조작합니다. 드라이버가 없으면 그렇다고 말합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/structural-search.webp" width="240" alt="글자 대신 문법 구조로 코드를 찾고, 바꾸기 전에 결과를 미리 보여줍니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/structural-search.webp" width="240" alt="글자 대신 문법 구조로 코드를 찾고, 바꾸기 전에 결과를 미리 보여줍니다." /></td>
 <td><code>structural-search</code><br /><sub><code>lit structural &lt;pattern&gt;</code> · <code>structural-search &lt;pattern&gt;</code></sub></td>
 <td>글자 대신 문법 구조로 코드를 찾고, 바꾸기 전에 결과를 미리 보여줍니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/wikify.webp" width="240" alt="검토를 거친 프로젝트 지식을 디스크에 두고, 나중 질문에 출처와 함께 답합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/wikify.webp" width="240" alt="검토를 거친 프로젝트 지식을 디스크에 두고, 나중 질문에 출처와 함께 답합니다." /></td>
 <td><code>wikify</code><br /><sub><code>wikify &lt;mode&gt;</code> · <code>lit wikify &lt;mode&gt;</code></sub></td>
 <td>검토를 거친 프로젝트 지식을 디스크에 두고, 나중 질문에 출처와 함께 답합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/debugging.webp" width="240" alt="버그를 재현하고, 가설을 세 개 이상 세워 확인한 뒤, 확인된 원인만 고칩니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/debugging.webp" width="240" alt="버그를 재현하고, 가설을 세 개 이상 세워 확인한 뒤, 확인된 원인만 고칩니다." /></td>
 <td><code>debugging</code><br /><sub><code>lit debug &lt;symptom&gt;</code> · <code>debugging &lt;symptom&gt;</code></sub></td>
 <td>버그를 재현하고, 가설을 세 개 이상 세워 확인한 뒤, 확인된 원인만 고칩니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/refactor.webp" width="240" alt="동작을 테스트로 고정한 채 코드 구조를 바꿉니다. 단계마다 확인합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/refactor.webp" width="240" alt="동작을 테스트로 고정한 채 코드 구조를 바꿉니다. 단계마다 확인합니다." /></td>
 <td><code>refactor</code><br /><sub><code>lit refactor &lt;target&gt;</code> · <code>refactor &lt;target&gt;</code></sub></td>
 <td>동작을 테스트로 고정한 채 코드 구조를 바꿉니다. 단계마다 확인합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-burnoff.webp" width="240" alt="테스트로 동작을 먼저 묶어 두고, 변경분에 붙은 AI식 군더더기를 걷어냅니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-burnoff.webp" width="240" alt="테스트로 동작을 먼저 묶어 두고, 변경분에 붙은 AI식 군더더기를 걷어냅니다." /></td>
 <td><code>lit-burnoff</code><br /><sub><code>lit slop &lt;scope&gt;</code></sub></td>
 <td>테스트로 동작을 먼저 묶어 두고, 변경분에 붙은 AI식 군더더기를 걷어냅니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-burnoff-file.webp" width="240" alt="파일 하나만 정리합니다. 설명조 주석과 과한 방어 코드를 줄이고 중첩을 펴줍니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-burnoff-file.webp" width="240" alt="파일 하나만 정리합니다. 설명조 주석과 과한 방어 코드를 줄이고 중첩을 펴줍니다." /></td>
 <td><code>lit-burnoff-file</code><br /><sub><code>ask to clean one file</code></sub></td>
 <td>파일 하나만 정리합니다. 설명조 주석과 과한 방어 코드를 줄이고 중첩을 펴줍니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-code.webp" width="240" alt="엄격한 구현 규칙입니다. 테스트 먼저, 경계에서 타입 확인, 작은 파일." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-code.webp" width="240" alt="엄격한 구현 규칙입니다. 테스트 먼저, 경계에서 타입 확인, 작은 파일." /></td>
 <td><code>lit-code</code><br /><sub><code>ask for strict implementation</code></sub></td>
 <td>엄격한 구현 규칙입니다. 테스트 먼저, 경계에서 타입 확인, 작은 파일.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lit-commit.webp" width="240" alt="변경을 저장소 스타일에 맞는 작은 커밋으로 나눕니다. 관계없는 작업은 건드리지 않습니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lit-commit.webp" width="240" alt="변경을 저장소 스타일에 맞는 작은 커밋으로 나눕니다. 관계없는 작업은 건드리지 않습니다." /></td>
 <td><code>lit-commit</code><br /><sub><code>lit git &lt;task&gt;</code></sub></td>
 <td>변경을 저장소 스타일에 맞는 작은 커밋으로 나눕니다. 관계없는 작업은 건드리지 않습니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lsp-setup.webp" width="240" alt="사용하는 언어의 언어 서버를 설치하고, 진단이 실제로 도는지 확인합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lsp-setup.webp" width="240" alt="사용하는 언어의 언어 서버를 설치하고, 진단이 실제로 도는지 확인합니다." /></td>
 <td><code>lsp-setup</code><br /><sub><code>lsp-setup &lt;language&gt;</code></sub></td>
 <td>사용하는 언어의 언어 서버를 설치하고, 진단이 실제로 도는지 확인합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/lsp.webp" width="240" alt="요청할 때 Hermes 언어 서버로 진단, 참조, 이름 바꾸기 안전성을 확인합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/lsp.webp" width="240" alt="요청할 때 Hermes 언어 서버로 진단, 참조, 이름 바꾸기 안전성을 확인합니다." /></td>
 <td><code>lsp</code><br /><sub><code>lsp &lt;request&gt;</code></sub></td>
 <td>요청할 때 Hermes 언어 서버로 진단, 참조, 이름 바꾸기 안전성을 확인합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/rules.webp" width="240" alt="Hermes가 어떤 규칙 파일을 언제 읽는지 설명합니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/rules.webp" width="240" alt="Hermes가 어떤 규칙 파일을 언제 읽는지 설명합니다." /></td>
 <td><code>rules</code><br /><sub><code>rules &lt;question&gt;</code></sub></td>
 <td>Hermes가 어떤 규칙 파일을 언제 읽는지 설명합니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/comment-checker.webp" width="240" alt="수정으로 추가된 주석을 검토합니다. 이유는 남기고, 되풀이하는 주석은 뺍니다. 소스 파일을 고친 뒤에도 알아서 돕니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/comment-checker.webp" width="240" alt="수정으로 추가된 주석을 검토합니다. 이유는 남기고, 되풀이하는 주석은 뺍니다. 소스 파일을 고친 뒤에도 알아서 돕니다." /></td>
 <td><code>comment-checker</code><br /><sub><code>comment-checker</code></sub></td>
 <td>수정으로 추가된 주석을 검토합니다. 이유는 남기고, 되풀이하는 주석은 뺍니다. 소스 파일을 고친 뒤에도 알아서 돕니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/autoresearch.webp" width="240" alt="승인된 예산 안에서 실험을 반복합니다. 한 번에 하나만 바꾸고, 결과에 따라 남기거나 되돌립니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/autoresearch.webp" width="240" alt="승인된 예산 안에서 실험을 반복합니다. 한 번에 하나만 바꾸고, 결과에 따라 남기거나 되돌립니다." /></td>
 <td><code>autoresearch</code><br /><sub><code>autoresearch &lt;mode&gt;</code></sub></td>
 <td>승인된 예산 안에서 실험을 반복합니다. 한 번에 하나만 바꾸고, 결과에 따라 남기거나 되돌립니다.</td>
 </tr>
 <tr>
-<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/skills/autoconference.webp" width="240" alt="예산을 정한 연구 회의입니다. 연구자와 리뷰어가 따로 일하고, 종합에는 반대 의견도 남깁니다." /></td>
+<td><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/skills/autoconference.webp" width="240" alt="예산을 정한 연구 회의입니다. 연구자와 리뷰어가 따로 일하고, 종합에는 반대 의견도 남깁니다." /></td>
 <td><code>autoconference</code><br /><sub><code>autoconference &lt;mode&gt;</code></sub></td>
 <td>예산을 정한 연구 회의입니다. 연구자와 리뷰어가 따로 일하고, 종합에는 반대 의견도 남깁니다.</td>
 </tr>
@@ -366,23 +366,23 @@ S3·S4·S11은 이후의 UI 라운드, S5·S8·S9는 `lit-pptx`와 `lit-docx`를
 
 | 기준선 | LitHermes |
 |---|---|
-| ![S3 기준선 가계부 대시보드, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s3-ui-baseline-desktop.webp) | ![S3 LitHermes 가계부 대시보드, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s3-ui-lithermes-desktop.webp) |
+| ![S3 기준선 가계부 대시보드, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s3-ui-baseline-desktop.webp) | ![S3 LitHermes 가계부 대시보드, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s3-ui-lithermes-desktop.webp) |
 
 **S4 · LitHermes 승.** LitHermes는 품목과 가격이 있는 탭 메뉴, 서로 다른 사진 6장, 아치형 첫 화면을 만들었습니다. 기준선 메뉴는 분위기 카드 3장이었고 같은 실내 사진을 두 번 썼습니다. 위치와 영업시간은 기준선에만 있었고, 페이지 검사에서 잘리거나 화면 밖으로 나간 글자 상자가 LitHermes 쪽에서 7개, 기준선에서 0개 나왔습니다.
 
 | 기준선 | LitHermes |
 |---|---|
-| ![S4 기준선 카페 랜딩페이지, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s4-ui-baseline-desktop.webp) | ![S4 LitHermes 카페 랜딩페이지, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s4-ui-lithermes-desktop.webp) |
+| ![S4 기준선 카페 랜딩페이지, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s4-ui-baseline-desktop.webp) | ![S4 LitHermes 카페 랜딩페이지, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s4-ui-lithermes-desktop.webp) |
 
 **S5 · LitHermes 승.** 두 쪽 모두 확인 대상 사실 12개를 모두 맞혔습니다. LitHermes는 2026년 점검과 의회 보고 기한이 이미 지났다는 점을 짚었고, 기준선은 이를 앞으로 할 일로 적었습니다. LitHermes는 주말 거점과 평일 승합차 이용의 차이처럼 자료가 뒷받침하는 분석도 더했습니다. 슬라이드 디자인은 기준선이 낫고, LitHermes 발표자료는 기본 템플릿 그대로입니다.
 
 기준선:
 
-![S5 기준선 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s5-office-baseline-slides.webp)
+![S5 기준선 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s5-office-baseline-slides.webp)
 
 LitHermes:
 
-![S5 LitHermes 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s5-office-lithermes-slides.webp)
+![S5 LitHermes 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s5-office-lithermes-slides.webp)
 
 **S6 · LitHermes 승 (판정자: 무승부).** LitHermes는 기준 사실 10개 중 3개를 찾았고(기준선 1개), 링크는 모두 공식 출처였습니다(기준선은 4분의 1). npm 11에서 `--ignore-scripts`가 `prepare`에도 적용되는 점, Undici 7, ARMv7 빌드 중단도 다뤘습니다. 기준선은 API 세부 사항을 더 많이 적었지만 권한 플래그 이름 변경을 24의 새 변화처럼 소개해, 판정자가 오해 소지가 있다고 봤습니다.
 
@@ -390,29 +390,29 @@ LitHermes:
 
 | 기준선 | LitHermes |
 |---|---|
-| 채팅 속 ASCII 상자만 있고 렌더링된 파일 없음 | ![S7 LitHermes 주문·결제·배송 구조도](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s7-lithermes-diagram.webp) |
+| 채팅 속 ASCII 상자만 있고 렌더링된 파일 없음 | ![S7 LitHermes 주문·결제·배송 구조도](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s7-lithermes-diagram.webp) |
 
 **S8 · LitHermes 승 (판정자: 기준선 승).** 요청에는 회사도 실적 수치도 없었습니다. 기준선은 빈칸을 둔 7장짜리 템플릿을, LitHermes는 가상 기업의 8장짜리 발표자료와 차트 3개를 만들고 모든 수치에 가정 예시라고 표시했습니다. 판정자는 바로 채워 쓸 수 있는 기준선 템플릿을 골랐고, LitHermes 차트는 데이터 라벨이 없어 빈약하다고 봤습니다. 메인테이너는 LitHermes 발표자료를 골랐습니다.
 
 기준선:
 
-![S8 기준선 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s8-office-baseline-slides.webp)
+![S8 기준선 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s8-office-baseline-slides.webp)
 
 LitHermes:
 
-![S8 LitHermes 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s8-office-lithermes-slides.webp)
+![S8 LitHermes 발표자료 슬라이드](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s8-office-lithermes-slides.webp)
 
 **S9 · LitHermes 승.** 기준선은 어떤 제품인지 되묻기만 하고 문서를 쓰지 않았습니다. LitHermes는 가상의 모듈형 책상 정리 트레이를 대상으로 고객 문제, 가격 가정, 검증 일정, 생산 결정 기준을 담은 3쪽짜리 Word 기획서를 썼고, 판정자는 손익분기 계산이 맞다고 봤습니다.
 
 | 기준선 | LitHermes |
 |---|---|
-| 문서 없음. 어떤 제품인지 되물음 | ![S9 LitHermes 신제품 기획서 첫 페이지들](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s9-office-lithermes-pages.webp) |
+| 문서 없음. 어떤 제품인지 되물음 | ![S9 LitHermes 신제품 기획서 첫 페이지들](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s9-office-lithermes-pages.webp) |
 
 **S11 · LitHermes 승 (판정자: 무승부).** LitHermes는 날짜별 현황, 인원 필터와 검색, 30분 단위 예약을 갖추고 로직 테스트 4개가 통과하는 앱을 냈습니다. 판정자는 모든 회의실을 한 타임라인에 보여 주는 기준선이 더 알아보기 쉽고 `index.html`만 열면 된다고 봤습니다. LitHermes 앱은 npm과 로컬 서버가 필요하고, 일러스트 배너가 일정표 위를 차지합니다. 메인테이너는 LitHermes 앱을 골랐습니다.
 
 | 기준선 | LitHermes |
 |---|---|
-| ![S11 기준선 회의실 예약 앱, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s11-ui-baseline-desktop.webp) | ![S11 LitHermes 회의실 예약 앱, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.9/readme-assets/ab-simple/s11-ui-lithermes-desktop.webp) |
+| ![S11 기준선 회의실 예약 앱, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s11-ui-baseline-desktop.webp) | ![S11 LitHermes 회의실 예약 앱, 데스크톱](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.10/readme-assets/ab-simple/s11-ui-lithermes-desktop.webp) |
 
 그림 URL은 현재 후보 버전에 고정된 출시 대상 경로이며, 별도 승인된 패키지 배포 전에는 공개 접근을 뜻하지 않습니다.
 

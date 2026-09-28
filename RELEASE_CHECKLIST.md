@@ -38,16 +38,14 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.9 factual release scope
+### 1.0.10 factual release scope
 
-This checklist covers the 1.0.9 release.
+This checklist covers the 1.0.10 release.
 
-- [ ] `lit-humanizer` replaces `lit-korean`: legacy Korean prose commands route to it, modified old skill copies are kept during upgrades, and block-tier findings can deny supported `write_file` and `patch` changes while warnings and post-create DOCX/PPTX/PDF checks stay advisory.
-- [ ] `lit-pptx`, `lit-docx`, `lit-diagram-drawer`, and `lit-typographic-motion` ship as installed skills with their commands, bare `lit` routes, and packaged runtimes; the bundle holds 36 skills.
-- [ ] `lit-typographic-motion` validates a treatment before every render, runs the type or stage path, muxes a soundtrack or generated sound bed, and completes only after a passing gate and a look round on the final stills; `lithermes motion-runtime install|status` and the doctor motion probes report its runtime.
-- [ ] The `frontend-ui-ux` rendered probe runs seven isolated viewport passes in build, polish, audit, or harden mode and reports `BLOCKED: browser unavailable` instead of installing a browser; browser-drive accepts agent-browser 0.38.1 or later and blocks malformed or older banners.
-- [ ] Natural routes stay whole on the first turn, and the plugin loads on the Python 3.11 grammar Hermes uses.
-- [ ] Every README opens with the robot motion cover, the skill table, and the final A/B verdicts; the packed tarball stays under the 12 MiB cap.
+- [ ] The Jev skill hint is off by default and runs only when `LITHERMES_JEV=1` and the user's own `TYPESAFE_API_KEY` are both set; slash commands and prompts an existing route handles are left alone, and the hint grants no permission and starts no tool.
+- [ ] An eligible prompt is sent redacted and truncated to 2,000 characters, with one 1.5-second request that refuses redirects and no retry; any failure leaves the turn unchanged with one short note per session.
+- [ ] `hermes lithermes status` and `doctor` print the `Jev skill hint:` line, the first reply of each enabled session starts with `✦ Jev skill hint ON`, and `jev-last.json` and the opt-in trace hold no prompt text, key or response text and are never written through a symlink.
+- [ ] The README, package README and privacy notes describe what is sent, the billing, and how to turn the hint off; the packed tarball stays under the 12 MiB cap.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass.
 
 ### 1.0.3 factual release scope
@@ -350,7 +348,7 @@ Both paths require explicit approval. Never log an npm token or OTP.
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.9 version`.
+  from `npm view @litfamily/lithermes@1.0.10 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -372,11 +370,11 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.9 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.10 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.9 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.9.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.9.tgz"
+  npm pack @litfamily/lithermes@1.0.10 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.10.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.10.tgz"
 rm -rf "$VERIFY_DIR"
 ```
 
@@ -385,7 +383,7 @@ rm -rf "$VERIFY_DIR"
 - [ ] Use the stronger Linux descriptor-sealed exact-artifact option when exact inspected-to-published
   bytes are required. Confirm the GitHub Actions secret `NPM_TOKEN` exists without printing it.
 - [ ] Confirm the GitHub `main` remote HEAD is the exact reviewed commit.
-- [ ] Confirm the package version and workflow input are both `1.0.9`.
+- [ ] Confirm the package version and workflow input are both `1.0.10`.
 - [ ] Record explicit approval, then dispatch the tracked workflow:
 
   ```sh
@@ -393,5 +391,5 @@ rm -rf "$VERIFY_DIR"
   git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
   REVIEWED_SHA="$(git rev-parse --verify 'origin/main^{commit}')"
   git show --no-patch --format='%H %s' "$REVIEWED_SHA"
-  gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.9 -f commit="$REVIEWED_SHA"
+  gh workflow run publish.yml --repo wjgoarxiv/lithermes --ref main -f version=1.0.10 -f commit="$REVIEWED_SHA"
   ```

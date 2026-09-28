@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.9" /></a>
+<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.10" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -55,7 +55,7 @@
 
 ## Install
 
-Source version: `@litfamily/lithermes@1.0.9`. Have Hermes Agent and Node.js 18+ installed, with write access to your Hermes home (normally `~/.hermes`).
+Source version: `@litfamily/lithermes@1.0.10`. Have Hermes Agent and Node.js 18+ installed, with write access to your Hermes home (normally `~/.hermes`).
 
 The installer targets your Hermes home. For an isolated trial, set `HERMES_HOME` to a new empty directory before installation and use that same value when starting Hermes. Keep your existing home and settings. `--no-patch-installed-hermes` also prevents compatibility edits to the detected host installation outside that profile.
 

@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.9" /></a>
+<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.10" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -55,7 +55,7 @@
 
 ## 설치
 
-소스 기준 버전은 `@litfamily/lithermes@1.0.9`입니다. Hermes Agent와 Node.js 18+가 필요하며, Hermes 홈(기본 `~/.hermes`)에 쓰기 권한이 있어야 합니다.
+소스 기준 버전은 `@litfamily/lithermes@1.0.10`입니다. Hermes Agent와 Node.js 18+가 필요하며, Hermes 홈(기본 `~/.hermes`)에 쓰기 권한이 있어야 합니다.
 
 설치기는 Hermes 홈을 대상으로 합니다. 별도 체험을 하려면 설치 전에 `HERMES_HOME`을 새 빈 디렉터리로 지정하고 Hermes를 시작할 때도 같은 값을 사용하세요. 기존 홈과 설정은 보관합니다. `--no-patch-installed-hermes`는 해당 프로필 밖에서 감지된 호스트 설치본에 호환성 패치를 적용하지 못하게 합니다.
 
