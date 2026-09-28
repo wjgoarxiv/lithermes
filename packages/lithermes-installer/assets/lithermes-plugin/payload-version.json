@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-09-28T15:56:18.519Z",
+  "syncedAt": "2026-09-28T21:55:31.052Z",
   "source": "bundled-payload",
-  "sourceHash": "db0972998aedf0caec987922be11d3bcd0ec7986ff55d9474aaade18d3ca662c",
+  "sourceHash": "25fbdba47d28edfb0f71177235d65a489f959423d188880475e0f5ea078c3b5b",
   "files": [
     {
       "path": "NOTICE.md",
@@ -177,7 +177,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "3ea56c672cb2df56f97283c56554043918d4f6720ff77f7e8acee08dceeedbe4"
+      "sha256": "88ed50f08649700ce16cc80a3114b97075237943eebcef5315ac4c8a9553c22b"
     },
     {
       "path": "provider_metrics.py",
@@ -1281,7 +1281,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/complete-contract.md",
-      "sha256": "b50da86acdf4dc6730710b22d882ef62e2721bc23eccf6097facf1c69cac0751"
+      "sha256": "a3cd90e0b048a6aa6dca0bcbfdc3ff0108d390e28c0348e2f7ae885fc12a8350"
     },
     {
       "path": "skills/frontend-ui-ux/references/composition.md",
@@ -4149,7 +4149,7 @@
     },
     {
       "path": "skills/visual-qa/references/complete-contract.md",
-      "sha256": "49c49366d70b54ea34580f64b960d6633bad4ea5f7b5d50d992b1004b11c9853"
+      "sha256": "a5dad79ce8fe3496f0f5590d0843abb55be2a53df53cde28a2b8cee8337de40e"
     },
     {
       "path": "skills/visual-qa/schemas/evidence-manifest-v1alpha1.schema.json",

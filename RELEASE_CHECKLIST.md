@@ -38,14 +38,13 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.10 factual release scope
+### 1.0.11 factual release scope
 
-This checklist covers the 1.0.10 release.
+This checklist covers the 1.0.11 release.
 
-- [ ] The Jev skill hint is off by default and runs only when `LITHERMES_JEV=1` and the user's own `TYPESAFE_API_KEY` are both set; slash commands and prompts an existing route handles are left alone, and the hint grants no permission and starts no tool.
-- [ ] An eligible prompt is sent redacted and truncated to 2,000 characters, with one 1.5-second request that refuses redirects and no retry; any failure leaves the turn unchanged with one short note per session.
-- [ ] `hermes lithermes status` and `doctor` print the `Jev skill hint:` line, the first reply of each enabled session starts with `✦ Jev skill hint ON`, and the per-session `jev-last-*.json` files and the opt-in trace hold no prompt text, key or response text and are never written through a symlink.
-- [ ] The README, package README and privacy notes describe what is sent, the billing, and how to turn the hint off; the packed tarball stays under the 12 MiB cap.
+- [ ] The Jev last hint is kept per session in `jev-last-*.json`: `hermes lithermes status` and `doctor` inside a session name only that session's last hint, report `on — no session` outside any session, and each session's file is removed when the session ends; the files still hold no prompt text, key or response text and are never written through a symlink.
+- [ ] The plugin loads on Python 3.12 or later without an invalid escape sequence `SyntaxWarning`.
+- [ ] The README, package README and privacy notes describe the per-session last hint; the packed tarball stays under the 12 MiB cap.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass.
 
 ### 1.0.3 factual release scope
@@ -348,7 +347,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.10 version`.
+  from `npm view @litfamily/lithermes@1.0.11 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -370,10 +369,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.10 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.11 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.10 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.10.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.10.tgz"
+  npm pack @litfamily/lithermes@1.0.11 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.11.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.11.tgz"
 rm -rf "$VERIFY_DIR"
 ```

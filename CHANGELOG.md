@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.11] - 2026-09-29
+
 - The Jev skill hint now keeps its last hint per session, so two concurrent sessions no longer see each other's hint. Run `hermes lithermes status` or `doctor` inside a session to see that session's last hint; outside any session they report `on — no session`. Each session's small last-hint file is removed when the session ends.
 - Loading the plugin on Python 3.12 or later no longer prints an invalid escape sequence `SyntaxWarning`.
 
