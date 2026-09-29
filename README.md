@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.12" /></a>
+<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.13" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ Plan → Make → Check → Leave the next step
 
 ## Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.12`.
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.13`.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style

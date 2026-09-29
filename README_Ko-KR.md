@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.12" /></a>
+<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.13" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ LitHermes는 그 기록을 프로젝트에 남깁니다. 목표와 계획, 근�
 
 ## 설치
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.12` 기준입니다.
+Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.13` 기준입니다.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style

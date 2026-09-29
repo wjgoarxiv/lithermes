@@ -6,6 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-09-30
+
+- The GitHub pages now have a short motion film, "Watch it in motion", in English and Korean.
+- The GitHub pages now show what Jev looks like when it is on, off or unavailable. Jev stays off unless you turn it on.
+- The guide is brought up to date and has a short Jev section.
+- The English and Korean READMEs are rewritten again in plainer language.
+
 ## [1.0.12] - 2026-09-29
 
 - The README now explains the automatic update step: when LitHermes looks for a new version, what it backs up before installing, when it rolls back, which files record the result, and how to turn it off (`LITHERMES_NO_AUTO_UPDATE=1`, `--no-auto-update`, `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`).
