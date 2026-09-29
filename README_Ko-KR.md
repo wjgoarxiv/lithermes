@@ -116,13 +116,13 @@ LitHermes는 스스로 업데이트하는데, 조심스럽게 합니다. 실제�
 3. `doctor --offline`을 실행합니다.
 4. 설치가 실패하거나 30초를 넘기거나 이 점검을 통과하지 못하면 백업을 복원해서 쓰던 버전이 그대로 남습니다.
 
-한 Hermes 홈에서는 업데이트가 한 번에 하나만 진행됩니다. 설치 프로그램에는 `PATH`, 홈과 임시 폴더, 로케일, `TERM`, `NODE_EXTRA_CA_CERTS`만 넘기고, npm 설정, 프록시, `NODE_OPTIONS`, 토큰은 넘기지 않습니다. 업데이트에 성공해도 백업 폴더는 남으니, 더 필요 없으면 직접 지우세요.
+한 Hermes 홈에서는 업데이트가 한 번에 하나만 진행됩니다. 설치 프로그램에는 실행에 필요한 `PATH`, 홈과 임시 폴더, 로케일, `TERM`, `NODE_EXTRA_CA_CERTS`만 넘어가고, 셸에 있는 npm 설정, 프록시, `NODE_OPTIONS`, 토큰은 넘어가지 않습니다. 업데이트에 성공해도 백업 폴더는 남으니, 필요 없어지면 직접 지우세요.
 
 **보이는 것은 많지 않습니다.** `lithermes install` 중에 업데이트가 일어나면 `LitHermes automatic update committed (<version>). Restart Hermes to load it.`를 출력하고 끝납니다. 새 설치 프로그램이 이미 설치를 마쳤기 때문입니다. 그 명령에 붙였던 옵션이 필요하면 명령을 한 번 더 실행하세요. `check`와 `doctor`는 하던 대로 결과를 보여 줍니다. 업데이트가 실패해서 백업을 복원했다면 아무 출력 없이 쓰던 버전으로 이어집니다. Hermes 안에서도 대화에는 아무것도 추가되지 않고, 첫 응답이 업데이트가 끝날 때까지 기다릴 뿐입니다. 새 버전을 불러오려면 Hermes CLI와 gateway를 다시 시작하세요.
 
 실행할 때마다 `<Hermes 홈>/lithermes/`에 기록이 두 개 남습니다. `auto-update-journal.json`은 진행 단계를, `auto-update-receipt.json`은 성공 여부와 목표 버전, 복원 여부를 담습니다. 복원마저 실패하면 LitHermes가 명령을 멈추고 Hermes 홈이 알 수 없는 상태라고 알려 줍니다. 백업은 지우지 말고, 계속하기 전에 `lithermes doctor --offline --hermes-home PATH`를 실행하세요.
 
-**업데이트가 일어나지 않는 경우.** 사람이 터미널 앞에 있어야 합니다. 입력, 출력, 오류 출력이 모두 대화형 터미널이어야 해서, 출력을 파이프로 넘기거나 `CI` 변수가 설정된 실행에서는 건너뜁니다. `--offline`, `--json`, `--dry-run`을 붙인 명령과 `bunx`로 실행한 명령도 건너뜁니다. Hermes 안에서는 세션마다 최대 한 번, 최상위 세션에서만 시도하고 위임받은 보조 세션에서는 시도하지 않습니다. npm 설치 프로그램이 넣어 준 LitHermes만 대상이라서, Hermes 카탈로그로 들어왔거나 직접 복사해 넣은 사본은 사용자가 관리합니다. 예전 설치 프로그램으로 설치했다면 설치 프로그램을 한 번 다시 실행한 뒤부터 대상이 됩니다.
+**업데이트가 일어나지 않는 경우.** 업데이트는 사람이 터미널 앞에 있을 때만 합니다. 입력, 출력, 오류 출력이 모두 대화형 터미널이어야 하므로 출력을 파이프로 넘기거나 `CI` 변수가 설정된 실행에서는 건너뜁니다. `--offline`, `--json`, `--dry-run`을 붙인 명령과 `bunx`로 실행한 명령도 마찬가지입니다. Hermes 안에서는 세션마다 최대 한 번, 최상위 세션에서만 시도하고 위임받은 보조 세션에서는 시도하지 않습니다. 대상은 npm 설치 프로그램이 넣어 준 LitHermes뿐입니다. Hermes 카탈로그로 들어왔거나 직접 복사해 넣은 사본은 사용자가 관리합니다. 예전 설치 프로그램으로 설치했다면 설치 프로그램을 한 번 다시 실행한 뒤부터 대상이 됩니다.
 
 **업데이트 안내.** 이와는 따로, LitHermes는 설치하지 않고 새 릴리스 소식만 알려 줄 수도 있습니다. `install`, `check`, `doctor`를 실행한 뒤 백그라운드에서 24시간에 한 번까지만 확인하고, 결과를 `update-check.json`에 저장합니다. 다음에 실행할 때 이 파일을 읽어 더 새로운 릴리스가 적혀 있으면 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령을 안내합니다. 이 명령은 직접 실행하는 것이라서, 자동 업데이트를 꺼 두었을 때 새 릴리스 소식을 듣는 방법이 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 이 확인도 하지 않습니다.
 
@@ -142,11 +142,21 @@ LitHermes는 변수가 설정되어 있는지만 보기 때문에, `0`을 포함
 lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘. 추가·완료·삭제를 구현하고 확인한 내용과 다음 행동을 남겨줘.
 ```
 
-명령으로 부르고 싶다면 `/lit <요청>`을 쓰면 됩니다. 어느 쪽이든 응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 한 번 따로 나오고, 응답이 도착할 때 경로 확인 표시도 함께 뜹니다. 이 표시가 보이면 LitHermes가 요청을 받아 작업을 시작한 것입니다.
+명령으로 부르고 싶다면 `/lit <요청>`을 쓰면 됩니다. 어느 쪽이든 응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 한 번 따로 나오고, 응답이 도착할 때 경로 확인 표시도 함께 뜹니다. 이 표시가 보이면 LitHermes가 요청을 받아 작업을 시작한 것이고, 결과가 잘 나왔는지는 직접 확인하시면 됩니다.
 
 작업이 끝나면 HTML 파일을 직접 열어 각 동작을 눌러 보세요. Hermes에는 실제로 확인한 내용과 아직 확인하지 못한 내용을 나눠 달라고 하세요. 그다음 `/lit-handoff`로 결과와 다음 할 일을 프로젝트에 남기세요. 다음번에는 새 세션에서 같은 프로젝트를 열고, 이어가기 전에 그 인계 기록부터 읽도록 요청하면 됩니다.
 
 불씨란 이렇게 남겨 둔 기록입니다. 세션을 닫으면 뒤에서 따로 돌아가는 작업은 없고, 다음 세션이 인계 기록을 읽고 이어받습니다.
+
+## 움직이는 모습 보기
+
+짧은 영상 하나로 한 바퀴를 볼 수 있습니다. 단어 하나로 작업이 시작되고, 결과를 확인하고, 인계 기록을 남기면, 새 세션이 Ignition 스킨 화면에서 그 기록을 이어받습니다. 아래 그림은 소리 없이 반복 재생되는 미리보기이고, MP4에는 생성한 배경 음악이 들어 있습니다.
+
+<p align="center"><a href="./docs/assets/promo/promo.mp4"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/promo/promo-reduced-motion.webp" /><img src="./docs/assets/promo/promo-preview.webp" width="100%" alt="24초 홍보 영상입니다. 커다란 글자 lit이 터미널 프롬프트로 줄어들고, lit fix the failing login test 요청이 LIT IGNITED 응답을 시작합니다. Plan, Make, Check가 트랙을 따라 이어지고 failing test, passing test, real check, cleanup 줄이 차례로 채워집니다. /lit-handoff가 HANDOFF.md를 쓰고 터미널이 stay lit으로 닫힙니다. 새 세션이 LIT ready를 보여 주고 인계 기록을 읽어 이어갑니다. Ignition 스킨 미리보기에는 네 가지 색과 igniting, forging, burning, tempering 단어가 나오고, 영상은 Keep the work lit.으로 끝납니다." /></picture></a></p>
+
+[소리가 있는 영상 보기 (MP4, 4.1 MiB)](./docs/assets/promo/promo.mp4)
+
+*영상 속 요청과 응답은 예시입니다. LIT IGNITED 줄, LIT ready 환영 문구, stay lit 작별 문구, 스킨 색은 LitHermes가 실제로 출력하는 것입니다.*
 
 ## 스킬
 
@@ -454,7 +464,9 @@ flowchart TD
 
 `lit-typographic-motion`은 `lithermes:lit-typographic-motion`과 `/lit-typographic-motion <brief>`로 쓸 수 있습니다. 영상 요청에 단독 `lit`을 붙이면 감독처럼 먼저 트리트먼트를 씁니다. 그다음 그림과 도형이 필요한 영상은 스테이지 경로(모델이 작성한 HTML 페이지를 프레임 단위로 캡처)로, 글자 자체가 영상일 때는 자체 WebGL2 타입 엔진으로 렌더합니다. 기본으로 생성 사운드 베드를 넣고, 생성한 소리라고 표시합니다.
 
-영상을 만들려면 컴퓨터에 Chrome과 ffmpeg가 있어야 하고, 버전을 고정한 보조 패키지와 폰트도 몇 가지 필요합니다. 렌더링 도중에는 아무것도 내려받지 않으므로, 보조 패키지와 폰트는 미리 로컬 캐시에 들어 있어야 합니다. `lithermes install`이 설치하면서 이 캐시를 한 번 채워 보고, `--offline` 등으로 건너뛰었거나 끝내지 못했으면 그 사실을 한 줄로 알려 줍니다. 그럴 때는 렌더 세션 밖에서 `lithermes motion-runtime install`을 실행해 나중에 채우면 됩니다. 지금 상태가 궁금하면 `lithermes motion-runtime status`를 실행하세요. Chrome, ffmpeg, WebGL2, 소프트웨어 렌더링으로 내려갔는지 여부, 고정 폰트 상태를 보여 줍니다. 마지막 검사를 통과하면 60fps 영상(1920×1080, 스테이지 경로는 1080×1920도 가능), 미리보기, 포스터, 움직임 축소용 정지 이미지, 수치 검사 보고서를 받습니다. 타이포그래피 모션 엔진은 mexicat/pdoom-video (MIT, Giacomo Magnanini), 커밋 `ca251e3`에서 각색했습니다.
+영상을 만들려면 컴퓨터에 Chrome과 ffmpeg가 있어야 하고, 버전을 고정한 보조 패키지와 폰트도 몇 가지 필요합니다. 렌더링은 스스로 아무것도 내려받지 않기 때문에, 보조 패키지와 폰트는 영상을 만들기 전에 로컬 캐시에 들어 있어야 합니다. `lithermes install`이 설치하면서 이 캐시를 채워 보고, `--offline` 등으로 건너뛰었거나 끝내지 못했으면 그 사실을 한 줄로 알려 줍니다. 그럴 때는 렌더 세션 밖에서 `lithermes motion-runtime install`을 실행해 나중에 채우면 됩니다.
+
+지금 상태가 궁금하면 `lithermes motion-runtime status`를 실행하세요. Chrome, ffmpeg, WebGL2, 소프트웨어 렌더링으로 내려갔는지 여부, 고정 폰트 상태를 보여 줍니다. 마지막 검사를 통과하면 60fps 영상(1920×1080, 스테이지 경로는 1080×1920도 가능), 미리보기, 포스터, 움직임 축소용 정지 이미지, 수치 검사 보고서를 받습니다. 타이포그래피 모션 엔진은 mexicat/pdoom-video (MIT, Giacomo Magnanini), 커밋 `ca251e3`에서 각색했습니다.
 
 ### 화면과 README
 
@@ -466,7 +478,7 @@ flowchart TD
 
 이 스킬에는 Hermes가 사람이 읽을 글을 쓸 때 옆에서 살피는 감지기가 딸려 있습니다. Hermes가 `write_file`이나 `patch`로 글을 저장하면, 감지기가 바뀐 부분을 먼저 읽습니다. SVG를 포함해 지원하는 형식이면 모두 해당됩니다. 심각한 문제(차단 등급)가 보이면 파일이 저장되기 전에 쓰기를 멈출 수 있고, 가벼운 문제(주의 등급)는 검토해 볼 의견으로 돌려줍니다.
 
-Office 파일과 PDF는 만들어진 뒤에 검사합니다. DOCX나 PPTX는 파일 쓰기 이벤트나 스크립트 결과에 저장 경로가 나오면 그때 읽습니다. PDF도 같은 방식이지만 `pdftotext`가 설치되어 있어야 읽을 수 있습니다. 이때는 파일이 이미 저장된 뒤라 막지는 못하고, Hermes에 원본을 고쳐 다시 만들라고 알려 줍니다. 감지기는 어느 경우든 표현만 보며, 누가 쓴 글인지는 가려내지 못합니다.
+Office 파일과 PDF는 만들어진 뒤에 검사합니다. DOCX나 PPTX는 파일 쓰기 이벤트나 스크립트 결과에 저장 경로가 나오면 그때 읽습니다. PDF도 같은 방식이지만 `pdftotext`가 설치되어 있어야 읽을 수 있습니다. 이때는 파일이 이미 저장된 뒤라 막지는 못하고, Hermes에 원본을 고쳐 다시 만들라고 알려 줍니다. 감지기는 어느 경우든 표현만 살펴보고, 누가 쓴 글인지는 알 방법이 없습니다.
 
 ## Ignition 스킨
 
@@ -476,7 +488,7 @@ LitHermes는 Hermes CLI의 겉모습도 바꿔 줍니다. CLI에서 `/skin`을 �
 
 밝은 터미널이라면 `/skin lithermes-tokyonight-day`, 어두운 터미널이라면 `/skin lithermes-tokyonight`를 고르고 Hermes를 다시 시작하세요. 두 스킨 모두 본문, 상태 줄, 완료 메뉴 글자를 잘 읽히게 맞추고 MICRO 마크와 배너 그림을 새 색으로 칠합니다. 그 밖의 스킨 선택과 파일은 건드리지 않습니다. 직접 입력하는 글자는 터미널 기본 글자색을 따릅니다. 자연어 경로로 들어온 Lit 응답에는 끝에 MICRO 안내가 한 번 붙습니다.
 
-스킨과 출력 스타일은 서로 다른 설정입니다. 스킨은 CLI 화면을, 출력 스타일은 답변 문체를 바꿉니다. Gateway 대화에는 CLI 스킨이 나오지 않습니다. 실제로 어떻게 보이는지는 호스트와 터미널에 따라 다르고, 스킨 파일이 설치됐다고 화면에 적용된다는 보장은 없습니다. 다시 시작한 뒤 화면에서 직접 확인하세요.
+스킨과 출력 스타일은 서로 다른 설정입니다. 스킨은 CLI 화면을, 출력 스타일은 답변 문체를 바꿉니다. Gateway 대화에는 CLI 스킨이 나오지 않습니다. 화면에 어떻게 보이는지는 호스트와 터미널에 따라 달라지니, 다시 시작한 뒤 화면에서 직접 확인하세요.
 
 이미 있는 이름 붙은 스킨 파일은 LitHermes가 덮어쓰지 않습니다. 일반 파일로 된 스킨을 새것으로 받고 싶다면 그 파일을 백업 위치로 옮기고, 설치 프로그램을 다시 실행해 빠진 파일을 새로 만든 다음, 직접 고쳤던 내용을 다시 옮겨 넣으세요. 심볼릭 링크이거나 예상과 다른 것이 그 자리에 있으면 손대지 않습니다. macOS에서는 한 군데가 ANSI-256 색으로 남을 수 있습니다. CPR이 꺼진 상태의 `prompt_toolkit` 구분선인데, 나머지 Rich 출력은 승인된 색을 그대로 유지합니다.
 
@@ -499,7 +511,7 @@ LitHermes는 Hermes CLI의 겉모습도 바꿔 줍니다. CLI에서 `/skin`을 �
 | `/lit-docx <brief>` | 출판 프로필을 적용해 Word 문서를 만들고 편집·검토합니다. |
 | `/lit-typographic-motion <brief>` | 트리트먼트에서 출발해 스테이지 또는 타입 경로로 원본 영상을 연출하고 검사합니다. |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체 명령 예시와 훅 동작은 [운영 안내](./docs/guide.ko.md)에 있습니다. 명령 뒤에 뜨는 확인 줄은 작업이 시작됐다는 표시입니다. 결과를 믿고 쓰기 전에는 화면 확인까지 포함해 직접 살펴보세요.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체 명령 예시와 훅 동작은 [운영 안내](./docs/guide.ko.md)에 있습니다. 명령 뒤에 확인 줄이 뜨면 작업이 시작된 것입니다. 결과를 믿고 쓰기 전에는 화면 확인까지 포함해 직접 살펴보세요.
 
 ## 선택 기능: Jev 스킬 힌트
 
@@ -524,6 +536,34 @@ export TYPESAFE_API_KEY=<your key>
 
 끄려면 `LITHERMES_JEV`를 해제하거나 `1`이 아닌 값으로 바꾸세요.
 
+### 화면에서 보이는 것
+
+아래 네 장은 Jev를 켰을 때 내 화면에서 무엇이 달라지는지 보여 줍니다. 그림 속 글자는 LitHermes가 출력하는 문구 그대로이고, 스킬 이름과 시간은 예시입니다.
+
+**첫 응답.** Jev가 꺼져 있으면 응답은 Hermes가 쓴 그대로 도착합니다. 켜져 있으면 세션의 첫 응답 맨 위에 한 줄이 더 붙어서, 내 프롬프트가 Jev로 보내지고 있다는 것을 바로 알 수 있습니다. 이 줄은 세션마다 한 번만 나오고, 그 아래 응답은 그대로입니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-first-reply-dark.webp" /><img src="./docs/assets/jev/jev-first-reply-light.webp" width="690" alt="터미널 창 두 개. Jev 끄기: 응답은 &quot;Rewritten. Figures and hedges are unchanged.&quot;로 시작합니다. Jev 켜기: 같은 응답 위에 첫 줄 &quot;✦ Jev skill hint ON&quot;과 빈 줄이 붙습니다." /></picture></p>
+
+*예시 출력입니다. 첫 줄은 LitHermes의 응답 처리 코드가 실제로 만든 문구이고, 그 아래 문장은 지어낸 예시 글입니다.*
+
+**Jev가 제때 답하지 못할 때.** TypeSafe가 느리거나 연결되지 않으면 힌트 없이 그대로 진행합니다. 힌트가 왜 없는지 알 수 있도록, 첫 줄 아래에 짧은 안내가 세션마다 한 번 붙습니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-first-reply-note-dark.webp" /><img src="./docs/assets/jev/jev-first-reply-note-light.webp" width="690" alt="터미널 창 하나. 첫 줄 &quot;✦ Jev skill hint ON&quot;, 둘째 줄 &quot;LitHermes skill hint unavailable (timeout); continuing normally.&quot;, 빈 줄, 그다음 응답 &quot;Rewritten. Figures and hedges are unchanged.&quot;" /></picture></p>
+
+*LitHermes의 응답 처리 코드로 만든 예시 출력입니다. 답이 오지 않는 TypeSafe를 흉내 내는 대역을 썼고, 어디로도 아무것도 보내지 않았습니다.*
+
+**켜기 전에.** `hermes lithermes doctor`에는 Jev 줄이 있습니다. 꺼져 있으면 참고용 줄이고, 스위치만 켜고 키를 빼먹으면 빠진 키 이름을 알려 주는 경고로 바뀝니다. 키를 빠뜨렸는지 가장 빨리 확인하는 방법입니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-status-before-dark.webp" /><img src="./docs/assets/jev/jev-status-before-light.webp" width="690" alt="터미널. &quot;hermes lithermes doctor | grep Jev&quot; 명령이 &quot;[NOTE] Jev skill hint: off&quot;를 출력합니다. &quot;export LITHERMES_JEV=1&quot; 뒤에 같은 명령은 &quot;[WARN] Jev skill hint: flag on but TYPESAFE_API_KEY missing&quot;을 출력합니다." /></picture></p>
+
+*스크래치용 Hermes 홈에서 실제 `hermes lithermes doctor` 명령으로 얻은 출력입니다.*
+
+**켠 뒤에.** 세션 안에서 `status`는 처음에 아직 힌트가 없다고 알려 줍니다. Jev가 스킬을 제안한 뒤에는 같은 줄이 그 스킬 이름과 Jev가 걸린 시간을 보여 주고, `doctor`도 같은 내용을 OK 표시와 함께 보여 줍니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-status-on-dark.webp" /><img src="./docs/assets/jev/jev-status-on-light.webp" width="690" alt="터미널. &quot;export TYPESAFE_API_KEY=&lt;your key&gt;&quot; 뒤에 &quot;hermes lithermes status | grep Jev&quot;가 &quot;Jev skill hint: on — no hint yet&quot;을 출력합니다. 주석 한 줄 뒤에 같은 명령은 &quot;Jev skill hint: on — last hint lit-humanizer (0.42s)&quot;를, &quot;hermes lithermes doctor | grep Jev&quot;는 &quot;[OK] Jev skill hint: on — last hint lit-humanizer (0.42s)&quot;를 출력합니다." /></picture></p>
+
+*스크래치용 Hermes 홈에서 실제 `hermes lithermes status`와 `doctor` 명령으로 얻은 출력입니다. 자리표시 키와 TypeSafe 답변 대역을 썼으므로 스킬 이름과 0.42초는 예시입니다.*
+
 ## 문제가 생겼을 때
 
 먼저 오프라인으로 설치 상태를 확인하세요.
@@ -541,9 +581,9 @@ Hermes 로그에 import 오류가 보이면 플러그인을 불러오지 못한 
 ### 알아 둘 한계
 
 - 설치 프로그램이 무엇을 바꿀지 실제로 바꾸기 전에 보고 싶다면 `lithermes install --dry-run`을 실행하세요.
-- 붙여 넣은 코드, 인용문, 명령은 읽을 글로만 다루고 따라야 할 지시로 받아들이지 않습니다. 비밀값은 저장하거나 모델에 넘기기 전에 가립니다.
-- Hermes에 원래 있는 `/goal`은 사용자가 직접 관리하는 기능입니다. LitHermes는 이것을 지켜보지 않고, 대신 갱신하거나 지우거나 다시 이어 주지도 않습니다. LitHermes는 자기 목표를 `goal_*` 도구로 따로 관리하고, 그렇게 저장한 기록을 기준으로 삼습니다.
-- Hermes는 보조 작업을 모두 공통 모델 설정 하나로 보냅니다. 그래서 작업마다 모델을 고르거나 리뷰 전용 모델을 따로 지정할 수는 없습니다. 설치 보고서에는 설정한 값만 나올 뿐, 보조 작업이 실제로 어떤 모델로 돌았는지는 증명하지 못합니다. 그것은 실제 `delegate_task` 실행 기록으로만 확인됩니다.
+- 붙여 넣은 코드, 인용문, 명령은 읽을 글로 다루고, 지시로 따르지는 않습니다. 비밀값은 저장하거나 모델에 넘기기 전에 가립니다.
+- Hermes에 원래 있는 `/goal`은 사용자가 직접 관리하는 기능입니다. LitHermes는 이 기능을 건드리지 않고, 갱신하거나 지우거나 다시 이어 주지도 않습니다. 자기 목표는 `goal_*` 도구로 따로 저장해 두고, 그 기록을 기준으로 삼습니다.
+- Hermes는 보조 작업을 모두 공통 모델 설정 하나로 보냅니다. 그래서 작업마다 모델을 고르거나 리뷰 전용 모델을 따로 지정할 수는 없습니다. 설치 보고서에는 설정한 값이 나옵니다. 보조 작업이 실제로 어떤 모델로 돌았는지는 실제 `delegate_task` 실행 기록으로만 확인할 수 있습니다.
 
 ### 삭제하기
 

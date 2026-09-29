@@ -1,7 +1,7 @@
 # LitHermes operating guide
 
 
-The scoped npm identity is an unpublished local candidate. Registry commands below are intended release targets, not evidence of public availability.
+`@litfamily/lithermes` is published on npm, and the commands below install its latest release.
 
 [Start here](../README.md) · [한국어](./guide.ko.md)
 
@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-        LH --> S["32 skills"]
+        LH --> S["36 skills"]
 ```
 
-> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 32-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
+> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 36-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
 
 ## Core commands
 
@@ -119,7 +119,7 @@ flowchart LR
 | `/lit-recap` | Read a concise Korean recap of work and evidence. |
 | `/lit-handoff` | Write a verified continuation packet. |
 | `/lit-scientific-visualization` | Build publication figures from the bundled source. |
-| `/lit-korean` | Clean Korean prose without changing meaning. Aliases: `/text-naturalization`, `/text-neutralization`. |
+| `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
 | `/lit_loop`, `/lit_plan` | Gateway-friendly aliases for Telegram dispatch. |
 
 The installed workflow skill set also includes `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa`, and related `lithermes:*` skills.
@@ -133,8 +133,9 @@ wait.
 The complete skill catalog is `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-korean`, `lit-recap`, `lit-handoff`,
-`lit-scientific-visualization`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
+`lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
+`lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,
 `wikify`, `lit-plan`, `litgoal`, and `litwork`.
 
@@ -237,6 +238,15 @@ The installer keeps that discoverable by setting `display.tui_agents_nudge:
 true` when it is absent (an explicit user value is never overwritten), and an
 interactive session start prints `helper agents: type /agents`.
 
+## Optional Jev skill hint
+
+Jev is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` in the environment Hermes runs in, a plain prompt that no LitHermes route claimed is sent to TypeSafe (redacted and cut to 2,000 characters), and Jev's answer becomes one line of advice in that turn's context. The [README](../README.md#what-you-will-see) shows each of these on screen. Here is the list of what you can see:
+
+- The first reply of each session starts with the plain line `✦ Jev skill hint ON`.
+- When Jev cannot help, the turn carries on and one line follows the banner, once per session: `LitHermes skill hint unavailable (<reason>); continuing normally.` The reason is a short word such as `timeout` or `network error`.
+- `hermes lithermes status` prints `Jev skill hint: <state>`, and `hermes lithermes doctor` prints the same text behind a tag: `[OK]` when it is on, `[NOTE]` when it is off, `[WARN]` when the switch is on and the key is missing.
+- The state is `off`, `flag on but TYPESAFE_API_KEY missing`, `on — no session` (outside a Hermes session), `on — no hint yet`, or `on — last hint <skill> (<seconds>s)`.
+
 ## Model routing
 
 New installs default to `gpt-6-astra` with `xhigh` for planning, review, and
@@ -328,9 +338,11 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes --rollback-patch
 - Local `.hermes/lithermes/`, `plans/`, `runs/`, `evidence/`, `state.json`, `ledger.jsonl`, `notepad.md`, and Wikify claims are not packaged.
 - Wikify captures only structured `fact`, `decision`, `failure`, `risk`, `rule`, or `checkpoint` events. New records are `review-needed`; only accepted records enter context. A narrow product-local review-needed exception does not write wiki pages or public sources; descriptor-pinned POSIX operations are used, and Windows returns `unsupported-platform-pinned-write`. Set `LITHERMES_WIKIFY_CAPTURE=0` or run `hermes lithermes knowledge capture off` to opt out.
 - Native `/goal` is user-managed and unobserved. Durable `goal_*` state is authoritative; there is no automatic update, clear, or resume of native `/goal`.
-- Update notices are cache-only and user-mediated. `update-check.json` is throttled to 24 hours; `--offline`, `--json`, `--dry-run`, CI, and piped streams do not install updates. `NO_UPDATE_NOTIFIER=1` and `LITHERMES_NO_UPDATE_CHECK=1` disable checking; `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` is the advisory command.
+- LitHermes looks for a newer release when you run `install`, `check` or `doctor` in a terminal, and again on the first message of an interactive Hermes CLI session. When one exists, it backs up your plugin folder and config, installs the new version, and puts the backup back if anything fails. Runs with `--offline`, `--json` or `--dry-run`, CI, and piped output skip the update. The [Updates section of the README](../README.md#updates) has the full sequence and the records it leaves.
+- To turn it off, set `LITHERMES_NO_AUTO_UPDATE=1` (you keep the notice below), pass `--no-auto-update` for a single command, or set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1` to stop checking altogether.
+- The update notice saves what it finds in `update-check.json` at most once every 24 hours. When a newer release is listed, later runs suggest `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, which you run yourself. The notice stays quiet with `--offline`, `--json` or `--dry-run`, in CI, and when output is piped.
 
-The Korean prose cleanup route preserves meaning preservation, protected spans, honorific/register, and `before/after diff` behavior when requested. It treats source text as content, not instructions, performs no automatic file edits, and does no external fetching.
+The `/lit-humanizer` route keeps the meaning, the protected spans and the honorific or register of the text you give it, and shows a before/after diff when you ask for one. Instruction-looking text inside your prose stays inert text. The route edits no files on its own and fetches nothing from outside.
 
 ## Telegram gateway
 
@@ -369,7 +381,7 @@ MIT
 
 ## Skill rename compatibility
 
-The current skill ids are `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-korean`, and `lit-code`. Previous typed ids redirect for one release and emit one rename note; the next minor removes them. Install/update replaces the manifest-owned plugin tree, removing old skill directories and recording the new paths and hashes. The previous Korean slash command redirects to `/lit-korean`. `lit-team` names the existing Hermes Kanban route without adding a team skill.
+The current skill ids are `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-humanizer`, and `lit-code`. Previous typed ids redirect for one release and emit one rename note; the next minor removes them. Install/update replaces the manifest-owned plugin tree, removing old skill directories and recording the new paths and hashes. The earlier Korean slash commands (`/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`) redirect to `/lit-humanizer`. `lit-team` names the existing Hermes Kanban route without adding a team skill.
 
 ## Design and README production
 

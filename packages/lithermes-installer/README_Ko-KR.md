@@ -76,9 +76,9 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬
 - 목표·계획·근거는 프로젝트의 `.hermes/lithermes/` 아래 로컬 기록으로 남고, 다음 세션이 이 기록을 읽을 수 있습니다.
 - Hermes CLI에 Ignition 스킨이 생깁니다. `/skin lithermes-ignition`을 고르고 다시 시작하세요. 밝은 터미널에는 `/skin lithermes-tokyonight-day`, 어두운 터미널에는 `/skin lithermes-tokyonight`가 맞습니다. 색상을 지원하는 대화형 환경에서 `--yes`로 처음 설치하면 설정에 `display.skin` 항목이 아예 없을 때만 Ignition을 고르고, 기존 스킨 파일은 보존합니다.
 - LitHermes는 스스로, 그리고 조심스럽게 업데이트합니다. 터미널에서 `lithermes install`, `check`, `doctor`를 실행하거나 대화형 Hermes CLI 세션에서 첫 메시지를 보내면 npm 레지스트리에 최신 안정 버전을 물어봅니다. 더 새로운 버전이 있으면 플러그인 폴더, `config.yaml`, 설치 기록, 스킨 폴더를 백업한 뒤 설치하고 `doctor --offline`을 실행합니다. 설치가 실패하거나 30초를 넘기거나 이 점검을 통과하지 못하면 백업을 복원해서 쓰던 버전이 남습니다. 새 버전을 불러오려면 Hermes를 다시 시작하세요.
-- 업데이트할 때마다 `<Hermes 홈>/lithermes/`에 `auto-update-journal.json`과 `auto-update-receipt.json`이 남아서 무슨 일이 있었는지 볼 수 있습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 업데이트하지 않습니다.
+- 업데이트할 때마다 `<Hermes 홈>/lithermes/`에 `auto-update-journal.json`과 `auto-update-receipt.json`이 남아서 무슨 일이 있었는지 볼 수 있습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘기면 업데이트를 건너뜁니다.
 - 이와는 따로, LitHermes는 새 버전이 나왔는지 백그라운드에서 24시간에 한 번까지만 확인해 그 결과를 `update-check.json`에 저장해 둡니다. 안내할 때는 이 파일을 읽고, 안내에는 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령이 나옵니다. 실행할지는 직접 정하면 됩니다.
-- 새 버전을 직접 설치하면서 안내는 계속 받고 싶다면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요.
+- 새 버전은 직접 설치하되 안내는 계속 받고 싶다면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요.
 - 명령 한 번만 건너뛰려면 `install`, `check`, `doctor`에 `--no-auto-update`를 붙이세요.
 - 버전 확인을 모두 멈추려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정하세요. 이 변수들은 어떤 값이든 똑같이 적용됩니다. 업데이트 과정의 자세한 설명은 GitHub 문서에 있습니다.
 - 요청을 어디로 보낼지는 LitHermes가 정하고, 모델은 여전히 Hermes Agent가 돌립니다.
@@ -121,9 +121,9 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 `doctor --offline`은 인터넷에 나가지 않고 설치 상태를 확인합니다. 설치 프로그램이 Hermes에 호환성 수정을 했다면 삭제할 때 `--rollback-patches`를 붙여 되돌리세요. 삭제해도 스킨 파일과 `display.skin` 선택은 남습니다. `npx --package @litfamily/lithermes -- lithermes hud off`를 실행하면 선택만 지우고 파일은 그대로 둡니다.
 
 - 설치 프로그램이 무엇을 바꿀지 미리 보고 싶다면 `lithermes install --dry-run`을 실행하세요.
-- 붙여 넣은 코드, 인용문, 명령은 읽을 글로만 다루고 지시로 받아들이지 않습니다. 비밀값은 저장하거나 모델에 넘기기 전에 가립니다.
-- Hermes에 원래 있는 `/goal`은 사용자가 직접 관리합니다. LitHermes는 이것을 지켜보지 않고, 대신 갱신하거나 지우거나 다시 이어 주지도 않습니다. LitHermes는 `goal_*` 도구로 저장한 자기 목표를 기준으로 삼습니다.
-- Hermes는 보조 작업을 모두 공통 모델 설정 하나로 보내므로, 작업마다 모델을 고르거나 리뷰 전용 모델을 둘 수 없습니다. 설치 보고서에는 설정한 값만 나오고, 어떤 모델이 실제로 쓰였는지는 실제 `delegate_task` 실행 기록으로만 확인됩니다.
+- 붙여 넣은 코드, 인용문, 명령은 읽을 글로 다루고, 지시로 따르지는 않습니다. 비밀값은 저장하거나 모델에 넘기기 전에 가립니다.
+- Hermes에 원래 있는 `/goal`은 사용자가 직접 관리합니다. LitHermes는 이 기능을 건드리지 않고, 갱신하거나 지우거나 다시 이어 주지도 않습니다. `goal_*` 도구로 저장한 자기 목표를 기준으로 삼습니다.
+- Hermes는 보조 작업을 모두 공통 모델 설정 하나로 보내므로, 작업마다 모델을 고르거나 리뷰 전용 모델을 둘 수 없습니다. 설치 보고서에는 설정한 값이 나오고, 실제로 쓰인 모델은 실제 `delegate_task` 실행 기록으로만 확인됩니다.
 - Lit 스킬이 보이지 않으면 Hermes에 `skills_list` 도구를 불러 LitHermes 항목을 찾아 달라고 하세요. `/skills` 명령은 파일시스템만 읽어서 Hermes 버전에 따라 목록이 다를 수 있습니다. Hermes 로그의 import 오류는 플러그인을 불러오지 못했다는 뜻입니다. 짐작으로 pip 패키지를 설치하기보다 오류 메시지를 보관해 두세요.
 - 다른 곳의 같은 이름 스킬이 LitHermes 스킬을 가리면 `lithermes doctor`가 `skill shadow check: WARNING` 줄을 출력합니다. `lithermes:<name>`으로 불러오세요. 이 경고가 doctor의 종료 상태를 바꾸지는 않습니다.
 

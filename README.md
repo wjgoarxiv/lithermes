@@ -116,13 +116,13 @@ The install is built so that it can be undone:
 3. It runs `doctor --offline`.
 4. If the install fails, takes longer than 30 seconds, or does not pass that check, the backup goes back in place and you keep the version you had.
 
-Only one update runs at a time in a Hermes home. The installer gets a trimmed environment: `PATH`, home and temp folders, locale, `TERM` and `NODE_EXTRA_CA_CERTS`. Npm settings, proxies, `NODE_OPTIONS` and tokens are left out. After a successful update the backup folder stays, so delete it when you no longer need it.
+Only one update runs at a time in a Hermes home. The installer receives just what it needs to run: `PATH`, home and temp folders, locale, `TERM` and `NODE_EXTRA_CA_CERTS`. Your npm settings, proxies, `NODE_OPTIONS` and tokens stay behind. After a successful update the backup folder remains, so delete it once you no longer need it.
 
 **What you will see.** Very little. During `lithermes install`, an update ends with `LitHermes automatic update committed (<version>). Restart Hermes to load it.` because the newer installer has already done the install; run the command again if you wanted its own options. `check` and `doctor` carry on with their usual report. A failed update that was rolled back is silent, and the command continues with your current version. Inside Hermes nothing is added to the conversation, and the first reply simply waits for the update. Restart the Hermes CLI and any gateways to load the new version.
 
 Each run leaves two records in `<Hermes home>/lithermes/`. `auto-update-journal.json` follows the steps, and `auto-update-receipt.json` shows whether the update went through, which version it aimed for and whether it rolled back. If the rollback itself fails, LitHermes stops the command and says the Hermes home is in an unknown state. Keep the backup and run `lithermes doctor --offline --hermes-home PATH` before you go on.
 
-**When it stays out of the way.** An update needs a person at the terminal: input, output and error output must all be interactive, so piped output and any run with `CI` set skip it. So do commands with `--offline`, `--json` or `--dry-run`, and commands run through `bunx`. Inside Hermes it is tried at most once per session, only in the top-level session and never in a delegated helper. It also only updates a LitHermes that the npm installer put in place. A copy from the Hermes catalog, or one you copied in yourself, stays yours to manage, and an install made by an older installer qualifies once you have run the installer again.
+**When it stays out of the way.** An update needs a person at the terminal, with input, output and error output all interactive. Piped output and any run with `CI` set therefore skip it, and so do commands with `--offline`, `--json` or `--dry-run` and commands run through `bunx`. Inside Hermes it is tried at most once per session, only in the top-level session and never in a delegated helper. The update only covers a LitHermes that the npm installer put in place. A copy from the Hermes catalog, or one you copied in yourself, stays yours to manage. An install made by an older installer qualifies once you have run the installer again.
 
 **The update notice.** Separately, LitHermes can tell you about a release without installing it. After `install`, `check` or `doctor` it looks in the background, at most once every 24 hours, and saves the answer in `update-check.json`. Later runs read that file and, if a newer release is listed, suggest a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`. You run it yourself, so the notice is how you hear about releases when automatic updates are off. The same rules apply: nothing is checked with `--offline`, `--json` or `--dry-run`, in CI, or when output is piped.
 
@@ -142,11 +142,21 @@ Restart the Hermes CLI or gateway so it loads the plugin. Then give it a task wi
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-`/lit <request>` does the same thing as an explicit command. Either way, the reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line on its own, and the route acknowledgement shows up as the reply arrives. When you see them, LitHermes has picked up the task and the work has started.
+`/lit <request>` does the same thing as an explicit command. Either way, the reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line on its own, and the route acknowledgement shows up as the reply arrives. Once you see them, LitHermes has picked up the task and the work has started; how well it went is for you to check in the result.
 
 When it finishes, open the HTML file and try each action yourself. Ask Hermes to separate the checks it actually ran from anything still unverified. Then run `/lit-handoff` to leave the result and the next step in the project. In a new session, open the same project and ask Hermes to read that handoff before it continues.
 
 The spark is that record. Once the session closes, nothing carries on in the background; the next session picks the work up from the handoff.
+
+## Watch it in motion
+
+A short film walks through one full round: a single word starts a task, the work is checked, a handoff note is left, and a new session picks it up in the Ignition skin. The picture below is a silent preview that loops. The MP4 carries a generated music bed.
+
+<p align="center"><a href="./docs/assets/promo/promo.mp4"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/promo/promo-reduced-motion.webp" /><img src="./docs/assets/promo/promo-preview.webp" width="100%" alt="Motion promo, 24 seconds. A giant word lit shrinks into a terminal prompt and the request lit fix the failing login test starts a LIT IGNITED reply. Plan, Make and Check run along a track with the rows failing test, passing test, real check and cleanup. A /lit-handoff writes HANDOFF.md, and the terminal closes with stay lit. A new session shows LIT ready, reads the handoff and continues. The Ignition skin preview shows its four colours and the words igniting, forging, burning and tempering. The film ends on Keep the work lit." /></picture></a></p>
+
+[Watch the film with sound (MP4, 4.1 MiB)](./docs/assets/promo/promo.mp4)
+
+*The request and the sample replies in the film are examples. The LIT IGNITED line, the LIT ready welcome, the stay lit goodbye and the skin colours are what LitHermes prints.*
 
 ## Skills
 
@@ -454,7 +464,9 @@ For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists 
 
 `lit-typographic-motion` is available as `lithermes:lit-typographic-motion` and `/lit-typographic-motion <brief>`. Ask for a film with a bare `lit` and it works like a director: it writes a treatment first. Then it renders a stage film (a model-authored HTML page captured frame by frame) or, when the words themselves are the film, a type film on its original WebGL2 engine. By default it adds a generated sound bed and labels it as generated.
 
-A film needs Chrome and ffmpeg on your machine, plus a few pinned helper packages and fonts. A render never downloads anything itself, so those helpers and fonts have to be in a local cache first. `lithermes install` already tries to fill that cache. If it was skipped (with `--offline`, say) or did not finish, the installer prints one line saying so, and you can fill it later with `lithermes motion-runtime install`, run outside the render session. To see where things stand, run `lithermes motion-runtime status`: it reports Chrome, ffmpeg, WebGL2, whether rendering has fallen back to software, and the pinned fonts. When the film passes its final check, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
+A film needs Chrome and ffmpeg on your machine, plus a few pinned helper packages and fonts. Rendering never downloads anything by itself, so those helpers wait in a local cache until a film needs them. `lithermes install` tries to fill that cache for you. If that step was skipped (with `--offline`, say) or did not finish, the installer prints one line saying so, and you can fill the cache later with `lithermes motion-runtime install`, run outside the render session.
+
+To see where things stand, run `lithermes motion-runtime status`. It reports Chrome, ffmpeg, WebGL2, whether rendering has fallen back to software, and the pinned fonts. When the film passes its final check, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
 
 ### Interfaces and READMEs
 
@@ -466,7 +478,7 @@ The `lit-humanizer` skill is available as `lithermes:lit-humanizer`. It helps yo
 
 The skill also comes with a detector that watches what Hermes writes for people to read. When Hermes saves text through `write_file` or `patch`, in any supported format including SVG, the detector reads the changed part first. A serious finding (block tier) can stop the write before the file is saved; a milder one (warning tier) comes back as advice to review.
 
-Office files and PDFs are checked after they exist. A DOCX or PPTX is read once a file-write event or a script result reports where it was saved. A PDF is read the same way, but only if `pdftotext` is installed. By then the file is already saved, so these checks only advise: Hermes is asked to fix the source and rebuild. Either way, the detector judges wording and cannot tell who wrote the text.
+Office files and PDFs are checked after they exist. A DOCX or PPTX is read once a file-write event or a script result reports where it was saved. A PDF is read the same way, but only if `pdftotext` is installed. By then the file is already saved, so these checks only advise: Hermes is asked to fix the source and rebuild. Either way, the detector reads wording only and has no way to tell who wrote the text.
 
 ## The Ignition skin
 
@@ -476,7 +488,7 @@ If you install for the first time with `--yes` in an interactive terminal that s
 
 On a light terminal, pick `/skin lithermes-tokyonight-day`; on a dark one, `/skin lithermes-tokyonight`. Restart Hermes after switching. Both keep body text, status lines and the completion menu readable, recolor the MICRO mark and banner art, and leave your other skin choices and files alone. What you type keeps your terminal's default color. When a Lit reply comes in through a natural route, the MICRO acknowledgement appears once, at the end.
 
-The skin and the output style are separate things: the skin changes how the CLI looks, and the output style changes how replies are worded. Gateway conversations never show the CLI skin. The real look also depends on your host and terminal, and a skin file on disk doesn't guarantee it shows. After a restart, check it on screen.
+The skin and the output style are separate things: the skin changes how the CLI looks, and the output style changes how replies are worded. Gateway conversations never show the CLI skin. How it looks depends on your host and terminal, so after a restart, check it on screen.
 
 LitHermes won't overwrite a named skin file you already have. To get a fresh copy of one that is a regular file, move it somewhere safe as a backup, run the installer again so it recreates the missing file, then copy your own edits back in. Symlinks and anything unexpected in that spot are left untouched. On macOS, one detail may stay in ANSI-256 color: the `prompt_toolkit` divider when CPR is turned off, even though the rest of the Rich output keeps the approved colors.
 
@@ -499,7 +511,7 @@ LitHermes won't overwrite a named skin file you already have. To get a fresh cop
 | `/lit-docx <brief>` | Create, edit and audit a Word report with publisher profiles. |
 | `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./docs/guide.md) has the full command examples and hook behavior. The acknowledgement line you see after a command means the work has started; check the result yourself, including any visual check, before you rely on it.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./docs/guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.
 
 ## Optional: Jev skill hint
 
@@ -524,6 +536,34 @@ While it is on, the first reply of each session starts with the plain line `✦ 
 
 To turn it off, unset `LITHERMES_JEV` or set it to any value other than `1`.
 
+### What you will see
+
+These four screens show what changes on your side. The text in them is what LitHermes prints; the skill name and the timing are examples.
+
+**The first reply.** With Jev off, replies arrive as Hermes wrote them. With Jev on, the first reply of each session starts with one extra line, so you can tell at a glance that your prompts are going to Jev. It shows once per session, and the reply under it is unchanged.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-first-reply-dark.webp" /><img src="./docs/assets/jev/jev-first-reply-light.webp" width="690" alt="Two terminal windows. Jev off: the reply reads &quot;Rewritten. Figures and hedges are unchanged.&quot; Jev on: the same reply, under the first line &quot;✦ Jev skill hint ON&quot; and a blank line." /></picture></p>
+
+*Sample output. The first line is what LitHermes's own reply hook produced. The sentence under it is made-up sample text.*
+
+**When Jev cannot answer in time.** If TypeSafe is slow or unreachable, the turn carries on without a hint. LitHermes adds one short note under the first line, once per session, so you know why no hint came.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-first-reply-note-dark.webp" /><img src="./docs/assets/jev/jev-first-reply-note-light.webp" width="690" alt="A terminal window with three parts: the line &quot;✦ Jev skill hint ON&quot;, the line &quot;LitHermes skill hint unavailable (timeout); continuing normally.&quot;, a blank line, then the reply &quot;Rewritten. Figures and hedges are unchanged.&quot;" /></picture></p>
+
+*Sample output from LitHermes's own reply hook, with a stand-in that plays a TypeSafe reply that never arrives. Nothing was sent anywhere.*
+
+**Before it works.** `hermes lithermes doctor` includes a Jev line. While Jev is off, the line is a plain note. If you set the switch and forget the key, it turns into a warning that names the missing key, which is the quickest way to spot that.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-status-before-dark.webp" /><img src="./docs/assets/jev/jev-status-before-light.webp" width="690" alt="A terminal. Command &quot;hermes lithermes doctor | grep Jev&quot; prints &quot;[NOTE] Jev skill hint: off&quot;. After &quot;export LITHERMES_JEV=1&quot; the same command prints &quot;[WARN] Jev skill hint: flag on but TYPESAFE_API_KEY missing&quot;." /></picture></p>
+
+*Captured from the real `hermes lithermes doctor` command in a scratch Hermes home.*
+
+**Once it is on.** Inside a session, `status` first says that no hint has come yet. After Jev suggests a skill, the same line names that skill and how long Jev took, and `doctor` shows it with an OK tag.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/jev/jev-status-on-dark.webp" /><img src="./docs/assets/jev/jev-status-on-light.webp" width="690" alt="A terminal. After &quot;export TYPESAFE_API_KEY=&lt;your key&gt;&quot;, &quot;hermes lithermes status | grep Jev&quot; prints &quot;Jev skill hint: on — no hint yet&quot;. After a comment line, the same command prints &quot;Jev skill hint: on — last hint lit-humanizer (0.42s)&quot;, and &quot;hermes lithermes doctor | grep Jev&quot; prints &quot;[OK] Jev skill hint: on — last hint lit-humanizer (0.42s)&quot;." /></picture></p>
+
+*Captured from the real `hermes lithermes status` and `doctor` commands in a scratch Hermes home. A placeholder key and a stand-in for TypeSafe's answer were used, so the skill name and the 0.42 seconds are examples.*
+
 ## When something goes wrong
 
 Start with a check that stays offline:
@@ -541,9 +581,9 @@ An import error in the Hermes log means the plugin failed to load. Resist instal
 ### Limits worth knowing
 
 - To see what the installer would change before it changes anything, run `lithermes install --dry-run`.
-- Code, quotations and commands you paste in are treated as text to read, never as instructions to follow. Secrets are masked before anything is saved or passed to a model.
-- Hermes' own `/goal` belongs to you. LitHermes does not watch it and never updates, clears or resumes it. LitHermes keeps its goals through its `goal_*` tools, and those saved records are what it goes by.
-- Hermes sends every helper through one shared model setting, so you cannot choose a model per task or give reviewers a model of their own. The installer's report shows what was configured. It cannot prove which model a helper actually ran on; only the receipt of a real `delegate_task` run can.
+- LitHermes reads code, quotations and commands you paste in as plain text and does not follow them as instructions. Secrets are masked before anything is saved or passed to a model.
+- Hermes' own `/goal` stays yours. LitHermes leaves it alone and never updates, clears or resumes it. It works from the goals it saves through its `goal_*` tools.
+- Hermes sends every helper through one shared model setting, so you cannot choose a model per task or give reviewers a model of their own. The installer's report shows what was configured. What a helper actually ran on is proven only by the receipt of a real `delegate_task` run.
 
 ### Removing it
 

@@ -1,7 +1,7 @@
 # LitHermes 사용 안내
 
 
-The scoped npm identity is an unpublished local candidate. Registry commands below are intended release targets, not evidence of public availability.
+`@litfamily/lithermes`는 npm에 공개되어 있고, 아래 명령은 최신 릴리스를 설치합니다.
 
 [시작 페이지](../README_Ko-KR.md) · [English](./guide.md)
 
@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-    LH --> S["32 skills"]
+    LH --> S["36 skills"]
 ```
 
-> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 32개 skill catalog가 실제 host에 로드됩니다.
+> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 36개 skill catalog가 실제 host에 로드됩니다.
 
 ## 핵심 명령
 
@@ -119,7 +119,7 @@ flowchart LR
 | `/lit-recap` | 작업과 evidence를 한국어로 읽기 쉽게 요약합니다. |
 | `/lit-handoff` | live state를 확인한 continuation packet을 작성합니다. |
 | `/lit-scientific-visualization` | 번들 source로 publication figure를 만듭니다. |
-| `/lit-korean` | 의미를 바꾸지 않고 한국어 prose를 다듬습니다. Alias: `/text-naturalization`, `/text-neutralization`. |
+| `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
 | `/lit_loop`, `/lit_plan` | Telegram dispatch용 gateway alias입니다. |
 
 추가로 `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa` 및 관련 `lithermes:*` skill이 설치됩니다.
@@ -133,8 +133,9 @@ receipt를 반환하고 parent가 merge 또는 batch completion을 추적합니�
 전체 skill catalog는 `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-korean`, `lit-recap`, `lit-handoff`,
-`lit-scientific-visualization`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
+`lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
+`lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,
 `wikify`, `lit-plan`, `litgoal`, `litwork`입니다.
 
@@ -280,6 +281,15 @@ Ignition을 선택합니다. 빈 값을 포함한 기존 선택은 유지합니�
 설치기는 `display.tui_agents_nudge: true`를 기존 값이 없을 때만 추가하고,
 대화형 세션 시작 시 `helper agents: type /agents`를 안내합니다.
 
+## 선택 기능: Jev 스킬 힌트
+
+Jev는 기본값이 꺼짐입니다. Hermes가 실행되는 환경에 `LITHERMES_JEV=1`과 본인의 `TYPESAFE_API_KEY`를 설정하면, LitHermes의 어느 경로도 맡지 않은 평범한 프롬프트가 (가리고 2,000자로 자른 뒤) TypeSafe로 전송되고, Jev의 답은 그 턴의 컨텍스트에 조언 한 줄로 붙습니다. 각 상태가 화면에서 어떻게 보이는지는 [README](../README_Ko-KR.md#화면에서-보이는-것)에 그림으로 있습니다. 눈에 보이는 것은 다음과 같습니다.
+
+- 세션의 첫 응답이 `✦ Jev skill hint ON` 한 줄로 시작합니다.
+- Jev가 도움을 주지 못하면 턴은 그대로 진행되고, 세션마다 한 번 배너 아래에 `LitHermes skill hint unavailable (<reason>); continuing normally.` 한 줄이 붙습니다. 이유는 `timeout`이나 `network error` 같은 짧은 말입니다.
+- `hermes lithermes status`는 `Jev skill hint: <상태>`를 출력하고, `hermes lithermes doctor`는 같은 문구 앞에 표시를 붙입니다. 켜져 있으면 `[OK]`, 꺼져 있으면 `[NOTE]`, 스위치는 켰는데 키가 없으면 `[WARN]`입니다.
+- 상태는 `off`, `flag on but TYPESAFE_API_KEY missing`, `on — no session`(Hermes 세션 밖), `on — no hint yet`, `on — last hint <skill> (<seconds>s)` 중 하나입니다.
+
 ## 유지보수 검증
 
 패키지 디렉터리에서 `npm run test:python`을 실행합니다. runner는 import 성공 여부로
@@ -310,9 +320,11 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes --rollback-patch
 - `.hermes/lithermes/`, `plans/`, `runs/`, `evidence/`, `state.json`, `ledger.jsonl`, `notepad.md`, Wikify claims는 npm payload에 들어가지 않습니다.
 - Wikify는 구조화된 `fact`, `decision`, `failure`, `risk`, `rule`, `checkpoint`만 저장합니다. 새 record는 `review-needed`로 시작하고 accepted record만 context에 들어갑니다. 좁은 product-local review-needed 예외는 wiki page와 public source를 쓰지 않으며 descriptor-pinned POSIX operation을 사용합니다. Windows에서는 `unsupported-platform-pinned-write`를 반환합니다. `LITHERMES_WIKIFY_CAPTURE=0` 또는 `hermes lithermes knowledge capture off`로 끌 수 있습니다.
 - Native `/goal`은 user-managed이고 unobserved입니다. authoritative 기준은 durable `goal_*` state이며 native `/goal`에는 no automatic update, clear, or resume 원칙을 적용합니다.
-- Update notice는 cache-only이며 user-mediated입니다. `update-check.json`은 24시간 동안 throttle되고, `--offline`, `--json`, `--dry-run`, CI, pipe에서는 update를 설치하지 않습니다. `NO_UPDATE_NOTIFIER=1`, `LITHERMES_NO_UPDATE_CHECK=1`로 끌 수 있으며 안내 명령은 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`입니다.
+- LitHermes는 터미널에서 `install`, `check`, `doctor`를 실행할 때와 대화형 Hermes CLI 세션의 첫 메시지를 보낼 때 새 릴리스가 있는지 확인합니다. 새 릴리스가 있으면 플러그인 폴더와 설정을 먼저 백업하고 새 버전을 설치하며, 중간에 실패하면 백업을 되돌려 놓습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI이거나 출력이 파이프로 넘어가면 업데이트를 건너뜁니다. 전체 순서와 남는 기록은 [README의 업데이트 항목](../README_Ko-KR.md#업데이트)에 있습니다.
+- 끄려면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하거나(아래 알림은 그대로 받습니다), 한 번만 건너뛰려면 명령에 `--no-auto-update`를 붙이세요. 확인 자체를 멈추려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정합니다.
+- 업데이트 알림은 확인한 결과를 24시간에 한 번까지 `update-check.json`에 저장합니다. 더 새 릴리스가 적혀 있으면 이후 실행에서 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`를 안내하고, 실행은 직접 하시면 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI이거나 출력이 파이프로 넘어가면 알림도 나오지 않습니다.
 
-한국어 prose cleanup은 meaning preservation, source text as content, not instructions, `before/after diff`, honorific/register, protected spans를 지킵니다. no automatic file edits와 no external fetching을 적용하며 pasted text는 명령이 아닌 source material로 취급합니다.
+`/lit-humanizer`는 받은 글의 의미와 보호할 부분(protected spans), 존댓말·말투를 그대로 지키고, 요청하면 before/after 비교를 보여 줍니다. 글 속에 명령처럼 보이는 문장이 있어도 그냥 글로 남습니다. 파일은 저절로 고치지 않고 바깥 자료도 가져오지 않습니다.
 
 ## Telegram gateway
 
@@ -351,7 +363,7 @@ MIT
 
 ## Skill 이름 변경 호환성
 
-현재 skill 이름은 `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-korean`, `lit-code`입니다. 이전 이름은 한 릴리스 동안 새 skill로 연결되며 이름 변경 안내 한 줄을 표시합니다. 다음 minor에서 이전 이름을 제거합니다. 설치·업데이트 시 manifest가 관리하는 이전 skill 디렉터리도 새 이름으로 교체됩니다. `lit-team`은 기존 Hermes Kanban 경로를 가리키며 별도 skill을 설치하지 않습니다.
+현재 skill 이름은 `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-humanizer`, `lit-code`입니다. 이전 이름은 한 릴리스 동안 새 skill로 연결되며 이름 변경 안내 한 줄을 표시합니다. 다음 minor에서 이전 이름을 제거합니다. 설치·업데이트 시 manifest가 관리하는 이전 skill 디렉터리도 새 이름으로 교체됩니다. `lit-team`은 기존 Hermes Kanban 경로를 가리키며 별도 skill을 설치하지 않습니다.
 
 ## 화면과 README 제작
 

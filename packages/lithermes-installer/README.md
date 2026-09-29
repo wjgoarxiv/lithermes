@@ -41,7 +41,7 @@ Restart the Hermes CLI or gateway, then type:
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-The reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line. When you see it, LitHermes has picked up the task and the work has started. When it finishes, open the file and try each action yourself, and ask Hermes to separate what it actually checked from what is still unverified. Then run `/lit-handoff`. A new session in the same project can read that handoff and continue from it.
+The reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line. Once you see it, LitHermes has picked up the task and the work has started. When it finishes, open the file and try each action yourself, and ask Hermes to separate what it actually checked from what is still unverified. Then run `/lit-handoff`. A new session in the same project can read that handoff and continue from it.
 
 The spark is that record. Once the session closes, nothing carries on in the background; the next session picks the work up from the handoff.
 
@@ -77,9 +77,9 @@ On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads b
 - Goals, plans and evidence are written to local records under `.hermes/lithermes/` in your project, where the next session can read them.
 - The Hermes CLI gains the Ignition skin. Choose it with `/skin lithermes-ignition` and restart, or use `/skin lithermes-tokyonight-day` on a light terminal and `/skin lithermes-tokyonight` on a dark one. A fresh interactive, color-capable install run with `--yes` selects Ignition only when `display.skin` is absent, and existing skin files are kept.
 - LitHermes updates itself, carefully. When you run `lithermes install`, `check` or `doctor` in a terminal, or send the first message of an interactive Hermes CLI session, it asks the npm registry for the latest stable release. If that one is newer, LitHermes backs up your plugin folder, `config.yaml`, install record and skins folder, installs it, and runs `doctor --offline`. If the install fails, takes longer than 30 seconds or does not pass that check, the backup goes back and you keep your version. Restart Hermes to load a new one.
-- Each update leaves `auto-update-journal.json` and `auto-update-receipt.json` in `<Hermes home>/lithermes/`, so you can see what happened. Nothing updates with `--offline`, `--json` or `--dry-run`, in CI, or when output is piped.
+- Each update leaves `auto-update-journal.json` and `auto-update-receipt.json` in `<Hermes home>/lithermes/`. Updates are skipped with `--offline`, `--json` or `--dry-run`, in CI, or with piped output.
 - Separately, LitHermes looks for a newer release in the background at most once every 24 hours and saves the answer in `update-check.json`; any update notice is read from there. It suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is up to you.
-- To install new versions yourself and keep the notice, set `LITHERMES_NO_AUTO_UPDATE=1`.
+- To install new versions yourself and still get the notice, set `LITHERMES_NO_AUTO_UPDATE=1`.
 - To skip the update for one command, add `--no-auto-update` to `install`, `check` or `doctor`.
 - To stop every version check, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`. Any value counts for these variables. The GitHub page explains the update step in full.
 - LitHermes decides where a request goes; Hermes Agent still runs the model.
@@ -122,9 +122,9 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 `doctor --offline` checks the install without going online. If the installer made compatibility edits to Hermes, add `--rollback-patches` when uninstalling to undo them. Uninstalling keeps the skin files and your `display.skin` choice; `npx --package @litfamily/lithermes -- lithermes hud off` clears the choice and keeps the files.
 
 - To see what the installer would change before it changes anything, run `lithermes install --dry-run`.
-- Code, quotations and commands you paste in are treated as text to read, never as instructions. Secrets are masked before anything is saved or passed to a model.
-- Hermes' own `/goal` belongs to you: LitHermes does not watch it and never updates, clears or resumes it. LitHermes goes by the goals it saves through its `goal_*` tools.
-- Hermes sends every helper through one shared model setting, so there is no per-task model and no separate reviewer model. The installer's report shows what was configured; only the receipt of a real `delegate_task` run proves which model a helper used.
+- LitHermes reads pasted code, quotations and commands as plain text and does not follow them. Secrets are masked before anything is saved or passed to a model.
+- Hermes' own `/goal` stays yours. LitHermes leaves it alone and never updates, clears or resumes it. It works from the goals it saves through its `goal_*` tools.
+- Hermes sends every helper through one shared model setting, so you cannot pick a model per task or give reviewers their own. The installer's report shows what was configured; only the receipt of a real `delegate_task` run proves which model a helper used.
 - If Lit skills seem to be missing, ask Hermes to call its `skills_list` tool and look for LitHermes entries; the `/skills` command only reads the filesystem, and its list can differ by Hermes version. An import error in the Hermes log means the plugin failed to load. Keep the message rather than installing pip packages on a guess.
 - If a same-named skill elsewhere hides a LitHermes one, `lithermes doctor` prints a `skill shadow check: WARNING` line. Load the LitHermes copy as `lithermes:<name>`. The warning leaves doctor's exit status as it was.
 
