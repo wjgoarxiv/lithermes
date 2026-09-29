@@ -49,7 +49,7 @@
 
 **Keep the work lit.**
 
-LitHermes is a plugin for **Hermes Agent**. It connects planning, execution, review and handoff, so a task goes from a plan to checked work to a note the next session can read. You start it by adding one word, `lit`, to a request.
+LitHermes is a plugin for **Hermes Agent**. It takes a task from a plan to work that has actually been checked, then leaves a note so the next session knows where things stand. You start it by adding one word, `lit`, to a request.
 
 [한국어](./README_Ko-KR.md) · [npm](https://www.npmjs.com/package/@litfamily/lithermes) · [GitHub](https://github.com/wjgoarxiv/lithermes)
 
@@ -75,11 +75,11 @@ You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-The two `--yes` flags are deliberate. The first lets npx run the package, and the second approves the changes to your Hermes configuration. `--no-style` skips the picker for how replies are written; it does not turn off the Ignition skin. Nothing connects to Telegram during installation.
+This one line fetches the installer, puts the plugin into your Hermes home and changes your Hermes configuration so the plugin loads. It is written to run without stopping for approval, which is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. `--no-style` skips the picker for how replies are written, which would otherwise still come up in a terminal. The Ignition skin installs either way. Nothing connects to Telegram during installation.
 
-If you would rather try it away from your usual setup, set `HERMES_HOME` to a new, empty directory before you install, and start Hermes with that same value. Your existing home and settings stay as they are. Add `--no-patch-installed-hermes` as well, and the installer also leaves the Hermes installation it finds outside that profile without compatibility edits.
+Maybe you want to try LitHermes before it touches your everyday setup. Point `HERMES_HOME` at a new, empty directory before you install, and start Hermes with that same value; your usual home and settings stay as they are. The installer can also make compatibility edits to the Hermes installation it finds. If that installation lives outside your trial profile and you want it left alone too, add `--no-patch-installed-hermes`.
 
-Update notices are cache-only, and you decide whether to act on them. The check runs at most once every 24 hours through `update-check.json`; `--offline`, `--json`, `--dry-run`, CI and piped streams never install updates. A notice suggests `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`. Set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1` to turn the check off.
+Once installed, LitHermes looks for a newer release now and then so it can tell you about one. It checks at most once every 24 hours and keeps the answer in `update-check.json`; the notice you see is read from that saved answer. The notice suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is your call. With `--offline`, `--json` or `--dry-run`, in CI, or when output is piped, nothing is ever installed. To stop the check altogether, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`.
 
 <details>
 <summary>Installing from a reviewed .tgz instead</summary>
@@ -113,11 +113,11 @@ Restart the Hermes CLI or gateway so it loads the plugin. Then give it a task wi
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-`/lit <request>` does the same thing as an explicit command. You can tell the route took: the reply begins with exactly one `🔥 **LIT IGNITED · <discipline>** 🔥` line on its own first line, and the route acknowledgement appears when the reply arrives.
+`/lit <request>` does the same thing as an explicit command. Either way, the reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line on its own, and the route acknowledgement shows up as the reply arrives. When you see them, LitHermes has picked up the task and the work has started.
 
 When it finishes, open the HTML file and try each action yourself. Ask Hermes to separate the checks it actually ran from anything still unverified. Then run `/lit-handoff` to leave the result and the next step in the project. In a new session, open the same project and ask Hermes to read that handoff before it continues.
 
-The spark is the record you leave. It does not mean work keeps running after the session closes.
+The spark is that record. Once the session closes, nothing carries on in the background; the next session picks the work up from the handoff.
 
 ## Skills
 
@@ -126,9 +126,9 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <table>
 <tr><th>What it looks like</th><th>Skill</th><th>What you get</th></tr>
 <tr>
-<td><img src="./docs/assets/skills/litwork.webp" width="240" alt="Add lit to a request. A notepad plus a strict RED, GREEN, surface, cleanup loop for each criterion." /></td>
+<td><img src="./docs/assets/skills/litwork.webp" width="240" alt="Add lit to a request. It keeps a notepad and takes each criterion through a strict loop: a failing test, a passing one, a check on the real thing, then cleanup." /></td>
 <td><code>litwork</code><br /><sub><code>lit &lt;task&gt;</code> · <code>litwork &lt;task&gt;</code></sub></td>
-<td>Add <code>lit</code> to a request. A notepad plus a strict RED, GREEN, surface, cleanup loop for each criterion.</td>
+<td>Add <code>lit</code> to a request. It keeps a notepad and takes each criterion through a strict loop: a failing test, a passing one, a check on the real thing, then cleanup.</td>
 </tr>
 <tr>
 <td><img src="./docs/assets/skills/lit-plan.webp" width="240" alt="A plan file with numbered task rows that start-work can execute. Nothing is edited yet." /></td>
@@ -141,9 +141,9 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>Runs a plan row by row. A box is checked only after all five gates pass.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/review-work.webp" width="240" alt="Five independent review lanes read the same change and report findings first." /></td>
+<td><img src="./docs/assets/skills/review-work.webp" width="240" alt="Five reviewers read the same change on their own, and each leads with what it found." /></td>
 <td><code>review-work</code><br /><sub><code>lit review &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
-<td>Five independent review lanes read the same change and report findings first.</td>
+<td>Five reviewers read the same change on their own, and each leads with what it found.</td>
 </tr>
 <tr>
 <td><img src="./docs/assets/skills/litgoal.webp" width="240" alt="One objective with checkable criteria, kept on disk so the next session can pick it up." /></td>
@@ -206,9 +206,9 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>Ask for a report with <code>lit</code> and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/frontend-ui-ux.webp" width="240" alt="Builds a working interface, then the installed measured probe renders it in seven views: four widths, dark, reduced motion and 200% zoom." /></td>
+<td><img src="./docs/assets/skills/frontend-ui-ux.webp" width="240" alt="Builds a working interface, then renders it with the installed measuring probe in seven views: four widths, dark, reduced motion and 200% zoom." /></td>
 <td><code>frontend-ui-ux</code><br /><sub><code>lit design &lt;target&gt;</code> · <code>frontend-ui-ux &lt;target&gt;</code></sub></td>
-<td>Builds a working interface, then the installed measured probe renders it in seven views: four widths, dark, reduced motion and 200% zoom.</td>
+<td>Builds a working interface, then renders it with the installed measuring probe in seven views: four widths, dark, reduced motion and 200% zoom.</td>
 </tr>
 <tr>
 <td><img src="./docs/assets/skills/readme-studio.webp" width="240" alt="A factual README with a moving cover, checked at phone and desktop widths in light and dark." /></td>
@@ -236,9 +236,9 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>Drives a real page after verifying the browser driver. If there is none, it says so.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/structural-search.webp" width="240" alt="Finds code by its syntax shape, not its text, and previews rewrites before applying them." /></td>
+<td><img src="./docs/assets/skills/structural-search.webp" width="240" alt="Finds code by the shape of its syntax instead of its exact text, and shows a rewrite before applying it." /></td>
 <td><code>structural-search</code><br /><sub><code>lit structural &lt;pattern&gt;</code> · <code>structural-search &lt;pattern&gt;</code></sub></td>
-<td>Finds code by its syntax shape, not its text, and previews rewrites before applying them.</td>
+<td>Finds code by the shape of its syntax instead of its exact text, and shows a rewrite before applying it.</td>
 </tr>
 <tr>
 <td><img src="./docs/assets/skills/wikify.webp" width="240" alt="Keeps reviewed project knowledge on disk and answers later questions from it, with sources." /></td>
@@ -313,7 +313,7 @@ The question is simple: does adding `lit` to an ordinary request change what com
 
 Both sides ran once, in Hermes Agent v0.21.3 with `gpt-6-sol` at reasoning `high`, on 2026-09-26. The LitHermes side used a local pre-release build. A blind judge (Claude Opus 5.5) saw both outputs with tool names removed and compared them in both orders. The maintainer then looked at the two outputs side by side and made the final call.
 
-Some results come from later rounds. S3, S4 and S11 come from a UI round, and S5, S8 and S9 from an office round that used `lit-pptx` and `lit-docx`; each replaces the earlier result for the same task. In the UI round the LitHermes side never ran its measured interface probe, because the skill did not yet give the probe's installed path. The skill does now, but those three tasks have not been re-run. In S3 and S4 the baseline ran without the file-write sandbox the LitHermes side ran in.
+Not every row comes from that first run. S3, S4 and S11 were redone in a later UI round, and S5, S8 and S9 in an office round that used `lit-pptx` and `lit-docx`; each newer result replaces the older one for that task. Two things about the UI round are worth knowing. The LitHermes side never ran its measured interface probe there, because the skill did not yet tell it where the probe was installed. The skill does now, but those three tasks have not been run again. And in S3 and S4 the baseline ran without the file-write sandbox the LitHermes side had.
 
 | Task | Prompt | Final verdict | Blind judge (same round) |
 |---|---|---|---|
@@ -391,7 +391,7 @@ LitHermes:
 
 ## How it works
 
-LitHermes is a Python plugin. When Hermes loads it, `register(ctx)` adds hooks, commands, skills and work tools. The hooks take part before and after model and tool calls, and the `goal_*` tools write goals and evidence to local records in your project.
+LitHermes is a Python plugin. When Hermes loads it, `register(ctx)` adds hooks, commands, skills and work tools. The hooks step in just before and after each model or tool call. The `goal_*` tools write your goals, and the evidence gathered for them, to local records in your project.
 
 ```mermaid
 flowchart TD
@@ -403,49 +403,53 @@ flowchart TD
     R --> K
 ```
 
-Before the next model call, the context hook reads those records and passes along the current goal and progress.
+Before the next model call, the context hook reads those records and hands the model the current goal and how far it has got.
 
-The plugin routes the request, and Hermes Agent still runs the model. Host permissions, authentication, model access and visual checks remain separate capabilities of the host.
+The plugin decides where a request goes; Hermes Agent still runs the model. Permissions, sign-in, model access and anything that needs a real screen remain Hermes' own business.
 
 ## Beyond code
 
 ### Reports and slides
 
-Ask for a report or a presentation with a bare `lit`, and the request goes to the bundled `lithermes:lit-docx` and `lithermes:lit-pptx` skills. You get DOCX, PPTX or both, with the Markdown sources kept beside them. Korean documents default to the korean-generic profile, and slides to AZURE-PRO with Pretendard; an explicit choice of yours wins. On first use, the packaged Office runtime installs pinned dependencies into a LitHermes cache, then runs the document and deck QA gates. For an explicit route, use `/lit-docx <brief>` or `/lit-pptx <brief>`.
+Ask for a report or a presentation with a bare `lit`, and LitHermes hands it to its bundled Word and PowerPoint skills. You get a DOCX, a PPTX or both, with the Markdown source kept beside each file. Korean documents use the korean-generic profile unless you pick another, and slides use AZURE-PRO with Pretendard unless you ask for something else.
 
-The installed skill IDs are `lit-pptx` and `lit-docx`; Hermes shows them as `lithermes:lit-pptx` and `lithermes:lit-docx`.
+The first time you use either skill, its Office runtime installs the pinned versions of the tools it needs into a LitHermes cache. Then it runs its QA checks on the finished document or deck. To call a skill directly, type `/lit-docx <brief>` or `/lit-pptx <brief>`.
+
+The installed skill IDs are `lit-pptx` and `lit-docx`; Hermes lists them as `lithermes:lit-pptx` and `lithermes:lit-docx`.
 
 ### Diagrams
 
-Conceptual and technical diagrams go to the exact `lit-diagram-drawer` route, exposed as `lithermes:lit-diagram-drawer`. A diagram request with a bare `lit` before or after it also selects this skill and points to its installed entrypoint. Product pages stay with `frontend-ui-ux`, and plots of measured scientific data stay with `lit-scientific-visualization`.
+For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists it as `lithermes:lit-diagram-drawer`). You can also just ask for a diagram and put a bare `lit` before or after the request; LitHermes picks this skill and tells Hermes where its installed entrypoint is. Product pages belong to `frontend-ui-ux`, and plots of measured scientific data to `lit-scientific-visualization`.
 
 ### Films
 
 `lit-typographic-motion` is available as `lithermes:lit-typographic-motion` and `/lit-typographic-motion <brief>`. Ask for a film with a bare `lit` and it works like a director: it writes a treatment first. Then it renders a stage film (a model-authored HTML page captured frame by frame) or, when the words themselves are the film, a type film on its original WebGL2 engine. By default it adds a generated sound bed and labels it as generated.
 
-Run `lithermes motion-runtime status` to check Chrome, ffmpeg, WebGL2, software rendering and the pinned fonts. `lithermes motion-runtime install` pre-warms the dependencies outside the render session. When its gate passes, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
+A film needs Chrome and ffmpeg on your machine, plus a few pinned helper packages and fonts. A render never downloads anything itself, so those helpers and fonts have to be in a local cache first. `lithermes install` already tries to fill that cache. If it was skipped (with `--offline`, say) or did not finish, the installer prints one line saying so, and you can fill it later with `lithermes motion-runtime install`, run outside the render session. To see where things stand, run `lithermes motion-runtime status`: it reports Chrome, ffmpeg, WebGL2, whether rendering has fallen back to software, and the pinned fonts. When the film passes its final check, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
 
 ### Interfaces and READMEs
 
-`frontend-ui-ux` builds the interface you specify after it confirms the design choices that matter. A review-only or plan-only request stays read-only. `readme-studio`, listed by Hermes as `lithermes:readme-studio`, writes a factual README and a local cover with outlined Pretendard/Meslo type, editable source, and verified motion when available. If no native image generator is available, it reports `IMAGE_GENERATION_UNAVAILABLE`; imagery you supply explicitly can still be composed. Neither workflow logs in, installs anything globally or publishes.
+`frontend-ui-ux` builds the interface you describe, after checking with you on the design choices that matter. Ask it only for a review or a plan, and it reads and reports without editing anything. `readme-studio` (listed in Hermes as `lithermes:readme-studio`) writes a factual README and a cover made on your own machine: outlined Pretendard/Meslo type, an editable source, and motion when it can be verified. When Hermes has no built-in image generator, the skill says so with `IMAGE_GENERATION_UNAVAILABLE` and can still compose images you give it. Neither skill logs in, installs anything globally or publishes.
 
 ### Rewriting prose
 
 The `lit-humanizer` skill is available as `lithermes:lit-humanizer`. It helps you revise Korean and English drafts while keeping their facts and intended meaning.
 
-Its detector checks changed reader-facing text in supported formats, including SVG, that passes through Hermes `write_file` and `patch`. A block-tier finding can stop that write before it is saved; a warning-tier finding is review advice. DOCX and PPTX files are checked after creation, when a file-write event or script result reports the output path. PDF text is checked only when `pdftotext` is available and its path is reported. Those document checks are advisory: they ask Hermes to revise the source and rebuild. The detector does not identify who wrote the text.
+The skill also comes with a detector that watches what Hermes writes for people to read. When Hermes saves text through `write_file` or `patch`, in any supported format including SVG, the detector reads the changed part first. A serious finding (block tier) can stop the write before the file is saved; a milder one (warning tier) comes back as advice to review.
+
+Office files and PDFs are checked after they exist. A DOCX or PPTX is read once a file-write event or a script result reports where it was saved. A PDF is read the same way, but only if `pdftotext` is installed. By then the file is already saved, so these checks only advise: Hermes is asked to fix the source and rebuild. Either way, the detector judges wording and cannot tell who wrote the text.
 
 ## The Ignition skin
 
-LitHermes also changes how the Hermes CLI looks. In the CLI, `/skin` lists the active and available skins. Select `/skin lithermes-ignition`, then restart Hermes to see the startup banner. Ignition uses orange, lime, ivory and navy. Its supported welcome includes the five-row MICRO mark in the compact layout, though the host may still leave out the full `banner_logo` there. The ten numbered accent presets remain available.
+LitHermes also gives the Hermes CLI a new look. Type `/skin` in the CLI to see which skin is active and which ones you can pick. Choose `/skin lithermes-ignition` and restart Hermes, and the startup banner appears in orange, lime, ivory and navy. In the compact layout the welcome still shows the five-row MICRO mark, although the host may leave out the full `banner_logo` there. The ten numbered accent presets are all still there too.
 
-A fresh interactive, color-capable install run with `--yes` selects Ignition only when `display.skin` is absent. Existing selections and skin files are preserved.
+If you install for the first time with `--yes` in an interactive terminal that shows color, Ignition is selected for you, but only when `display.skin` is not in your configuration at all. A skin you already chose, and any skin files you already have, stay as they are.
 
-For a light terminal, select `/skin lithermes-tokyonight-day`; for a dark one, `/skin lithermes-tokyonight`. Then restart Hermes. Both keep body, status and completion-menu text readable, recolor the existing MICRO and banner artwork, and preserve your existing skin selection and files. What you type keeps the terminal's default color. A natural Lit reply adds its MICRO acknowledgement once, at the end.
+On a light terminal, pick `/skin lithermes-tokyonight-day`; on a dark one, `/skin lithermes-tokyonight`. Restart Hermes after switching. Both keep body text, status lines and the completion menu readable, recolor the MICRO mark and banner art, and leave your other skin choices and files alone. What you type keeps your terminal's default color. When a Lit reply comes in through a natural route, the MICRO acknowledgement appears once, at the end.
 
-The skin changes the CLI's appearance; the output style changes how replies are worded. A gateway conversation does not show the CLI skin. How it actually renders depends on the host and terminal, so an installed YAML file alone does not show that it is visible.
+The skin and the output style are separate things: the skin changes how the CLI looks, and the output style changes how replies are worded. Gateway conversations never show the CLI skin. The real look also depends on your host and terminal, and a skin file on disk doesn't guarantee it shows. After a restart, check it on screen.
 
-Existing named skin files are not refreshed automatically. To refresh one that is a regular file, move it to a backup you keep, rerun the installer so the missing named file is recreated, then reapply your own edits. Symlinked or unexpected targets stay protected. On macOS, the `prompt_toolkit` divider with CPR disabled may stay ANSI-256 even when the rest of the Rich output keeps the approved colors.
+LitHermes won't overwrite a named skin file you already have. To get a fresh copy of one that is a regular file, move it somewhere safe as a backup, run the installer again so it recreates the missing file, then copy your own edits back in. Symlinks and anything unexpected in that spot are left untouched. On macOS, one detail may stay in ANSI-256 color: the `prompt_toolkit` divider when CPR is turned off, even though the rest of the Rich output keeps the approved colors.
 
 ## Commands
 
@@ -466,11 +470,11 @@ Existing named skin files are not refreshed automatically. To refresh one that i
 | `/lit-docx <brief>` | Create, edit and audit a Word report with publisher profiles. |
 | `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./docs/guide.md) has the full command examples and hook behavior. A route acknowledgement is a host message; it does not mean the work or the visual checks are complete.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./docs/guide.md) has the full command examples and hook behavior. The acknowledgement line you see after a command means the work has started; check the result yourself, including any visual check, before you rely on it.
 
 ## Optional: Jev skill hint
 
-LitHermes can ask Jev, TypeSafe's hosted decision model, which bundled LitHermes skill fits a plain prompt. The answer becomes one advisory line in that turn's context. The Hermes model still decides whether to load the skill, and the hint grants no permission and starts no tool. Slash commands, and prompts an existing LitHermes route already handles, are left alone.
+Sometimes a plain prompt would suit one of the bundled skills, but nothing in it says so. For those prompts, LitHermes can ask Jev, TypeSafe's hosted decision model, which skill fits. Jev's answer is added to that turn's context as one line of advice. It is only a suggestion: the Hermes model still decides whether to load the skill, and the hint cannot grant permissions or start tools. Slash commands, and prompts an existing LitHermes route already handles, are left alone.
 
 It is off by default. To turn it on, set both variables, with your own TypeSafe key, in the environment Hermes runs in:
 
@@ -499,17 +503,18 @@ Start with a check that stays offline:
 npx --package @litfamily/lithermes -- lithermes doctor --offline
 ```
 
-If Lit skills seem to be missing, ask Hermes to call its `skills_list` tool and look for LitHermes entries. Plugin-provided skills and the filesystem-only `/skills` listing may differ by host version.
+If Lit skills seem to be missing, ask Hermes to call its `skills_list` tool and look for LitHermes entries. The `/skills` command only reads the filesystem, so depending on the Hermes version its list can differ from the skills the plugin provides.
 
-If a skill with the same name lives somewhere else, it can win. Hermes resolves a bare skill name (not the explicit `lithermes:<name>` form) against `skills.external_dirs` in Hermes `config.yaml` and local `<HERMES_HOME>/skills` before it reaches the LitHermes plugin. When one of those holds a same-named skill, `lithermes doctor` prints a `skill shadow check: WARNING` line naming the skill and the shadowing path. Load the LitHermes copy explicitly as `lithermes:<name>`, or remove or rename the other copy. This warning never changes doctor's pass/fail exit status.
+A skill with the same name somewhere else can win over the LitHermes one. When you ask for a skill by its plain name, Hermes looks in the folders listed under `skills.external_dirs` in its `config.yaml` and in `<HERMES_HOME>/skills` before it reaches the plugin. The prefixed form, `lithermes:<name>`, skips that search. `lithermes doctor` spots the clash and prints a `skill shadow check: WARNING` line with the skill and the path that hides it. Load the LitHermes copy as `lithermes:<name>`, or remove or rename the other one. The warning is informational and leaves doctor's pass/fail exit status as it was.
 
-An import error in the Hermes log means the plugin failed to load. It is not a missing pip package to install on a guess. Keep the message and check the [operating guide](./docs/guide.md).
+An import error in the Hermes log means the plugin failed to load. Resist installing pip packages on a guess; keep the message and check the [operating guide](./docs/guide.md).
 
 ### Limits worth knowing
 
-- You can preview configuration changes with `lithermes install --dry-run`. Code, quotations and copied commands remain inert data, and secrets are redacted before persistence or model handoff.
-- Native `/goal` is user-managed and unobserved. Durable `goal_*` state is authoritative; there is no automatic update, clear, or resume of native `/goal`.
-- Hermes uses one global child model route. Per-task model overrides and named reviewer routes are unavailable, and a configuration receipt does not prove which route a child actually ran on.
+- To see what the installer would change before it changes anything, run `lithermes install --dry-run`.
+- Code, quotations and commands you paste in are treated as text to read, never as instructions to follow. Secrets are masked before anything is saved or passed to a model.
+- Hermes' own `/goal` belongs to you. LitHermes does not watch it and never updates, clears or resumes it. LitHermes keeps its goals through its `goal_*` tools, and those saved records are what it goes by.
+- Hermes sends every helper through one shared model setting, so you cannot choose a model per task or give reviewers a model of their own. The installer's report shows what was configured. It cannot prove which model a helper actually ran on; only the receipt of a real `delegate_task` run can.
 
 ### Removing it
 
@@ -517,7 +522,7 @@ An import error in the Hermes log means the plugin failed to load. It is not a m
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-If compatibility patches were installed, add `--rollback-patches`. Uninstalling leaves the native skin files and the selected `display.skin` in place. To clear that choice, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; the skin files and your other settings stay.
+If the installer made compatibility edits to Hermes, add `--rollback-patches` to undo them. Uninstalling keeps the skin files and your `display.skin` choice. To go back to the Hermes default look, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; it clears the choice and keeps the skin files and your other settings.
 
 ## More docs and contributing
 
