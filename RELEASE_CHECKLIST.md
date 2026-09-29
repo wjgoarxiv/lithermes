@@ -38,13 +38,13 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.11 factual release scope
+### 1.0.12 factual release scope
 
-This checklist covers the 1.0.11 release.
+This checklist covers the 1.0.12 release.
 
-- [ ] The Jev last hint is kept per session in `jev-last-*.json`: `hermes lithermes status` and `doctor` inside a session name only that session's last hint, report `on — no session` outside any session, and each session's file is removed when the session ends; the files still hold no prompt text, key or response text and are never written through a symlink.
-- [ ] The plugin loads on Python 3.12 or later without an invalid escape sequence `SyntaxWarning`.
-- [ ] The README, package README and privacy notes describe the per-session last hint; the packed tarball stays under the 12 MiB cap.
+- [ ] The English and Korean READMEs use plainer language with the reason given before the switches, and the npm page is a short install card that links to the full guide on GitHub.
+- [ ] The README explains the automatic update step: when LitHermes checks npm, what it backs up, when it rolls back, what it records, and the four ways to turn it off (`LITHERMES_NO_AUTO_UPDATE=1`, `--no-auto-update`, `NO_UPDATE_NOTIFIER=1`, `LITHERMES_NO_UPDATE_CHECK=1`); every statement matches `src/lib/updateNotifier.js` and `assets/lithermes-plugin/auto_update.py`.
+- [ ] The package README carries the shorter version; the packed tarball stays under the 12 MiB cap.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass.
 
 ### 1.0.3 factual release scope
@@ -347,7 +347,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.11 version`.
+  from `npm view @litfamily/lithermes@1.0.12 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -369,10 +369,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.11 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.12 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.11 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.11.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.11.tgz"
+  npm pack @litfamily/lithermes@1.0.12 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.12.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.12.tgz"
 rm -rf "$VERIFY_DIR"
 ```

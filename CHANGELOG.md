@@ -6,6 +6,11 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.12] - 2026-09-29
+
+- The README now explains the automatic update step: when LitHermes looks for a new version, what it backs up before installing, when it rolls back, which files record the result, and how to turn it off (`LITHERMES_NO_AUTO_UPDATE=1`, `--no-auto-update`, `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`).
+- The English and Korean READMEs use plainer language, with the reason given before the switches. The npm page links to the full guide on GitHub.
+
 ## [1.0.11] - 2026-09-29
 
 - The Jev skill hint now keeps its last hint per session, so two concurrent sessions no longer see each other's hint. Run `hermes lithermes status` or `doctor` inside a session to see that session's last hint; outside any session they report `on — no session`. Each session's small last-hint file is removed when the session ends.
