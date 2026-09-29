@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.11" /></a>
+<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.12" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ Plan → Make → Check → Leave the next step
 
 ## Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.11`.
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.12`.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -78,8 +78,6 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 This one line fetches the installer, puts the plugin into your Hermes home and changes your Hermes configuration so the plugin loads. It is written to run without stopping for approval, which is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. `--no-style` skips the picker for how replies are written, which would otherwise still come up in a terminal. The Ignition skin installs either way. Nothing connects to Telegram during installation.
 
 Maybe you want to try LitHermes before it touches your everyday setup. Point `HERMES_HOME` at a new, empty directory before you install, and start Hermes with that same value; your usual home and settings stay as they are. The installer can also make compatibility edits to the Hermes installation it finds. If that installation lives outside your trial profile and you want it left alone too, add `--no-patch-installed-hermes`.
-
-Once installed, LitHermes looks for a newer release now and then so it can tell you about one. It checks at most once every 24 hours and keeps the answer in `update-check.json`; the notice you see is read from that saved answer. The notice suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is your call. With `--offline`, `--json` or `--dry-run`, in CI, or when output is piped, nothing is ever installed. To stop the check altogether, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`.
 
 <details>
 <summary>Installing from a reviewed .tgz instead</summary>
@@ -104,6 +102,37 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 ```
 
 </details>
+
+### Updates
+
+LitHermes updates itself, and it does so carefully. Here is what actually happens.
+
+It looks for a newer version in two situations: when you run `lithermes install`, `check` or `doctor` in a terminal, and when you send the first message of an interactive Hermes CLI session. It asks the npm registry for the latest stable release and waits up to 3 seconds. If that release is newer than yours, LitHermes installs it right then, and your command (or your first reply) waits until it finishes.
+
+The install is built so that it can be undone:
+
+1. LitHermes copies the plugin folder, `config.yaml`, the install record and the skins folder into `<Hermes home>/lithermes/auto-update/<id>/backup/`.
+2. It runs the new version's installer as `install --yes --no-hud --no-style --no-patch-installed-hermes`. That means no questions about the skin accent or the reply style, and no compatibility edits to your Hermes installation. Your model and effort settings stay as they are.
+3. It runs `doctor --offline`.
+4. If the install fails, takes longer than 30 seconds, or does not pass that check, the backup goes back in place and you keep the version you had.
+
+Only one update runs at a time in a Hermes home. The installer gets a trimmed environment: `PATH`, home and temp folders, locale, `TERM` and `NODE_EXTRA_CA_CERTS`. Npm settings, proxies, `NODE_OPTIONS` and tokens are left out. After a successful update the backup folder stays, so delete it when you no longer need it.
+
+**What you will see.** Very little. During `lithermes install`, an update ends with `LitHermes automatic update committed (<version>). Restart Hermes to load it.` because the newer installer has already done the install; run the command again if you wanted its own options. `check` and `doctor` carry on with their usual report. A failed update that was rolled back is silent, and the command continues with your current version. Inside Hermes nothing is added to the conversation, and the first reply simply waits for the update. Restart the Hermes CLI and any gateways to load the new version.
+
+Each run leaves two records in `<Hermes home>/lithermes/`. `auto-update-journal.json` follows the steps, and `auto-update-receipt.json` shows whether the update went through, which version it aimed for and whether it rolled back. If the rollback itself fails, LitHermes stops the command and says the Hermes home is in an unknown state. Keep the backup and run `lithermes doctor --offline --hermes-home PATH` before you go on.
+
+**When it stays out of the way.** An update needs a person at the terminal: input, output and error output must all be interactive, so piped output and any run with `CI` set skip it. So do commands with `--offline`, `--json` or `--dry-run`, and commands run through `bunx`. Inside Hermes it is tried at most once per session, only in the top-level session and never in a delegated helper. It also only updates a LitHermes that the npm installer put in place. A copy from the Hermes catalog, or one you copied in yourself, stays yours to manage, and an install made by an older installer qualifies once you have run the installer again.
+
+**The update notice.** Separately, LitHermes can tell you about a release without installing it. After `install`, `check` or `doctor` it looks in the background, at most once every 24 hours, and saves the answer in `update-check.json`. Later runs read that file and, if a newer release is listed, suggest a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`. You run it yourself, so the notice is how you hear about releases when automatic updates are off. The same rules apply: nothing is checked with `--offline`, `--json` or `--dry-run`, in CI, or when output is piped.
+
+**Turning it off.** Pick the one that fits:
+
+- `LITHERMES_NO_AUTO_UPDATE=1`: install new versions yourself and keep the notice. Set it in the shell that runs `lithermes` and in the one that starts Hermes.
+- `--no-auto-update` on `install`, `check` or `doctor`: skip the update for that one command.
+- `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`: stop LitHermes from asking npm about new versions at all. The update and the notice both turn off.
+
+LitHermes only checks that a variable is set, so any value works, `0` included.
 
 ## Quick start
 

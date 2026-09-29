@@ -1,16 +1,16 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/badge-version.svg" alt="1.0.11" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/badge-version.svg" alt="1.0.12" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -19,7 +19,7 @@
 
 A plugin for **Hermes Agent**. Add `lit` to a request, and Hermes plans the task, does it, checks it, and leaves a note the next session can pick up.
 
-**[Full guide, skills gallery and A/B results on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/README_Ko-KR.md)
+**[Full guide, skills gallery and A/B results on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/README_Ko-KR.md)
 
 ## Install
 
@@ -76,7 +76,12 @@ On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads b
 - The plugin goes into your Hermes home. After a restart, Hermes has new hooks, commands, skills and `goal_*` work tools.
 - Goals, plans and evidence are written to local records under `.hermes/lithermes/` in your project, where the next session can read them.
 - The Hermes CLI gains the Ignition skin. Choose it with `/skin lithermes-ignition` and restart, or use `/skin lithermes-tokyonight-day` on a light terminal and `/skin lithermes-tokyonight` on a dark one. A fresh interactive, color-capable install run with `--yes` selects Ignition only when `display.skin` is absent, and existing skin files are kept.
-- LitHermes looks for a newer release at most once every 24 hours and saves the answer in `update-check.json`; any update notice is read from there. It suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is up to you. With `--offline`, `--json` or `--dry-run`, in CI, or when output is piped, nothing is installed. To stop the check, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`.
+- LitHermes updates itself, carefully. When you run `lithermes install`, `check` or `doctor` in a terminal, or send the first message of an interactive Hermes CLI session, it asks the npm registry for the latest stable release. If that one is newer, LitHermes backs up your plugin folder, `config.yaml`, install record and skins folder, installs it, and runs `doctor --offline`. If the install fails, takes longer than 30 seconds or does not pass that check, the backup goes back and you keep your version. Restart Hermes to load a new one.
+- Each update leaves `auto-update-journal.json` and `auto-update-receipt.json` in `<Hermes home>/lithermes/`, so you can see what happened. Nothing updates with `--offline`, `--json` or `--dry-run`, in CI, or when output is piped.
+- Separately, LitHermes looks for a newer release in the background at most once every 24 hours and saves the answer in `update-check.json`; any update notice is read from there. It suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is up to you.
+- To install new versions yourself and keep the notice, set `LITHERMES_NO_AUTO_UPDATE=1`.
+- To skip the update for one command, add `--no-auto-update` to `install`, `check` or `doctor`.
+- To stop every version check, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`. Any value counts for these variables. The GitHub page explains the update step in full.
 - LitHermes decides where a request goes; Hermes Agent still runs the model.
 
 ## Does it help?

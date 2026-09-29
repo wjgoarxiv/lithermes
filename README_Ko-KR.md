@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.11" /></a>
+<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.12" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ LitHermes는 그 기록을 프로젝트에 남깁니다. 목표와 계획, 근�
 
 ## 설치
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.11` 기준입니다.
+Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.12` 기준입니다.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -78,8 +78,6 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 이 한 줄이 설치 프로그램을 받아 오고, 플러그인을 Hermes 홈에 넣고, 플러그인이 불러와지도록 Hermes 설정을 고칩니다. 중간에 승인을 묻느라 멈추지 않게 만든 명령이라 `--yes`가 두 번 들어갑니다. 앞의 것은 npx에게 패키지를 실행해도 된다고 알리고, 뒤의 것은 설정 변경을 승인합니다. `--no-style`은 답변 문체를 고르는 화면을 건너뜁니다. 이 옵션이 없으면 터미널에서는 그 화면이 여전히 뜹니다. Ignition 스킨은 어느 쪽이든 설치됩니다. 설치하는 동안 Telegram에는 연결하지 않습니다.
 
 평소 쓰는 환경을 건드리기 전에 먼저 써 보고 싶을 수도 있습니다. 그럴 때는 설치 전에 `HERMES_HOME`을 비어 있는 새 디렉터리로 지정하고, Hermes를 시작할 때도 같은 값을 쓰세요. 원래 쓰던 홈과 설정은 그대로 남습니다. 설치 프로그램은 찾아낸 Hermes 설치본에 호환성 수정을 할 수도 있습니다. 그 설치본이 시험용 프로필 밖에 있고 그것까지 그대로 두고 싶다면 `--no-patch-installed-hermes`를 붙이세요.
-
-설치한 뒤에는 LitHermes가 가끔 새 버전이 나왔는지 확인해서 알려 줍니다. 확인은 24시간에 한 번까지만 하고, 결과는 `update-check.json`에 저장해 두었다가 안내를 띄울 때 그 값을 읽습니다. 안내에는 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령이 나오는데, 실행할지는 직접 정하면 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 아무것도 설치하지 않습니다. 확인 자체를 끄고 싶다면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정하세요.
 
 <details>
 <summary>검토된 .tgz로 설치하기</summary>
@@ -104,6 +102,37 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 ```
 
 </details>
+
+### 업데이트
+
+LitHermes는 스스로 업데이트하는데, 조심스럽게 합니다. 실제로 무슨 일이 일어나는지 순서대로 설명합니다.
+
+새 버전을 확인하는 때는 두 가지입니다. 터미널에서 `lithermes install`, `check`, `doctor`를 실행할 때, 그리고 대화형 Hermes CLI 세션에서 첫 메시지를 보낼 때입니다. npm 레지스트리에 최신 안정 버전을 물어보고 답을 최대 3초까지 기다립니다. 지금 쓰는 것보다 새 버전이면 그 자리에서 바로 설치하고, 설치가 끝날 때까지 실행한 명령(또는 첫 응답)이 기다립니다.
+
+설치는 되돌릴 수 있게 짜여 있습니다.
+
+1. 플러그인 폴더, `config.yaml`, 설치 기록, 스킨 폴더를 `<Hermes 홈>/lithermes/auto-update/<id>/backup/`에 복사해 둡니다.
+2. 새 버전의 설치 프로그램을 `install --yes --no-hud --no-style --no-patch-installed-hermes`로 실행합니다. 스킨 강조색과 답변 문체를 다시 묻지 않고, Hermes 설치본에도 손대지 않습니다. 설정해 둔 모델과 추론 강도는 그대로 남습니다.
+3. `doctor --offline`을 실행합니다.
+4. 설치가 실패하거나 30초를 넘기거나 이 점검을 통과하지 못하면 백업을 복원해서 쓰던 버전이 그대로 남습니다.
+
+한 Hermes 홈에서는 업데이트가 한 번에 하나만 진행됩니다. 설치 프로그램에는 `PATH`, 홈과 임시 폴더, 로케일, `TERM`, `NODE_EXTRA_CA_CERTS`만 넘기고, npm 설정, 프록시, `NODE_OPTIONS`, 토큰은 넘기지 않습니다. 업데이트에 성공해도 백업 폴더는 남으니, 더 필요 없으면 직접 지우세요.
+
+**보이는 것은 많지 않습니다.** `lithermes install` 중에 업데이트가 일어나면 `LitHermes automatic update committed (<version>). Restart Hermes to load it.`를 출력하고 끝납니다. 새 설치 프로그램이 이미 설치를 마쳤기 때문입니다. 그 명령에 붙였던 옵션이 필요하면 명령을 한 번 더 실행하세요. `check`와 `doctor`는 하던 대로 결과를 보여 줍니다. 업데이트가 실패해서 백업을 복원했다면 아무 출력 없이 쓰던 버전으로 이어집니다. Hermes 안에서도 대화에는 아무것도 추가되지 않고, 첫 응답이 업데이트가 끝날 때까지 기다릴 뿐입니다. 새 버전을 불러오려면 Hermes CLI와 gateway를 다시 시작하세요.
+
+실행할 때마다 `<Hermes 홈>/lithermes/`에 기록이 두 개 남습니다. `auto-update-journal.json`은 진행 단계를, `auto-update-receipt.json`은 성공 여부와 목표 버전, 복원 여부를 담습니다. 복원마저 실패하면 LitHermes가 명령을 멈추고 Hermes 홈이 알 수 없는 상태라고 알려 줍니다. 백업은 지우지 말고, 계속하기 전에 `lithermes doctor --offline --hermes-home PATH`를 실행하세요.
+
+**업데이트가 일어나지 않는 경우.** 사람이 터미널 앞에 있어야 합니다. 입력, 출력, 오류 출력이 모두 대화형 터미널이어야 해서, 출력을 파이프로 넘기거나 `CI` 변수가 설정된 실행에서는 건너뜁니다. `--offline`, `--json`, `--dry-run`을 붙인 명령과 `bunx`로 실행한 명령도 건너뜁니다. Hermes 안에서는 세션마다 최대 한 번, 최상위 세션에서만 시도하고 위임받은 보조 세션에서는 시도하지 않습니다. npm 설치 프로그램이 넣어 준 LitHermes만 대상이라서, Hermes 카탈로그로 들어왔거나 직접 복사해 넣은 사본은 사용자가 관리합니다. 예전 설치 프로그램으로 설치했다면 설치 프로그램을 한 번 다시 실행한 뒤부터 대상이 됩니다.
+
+**업데이트 안내.** 이와는 따로, LitHermes는 설치하지 않고 새 릴리스 소식만 알려 줄 수도 있습니다. `install`, `check`, `doctor`를 실행한 뒤 백그라운드에서 24시간에 한 번까지만 확인하고, 결과를 `update-check.json`에 저장합니다. 다음에 실행할 때 이 파일을 읽어 더 새로운 릴리스가 적혀 있으면 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령을 안내합니다. 이 명령은 직접 실행하는 것이라서, 자동 업데이트를 꺼 두었을 때 새 릴리스 소식을 듣는 방법이 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 이 확인도 하지 않습니다.
+
+**끄는 방법.** 필요한 것을 고르세요.
+
+- `LITHERMES_NO_AUTO_UPDATE=1`: 새 버전은 직접 설치하고 안내는 계속 받습니다. `lithermes`를 실행하는 셸과 Hermes를 시작하는 셸 양쪽에 설정해야 합니다.
+- `install`, `check`, `doctor`에 `--no-auto-update`: 그 명령 한 번만 업데이트를 건너뜁니다.
+- `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`: 새 버전을 npm에 물어보는 일 자체를 멈춥니다. 자동 업데이트와 안내가 모두 꺼집니다.
+
+LitHermes는 변수가 설정되어 있는지만 보기 때문에, `0`을 포함해 어떤 값이든 똑같이 적용됩니다.
 
 ## 빠른 시작
 

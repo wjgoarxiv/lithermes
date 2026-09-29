@@ -1,16 +1,16 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B 마크" /></p>
+<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/badge-version.svg" alt="1.0.11" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/badge-version.svg" alt="1.0.12" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-book-open.svg" width="16" alt="" /> 안내</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-book-open.svg" width="16" alt="" /> 안내</a> &nbsp;
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -19,7 +19,7 @@
 
 **Hermes Agent**용 플러그인입니다. 요청에 `lit`을 붙이면 Hermes가 작업을 계획하고, 실행하고, 확인한 뒤 다음 세션이 이어받을 기록을 남깁니다.
 
-**[전체 안내, 스킬 갤러리, A/B 결과는 GitHub에서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.11/README.md)
+**[전체 안내, 스킬 갤러리, A/B 결과는 GitHub에서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.12/README.md)
 
 ## 설치
 
@@ -75,7 +75,12 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬
 - 플러그인이 Hermes 홈에 들어갑니다. 다시 시작하면 Hermes에 훅, 명령, 스킬, `goal_*` 작업 도구가 생깁니다.
 - 목표·계획·근거는 프로젝트의 `.hermes/lithermes/` 아래 로컬 기록으로 남고, 다음 세션이 이 기록을 읽을 수 있습니다.
 - Hermes CLI에 Ignition 스킨이 생깁니다. `/skin lithermes-ignition`을 고르고 다시 시작하세요. 밝은 터미널에는 `/skin lithermes-tokyonight-day`, 어두운 터미널에는 `/skin lithermes-tokyonight`가 맞습니다. 색상을 지원하는 대화형 환경에서 `--yes`로 처음 설치하면 설정에 `display.skin` 항목이 아예 없을 때만 Ignition을 고르고, 기존 스킨 파일은 보존합니다.
-- LitHermes는 새 버전이 나왔는지 24시간에 한 번까지만 확인하고, 결과를 `update-check.json`에 저장해 두었다가 안내할 때 읽습니다. 안내에는 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령이 나오고, 실행할지는 직접 정하면 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 아무것도 설치하지 않습니다. 확인을 끄려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정하세요.
+- LitHermes는 스스로, 그리고 조심스럽게 업데이트합니다. 터미널에서 `lithermes install`, `check`, `doctor`를 실행하거나 대화형 Hermes CLI 세션에서 첫 메시지를 보내면 npm 레지스트리에 최신 안정 버전을 물어봅니다. 더 새로운 버전이 있으면 플러그인 폴더, `config.yaml`, 설치 기록, 스킨 폴더를 백업한 뒤 설치하고 `doctor --offline`을 실행합니다. 설치가 실패하거나 30초를 넘기거나 이 점검을 통과하지 못하면 백업을 복원해서 쓰던 버전이 남습니다. 새 버전을 불러오려면 Hermes를 다시 시작하세요.
+- 업데이트할 때마다 `<Hermes 홈>/lithermes/`에 `auto-update-journal.json`과 `auto-update-receipt.json`이 남아서 무슨 일이 있었는지 볼 수 있습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 업데이트하지 않습니다.
+- 이와는 따로, LitHermes는 새 버전이 나왔는지 백그라운드에서 24시간에 한 번까지만 확인해 그 결과를 `update-check.json`에 저장해 둡니다. 안내할 때는 이 파일을 읽고, 안내에는 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령이 나옵니다. 실행할지는 직접 정하면 됩니다.
+- 새 버전을 직접 설치하면서 안내는 계속 받고 싶다면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요.
+- 명령 한 번만 건너뛰려면 `install`, `check`, `doctor`에 `--no-auto-update`를 붙이세요.
+- 버전 확인을 모두 멈추려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정하세요. 이 변수들은 어떤 값이든 똑같이 적용됩니다. 업데이트 과정의 자세한 설명은 GitHub 문서에 있습니다.
 - 요청을 어디로 보낼지는 LitHermes가 정하고, 모델은 여전히 Hermes Agent가 돌립니다.
 
 ## 정말 도움이 되나요?
