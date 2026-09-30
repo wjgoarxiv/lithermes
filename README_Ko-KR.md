@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes 클레이 마크" /></p>
 
 <p align="center">
-<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.13" /></a>
+<a href="#설치"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.14" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ LitHermes는 그 기록을 프로젝트에 남깁니다. 목표와 계획, 근�
 
 ## 설치
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.13` 기준입니다.
+Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.14` 기준입니다.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -154,7 +154,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 **설치.** 설치 프로그램은 플러그인을 Hermes 홈에 복사하고, 새 홈이면 기본 모델 경로를 쓰고, 그 전에 설정 파일의 백업을 남깁니다. 백업 파일이 어디에 놓이는지 화면에서 바로 보입니다. 마지막에는 실행 중인 gateway를 다시 시작하라는 안내와, 영상 도구를 받았는지에 대한 한 줄이 나옵니다.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/install-dark.webp" /><img src="./docs/assets/screens/install-light.webp" width="690" alt="터미널. &quot;lithermes install --yes --no-style --offline&quot; 명령이 &quot;Installed LitHermes 1.0.13&quot;, &quot;plugin: ~/.hermes/plugins/lithermes&quot;, &quot;model config: updated&quot;, &quot;model backup: ~/.hermes/config.yaml.lithermes-model.bak&quot;을 출력하고, 이어서 &quot;lead route: configured (gpt-6-astra, effort xhigh)&quot;, &quot;ordinary worker route: configured (gpt-6-luna, effort max)&quot;, &quot;HUD skins: 13 accents installed — pick one with `npx --package @litfamily/lithermes -- lithermes hud &lt;accent&gt;`&quot;, &quot;Restart any running Hermes gateway to load new plugins.&quot;, &quot;Motion runtime: pre-warm skipped (--offline); run `lithermes motion-runtime install` before rendering a film.&quot;을 출력합니다. 점 두 줄은 잘라 낸 줄입니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/install-dark.webp" /><img src="./docs/assets/screens/install-light.webp" width="690" alt="터미널. &quot;lithermes install --yes --no-style --offline&quot; 명령이 &quot;Installed LitHermes 1.0.14&quot;, &quot;plugin: ~/.hermes/plugins/lithermes&quot;, &quot;model config: updated&quot;, &quot;model backup: ~/.hermes/config.yaml.lithermes-model.bak&quot;을 출력하고, 이어서 &quot;lead route: configured (gpt-6-astra, effort xhigh)&quot;, &quot;ordinary worker route: configured (gpt-6-luna, effort max)&quot;, &quot;HUD skins: 13 accents installed — pick one with `npx --package @litfamily/lithermes -- lithermes hud &lt;accent&gt;`&quot;, &quot;Restart any running Hermes gateway to load new plugins.&quot;, &quot;Motion runtime: pre-warm skipped (--offline); run `lithermes motion-runtime install` before rendering a film.&quot;을 출력합니다. 점 두 줄은 잘라 낸 줄입니다." /></picture></p>
 
 *스크래치용 Hermes 홈에서 실제 설치 프로그램으로 얻은 출력입니다. 밖으로 아무것도 나가지 않고 Hermes 설치본도 건드리지 않도록 오프라인, 자동 업데이트 끄기, 호환 패치 끄기 옵션을 더해 실행했습니다. 로컬 Hermes 소스는 읽기만 했습니다. 모델 경로 줄은 잘랐고("…"), 스크래치 폴더는 ~/.hermes로 적었습니다.*
 
@@ -178,9 +178,9 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 **업데이트 알림.** 새 버전이 있다는 것을 알고 있고 자동 업데이트가 꺼져 있으면, check, doctor, install이 끝날 때 세 줄짜리 알림이 나옵니다. 두 버전, 실행할 정확한 명령, Hermes를 다시 시작하라는 안내입니다. 알림은 알려 주기만 하고, 그 명령을 직접 실행하기 전까지 아무것도 설치되지 않습니다.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/update-notice-dark.webp" /><img src="./docs/assets/screens/update-notice-light.webp" width="690" alt="터미널. &quot;lithermes check --no-auto-update&quot; 명령이 &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.13 → 1.0.14&quot;, &quot;Run exactly:&quot;로 시작해 그 버전을 설치하는 npx 명령을 알려 주는 줄, &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;를 출력합니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/update-notice-dark.webp" /><img src="./docs/assets/screens/update-notice-light.webp" width="690" alt="터미널. &quot;lithermes check --no-auto-update&quot; 명령이 &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.14 → 1.0.15&quot;, &quot;Run exactly:&quot;로 시작해 그 버전을 설치하는 npx 명령을 알려 주는 줄, &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;를 출력합니다." /></picture></p>
 
-*스크래치 홈에서 실제 check 명령으로 얻은 출력입니다. 알림이 나오도록 1.0.14를 적은 업데이트 확인 파일을 미리 놓았으므로 이 버전 번호는 예시입니다. 결과 줄 위의 배너는 잘랐습니다.*
+*스크래치 홈에서 실제 check 명령으로 얻은 출력입니다. 알림이 나오도록 1.0.15를 적은 업데이트 확인 파일을 미리 놓았으므로 이 버전 번호는 예시입니다. 결과 줄 위의 배너는 잘랐습니다.*
 
 ## 움직이는 모습 보기
 

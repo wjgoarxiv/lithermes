@@ -38,14 +38,14 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.13 factual release scope
+### 1.0.14 factual release scope
 
-This checklist covers the 1.0.13 release.
+This checklist covers the 1.0.14 release.
 
-- [ ] The GitHub pages gained a short motion film ("Watch it in motion", English and Korean) and picture snapshots of what Jev looks like when it is on, off or unavailable; Jev stays off unless the user turns it on.
-- [ ] The English and Korean READMEs were rewritten again in plainer language, and the guide (`docs/guide.md`, `docs/guide.ko.md`) is up to date and has a short Jev section.
-- [ ] No runtime change: `src/` and `assets/lithermes-plugin/` differ from 1.0.12 only in version pins; the packed tarball stays under the 12 MiB cap.
-- [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass.
+- [ ] Automatic handoff is off by default and has no built-in percent. `/lit-handoff auto on <percent>` or `LITHERMES_AUTO_HANDOFF=1` with `LITHERMES_AUTO_HANDOFF_PERCENT` turns it on; the request for a handoff and the reload after compaction are automatic, and the user runs `/compact` (`/compress` on Hermes 0.17) because a plugin cannot start compaction; `hermes lithermes status` and `doctor` report it.
+- [ ] The A/B comparison is removed from the GitHub pages and the npm page, with its pictures and pins; the English and Korean READMEs, the guide and the npm cards match the code.
+- [ ] The GitHub pages show terminal pictures of what LitHermes prints and a new motion film in Pretendard with a Korean version; the install and update-notice pictures were recaptured at this version.
+- [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass; the packed tarball stays under the 12 MiB cap.
 
 ### 1.0.3 factual release scope
 
@@ -347,7 +347,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.13 version`.
+  from `npm view @litfamily/lithermes@1.0.14 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -369,10 +369,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.13 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.14 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.13 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.13.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.13.tgz"
+  npm pack @litfamily/lithermes@1.0.14 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.14.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.14.tgz"
 rm -rf "$VERIFY_DIR"
 ```

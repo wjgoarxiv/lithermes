@@ -1,6 +1,6 @@
 {
   "name": "@litfamily/lithermes",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "npx/bunx installer for the LitHermes Hermes plugin",
   "license": "MIT",
   "repository": {

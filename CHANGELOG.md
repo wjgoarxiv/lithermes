@@ -6,6 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.14] - 2026-09-30
+
+- Add automatic handoff, off until you turn it on with `/lit-handoff auto on <percent>` (or `LITHERMES_AUTO_HANDOFF=1` with `LITHERMES_AUTO_HANDOFF_PERCENT`). The percent is yours to choose; LitHermes has no built-in value.
+- On Hermes the steps are split. LitHermes reads the context use of every model call, asks the model for a handoff on the first message after your percent is passed, and loads a short digest of that handoff after compaction. You run `/compact` yourself (`/compress` on Hermes 0.17), because a plugin cannot start compaction. `hermes lithermes status` and `doctor` show the state and warn when your percent is at or above the point where Hermes compacts on its own.
+- The README no longer shows the A/B comparison; one run per side was too little to support its verdicts.
+- The GitHub pages now show terminal pictures of what LitHermes prints, and a new motion film in Pretendard with a Korean version.
+
 ## [1.0.13] - 2026-09-30
 
 - The GitHub pages now have a short motion film, "Watch it in motion", in English and Korean.
