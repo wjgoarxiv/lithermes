@@ -6,6 +6,11 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.15] - 2026-09-30
+
+- `gpt-6.1-sol` is now the recommended coding-lead alternative, because OpenAI lists `gpt-6-sol` as the previous generation. You see it in the installer's lead-model menu, in `hermes lithermes doctor` and in the guide. `gpt-6-sol` still works for anyone who already chose it.
+- Automatic handoff now loads the saved handoff after compaction, even though Hermes starts a new session id when it compacts.
+
 ## [1.0.14] - 2026-09-30
 
 - Add automatic handoff, off until you turn it on with `/lit-handoff auto on <percent>` (or `LITHERMES_AUTO_HANDOFF=1` with `LITHERMES_AUTO_HANDOFF_PERCENT`). The percent is yours to choose; LitHermes has no built-in value.
