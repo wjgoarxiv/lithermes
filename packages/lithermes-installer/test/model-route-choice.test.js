@@ -64,6 +64,7 @@ test("Astra is the fresh parent and supports every fact-sheet lead/child effort"
 test("route selection follows GPT-6 effort sets and preserves legacy 5.6 bounds", () => {
   const expected = new Map([
     ["gpt-6-astra", GPT6_LEAD_EFFORTS],
+    ["gpt-6.1-sol", GPT6_LEAD_EFFORTS],
     ["gpt-6-sol", GPT6_LEAD_EFFORTS],
     ["gpt-6-luna", GPT6_LUNA_EFFORTS],
     ["gpt-5.6-sol", ["high", "xhigh"]],
@@ -85,6 +86,7 @@ test("route selection follows GPT-6 effort sets and preserves legacy 5.6 bounds"
 
   for (const [model, effort] of [
     ["gpt-6-astra", "none"],
+    ["gpt-6.1-sol", "none"],
     ["gpt-6-sol", "none"],
     ["gpt-6-luna", "ultra"],
     ["gpt-5.6-sol", "low"],
@@ -115,7 +117,7 @@ test("route safety accepts every GPT-6 effort and keeps legacy Luna limits", () 
     GPT,
   );
 
-  for (const model of ["gpt-6-astra", "gpt-6-sol"]) {
+  for (const model of ["gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol"]) {
     for (const effort of GPT6_LEAD_EFFORTS) {
       const request = managedRequest({ model, effort, childModel: "gpt-6-luna", childEffort: "max" });
       assert.equal(safetyFor(request).status, "safe", `${model}/${effort}`);
@@ -473,7 +475,7 @@ test("interactive install on an already-routed home shows the picker and preserv
   assert.equal(threw, null, String(threw));
   assert.match(text, /Model route: currently gpt-5\.6-sol · xhigh/);
   assert.match(text, /MODEL ROUTE/);
-  assert.match(text, /Select 0-24 \[18\]:/);
+  assert.match(text, /Select 0-30 \[24\]:/);
   const after = fs.readFileSync(path.join(home, "config.yaml"));
   assert.equal(crypto.createHash("sha256").update(after).digest("hex"), beforeHash);
   assert.equal(after.toString(), seeded);

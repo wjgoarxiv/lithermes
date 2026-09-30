@@ -3,7 +3,8 @@ const GPT6_LEAD_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", "ult
 const ASTRA_EFFORTS = GPT6_LEAD_EFFORTS;
 const PARENT_MODEL = ASTRA_MODEL;
 const PARENT_EFFORT = "xhigh";
-const SOL_MODEL = "gpt-6-sol";
+const SOL_MODEL = "gpt-6.1-sol";
+const PREVIOUS_SOL_MODEL = "gpt-6-sol";
 const CHILD_MODEL = "gpt-6-luna";
 const LEGACY_SOL_MODEL = "gpt-5.6-sol";
 const LEGACY_CHILD_MODEL = "gpt-5.6-luna";
@@ -18,6 +19,7 @@ const LEGACY_SOL_EFFORTS = new Set(["high", "xhigh"]);
 const MODEL_EFFORTS = new Map([
   [ASTRA_MODEL, GPT6_LEAD_EFFORTS],
   [SOL_MODEL, GPT6_LEAD_EFFORTS],
+  [PREVIOUS_SOL_MODEL, GPT6_LEAD_EFFORTS],
   [CHILD_MODEL, GPT6_LUNA_EFFORTS],
   [LEGACY_SOL_MODEL, LEGACY_SOL_EFFORTS],
   [LEGACY_CHILD_MODEL, LEGACY_LUNA_EFFORTS],
@@ -50,6 +52,11 @@ const ROUTE_CATALOG = {
         effort,
         model: SOL_MODEL,
         note: effort === PARENT_EFFORT ? "coding lead alternative" : "Sol Responses effort",
+      })),
+      ...["low", "medium", "high", "xhigh", "max", "ultra"].map((effort) => ({
+        effort,
+        model: PREVIOUS_SOL_MODEL,
+        note: "previous-generation Sol lead route",
       })),
       ...["low", "medium", "high", "xhigh", "max"].map((effort) => ({
         effort,
@@ -403,6 +410,7 @@ module.exports = {
   MANAGED_PROVIDER_MODELS,
   MODEL_IDS,
   OPENAI_PROVIDER_ID,
+  PREVIOUS_SOL_MODEL,
   SOL_MODEL,
   PROVIDER_IDS,
   ROUTE_CATALOG,

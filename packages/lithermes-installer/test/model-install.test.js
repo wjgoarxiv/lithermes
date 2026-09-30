@@ -113,13 +113,13 @@ test("isolated-home install accepts explicit GPT-6 Sol/Luna routes and preserves
   const install = run([
     "install", "--yes", "--offline", "--no-hud", "--no-patch-installed-hermes",
     "--hermes-home", home,
-    "--model", "gpt-6-sol", "--effort", "low",
+    "--model", "gpt-6.1-sol", "--effort", "low",
     "--child-model", "gpt-6-luna", "--child-effort", "low",
     "--reconfigure-model",
   ], "0.19.0", {}, env);
   assert.equal(install.status, 0, `${install.stderr}\n${install.stdout}`);
   const installed = fs.readFileSync(path.join(home, "config.yaml"), "utf8");
-  assert.match(installed, /default: gpt-6-sol/);
+  assert.match(installed, /default: gpt-6\.1-sol/);
   assert.match(installed, /reasoning_effort: low/);
   assert.match(installed, /model: gpt-6-luna/);
   assert.doesNotMatch(installed, /context_length|compression:|threshold:/);

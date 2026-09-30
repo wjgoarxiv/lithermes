@@ -19,6 +19,12 @@ How it works on this host, step by step:
    compaction summary in the history and loads a bounded digest of the handoff,
    but only if the file carries this session's id and was written after the
    directive. Anything else is refused.
+4. Hermes moves a compacted conversation to a new session id. When a turn
+   arrives under an id this process has no waiting state for, carries a new
+   compaction summary, and exactly one session with the same platform and
+   profile is waiting for its reload, that state moves to the new id (a
+   ``parent_session_id`` that names a waiting session settles it directly).
+   With two or more waiting sessions and no named parent, nothing is adopted.
 
 The feature fires once per crossing of the percent, never inside a tool call,
 and never for delegate children. State is kept in memory per session; only the
@@ -497,7 +503,7 @@ def _state(session_id: str) -> dict[str, Any]:
         state = _SESSIONS[session_id] = {
             "percent": None, "used": None, "window": None,
             "above": False, "pending": False, "awaiting": False, "dropped": False,
-            "nonce": "", "fired_at": 0.0, "cwd": "", "summary": "",
+            "nonce": "", "fired_at": 0.0, "cwd": "", "summary": "", "platform": "", "home": "",
         }
     return state
 
@@ -576,8 +582,12 @@ def pre_llm_call(**kwargs: Any) -> str:
     if not session_id or is_delegate_child_platform(str(kwargs.get("platform") or "")):
         return ""
     history = kwargs.get("conversation_history")
+    platform = str(kwargs.get("platform") or "")
     with _LOCK:
         state = _SESSIONS.get(session_id)
+        if state is None or _is_fresh(state):
+            adopted = _adopt_rotated(session_id, str(kwargs.get("parent_session_id") or ""), platform, history)
+            state = adopted or state
         if state is None:
             return ""
         _LAST_SESSION[0] = session_id
@@ -591,12 +601,56 @@ def pre_llm_call(**kwargs: Any) -> str:
             return ""
         if not state["pending"] or _explicit_handoff_turn(str(kwargs.get("user_message") or "")):
             return ""
+        if state["percent"] is None:
+            return ""
+        nonce = secrets.token_hex(6)
+        block = _directive_block({**state, "nonce": nonce}, setting.percent)
         state["pending"], state["awaiting"], state["dropped"] = False, True, False
-        state["nonce"] = secrets.token_hex(6)
+        state["nonce"] = nonce
         state["fired_at"] = time.time()
         state["cwd"] = os.getcwd()
         state["summary"] = _summary_fingerprint(history)
-        return _directive_block(state, setting.percent)
+        state["platform"], state["home"] = platform, str(get_hermes_home())
+        return block
+
+
+def _is_fresh(state: Mapping[str, Any]) -> bool:
+    """A state that has only read usage: never crossed, never fired."""
+    return not (state["awaiting"] or state["pending"] or state["nonce"])
+
+
+def _adopt_rotated(
+    session_id: str, parent_session_id: str, platform: str, history: Any
+) -> dict[str, Any] | None:
+    """Move a waiting state to the new id Hermes gave the conversation when it compacted.
+
+    Returns the moved state, or None when nothing is adopted. Caller holds the lock.
+    """
+    if not any(value["awaiting"] for value in _SESSIONS.values()):
+        return None
+    summary = _summary_fingerprint(history)
+    if not summary:
+        return None
+    home = str(get_hermes_home())
+    waiting = {
+        key: value for key, value in _SESSIONS.items()
+        if key != session_id and value["awaiting"] and value["platform"] == platform
+        and value["home"] == home and summary != value["summary"]
+    }
+    if parent_session_id in waiting:
+        old_id = parent_session_id
+    elif len(waiting) == 1:
+        old_id = next(iter(waiting))
+    else:
+        return None
+    state = waiting[old_id]
+    fresh = _SESSIONS.pop(session_id, None)
+    if fresh is not None:
+        for name in ("percent", "used", "window", "above"):
+            state[name] = fresh[name]
+    del _SESSIONS[old_id]
+    _SESSIONS[session_id] = state
+    return state
 
 
 def _directive_block(state: Mapping[str, Any], percent: int) -> str:

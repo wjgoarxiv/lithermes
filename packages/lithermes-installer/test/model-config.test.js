@@ -20,13 +20,14 @@ const OPENAI_PROVIDER = `openai-${RUNTIME_STEM}`;
 const RESPONSES_MODE = `${RUNTIME_STEM}_responses`;
 const ASTRA_MODEL = "gpt-6-astra";
 
-test("GPT-6 Sol and Luna are offered while fresh installs use Luna helpers", () => {
+test("GPT-6.1 Sol, previous-generation GPT-6 Sol, and Luna are offered while fresh installs use Luna helpers", () => {
   // Given: the OpenAI installer catalog
   const rows = ROUTE_CATALOG[OPENAI_PROVIDER].rows;
   // When: the default managed route is resolved
   const route = managedRequest();
   // Then: GPT-6 alternatives are present, Luna has no ultra row, and the helper moves forward
-  assert.ok(rows.some((row) => row.model === "gpt-6-sol" && row.effort === "xhigh"));
+  assert.ok(rows.some((row) => row.model === "gpt-6.1-sol" && row.effort === "xhigh" && /coding lead alternative/.test(row.note)));
+  assert.ok(rows.some((row) => row.model === "gpt-6-sol" && row.effort === "xhigh" && /previous-generation/.test(row.note)));
   assert.ok(rows.some((row) => row.model === "gpt-6-luna" && row.effort === "max"));
   assert.ok(!rows.some((row) => row.model === "gpt-6-luna" && row.effort === "ultra"));
   assert.equal(route.model, ASTRA_MODEL);

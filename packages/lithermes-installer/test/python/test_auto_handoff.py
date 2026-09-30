@@ -499,6 +499,166 @@ class Reload(AutoHandoffCase):
         self.assertNotIn(self.sid, self.ah._SESSIONS)
 
 
+class RotatedSession(AutoHandoffCase):
+    """Hermes compaction moves the agent to a new session id; the handoff must follow it."""
+
+    CHILD = "child-after-compaction"
+
+    def fire(self, sid=None, platform="cli"):
+        self.turn_on(60)
+        self.observe(130_000, sid=sid)
+        block = self.ah.pre_llm_call(session_id=sid or self.sid, user_message="continue",
+                                     conversation_history=[], platform=platform)
+        self.assertIn("<lithermes-auto-handoff", block)
+        return self.nonce_of(block)
+
+    def ask_child(self, sid=None, history="summary", platform="cli", **extra):
+        if history == "summary":
+            history = [self.summary()]
+        return self.ah.pre_llm_call(session_id=sid or self.CHILD, user_message="continue",
+                                    conversation_history=history, platform=platform, **extra)
+
+    def test_a_new_session_id_after_compaction_still_brings_the_handoff_back_once(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        block = self.ask_child()
+        self.assertIn("<lithermes-handoff-reload", block)
+        self.assertIn("Parser rewrite is half done.", block)
+        self.assertIn("Run the parser tests.", block)
+        self.assertNotIn('status="refused"', block)
+        self.assertEqual(self.ask_child(), "")
+        self.assertNotIn(self.sid, self.ah._SESSIONS)
+
+    def test_the_child_may_already_have_a_reading_of_its_own(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        self.observe(40_000, sid=self.CHILD)
+        block = self.ask_child()
+        self.assertIn("<lithermes-handoff-reload", block)
+        self.assertIn("Parser rewrite is half done.", block)
+        self.assertEqual(self.ask_child(), "")
+        self.assertEqual(round(self.ah._SESSIONS[self.CHILD]["percent"]), 20)
+
+    def test_a_named_parent_is_accepted(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        block = self.ask_child(parent_session_id=self.sid)
+        self.assertIn("Parser rewrite is half done.", block)
+
+    def test_two_waiting_sessions_mean_no_adoption(self):
+        nonce = self.fire()
+        self.ah._SESSIONS["other-awaiting"] = {**self.ah._SESSIONS[self.sid], "nonce": "0a0b0c0d0e0f"}
+        self.write_handoff(nonce)
+        self.assertEqual(self.ask_child(), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+        self.assertIn("other-awaiting", self.ah._SESSIONS)
+        self.assertNotIn(self.CHILD, self.ah._SESSIONS)
+
+    def test_a_named_parent_settles_the_ambiguity(self):
+        nonce = self.fire()
+        self.ah._SESSIONS["other-awaiting"] = {**self.ah._SESSIONS[self.sid], "nonce": "0a0b0c0d0e0f"}
+        self.write_handoff(nonce)
+        self.assertIn("Parser rewrite is half done.", self.ask_child(parent_session_id=self.sid))
+        self.assertIn("other-awaiting", self.ah._SESSIONS)
+
+    def test_no_compaction_summary_means_no_adoption(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        self.assertEqual(self.ask_child(history=[{"role": "user", "content": "hello"}]), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_the_summary_that_was_there_at_the_trigger_does_not_count(self):
+        self.turn_on(60)
+        self.observe(130_000)
+        old = [self.summary("older summary")]
+        nonce = self.nonce_of(self.ask(history=old))
+        self.write_handoff(nonce)
+        self.assertEqual(self.ask_child(history=old), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_another_platform_never_adopts(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        self.assertEqual(self.ask_child(platform="telegram"), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_another_profile_never_adopts(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        elsewhere = Path(self._tmp.name) / "other-home"
+        elsewhere.mkdir()
+        os.environ["HERMES_HOME"] = str(elsewhere)
+        self.ah.run_command("on 60")
+        self.assertEqual(self.ask_child(), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_a_delegate_child_never_adopts(self):
+        nonce = self.fire()
+        self.write_handoff(nonce)
+        self.assertEqual(self.ask_child(platform="subagent"), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_a_session_that_is_not_waiting_is_never_adopted(self):
+        self.turn_on(60)
+        self.observe(20_000)
+        self.assertEqual(self.ask_child(), "")
+        self.assertIn(self.sid, self.ah._SESSIONS)
+
+    def test_a_handoff_from_before_the_trigger_is_still_refused_after_rotation(self):
+        nonce = self.fire()
+        path = self.write_handoff(nonce)
+        stale = time.time() - 3600
+        os.utime(path, (stale, stale))
+        block = self.ask_child()
+        self.assertIn('status="refused"', block)
+        self.assertNotIn("Parser rewrite is half done.", block)
+
+    def test_a_handoff_without_the_waiting_sessions_id_is_still_refused_after_rotation(self):
+        self.fire()
+        self.write_handoff("ffffffffffff")
+        block = self.ask_child()
+        self.assertIn('status="refused"', block)
+        self.assertNotIn("Parser rewrite is half done.", block)
+
+    def test_the_registered_hooks_follow_the_rotation(self):
+        ctx = HostWiring.Ctx(False)
+        self.pkg.register(ctx)
+        ctx.command_handlers["lit-handoff"]("auto on 60")
+        ctx.callbacks["on_session_start"](session_id=self.sid, platform="cli")
+        ctx.callbacks["post_api_request"](session_id=self.sid, model="m", base_url="", provider="p",
+                                          platform="cli", usage=usage(130_000))
+        first = ctx.callbacks["pre_llm_call"](session_id=self.sid, user_message="keep going", platform="cli",
+                                              conversation_history=[], model="m", is_first_turn=False)
+        nonce = self.nonce_of(first["context"])
+        self.write_handoff(nonce)
+        ctx.callbacks["on_session_start"](session_id=self.CHILD, platform="cli")
+        second = ctx.callbacks["pre_llm_call"](session_id=self.CHILD, user_message="and now", platform="cli",
+                                               conversation_history=[self.summary()], model="m",
+                                               is_first_turn=False, parent_session_id="")
+        self.assertIsInstance(second, dict)
+        self.assertIn("Parser rewrite is half done.", second["context"])
+
+
+class DirectiveFormatting(AutoHandoffCase):
+    def test_an_unknown_percent_skips_the_directive_without_spending_it(self):
+        self.turn_on(60)
+        self.observe(130_000)
+        with patch.object(self.ah, "_host_context_length", lambda model, base_url, provider: None):
+            self.ah._WINDOWS.clear()
+            self.observe(131_000)
+        state = self.ah._SESSIONS[self.sid]
+        self.assertIsNone(state["percent"])
+        self.assertTrue(state["pending"])
+        self.assertEqual(self.ask(), "")
+        self.assertTrue(state["pending"])
+        self.assertFalse(state["awaiting"])
+        self.assertEqual(state["nonce"], "")
+        self.assertEqual(state["fired_at"], 0.0)
+        self.ah._WINDOWS.clear()
+        self.observe(132_000)
+        self.assertIn("<lithermes-auto-handoff", self.ask())
+
+
 class CompactCommandName(AutoHandoffCase):
     def test_default_is_compact_outside_a_host(self):
         with patch.dict(sys.modules, {"hermes_cli.commands": None}):

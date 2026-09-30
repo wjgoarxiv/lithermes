@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-09-30T09:04:54.689Z",
+  "syncedAt": "2026-09-30T12:30:20.612Z",
   "source": "bundled-payload",
-  "sourceHash": "0c8bc244aece11b11cfa6b99809f218689f5d445b98e579b467910ed84897ec6",
+  "sourceHash": "60e7ef0f7d447857b4fad50acf3e514b9fec92316e5816e48fdb15dc39b1ca75",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,15 +9,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "23af46fe9078058d97f14fcde0aacc7b615575ec38b75cfee0d959649eb7b3d2"
+      "sha256": "234ed5a80d74dec9953f5168b85f666de656b3511c23a74e26194748a4f3b766"
     },
     {
       "path": "__init__.py",
-      "sha256": "a3393c5776bc7557345de5623e58cb966c0154b3972111907a5ad9954165a0d9"
+      "sha256": "76cf72655600b82544e9047fab1f5f4030927803c0cfbc08fca311204f37d32c"
     },
     {
       "path": "auto_handoff.py",
-      "sha256": "4a34c6b1ee153a405943a87c74fc09832da3b9d5ca4b9b50acf32cd0f2a4fe19"
+      "sha256": "7c0e5385373cc83b202669a9ab500d46e04d79c5a188ed2ffdea93f863ec7dab"
     },
     {
       "path": "auto_update.py",
@@ -89,7 +89,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "4c70cdfc9a3bb70cbf319058592316110cd8a6d1b52d5a11a28c16e29cb4f645"
+      "sha256": "bd797eadf291ec9cd6c02926595305532e235e21794e4467e157c03b0311fe54"
     },
     {
       "path": "handoff.py",

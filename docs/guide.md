@@ -263,9 +263,10 @@ Jev is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` in
 
 New installs default to `gpt-6-astra` with `xhigh` for planning, review, and
 other lead roles. An intentional `--reconfigure-model` reset uses the same
-defaults. `gpt-6-astra` and the coding-lead alternative `gpt-6-sol` each
+defaults. `gpt-6-astra` and the coding-lead alternative `gpt-6.1-sol` each
 support `low`, `medium`, `high`, `xhigh`, `max`, and `ultra`; the Sol lead
-choice defaults to `xhigh`. Hermes sends helpers and ordinary workers through
+choice defaults to `xhigh`. The previous generation `gpt-6-sol` stays
+selectable with the same efforts, so existing configs keep working. Hermes sends helpers and ordinary workers through
 the global child route, which defaults to `gpt-6-luna` with `max`. Luna
 supports `low`, `medium`, `high`, `xhigh`, and `max`, with no `ultra` effort.
 Existing GPT-5.6 choices remain selectable within their listed bounds:

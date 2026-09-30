@@ -75,7 +75,7 @@ test("GPT-6 Sol/Luna reconfiguration leaves absent legacy context limits absent"
   // When: the user explicitly selects the GPT-6 Sol/Luna pair
   const plan = planModelConfig(before, {
     ...VERIFIED,
-    model: "gpt-6-sol",
+    model: "gpt-6.1-sol",
     effort: "xhigh",
     childModel: "gpt-6-luna",
     childEffort: "max",
@@ -83,7 +83,7 @@ test("GPT-6 Sol/Luna reconfiguration leaves absent legacy context limits absent"
   });
   // Then: only the selected model/effort routes change; legacy-only limits are not invented
   assert.equal(plan.action, "write");
-  assert.match(plan.text, /default: gpt-6-sol/);
+  assert.match(plan.text, /default: gpt-6\.1-sol/);
   assert.match(plan.text, /model: gpt-6-luna/);
   assert.doesNotMatch(plan.text, /context_length|compression:|threshold:/);
 });

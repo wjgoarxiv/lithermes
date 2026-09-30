@@ -79,7 +79,8 @@ _RUNTIME_STEM = "".join(("co", "dex"))
 _OPENAI_PROVIDER = f"openai-{_RUNTIME_STEM}"
 _RESPONSES_MODE = f"{_RUNTIME_STEM}_responses"
 _ASTRA_MODEL = "gpt-6-astra"
-_SOL_MODEL = "gpt-6-sol"
+_SOL_MODEL = "gpt-6.1-sol"
+_PREVIOUS_SOL_MODEL = "gpt-6-sol"
 _LUNA_MODEL = "gpt-6-luna"
 _LEGACY_SOL_MODEL = "gpt-5.6-sol"
 _TERRA_MODEL = "gpt-5.6-terra"
@@ -94,6 +95,7 @@ _ASTRA_EFFORTS = _GPT6_LEAD_EFFORTS
 _OPENAI_CATALOG_EFFORTS = {
     _ASTRA_MODEL: _ASTRA_EFFORTS,
     _SOL_MODEL: _GPT6_LEAD_EFFORTS,
+    _PREVIOUS_SOL_MODEL: _GPT6_LEAD_EFFORTS,
     _LUNA_MODEL: _GPT6_LUNA_EFFORTS,
     _LEGACY_SOL_MODEL: _LEGACY_SOL_EFFORTS,
     _TERRA_MODEL: _TERRA_EFFORTS,
@@ -357,7 +359,7 @@ def _parse_capabilities(host_version: str) -> CapabilityResult:
     astra = (astra_parent or astra_child) and cataloged_parent and cataloged_child
     sol_lead = (
         provider == _OPENAI_PROVIDER
-        and model in (_SOL_MODEL, _LEGACY_SOL_MODEL)
+        and model in (_SOL_MODEL, _PREVIOUS_SOL_MODEL, _LEGACY_SOL_MODEL)
         and _cataloged_route(model, effort)
         and child_model in _LUNA_MODELS
         and _cataloged_route(child_model, child_effort)

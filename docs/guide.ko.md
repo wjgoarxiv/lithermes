@@ -196,9 +196,10 @@ bounded work schema 3의 lifecycle은 다음과 같습니다.
 
 새 설치는 planning, review 등 lead 역할에 `gpt-6-astra`와 `xhigh`를
 기본값으로 사용합니다. `--reconfigure-model`로 의도적으로 다시 설정해도
-같은 기본값을 사용합니다. `gpt-6-astra`와 coding lead 대안인 `gpt-6-sol`은
+같은 기본값을 사용합니다. `gpt-6-astra`와 coding lead 대안인 `gpt-6.1-sol`은
 각각 `low`, `medium`, `high`, `xhigh`, `max`, `ultra`를 지원합니다. Sol을
-lead로 선택할 때 기본 effort는 `xhigh`입니다. helper와 일반 작업자는 global
+lead로 선택할 때 기본 effort는 `xhigh`입니다. 이전 세대 `gpt-6-sol`도 같은
+effort로 계속 선택할 수 있어 기존 설정은 그대로 동작합니다. helper와 일반 작업자는 global
 child route의 기본 모델 `gpt-6-luna`와 `max`를 사용합니다. Luna는 `low`,
 `medium`, `high`, `xhigh`, `max`를 지원하며 `ultra`는 없습니다. 기존 GPT-5.6
 선택지도 모델별 범위 안에서 계속 선택할 수 있습니다: `gpt-5.6-sol`은

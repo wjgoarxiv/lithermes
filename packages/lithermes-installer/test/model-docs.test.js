@@ -21,7 +21,7 @@ test("package and plugin docs describe exact Hermes model capability boundaries"
   ].join("\n");
   // When/Then: the operational model/runtime/no-write contract is searched
   for (const required of [
-    "gpt-6-astra", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "low", "medium", "xhigh", "max", "ultra",
+    "gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "low", "medium", "xhigh", "max", "ultra",
     "global child route", "no per-task model override", "no per-subagent model override",
     "named reviewer route", "litwork-reviewer", "TUI", "execution receipt",
     "delegation.base_url", "delegation.api_mode", "managed child route remains unapplied",

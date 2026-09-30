@@ -329,6 +329,7 @@ def _auto_handoff_block(kwargs: dict[str, Any]) -> str:
             user_message=kwargs.get("user_message"),
             conversation_history=kwargs.get("conversation_history"),
             platform=kwargs.get("platform"),
+            parent_session_id=kwargs.get("parent_session_id"),
         )
     except Exception:  # noqa: BLE001 - advisory only
         return ""

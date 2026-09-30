@@ -254,10 +254,12 @@ CLI/plugin name, not the npm package name.
 - New installs default to the lead route `gpt-6-astra` / `xhigh` for planning,
   review, and other lead work, and to `gpt-6-luna` / `max` for helpers and
   ordinary workers on the global child route. Model diagnostics report these
-  routes without exposing credential fields. The coding-lead alternative is `gpt-6-sol` /
-  `xhigh`. Astra and Sol each support `low`, `medium`, `high`, `xhigh`, `max`,
-  and `ultra`; Sol defaults to `xhigh` when selected as lead. Luna supports
-  `low`, `medium`, `high`, `xhigh`, and `max`, with no `ultra`. Existing GPT-5.6
+  routes without exposing credential fields. The coding-lead alternative is `gpt-6.1-sol` /
+  `xhigh`. Astra and `gpt-6.1-sol` each support `low`, `medium`, `high`, `xhigh`,
+  `max`, and `ultra`; Sol defaults to `xhigh` when selected as lead. The previous
+  generation `gpt-6-sol` stays selectable with the same efforts, so existing
+  configs keep working. Luna supports `low`, `medium`, `high`, `xhigh`, and
+  `max`, with no `ultra`. Existing GPT-5.6
   choices remain selectable within their listed bounds: `gpt-5.6-sol` at
   `high` or `xhigh`, `gpt-5.6-terra` at `high`, `xhigh`, or `max`, and `gpt-5.6-luna`
   at `high` or `max`; general `gpt-5.6` offers `high`. The live model catalog

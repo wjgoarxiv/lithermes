@@ -69,6 +69,9 @@ class ModelDiagnostics(unittest.TestCase):
             ("gpt-6-astra", effort, "gpt-6-luna", "max")
             for effort in lead_efforts
         ] + [
+            ("gpt-6.1-sol", effort, "gpt-6-luna", "max")
+            for effort in lead_efforts
+        ] + [
             ("gpt-6-sol", effort, "gpt-6-luna", "max")
             for effort in lead_efforts
         ] + [
@@ -105,24 +108,25 @@ class ModelDiagnostics(unittest.TestCase):
                 # Then: unsupported legacy pairs fail closed
                 self.assertIn("model capability: unavailable", report)
 
-    def test_status_reports_gpt6_sol_lead_and_gpt6_luna_helper_routes(self) -> None:
-        # Given: the refreshed coding-lead and helper route pair
-        config = (
-            "_config_version: 30\n"
-            f"model:\n  provider: {_OPENAI_PROVIDER}\n  default: gpt-6-sol\n"
-            "agent:\n  reasoning_effort: xhigh\n"
-            f"delegation:\n  provider: {_OPENAI_PROVIDER}\n  model: gpt-6-luna\n  reasoning_effort: max\n"
-            "  max_concurrent_children: 20\n"
-        )
-        with tempfile.TemporaryDirectory() as home:
-            Path(home, "config.yaml").write_text(config, encoding="utf-8")
-            with patch.dict(os.environ, {"HERMES_HOME": home}), patch.object(
-                self.core, "hermes_host_version", return_value="0.19.0"
-            ):
-                report = self.core.status_report()
-        # Then: diagnostics recognize both new model ids as a configured managed route
-        self.assertIn("lead route: configured (gpt-6-sol, effort xhigh)", report)
-        self.assertIn("ordinary worker route: configured (gpt-6-luna, effort max", report)
+    def test_status_reports_gpt61_sol_lead_and_previous_gpt6_sol_lead_routes(self) -> None:
+        # Given: the recommended coding-lead alternative and the previous-generation Sol
+        for sol_model in ("gpt-6.1-sol", "gpt-6-sol"):
+            config = (
+                "_config_version: 30\n"
+                f"model:\n  provider: {_OPENAI_PROVIDER}\n  default: {sol_model}\n"
+                "agent:\n  reasoning_effort: xhigh\n"
+                f"delegation:\n  provider: {_OPENAI_PROVIDER}\n  model: gpt-6-luna\n  reasoning_effort: max\n"
+                "  max_concurrent_children: 20\n"
+            )
+            with self.subTest(sol_model=sol_model), tempfile.TemporaryDirectory() as home:
+                Path(home, "config.yaml").write_text(config, encoding="utf-8")
+                with patch.dict(os.environ, {"HERMES_HOME": home}), patch.object(
+                    self.core, "hermes_host_version", return_value="0.19.0"
+                ):
+                    report = self.core.status_report()
+                # Then: diagnostics recognize both Sol ids as a configured managed route
+                self.assertIn(f"lead route: configured ({sol_model}, effort xhigh)", report)
+                self.assertIn("ordinary worker route: configured (gpt-6-luna, effort max", report)
 
     def test_status_rejects_gpt6_luna_ultra(self) -> None:
         # Given: a Luna helper route using an effort absent from the live catalog
