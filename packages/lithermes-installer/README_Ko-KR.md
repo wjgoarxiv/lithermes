@@ -19,7 +19,7 @@
 
 **Hermes Agent**용 플러그인입니다. 요청에 `lit`을 붙이면 Hermes가 작업을 계획하고, 실행하고, 확인한 뒤 다음 세션이 이어받을 기록을 남깁니다.
 
-**[전체 안내, 스킬 갤러리, A/B 결과는 GitHub에서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.13/README.md)
+**[전체 안내와 스킬 갤러리는 GitHub에서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.13/README.md)
 
 ## 설치
 
@@ -83,25 +83,9 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬
 - 버전 확인을 모두 멈추려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정하세요. 이 변수들은 어떤 값이든 똑같이 적용됩니다. 업데이트 과정의 자세한 설명은 GitHub 문서에 있습니다.
 - 요청을 어디로 보낼지는 LitHermes가 정하고, 모델은 여전히 Hermes Agent가 돌립니다.
 
-## 정말 도움이 되나요?
+## 자동 핸드오프
 
-가볍게 쓴 한국어 한 줄 요청 10개를 각각 원문 그대로 한 번, 끝에 ` lit`을 붙여 한 번, 이렇게 두 번씩 Hermes Agent v0.21.3, `gpt-6-sol`, 추론 `high`로 실행했습니다. 블라인드 판정자가 두 결과를 순서를 바꿔 비교했고, 최종 판정은 메인테이너가 내렸습니다.
-
-| 작업 | 요청 | 최종 판정 | 블라인드 판정(같은 라운드) |
-|---|---|---|---|
-| S1 · 터미널 할 일 CLI | 터미널에서 쓰는 할 일 관리 CLI 만들어줘 | 무승부 | 기준선 승 |
-| S2 · API 서버 버그 | 이 API 서버 가끔 이상하게 동작하는데 고쳐줘 | 무승부 | 무승부 |
-| S3 · 가계부 대시보드 (UI 라운드) | 개인 가계부 대시보드 웹페이지 만들어줘 | **LitHermes 승** | LitHermes 승 |
-| S4 · 카페 랜딩페이지 (UI 라운드) | 동네 카페 브랜드 랜딩페이지 만들어줘 | **LitHermes 승** | LitHermes 승 |
-| S5 · 자료 기반 보고서와 발표자료 (오피스 라운드) | sources 폴더 자료로 보고서랑 발표자료 만들어줘 | **LitHermes 승** | LitHermes 승 |
-| S6 · Node 22→24 조사 | Node 22에서 24로 올릴 때 달라지는 거 조사해줘 | **LitHermes 승** | 무승부 |
-| S7 · 주문·결제·배송 구조도 | 주문-결제-배송 서비스 구조도 그려줘 | **LitHermes 승** | LitHermes 승 |
-| S8 · 분기 실적 발표자료 (오피스 라운드) | 분기 실적 발표자료 만들어줘 | **LitHermes 승** | 기준선 승 |
-| S9 · 신제품 기획서 (오피스 라운드) | 신제품 기획서 써줘 | **LitHermes 승** | LitHermes 승 |
-| S11 · 회의실 예약 웹앱 (UI 라운드) | 회의실 예약 웹앱 만들어줘 | **LitHermes 승** | 무승부 |
-| 합계 | | **8승 2무 0패** | 5승 3무 2패 |
-
-판정자는 S1과 S8에서 기준선을 골랐습니다. 양쪽이 만든 결과물과 스크린샷, 그리고 각 작업이 어느 라운드에서 나왔는지는 GitHub에서 확인할 수 있습니다. 맨 위 모션 표지는 LitFamily 모션 스킬로 만들었습니다. 이 스킬(여기서는 `lit-typographic-motion`)은 첫 A/B 이후 다시 만들어졌고, 아직 A/B 결과가 없습니다.
+기본값은 꺼짐이고, 퍼센트는 직접 고릅니다. `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 실행하면, 모델 호출 하나가 컨텍스트 창의 60%를 넘은 뒤 첫 메시지에서 LitHermes가 모델에게 핸드오프를 요청하고 `/compact`를 실행하라고 알려 줍니다. Hermes에서는 플러그인이 압축을 시작할 수 없으므로, 사용자가 직접 실행하거나 Hermes가 자체 기준으로 압축합니다. 압축 뒤에는 핸드오프가 짧은 요약으로 돌아옵니다. `/lit-handoff auto off`와 `/lit-handoff auto status`는 이름 그대로 동작하고, 환경에서는 `LITHERMES_AUTO_HANDOFF=1`과 `LITHERMES_AUTO_HANDOFF_PERCENT`로 설정합니다. 어느 단계가 자동이고 Hermes 자체 압축과 겹치지 않는 퍼센트를 어떻게 고르는지는 [GitHub README](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md#자동-핸드오프)에 있습니다.
 
 ## 선택 기능: Jev 스킬 힌트
 
@@ -129,7 +113,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 ## 더 알아보기
 
-- [GitHub의 전체 README](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md): 스킬 갤러리, 스크린샷이 있는 A/B 결과, 작동 방식
+- [GitHub의 전체 README](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md): 스킬 갤러리와 작동 방식
 - [운영 안내](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md): 명령, 모델, 스킨, 문제 해결
 - [변경 기록](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [기여](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [보안](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [지원](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
 

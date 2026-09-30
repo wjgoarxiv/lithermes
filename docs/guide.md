@@ -124,6 +124,18 @@ flowchart LR
 
 The installed workflow skill set also includes `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa`, and related `lithermes:*` skills.
 
+### Automatic handoff
+
+Automatic handoff is off by default. It has the model write a handoff when the context window reaches a percent you choose, and it loads that handoff again after compaction. The [README](../README.md#automatic-handoff) shows the everyday use; this section lists the mechanics.
+
+- **Switch.** `/lit-handoff auto on <percent>`, `auto off` and `auto status` answer in plain text and make no model call. The same switch exists as `LITHERMES_AUTO_HANDOFF=1` plus `LITHERMES_AUTO_HANDOFF_PERCENT=<1-99>`. The environment wins over the saved value, any flag value other than `1` keeps it off, and an invalid percent keeps it off with a warning in `hermes lithermes doctor`. There is no built-in percent: `on` without a number reuses the last saved one, and asks when none exists. The saved switch lives in Hermes home `lithermes/auto-handoff.json`.
+- **Reading.** The `post_api_request` hook reports the prompt size of each model call. LitHermes divides it by the model's context window, taken from `model.context_length` in the Hermes config or else from Hermes' own lookup, and keeps the latest reading per session in memory. Helper agents are skipped.
+- **Request.** The first time a reading reaches your percent, the next `pre_llm_call` adds one block to that turn. It names the bundled lit-handoff source, asks for a line `auto-handoff-id: <id>` near the top of the file, and asks the model to tell you `Handoff saved. Run /compact now.` (`/compress` on Hermes 0.17, which has no `/compact`). It fires again only after usage has dropped below your percent and crossed it again.
+- **Compaction.** Hermes plugins cannot start compaction. You run it, or Hermes compacts on its own threshold.
+- **Reload.** When the history holds a new compaction summary, the next turn gets a digest of `HANDOFF.md` or `.handoff/HANDOFF.md`: the Current State and Next Steps sections, at most 1,400 bytes, redacted and escaped as inert data. A file is loaded only when it is a regular file, carries this session's id and was written after the request. Otherwise the turn carries a one-line notice that nothing was loaded.
+- **Checks.** `hermes lithermes status` and `doctor` print `Automatic handoff: ...`. Doctor warns when your percent is at or above its estimate of Hermes' own compaction point, which comes from the `compression` settings of your config and, on a running host, the small-window floor and token cap of that Hermes version. The estimate is approximate.
+- **Reach.** The feature uses only `post_api_request`, `pre_llm_call` and a command that answers in plain text. Hermes 0.17, 0.19 and 0.21 all provide these, and none of them needs `inject_message`.
+
 ### Hermes Goal Tools
 
 `lithermes_work_progress` reports per-child progress. Each child returns a

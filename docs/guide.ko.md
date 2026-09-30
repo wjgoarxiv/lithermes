@@ -124,6 +124,18 @@ flowchart LR
 
 추가로 `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa` 및 관련 `lithermes:*` skill이 설치됩니다.
 
+### 자동 핸드오프
+
+자동 핸드오프는 기본값이 꺼짐입니다. 컨텍스트 창이 고른 퍼센트에 닿으면 모델이 핸드오프를 쓰게 하고, 압축한 뒤에 그 핸드오프를 다시 불러옵니다. 평소 쓰는 방법은 [README](../README_Ko-KR.md#자동-핸드오프)에 있고, 여기서는 동작 방식을 정리합니다.
+
+- **스위치.** `/lit-handoff auto on <percent>`, `auto off`, `auto status`는 모델을 부르지 않고 일반 텍스트로 답합니다. 같은 스위치를 `LITHERMES_AUTO_HANDOFF=1`과 `LITHERMES_AUTO_HANDOFF_PERCENT=<1-99>`로도 켤 수 있습니다. 환경 변수가 저장된 값보다 우선하고, 앞의 변수가 `1`이 아닌 값이면 꺼진 채로 있으며, 잘못된 퍼센트도 꺼진 채로 두고 `hermes lithermes doctor`에 경고를 띄웁니다. 내장 퍼센트는 없습니다. 숫자 없는 `on`은 마지막으로 저장한 값을 다시 쓰고, 저장한 값이 없으면 숫자를 물어봅니다. 저장된 스위치는 Hermes 홈의 `lithermes/auto-handoff.json`에 있습니다.
+- **측정.** `post_api_request` 훅이 모델 호출마다 프롬프트 크기를 알려 줍니다. LitHermes는 이 값을 모델의 컨텍스트 창 크기로 나눕니다. 창 크기는 Hermes 설정의 `model.context_length`에서, 없으면 Hermes 자체 조회로 얻고, 세션별 최근 측정값을 메모리에 둡니다. 도우미 에이전트는 건너뜁니다.
+- **요청.** 측정값이 고른 퍼센트에 처음 닿으면 다음 `pre_llm_call`이 그 턴에 블록 하나를 붙입니다. 블록은 번들된 lit-handoff 원본을 가리키고, 파일 위쪽에 `auto-handoff-id: <id>` 줄을 넣으라고 하며, 모델이 `Handoff saved. Run /compact now.`를 알리게 합니다. (`/compact`가 없는 Hermes 0.17에서는 `/compress`입니다.) 사용량이 퍼센트 아래로 내려갔다가 다시 넘을 때만 또 나갑니다.
+- **압축.** Hermes 플러그인은 압축을 시작할 수 없습니다. 사용자가 실행하거나 Hermes가 자체 기준으로 압축합니다.
+- **다시 불러오기.** 대화 기록에 새 압축 요약이 생기면 다음 턴에 `HANDOFF.md` 또는 `.handoff/HANDOFF.md`의 요약이 붙습니다. Current State와 Next Steps 섹션을 1,400바이트 이내로, 민감한 값을 가리고 이스케이프한 읽기 전용 데이터로 넣습니다. 일반 파일이고 이 세션의 ID가 있으며 요청 뒤에 쓴 파일만 불러옵니다. 그렇지 않으면 아무것도 불러오지 않았다는 한 줄 안내만 붙습니다.
+- **확인.** `hermes lithermes status`와 `doctor`가 `Automatic handoff: ...` 줄을 출력합니다. 고른 퍼센트가 Hermes 자체 압축 시점의 추정값과 같거나 높으면 doctor가 경고합니다. 추정값은 설정의 `compression` 항목과, 실행 중인 Hermes 버전의 작은 창 하한과 토큰 상한에서 나오며 근사치입니다.
+- **범위.** `post_api_request`, `pre_llm_call`, 일반 텍스트로 답하는 명령만 씁니다. Hermes 0.17, 0.19, 0.21 모두 이 셋을 제공하며, 어느 것도 `inject_message`가 필요하지 않습니다.
+
 ### Hermes Goal Tools
 
 `lithermes_work_progress`는 child별 진행 상황을 보고합니다. 각 child는

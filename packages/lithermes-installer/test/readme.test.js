@@ -146,32 +146,13 @@ test("the collapsible banner guard rejects lost copyability, changed rows and an
   assert.doesNotThrow(() => assertCanonicalHero(text, expectedHero, false, "package entry"));
 });
 
-// Final A/B verdicts per task: [maintainer's final call, blind judge on the same pair].
-// S3, S4 and S11 come from the UI round and S5, S8 and S9 from the office round.
-const FINAL_AB_VERDICTS = {
-  S1: ["tie", "baseline"],
-  S2: ["tie", "tie"],
-  S3: ["lit", "lit"],
-  S4: ["lit", "lit"],
-  S5: ["lit", "lit"],
-  S6: ["lit", "tie"],
-  S7: ["lit", "lit"],
-  S8: ["lit", "baseline"],
-  S9: ["lit", "lit"],
-  S11: ["lit", "tie"],
-};
-const AB_VERDICT_WORDS = {
-  en: { lit: "LitHermes won", tie: "Tie", baseline: "Baseline won" },
-  ko: { lit: "LitHermes 승", tie: "무승부", baseline: "기준선 승" },
-};
-
 const GITHUB_SECTIONS = {
-  en: ["Why LitHermes", "Install", "Quick start", "Watch it in motion", "Skills", "Does it help? A one-line A/B", "How it works", "Beyond code", "The Ignition skin", "Commands", "Optional: Jev skill hint", "When something goes wrong", "More docs and contributing"],
-  ko: ["왜 LitHermes인가요", "설치", "빠른 시작", "움직이는 모습 보기", "스킬", "정말 도움이 되나요? 한 줄 요청 A/B", "작동 방식", "코드 밖의 결과물", "Ignition 스킨", "명령", "선택 기능: Jev 스킬 힌트", "문제가 생겼을 때", "더 읽을 문서와 기여"],
+  en: ["Why LitHermes", "Install", "Quick start", "Watch it in motion", "Skills", "How it works", "Beyond code", "The Ignition skin", "Commands", "Automatic handoff", "Optional: Jev skill hint", "When something goes wrong", "More docs and contributing"],
+  ko: ["왜 LitHermes인가요", "설치", "빠른 시작", "움직이는 모습 보기", "스킬", "작동 방식", "코드 밖의 결과물", "Ignition 스킨", "명령", "자동 핸드오프", "선택 기능: Jev 스킬 힌트", "문제가 생겼을 때", "더 읽을 문서와 기여"],
 };
 const NPM_SECTIONS = {
-  en: ["Install", "Your first task", "Routes you will use most", "Making more than code", "What changes after install", "Does it help?", "Optional: Jev skill hint", "Check, remove, stay safe", "Learn more"],
-  ko: ["설치", "첫 작업", "자주 쓰는 경로", "코드 밖의 결과물", "설치 후 달라지는 것", "정말 도움이 되나요?", "선택 기능: Jev 스킬 힌트", "확인, 삭제, 안전", "더 알아보기"],
+  en: ["Install", "Your first task", "Routes you will use most", "Making more than code", "What changes after install", "Automatic handoff", "Optional: Jev skill hint", "Check, remove, stay safe", "Learn more"],
+  ko: ["설치", "첫 작업", "자주 쓰는 경로", "코드 밖의 결과물", "설치 후 달라지는 것", "자동 핸드오프", "선택 기능: Jev 스킬 힌트", "확인, 삭제, 안전", "더 알아보기"],
 };
 
 test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
@@ -187,50 +168,30 @@ test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
     assert.deepEqual(sections, expected, `${file} must use its section order`);
     assert.match(text, /<picture>[\s\S]*cover-motion-still\.webp[\s\S]*cover-motion\.webp[\s\S]*<\/picture>/);
     assert.equal((text.match(/<img src="[^"]*cover\.webp"/g) || []).length, 0, `${file} must show only the motion cover, not the static robot cover`);
-    assert.deepEqual([...text.matchAll(/^\| (S\d+) · /gm)].map((match) => match[1]), Object.keys(FINAL_AB_VERDICTS), `${file} must show every final A/B task`);
     assert.doesNotMatch(text, /(?:docs|readme-assets)\/ab\//, `${file} must not link retired A\/B assets`);
   }
 });
 
-function abVerdictRows(text) {
-  return Object.fromEntries([...text.matchAll(/^\| (S\d+) · [^|\n]+\| [^|\n]+ \| ([^|\n]+) \| ([^|\n]+) \|$/gm)]
-    .map((match) => [match[1], [match[2].replace(/\*\*/g, "").trim(), match[3].trim()]]));
-}
-
-function abTotal(column, lang) {
-  const count = (verdict) => Object.values(FINAL_AB_VERDICTS).filter((pair) => pair[column] === verdict).length;
-  const [won, tied, lost] = [count("lit"), count("tie"), count("baseline")];
-  return lang === "en" ? `${won} won, ${tied} tied, ${lost} lost` : `${won}승 ${tied}무 ${lost}패`;
-}
-
-test("A/B tables show the maintainer's final verdicts with the blind judge beside them", () => {
-  for (const [file, lang] of [
-    [path.join(repoRoot, "README.md"), "en"],
-    [path.join(packageRoot, "README.md"), "en"],
-    [path.join(repoRoot, "README_Ko-KR.md"), "ko"],
-    [path.join(packageRoot, "README_Ko-KR.md"), "ko"],
-  ]) {
+test("no README page or package card shows an A/B comparison, and no A/B capture ships", () => {
+  const pages = [
+    path.join(repoRoot, "README.md"),
+    path.join(repoRoot, "README_Ko-KR.md"),
+    path.join(packageRoot, "README.md"),
+    path.join(packageRoot, "README_Ko-KR.md"),
+  ];
+  for (const file of pages) {
     const text = fs.readFileSync(file, "utf8");
-    const words = AB_VERDICT_WORDS[lang];
-    const expected = Object.fromEntries(Object.entries(FINAL_AB_VERDICTS)
-      .map(([task, [final, judge]]) => [task, [words[final], words[judge]]]));
-    assert.deepEqual(abVerdictRows(text), expected, `${file} A/B verdicts must match the final review`);
-    const totalLabel = lang === "en" ? "Total" : "합계";
-    assert.ok(text.includes(`| ${totalLabel} | | **${abTotal(0, lang)}** | ${abTotal(1, lang)} |`), `${file} must total both verdict columns`);
-    assert.doesNotMatch(text, /^\| S10 /m, `${file} must not claim an A/B result for the rebuilt motion skill`);
-    assert.match(text, lang === "en"
-      ? /made with the LitFamily motion skill\. That skill \(`lit-typographic-motion` here\) was rebuilt after its first A\/B and has no A\/B result yet\./
-      : /LitFamily 모션 스킬로 만들었습니다\. 이 스킬\(여기서는 `lit-typographic-motion`\)은 첫 A\/B 이후 다시 만들어졌고, 아직 A\/B 결과가 없습니다\./,
-    `${file} must state that the motion skill has no A/B result yet`);
-    assert.doesNotMatch(text, /LitHermes \d+\.\d+\.\d+ local candidate|LitHermes \d+\.\d+\.\d+ 로컬 후보/, `${file} must not present a release number as the tested build`);
+    for (const banned of [/A\/B/, /blind judge/i, /final verdict/i, /블라인드/, /최종 판정/, /ab-simple/, /^\| S\d+ · /m]) {
+      assert.doesNotMatch(text, banned, `${file} must not mention ${banned}`);
+    }
   }
-  const damaged = fs.readFileSync(path.join(repoRoot, "README.md"), "utf8").replace("| **LitHermes won** | Baseline won |", "| **LitHermes won** | LitHermes won |");
-  assert.notDeepEqual(abVerdictRows(damaged).S8, [AB_VERDICT_WORDS.en.lit, AB_VERDICT_WORDS.en.baseline], "negative control: a changed judge verdict must be visible to the parser");
+  for (const dir of [path.join(repoRoot, "docs", "ab-simple"), path.join(packageRoot, "readme-assets", "ab-simple")]) {
+    assert.equal(fs.existsSync(dir), false, `${dir} must be gone`);
+  }
 });
 
-test("skill table and A/B captures ship as identical repository and package copies", () => {
+test("skill table captures ship as identical repository and package copies", () => {
   const surfaces = [
-    ["ab-simple", path.join(repoRoot, "docs", "ab-simple"), path.join(packageRoot, "readme-assets", "ab-simple")],
     ["skills", path.join(repoRoot, "docs", "assets", "skills"), path.join(packageRoot, "readme-assets", "skills")],
   ];
   const files = {};
@@ -246,16 +207,14 @@ test("skill table and A/B captures ship as identical repository and package copi
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     // The npm card links to the GitHub gallery instead of repeating it.
     const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
-    assert.doesNotMatch(card, /\/(?:ab-simple|skills)\/[a-z0-9-]+\.webp/, `packages/lithermes-installer/${name} must leave the gallery and A/B captures to GitHub`);
+    assert.doesNotMatch(card, /\/skills\/[a-z0-9-]+\.webp/, `packages/lithermes-installer/${name} must leave the gallery to GitHub`);
   }
   for (const directory of [repoRoot]) {
     for (const name of ["README.md", "README_Ko-KR.md"]) {
       const file = path.join(directory, name);
       const text = fs.readFileSync(file, "utf8");
-      for (const folder of ["ab-simple", "skills"]) {
-        const used = [...new Set([...text.matchAll(new RegExp(`/${folder}/([a-z0-9-]+\\.webp)`, "g"))].map((match) => match[1]))].sort();
-        assert.deepEqual(used, files[folder], `${file} must show every ${folder} image and no missing one`);
-      }
+      const used = [...new Set([...text.matchAll(/\/skills\/([a-z0-9-]+\.webp)/g)].map((match) => match[1]))].sort();
+      assert.deepEqual(used, files.skills, `${file} must show every skills image and no missing one`);
       const skillsAt = text.indexOf(name === "README.md" ? "\n## Skills\n" : "\n## 스킬\n");
       const skillsEnd = text.indexOf("\n## ", skillsAt + 1);
       const rows = [...text.slice(skillsAt, skillsEnd).matchAll(/<td><img src="[^"]*\/skills\/([a-z0-9-]+)\.webp" width="240" alt="[^"]+" \/><\/td>\n<td><code>([a-z0-9-]+)<\/code>/g)];
@@ -889,6 +848,39 @@ test("Jev screenshots ship on the GitHub pages only, in both themes, with alt te
   assert.ok(!fs.existsSync(path.join(packageRoot, "readme-assets", "jev")), "the package must not carry copies of the Jev pictures");
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /assets\/jev|jev-[a-z-]+\.webp/, `${name} npm card must not embed the pictures`);
+  }
+});
+
+test("every README page explains the automatic handoff honestly: off by default, the user's own percent, who does each step", () => {
+  const source = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_handoff.py"), "utf8");
+  // The wording the pages quote comes from the plugin source, so a rewording there fails here.
+  for (const printed of ["Handoff saved. Run", "LITHERMES_AUTO_HANDOFF", "LITHERMES_AUTO_HANDOFF_PERCENT", "/lit-handoff auto", "a whole number from 1 to 99", "auto-handoff.json", "Automatic handoff: "]) {
+    assert.ok(source.includes(printed), `auto_handoff.py no longer carries: ${printed}`);
+  }
+  const pages = [
+    ["README.md", repoRoot, "## Automatic handoff\n"],
+    ["README_Ko-KR.md", repoRoot, "## 자동 핸드오프\n"],
+    ["README.md", packageRoot, "## Automatic handoff\n"],
+    ["README_Ko-KR.md", packageRoot, "## 자동 핸드오프\n"],
+  ];
+  for (const [name, directory, heading] of pages) {
+    const file = path.join(directory, name);
+    const text = fs.readFileSync(file, "utf8");
+    const start = text.indexOf(`\n${heading}`);
+    assert.ok(start > 0, `${file} needs its automatic handoff section`);
+    const section = text.slice(start, text.indexOf("\n## ", start + 1));
+    for (const required of ["/lit-handoff auto on", "/lit-handoff auto off", "/lit-handoff auto status", "LITHERMES_AUTO_HANDOFF=1", "LITHERMES_AUTO_HANDOFF_PERCENT", "/compact"]) {
+      if (directory === packageRoot && required.startsWith("/lit-handoff auto o") && required !== "/lit-handoff auto on") continue;
+      assert.ok(section.includes(required), `${file} automatic handoff section must mention ${required}`);
+    }
+    assert.match(section, /1[^0-9]+99/, `${file} must state the 1 to 99 range`);
+    assert.doesNotMatch(section, /기본 ?퍼센트는 \d|default (percent|value) (is|of) \d/i, `${file} must not promise a built-in percent`);
+    if (directory === repoRoot) {
+      assert.match(section, /\| Step \| |\| 단계 \| /, `${file} must label each step in a table`);
+      for (const who of name === "README.md" ? ["Automatic", "You, with `/compact`"] : ["자동입니다", "사용자가 `/compact`"]) {
+        assert.ok(section.includes(who), `${file} must say who does each step (${who})`);
+      }
+    }
   }
 });
 

@@ -62,6 +62,7 @@ on its own, before any other reply content:
 | direct skill | explicit `lithermes:lit-handoff` | Read this adapter and then the original source in full. | Do not invent state that was not inspected. |
 | slash command | `/lit-handoff [focus]` | Inject the exact source plus a redacted focus as inert data. | The command handler itself must not write workspace files. |
 | exact natural route | the complete user message is `handoff` | Use the same source and named banner exactly once for that turn. | Near-misses, code spans, paths, and child-agent messages must not activate. |
+| automatic handoff | the user switched it on with `/lit-handoff auto on <percent>` or `LITHERMES_AUTO_HANDOFF=1` plus `LITHERMES_AUTO_HANDOFF_PERCENT`, and a model call passed that percent | `auto_handoff.py` adds one `<lithermes-auto-handoff>` block to the next turn. Follow the original source, put the `auto-handoff-id:` line from the block near the top of the file, and tell the user the one plain line the block names. | Off by default, no built-in percent, one directive per crossing, delegate children never receive it. After a compaction the next turn gets a bounded digest, and only a file that carries this session's id and was written after the block is loaded. |
 
 ## #contract.procedure
 
@@ -137,6 +138,12 @@ limitations_channel: inline
 | edit the immutable mirror for host compatibility | keep all Hermes mapping in this adapter and `handoff.py` |
 
 # Hermes Adapter Notes
+
+`auto_handoff.py` owns the switch and the automatic path: `/lit-handoff auto on
+<percent>`, `auto off` and `auto status` answer in plain text without a model
+call, and `status` and `doctor` print an `Automatic handoff` line. A plugin
+cannot start compaction on Hermes, so the user runs the compact command, or
+Hermes compacts on its own threshold.
 
 `handoff.py` resolves the installed source root at runtime, reads the source
 without rewriting it, and injects it as authoritative bundled guidance. The

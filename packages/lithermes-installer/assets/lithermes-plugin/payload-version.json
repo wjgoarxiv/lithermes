@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-09-29T15:21:29.113Z",
+  "syncedAt": "2026-09-30T08:38:40.468Z",
   "source": "bundled-payload",
-  "sourceHash": "552f6dd7aa356b13feb1509ca0cc045eab8be46c83d86d484e1c5a63da94e7ca",
+  "sourceHash": "2e2527c59997048ed4739a99c5e179ca15eb4acdafe5fe56ccf43e95ec2568eb",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "1802ff4904f841e7da8db7ce0dbb4e8fd867ef1d94493e96dfb40091f7c74df8"
+      "sha256": "23af46fe9078058d97f14fcde0aacc7b615575ec38b75cfee0d959649eb7b3d2"
     },
     {
       "path": "__init__.py",
-      "sha256": "f5dc1b38aa13977312c8c773dcd8b31f9df878826f9210737d76f9d19dc9dcb1"
+      "sha256": "a3393c5776bc7557345de5623e58cb966c0154b3972111907a5ad9954165a0d9"
+    },
+    {
+      "path": "auto_handoff.py",
+      "sha256": "4a34c6b1ee153a405943a87c74fc09832da3b9d5ca4b9b50acf32cd0f2a4fe19"
     },
     {
       "path": "auto_update.py",
@@ -29,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "80a2b6706ddd8381c82a3748c9b25ff958af1023d182ed3a641ad0b734217aee"
+      "sha256": "32b7ef2c93e3f208e39e26a6eca4a03f48804b7ddf6b7a16eaf4cf038fbf4e21"
     },
     {
       "path": "core_commands.py",
@@ -85,11 +89,11 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "07d7b9b2399475481a6c593761e0e34a8a94a3a17c86ebc55a2afbd4d51cfc9d"
+      "sha256": "4c70cdfc9a3bb70cbf319058592316110cd8a6d1b52d5a11a28c16e29cb4f645"
     },
     {
       "path": "handoff.py",
-      "sha256": "0e364d64981b84e50b437326c34965121928ef826e231d3822fbbfdb4009f6aa"
+      "sha256": "f34788ee4b56b6156e6503b546ea416fd886856df2c8f9e60006eb2b0289a027"
     },
     {
       "path": "humanizer_detector.py",
@@ -3157,7 +3161,7 @@
     },
     {
       "path": "skills/lit-handoff/SKILL.md",
-      "sha256": "c50767e13d4d062d2677d1d8b43891b2dfdb704b6ba557b427ffd6ddecfa8edd"
+      "sha256": "d49141a84537cfa5dc36be0adb72fc57fb6ab4af97c1a75e82b84b4fa5983dd6"
     },
     {
       "path": "skills/lit-humanizer/NOTICE",

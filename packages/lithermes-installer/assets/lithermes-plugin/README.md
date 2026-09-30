@@ -135,6 +135,35 @@ CLI/plugin name, not the npm package name.
   timestamp to Hermes home `lithermes/jev-last-<session hash>.json` (mode 0600,
   atomic), one file per session, removed when the session ends. Neither file is
   written through a symlink.
+- Optional automatic handoff (`auto_handoff.py`), off by default. The user
+  switches it on with `/lit-handoff auto on <percent>` (plain text reply, no
+  model call; `auto off` and `auto status` likewise) or with
+  `LITHERMES_AUTO_HANDOFF=1` plus `LITHERMES_AUTO_HANDOFF_PERCENT`; the
+  environment wins over the saved value, any flag value other than `1` keeps it
+  off, and a percent that is not a whole number from 1 to 99 leaves it off with a
+  doctor warning. There is no built-in percent: `on` without a number reuses the
+  last saved one and asks when none exists. The switch is saved in Hermes home
+  `lithermes/auto-handoff.json` (mode 0600, atomic, never written through a
+  symlink). `post_api_request` reads the prompt size of each model call
+  (`usage.prompt_tokens`, else input plus cache read plus cache write) over the
+  model's context window (`model.context_length` from the Hermes config, else
+  the host's own lookup, bounded to 3 seconds) and keeps the latest reading per
+  session in memory. Crossing the percent marks one pending directive;
+  `pre_llm_call` delivers it on the next turn, merged through the post-edit
+  composition so the byte budget keeps it whole. The directive names the bundled
+  lit-handoff source, asks for an `auto-handoff-id:` line in the file and for
+  the one plain line `Handoff saved. Run /compact now.` (`/compress` on Hermes
+  0.17, which has no `/compact`). A plugin cannot start compaction here. After
+  the user compacts, or Hermes compacts on its own, the next `pre_llm_call`
+  sees a new `_compressed_summary` message, and loads a digest (Current State
+  and Next Steps, at most 1,400 bytes, redacted and escaped) of `HANDOFF.md` or
+  `.handoff/HANDOFF.md`, but only when the file carries this session's id, was
+  written after the directive and is a regular file. Anything else gets a
+  one-line refusal. It fires once per crossing, never for delegate children,
+  and forgets a session when it ends. Status and doctor print `Automatic
+  handoff: ...` and warn when the percent is at or above the estimate of
+  Hermes' own compaction point (the `compression` settings, the small-window
+  floor and the token cap when the running host has them).
 - The `post_tool_call` hook is an observer — Hermes discards its return value — so
   it records the paths a completed `write_file` / `patch` call mutated and
   `pre_llm_call` renders them on the next turn. A source-code edit names

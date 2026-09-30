@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import html
+import os
 import re
 from pathlib import Path
 from typing import Any
 
 try:
+    from . import auto_handoff
     from .core_contract import (
         reader_facing_contract_block,
         reader_facing_mode_from_user_request,
@@ -14,6 +16,7 @@ try:
     from .redaction import redact_text
     from .session_context import is_delegate_child_platform
 except (ImportError, ModuleNotFoundError):
+    import auto_handoff  # type: ignore
     from core_contract import (  # type: ignore
         reader_facing_contract_block,
         reader_facing_mode_from_user_request,
@@ -65,8 +68,16 @@ def _agent_message(raw_args: str) -> str:
     )
 
 
-def command_lit_handoff(raw_args: str) -> dict[str, str]:
-    """Build side-effect-free model context for the native slash command."""
+def command_lit_handoff(raw_args: str) -> dict[str, str] | str:
+    """Build model context for the native slash command.
+
+    ``auto on <percent> | off | status`` is the user's switch for the automatic
+    handoff; it answers in plain text and sends nothing to the model. Every
+    other argument is a focus for a normal handoff and stays side-effect-free.
+    """
+    switch = auto_handoff.parse_route(raw_args)
+    if switch is not None:
+        return auto_handoff.run_command(switch, session_id=os.environ.get(auto_handoff.SESSION_ENV, "").strip())
     return {
         "display": f"{acknowledgement('lit-handoff', color=True)}\nHandoff source loaded; inspect live state before writing.",
         "agent_message": _agent_message(raw_args),

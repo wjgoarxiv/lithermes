@@ -19,7 +19,7 @@
 
 A plugin for **Hermes Agent**. Add `lit` to a request, and Hermes plans the task, does it, checks it, and leaves a note the next session can pick up.
 
-**[Full guide, skills gallery and A/B results on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.13/README_Ko-KR.md)
+**[Full guide and skills gallery on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.13/README_Ko-KR.md)
 
 ## Install
 
@@ -84,25 +84,9 @@ On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads b
 - To stop every version check, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`. Any value counts for these variables. The GitHub page explains the update step in full.
 - LitHermes decides where a request goes; Hermes Agent still runs the model.
 
-## Does it help?
+## Automatic handoff
 
-Ten casual one-line Korean prompts were each run once in Hermes Agent v0.21.3 with `gpt-6-sol` at reasoning `high`, as written and with ` lit` added at the end. A blind judge compared each pair in both orders, and the maintainer made the final call.
-
-| Task | Prompt | Final verdict | Blind judge (same round) |
-|---|---|---|---|
-| S1 · Terminal to-do CLI | 터미널에서 쓰는 할 일 관리 CLI 만들어줘 | Tie | Baseline won |
-| S2 · API server bugs | 이 API 서버 가끔 이상하게 동작하는데 고쳐줘 | Tie | Tie |
-| S3 · Budget dashboard (UI round) | 개인 가계부 대시보드 웹페이지 만들어줘 | **LitHermes won** | LitHermes won |
-| S4 · Café landing page (UI round) | 동네 카페 브랜드 랜딩페이지 만들어줘 | **LitHermes won** | LitHermes won |
-| S5 · Report and slides from sources (office round) | sources 폴더 자료로 보고서랑 발표자료 만들어줘 | **LitHermes won** | LitHermes won |
-| S6 · Node 22→24 research | Node 22에서 24로 올릴 때 달라지는 거 조사해줘 | **LitHermes won** | Tie |
-| S7 · Order, payment and shipping diagram | 주문-결제-배송 서비스 구조도 그려줘 | **LitHermes won** | LitHermes won |
-| S8 · Quarterly results deck (office round) | 분기 실적 발표자료 만들어줘 | **LitHermes won** | Baseline won |
-| S9 · New product plan (office round) | 신제품 기획서 써줘 | **LitHermes won** | LitHermes won |
-| S11 · Meeting-room booking web app (UI round) | 회의실 예약 웹앱 만들어줘 | **LitHermes won** | Tie |
-| Total | | **8 won, 2 tied, 0 lost** | 5 won, 3 tied, 2 lost |
-
-The judge preferred the baseline in S1 and S8. What each side produced, the screenshots, and the notes on which tasks came from later rounds are on GitHub. The motion cover at the top was made with the LitFamily motion skill. That skill (`lit-typographic-motion` here) was rebuilt after its first A/B and has no A/B result yet.
+This is off by default, and the percent is yours to choose. `/lit-handoff auto on 60` (any whole number from 1 to 99) makes LitHermes ask the model for a handoff on the first message after a model call passes 60% of the context window, and then tell you to run `/compact`. A plugin cannot start compaction on Hermes, so you run it, or Hermes compacts on its own threshold. After compaction the handoff comes back as a short digest. `/lit-handoff auto off` and `/lit-handoff auto status` do what they say, and `LITHERMES_AUTO_HANDOFF=1` with `LITHERMES_AUTO_HANDOFF_PERCENT` sets it from the environment. The [GitHub README](https://github.com/wjgoarxiv/lithermes#automatic-handoff) lists which steps are automatic and how to pick a percent that Hermes' own compaction leaves alone.
 
 ## Optional: Jev skill hint
 
@@ -130,7 +114,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 ## Learn more
 
-- [Full README on GitHub](https://github.com/wjgoarxiv/lithermes#readme): the skills gallery, the A/B results with screenshots, and how it works
+- [Full README on GitHub](https://github.com/wjgoarxiv/lithermes#readme): the skills gallery and how it works
 - [Operating guide](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md): commands, models, skins and troubleshooting
 - [Changelog](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [Contributing](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [Security](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [Support](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
 

@@ -380,88 +380,6 @@ These are all the skills you can call in LitHermes, with the words that start ea
 </tr>
 </table>
 
-## Does it help? A one-line A/B
-
-The question is simple: does adding `lit` to an ordinary request change what comes back? Each prompt below is one casual Korean line. The LitHermes side got the same line with ` lit` added at the end, and nothing else.
-
-Both sides ran once, in Hermes Agent v0.21.3 with `gpt-6-sol` at reasoning `high`, on 2026-09-26. The LitHermes side used a local pre-release build. A blind judge (Claude Opus 5.5) saw both outputs with tool names removed and compared them in both orders. The maintainer then looked at the two outputs side by side and made the final call.
-
-Not every row comes from that first run. S3, S4 and S11 were redone in a later UI round, and S5, S8 and S9 in an office round that used `lit-pptx` and `lit-docx`; each newer result replaces the older one for that task. Two things about the UI round are worth knowing. The LitHermes side never ran its measured interface probe there, because the skill did not yet tell it where the probe was installed. The skill does now, but those three tasks have not been run again. And in S3 and S4 the baseline ran without the file-write sandbox the LitHermes side had.
-
-| Task | Prompt | Final verdict | Blind judge (same round) |
-|---|---|---|---|
-| S1 · Terminal to-do CLI | 터미널에서 쓰는 할 일 관리 CLI 만들어줘 | Tie | Baseline won |
-| S2 · API server bugs | 이 API 서버 가끔 이상하게 동작하는데 고쳐줘 | Tie | Tie |
-| S3 · Budget dashboard (UI round) | 개인 가계부 대시보드 웹페이지 만들어줘 | **LitHermes won** | LitHermes won |
-| S4 · Café landing page (UI round) | 동네 카페 브랜드 랜딩페이지 만들어줘 | **LitHermes won** | LitHermes won |
-| S5 · Report and slides from sources (office round) | sources 폴더 자료로 보고서랑 발표자료 만들어줘 | **LitHermes won** | LitHermes won |
-| S6 · Node 22→24 research | Node 22에서 24로 올릴 때 달라지는 거 조사해줘 | **LitHermes won** | Tie |
-| S7 · Order, payment and shipping diagram | 주문-결제-배송 서비스 구조도 그려줘 | **LitHermes won** | LitHermes won |
-| S8 · Quarterly results deck (office round) | 분기 실적 발표자료 만들어줘 | **LitHermes won** | Baseline won |
-| S9 · New product plan (office round) | 신제품 기획서 써줘 | **LitHermes won** | LitHermes won |
-| S11 · Meeting-room booking web app (UI round) | 회의실 예약 웹앱 만들어줘 | **LitHermes won** | Tie |
-| Total | | **8 won, 2 tied, 0 lost** | 5 won, 3 tied, 2 lost |
-
-The motion cover at the top was made with the LitFamily motion skill. That skill (`lit-typographic-motion` here) was rebuilt after its first A/B and has no A/B result yet.
-
-### What each side produced
-
-**S1 · Tie (judge: baseline won).** Both CLIs handled help, add, list and done, and both passed their own tests (6 for the baseline, 4 for LitHermes). The judge preferred the baseline: its interface stayed in Korean, it added editing and a done-only filter, and it guarded the data file with locking and atomic writes, while the LitHermes CLI and README were in English. The maintainer judged the two even.
-
-**S2 · Tie.** Both sides fixed all six known bugs and left no visible test failing. LitHermes named four of them in its reply against three and confirmed the page-two fix on a running server; the baseline documented its new validation rules in the README. The judge and the maintainer both called it even.
-
-**S3 · LitHermes won.** The LitHermes dashboard added CSV export and budget editing with one consistent icon set, and its reply cited browser checks from 320 to 1440 px. The baseline chart stretched its axis and month labels, worst on a phone. The accessibility scan flagged more nodes on the LitHermes page (117 against 91).
-
-| Baseline | LitHermes |
-|---|---|
-| ![S3 baseline budget dashboard, desktop](./docs/ab-simple/s3-ui-baseline-desktop.webp) | ![S3 LitHermes budget dashboard, desktop](./docs/ab-simple/s3-ui-lithermes-desktop.webp) |
-
-**S4 · LitHermes won.** LitHermes built a tabbed menu with items and prices, six distinct photos and an arched hero; the baseline menu was three mood cards, and it reused one interior photo. Only the baseline gave location and opening hours, and the page check found 7 clipped or off-screen text boxes on the LitHermes page against none on the baseline.
-
-| Baseline | LitHermes |
-|---|---|
-| ![S4 baseline café landing page, desktop](./docs/ab-simple/s4-ui-baseline-desktop.webp) | ![S4 LitHermes café landing page, desktop](./docs/ab-simple/s4-ui-lithermes-desktop.webp) |
-
-**S5 · LitHermes won.** Both sides got all 12 checked source facts right. LitHermes noticed that the 2026 review and council deadlines had already passed, where the baseline listed them as upcoming tasks, and it added points the sources support, such as the gap between weekend hub and weekday van use. The baseline's slides are the better designed ones; the LitHermes deck is a plain default template.
-
-Baseline:
-
-![S5 baseline slides](./docs/ab-simple/s5-office-baseline-slides.webp)
-
-LitHermes:
-
-![S5 LitHermes slides](./docs/ab-simple/s5-office-lithermes-slides.webp)
-
-**S6 · LitHermes won (judge: tie).** LitHermes found 3 of 10 reference facts against 1, every link it gave pointed to an official source (a quarter of the baseline's did), and it covered npm 11 applying `--ignore-scripts` to `prepare`, Undici 7 and the dropped ARMv7 builds. The baseline listed more API details but presented the permission-flag rename as new in 24, which the judge called misleading.
-
-**S7 · LitHermes won.** LitHermes delivered a rendered, editable HTML diagram with payment-failure and cancellation paths, and said plainly that it skipped the PNG export and visual check because the required Chrome was missing. The baseline drew ASCII boxes in chat, which the judge expected to misalign because Korean characters are double width. The maintainer called the gap overwhelming.
-
-| Baseline | LitHermes |
-|---|---|
-| ASCII boxes in chat; no rendered file | ![S7 LitHermes order, payment and shipping diagram](./docs/ab-simple/s7-lithermes-diagram.webp) |
-
-**S8 · LitHermes won (judge: baseline won).** The prompt gave no company and no figures. The baseline made a 7-slide template with placeholders; LitHermes made an 8-slide deck with three charts for a fictional company and marked every figure as an assumed example. The judge preferred the baseline's ready-to-fill template and found the LitHermes charts sparse, without data labels; the maintainer preferred the LitHermes deck.
-
-Baseline:
-
-![S8 baseline slides](./docs/ab-simple/s8-office-baseline-slides.webp)
-
-LitHermes:
-
-![S8 LitHermes slides](./docs/ab-simple/s8-office-lithermes-slides.webp)
-
-**S9 · LitHermes won.** The baseline asked which product to plan and wrote no document. LitHermes wrote a 3-page Word plan for a fictional modular desk tray, with the customer problem, price assumptions, a validation schedule and a production decision rule, and the judge found its break-even arithmetic correct.
-
-| Baseline | LitHermes |
-|---|---|
-| No document; it asked which product to plan | ![S9 LitHermes product plan, first pages](./docs/ab-simple/s9-office-lithermes-pages.webp) |
-
-**S11 · LitHermes won (judge: tie).** LitHermes delivered an app with a date overview, a people filter, search, 30-minute slots and four passing logic tests. The judge found the baseline's single timeline across all rooms clearer and noted that it opens straight from `index.html`, while the LitHermes app needs npm and a local server and puts an illustrated banner above the schedule. The maintainer preferred the LitHermes app.
-
-| Baseline | LitHermes |
-|---|---|
-| ![S11 baseline meeting-room booking app, desktop](./docs/ab-simple/s11-ui-baseline-desktop.webp) | ![S11 LitHermes meeting-room booking app, desktop](./docs/ab-simple/s11-ui-lithermes-desktop.webp) |
-
 ## How it works
 
 LitHermes is a Python plugin. When Hermes loads it, `register(ctx)` adds hooks, commands, skills and work tools. The hooks step in just before and after each model or tool call. The `goal_*` tools write your goals, and the evidence gathered for them, to local records in your project.
@@ -546,6 +464,38 @@ LitHermes won't overwrite a named skin file you already have. To get a fresh cop
 | `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./docs/guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.
+
+## Automatic handoff
+
+A long session fills the model's context window, and when it is full Hermes compacts the conversation and older detail is lost. Automatic handoff has the model write a handoff before that happens, and brings it back afterwards. It is off by default, and the percent is yours to choose: LitHermes has no built-in value.
+
+Turn it on inside a session with a percent of your own:
+
+```
+/lit-handoff auto on 60
+```
+
+From then on, once a model call uses more than 60% of the context window, your next message carries a short request to write a handoff with the lit-handoff procedure. The model saves the file and tells you one line: `Handoff saved. Run /compact now.` (On Hermes 0.17 the command is `/compress`.) After you compact, the next message carries a short digest of that handoff, so the work picks up where it stopped.
+
+Hermes lets a plugin watch and ask, and only you or Hermes can compact. These are the four steps and who does each one here:
+
+| Step | Who does it on Hermes |
+|---|---|
+| Measure how full the context is | Automatic. LitHermes reads the token count of every model call. |
+| Ask the model for the handoff | Automatic request, on the first message after the percent is passed. The model still has to follow it. |
+| Compact the conversation | You, with `/compact`, or Hermes on its own threshold. A plugin cannot start compaction on Hermes. |
+| Load the handoff again | Automatic, on the first message after compaction. It loads only a file that carries this session's id and was written after the request; otherwise LitHermes says it found nothing to load. |
+
+These switches set it up:
+
+- `/lit-handoff auto on <percent>` turns it on at a whole number from 1 to 99. Without a number it reuses the last one you chose, and asks for one if you never chose.
+- `/lit-handoff auto off` turns it off and remembers the percent for next time.
+- `/lit-handoff auto status` shows whether it is on, the latest reading of this session and how it compares with Hermes' own compaction point.
+- `LITHERMES_AUTO_HANDOFF=1` together with `LITHERMES_AUTO_HANDOFF_PERCENT=60` sets the same thing from the environment Hermes runs in, which suits a shell profile. The environment wins over the command. Any other value of the first variable keeps the feature off, and a percent that is not a whole number from 1 to 99 also keeps it off and shows up as a warning in `hermes lithermes doctor`.
+
+Choose a percent below the point where Hermes compacts on its own. On current Hermes that is about half of the window by default, raised to 75% for windows under 512K tokens, and lowered to a fixed token count when your Hermes config sets a cap. If your percent is at or above that point, Hermes compacts first and no handoff is written. `hermes lithermes doctor` and `/lit-handoff auto status` compare the two and warn you.
+
+The request goes out once each time usage crosses your percent, never inside a tool call and never to helper agents. LitHermes saves only your switch and last percent, in the `lithermes` folder of your Hermes home. The handoff itself is the usual `HANDOFF.md` (or `.handoff/HANDOFF.md`) in your project.
 
 ## Optional: Jev skill hint
 

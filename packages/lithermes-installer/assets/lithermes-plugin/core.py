@@ -77,6 +77,11 @@ except (ImportError, ModuleNotFoundError):
     import auto_update as _auto_update
 
 try:
+    from . import auto_handoff as _auto_handoff
+except (ImportError, ModuleNotFoundError):
+    import auto_handoff as _auto_handoff
+
+try:
     from . import output_styles as _output_styles
 except (ImportError, ModuleNotFoundError):
     import output_styles as _output_styles
@@ -155,6 +160,10 @@ def post_api_request(**kwargs: Any) -> None:
     fields, but the measurement module intentionally ignores them.  Returning
     ``None`` preserves the observer-only hook contract.
     """
+    try:
+        _auto_handoff.post_api_request(**kwargs)
+    except Exception:  # noqa: BLE001 - the optional handoff reading never costs a model call
+        pass
     return _provider_metrics.post_api_request(**kwargs)
 
 
@@ -191,6 +200,7 @@ def on_session_start(**kwargs: Any) -> None:
     release_browser_drive_state(kwargs.get("session_id"))
     _deliverable_hedges.release_session(kwargs.get("session_id"))
     _rules.begin_session(str(kwargs.get("session_id") or ""))
+    _auto_handoff.begin_session(kwargs.get("session_id"))
     _print_agents_nudge(str(kwargs.get("platform") or ""))
     return None
 

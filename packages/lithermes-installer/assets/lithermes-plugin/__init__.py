@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from . import auto_handoff
 from . import core
 from . import bounded_work
 from . import bounded_work_tools
@@ -316,6 +317,23 @@ def _merge_knowledge(
     return result
 
 
+def _auto_handoff_block(kwargs: dict[str, Any]) -> str:
+    """The opt-in automatic-handoff directive or reload for this turn, or an empty string.
+
+    It rides with the post-edit route so the bounded composition keeps it whole,
+    and a failure here never costs the turn its other context.
+    """
+    try:
+        return auto_handoff.pre_llm_call(
+            session_id=kwargs.get("session_id"),
+            user_message=kwargs.get("user_message"),
+            conversation_history=kwargs.get("conversation_history"),
+            platform=kwargs.get("platform"),
+        )
+    except Exception:  # noqa: BLE001 - advisory only
+        return ""
+
+
 def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     """Compose the Litwork directive and the active-litgoal snapshot.
 
@@ -333,6 +351,9 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         kwargs.get("session_id"), kwargs.get("user_message"), kwargs.get("turn_id")
     )
     post_edit = core.consume_rules_context(**kwargs)
+    auto_handoff_block = _auto_handoff_block(kwargs)
+    if auto_handoff_block:
+        post_edit = f"{auto_handoff_block}\n\n{post_edit}" if post_edit else auto_handoff_block
     workspace = kwargs.get("workspace")
     knowledge_context = knowledge.query(workspace, str(kwargs.get("user_message") or ""))
     base = core.pre_llm_call(**kwargs)
@@ -593,6 +614,7 @@ def _release_bounded_session(**kwargs: Any) -> None:
     session_id = raw_session_id if isinstance(raw_session_id, str) else ""
     bounded_work.release_bounded_session(session_id)
     jev_hint.release_session(session_id)
+    auto_handoff.release_session(session_id)
     # A finalized/reset session must not leave its rule dedup ledger behind: the
     # next session reusing the id would see every rule as "already injected".
     core.release_rules_session(session_id)
@@ -708,8 +730,8 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-handoff",
         _command_handler(ctx, handoff.command_lit_handoff),
-        description="Create or update a verified LitHermes continuation handoff",
-        args_hint="[focus]",
+        description="Create or update a verified LitHermes continuation handoff, or set the automatic handoff",
+        args_hint="[focus] | auto on <percent> | auto off | auto status",
     )
     ctx.register_command(
         "lit-scientific-visualization",

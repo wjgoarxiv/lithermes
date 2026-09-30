@@ -27,6 +27,11 @@ except (ImportError, ModuleNotFoundError):
     import jev_hint as _jev_hint  # type: ignore
 
 try:
+    from . import auto_handoff as _auto_handoff
+except (ImportError, ModuleNotFoundError):
+    import auto_handoff as _auto_handoff  # type: ignore
+
+try:
     from .core_contract import KOREAN_PROSE_ALIASES, KOREAN_PROSE_COMMANDS
 except (ImportError, ModuleNotFoundError):
     from core_contract import KOREAN_PROSE_ALIASES, KOREAN_PROSE_COMMANDS  # type: ignore
@@ -483,6 +488,7 @@ def status_report(host_version: str | None = None) -> str:
         _knowledge.status_line(Path.cwd()),
         _provider_metrics.capability_line(),
         _jev_hint.status_line(),
+        _auto_handoff.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
         f"scientific visualization: {_science.dependency_summary()}",
         *_motion_runtime_lines(),
@@ -571,6 +577,8 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     jev_state = _jev_hint.status()
     jev_tag = {"on": "OK", "off": "NOTE"}.get(jev_state, "WARN")
     lines.append(f"[{jev_tag}] {_jev_hint.status_line()}")
+    handoff_tag, handoff_text = _auto_handoff.doctor_line()
+    lines.append(f"[{handoff_tag}] {handoff_text}")
     if version != "unknown":
         lines.append(f"[OK] Hermes host detected (v{version})")
     else:
