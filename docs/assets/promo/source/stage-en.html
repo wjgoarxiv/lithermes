@@ -1,0 +1,486 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<script src="/lit/stage-kit.js"></script>
+<style>
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #05090E; }
+  #root { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; background: #05090E; }
+  .abs { position: absolute; }
+  .mono { font-family: "MesloLGS NF", monospace; font-weight: 400; white-space: pre; font-variant-ligatures: none; }
+  .pre { font-family: "Pretendard"; white-space: nowrap; }
+  .b7 { font-weight: 700; }
+  .b4 { font-weight: 400; }
+  .msk { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.08em 0.04em 0.22em; margin: -0.08em -0.04em -0.22em; }
+  .msk > span { display: inline-block; }
+  .pane { position: absolute; background: #0B121A; border: 1px solid rgba(242, 239, 223, 0.13); border-radius: 22px; box-shadow: 0 50px 120px rgba(0, 0, 0, 0.6); }
+  .dot { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #2A3440; top: 22px; }
+  .caret { position: absolute; background: #D7F75B; }
+  .ember { position: absolute; border-radius: 50%; background: #FF6337; }
+</style>
+<body>
+<div id="root"></div>
+<script>
+  const COPY = {
+  "sub1": "Add one word.",
+  "prompt": "lit fix the failing login test",
+  "ack": "LIT IGNITED · litwork",
+  "head1": "It starts the work.",
+  "w1": "Plan",
+  "w2": "Make",
+  "w3": "Check",
+  "head3": "Leave the next step.",
+  "cmd": "/lit-handoff",
+  "doc": "HANDOFF.md",
+  "docA": "result",
+  "docB": "next step",
+  "bye": "stay lit",
+  "head4": "The next session continues.",
+  "name": "LitHermes",
+  "ready": "LIT ready",
+  "p4": "read the handoff and continue",
+  "end": "Keep the work lit."
+};
+  const CFG = {"subSize":76,"headSmall":100,"headBig":122,"wordSize":176,"wordGap":120,"endSize":150};
+  const ACK_ROWS = [[["▗","#FF6337"],["▖","#FF584A"],[" ",null],[" ",null],["▄","#FF3882"],["▄","#FF2D95"],[" ",null],["█","#9977BF"],["▌","#669BD5"],[" ",null],[" ",null]],[["▐","#FF6337"],["▌","#FF584A"],["▗","#FF4D5D"],["█","#FF436F"],["▀","#FF3882"],["▀","#FF2D95"],["▀","#CC52AA"],["▀","#9977BF"],["▀","#669BD5"],["▀","#33C0EA"],["▘","#00E5FF"]],[["▐","#FF6337"],["▌","#FF584A"],[" ",null],["▄","#FF436F"],["▌","#FF3882"],["▀","#FF2D95"],["▝","#CC52AA"],["▀","#9977BF"],["▀","#669BD5"],["▘","#33C0EA"],[" ",null],[" ",null],[" ",null],["🔥",null],[" ",null],["L","#FF6337"],["I","#FF5E40"],["T","#FF584A"],[" ",null],["I","#FF4D5D"],["G","#FF4866"],["N","#FF436F"],["I","#FF3D79"],["T","#FF3882"],["E","#FF328C"],["D","#FF2D95"],[" ",null],["·","#CC52AA"],[" ",null],["l","#9977BF"],["i","#8089CA"],["t","#669BD5"],["w","#4DAEDF"],["o","#33C0EA"],["r","#1AD3F4"],["k","#00E5FF"],[" ",null],["🔥",null]],[["▐","#FF6337"],["▌","#FF584A"],["▛","#FF4D5D"],["▘","#FF436F"],[" ",null],[" ",null],["▐","#CC52AA"],["▌","#9977BF"],[" ",null],[" ",null],[" ",null]],[["▝","#FF6337"],["▀","#FF584A"],["▀","#FF4D5D"],["▘","#FF436F"],[" ",null],[" ",null],["▝","#CC52AA"],["▘","#9977BF"],[" ",null],[" ",null],[" ",null]]];
+  const WELCOME_ROWS = [[["▗","#FF6337"],["▖","#FF6337"],[" ",null],[" ",null],["▄","#F2EFDF"],["▄","#F2EFDF"],[" ",null],["█","#D7F75B"],["▌","#D7F75B"],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null]],[["▐","#FF6337"],["▌","#FF6337"],["▗","#F2EFDF"],["█","#F2EFDF"],["▀","#F2EFDF"],["▀","#FF6337"],["▀","#FF6337"],["▀","#FF6337"],["▀","#FF6337"],["▀","#FF6337"],["▘","#FF6337"],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null]],[["▐","#FF6337"],["▌","#FF6337"],[" ",null],["▄","#F2EFDF"],["▌","#F2EFDF"],["▀","#D7F75B"],["▝","#F2EFDF"],["▀","#F2EFDF"],["▀","#F2EFDF"],["▘","#F2EFDF"],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null]],[["▐","#FF6337"],["▌","#FF6337"],["▛","#F2EFDF"],["▘","#F2EFDF"],[" ",null],[" ",null],["▐","#F2EFDF"],["▌","#F2EFDF"],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null]],[["▝","#FF6337"],["▀","#FF6337"],["▀","#FF6337"],["▘","#FF6337"],[" ",null],[" ",null],["▝","#F2EFDF"],["▘","#F2EFDF"],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null],[" ",null]]];
+
+  const { define, text, ease, at, kf, cubicBezier, lerp, clamp, drawPath, clipRect, mix, rgba, smoothstep } = LitStage;
+  const EMBER_CARET = "#E4421B";
+  const NAVY = "#05090E", ORANGE = "#FF6337", LIME = "#D7F75B", IVORY = "#F2EFDF", QUIET = "#8B95A2", DIM = "#66717E";
+  const T = [0, 3.8, 8.2, 12.6, 16.6, 20.4, 23.2];
+  const root = document.getElementById("root");
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const inOut = cubicBezier(0.7, 0, 0.2, 1);
+  const rise = cubicBezier(0.16, 1, 0.3, 1);
+  const px = (n) => n + "px";
+
+  function mk(tag, cls, parent, html, ns) {
+    const e = ns ? document.createElementNS(ns, tag) : document.createElement(tag);
+    if (cls) e.setAttribute("class", cls);
+    if (html != null) e.innerHTML = html;
+    (parent || root).appendChild(e);
+    return e;
+  }
+  function css(e, o) { for (const k in o) e.style[k] = o[k]; return e; }
+  function place(e, o) { return css(e, Object.assign({ position: "absolute" }, o)); }
+  function vis(e, on) { const d = on ? "" : "none"; if (e.style.display !== d) e.style.display = d; }
+  const typed = (s, t, t0, cps) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((t - t0) * cps))));
+  const FLAME = (size) => `<svg viewBox="0 0 64 64" width="${size}" height="${size}" style="display:block"><path d="M32 3C35 15 51 23 51 40C51 53 42 61 32 61C22 61 13 53 13 40C13 31 18 26 22 21C23 27 26 30 30 30C27 21 28 11 32 3Z" fill="${ORANGE}"/><path d="M32 61C26 61 22 57 22 51C22 44 28 41 30 35C34 40 42 44 42 51C42 57 38 61 32 61Z" fill="${LIME}"/></svg>`;
+  const STOPS = [[255, 99, 55], [255, 45, 149], [0, 229, 255]];
+  function gradAt(p) {
+    const seg = Math.min(STOPS.length - 2, Math.floor(p * (STOPS.length - 1)));
+    const f = p * (STOPS.length - 1) - seg;
+    const a = STOPS[seg], b = STOPS[seg + 1];
+    return "rgb(" + a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(",") + ")";
+  }
+  function gradSpans(el, str) {
+    el.innerHTML = "";
+    const chars = Array.from(str);
+    const spans = chars.map((c, i) => {
+      const s = document.createElement("span");
+      s.textContent = c;
+      if (c !== " ") s.style.color = gradAt(chars.length > 1 ? i / (chars.length - 1) : 0);
+      s.style.fontWeight = "400";
+      el.appendChild(s);
+      return s;
+    });
+    return spans;
+  }
+  function markBlock(parent, rows, size) {
+    const box = mk("div", "mono", parent);
+    css(box, { position: "absolute", fontSize: px(size), lineHeight: px(size) });
+    const rowEls = rows.map((r) => {
+      const d = mk("div", null, box);
+      css(d, { height: px(size), whiteSpace: "pre" });
+      r.slice(0, 11).forEach(([ch, col]) => { const s = document.createElement("span"); s.textContent = ch; s.style.color = col || IVORY; d.appendChild(s); });
+      return d;
+    });
+    text(box, { decor: true });
+    return { box, rowEls };
+  }
+  function riseLine(parent, str, cls, style) {
+    const wrap = mk("div", cls, parent);
+    css(wrap, Object.assign({ position: "absolute" }, style));
+    const m = mk("span", "msk", wrap);
+    const inner = mk("span", null, m, str);
+    text(wrap);
+    return { wrap, inner, m };
+  }
+  const bez = (p0, p1, p2, p3, u) => {
+    const v = 1 - u;
+    return [v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
+            v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1]];
+  };
+
+  // ---------- ground ----------
+  const glowA = place(mk("div", null, root), { left: "-420px", top: "560px", width: "1500px", height: "1100px", borderRadius: "50%" });
+  const glowB = place(mk("div", null, root), { left: "1250px", top: "-560px", width: "1200px", height: "1000px", borderRadius: "50%" });
+
+  // ---------- beat 0: the word ----------
+  const H = 560;
+  const heroGroup = place(mk("div", null, root), { left: "0px", top: "0px", transformOrigin: "0 0", zIndex: "6" });
+  const hero = place(mk("div", "pre b7", heroGroup), { left: "0px", top: "0px", fontSize: px(H), lineHeight: "1", color: IVORY });
+  const heroL = [];
+  ["l", "i", "t"].forEach((ch) => {
+    const m = mk("span", "msk", hero);
+    css(m, { padding: "0.06em 0.02em 0.2em", margin: "-0.06em -0.02em -0.2em" });
+    heroL.push(mk("span", null, m, ch));
+  });
+  const heroBase = mk("i", null, hero);
+  css(heroBase, { display: "inline-block", width: "0px", height: "0px" });
+  const heroCaret = mk("div", "caret", heroGroup);
+  text(hero);
+  const sub1 = riseLine(root, COPY.sub1, "pre b4", { fontSize: px(CFG.subSize), color: "rgba(242,239,223,0.74)", lineHeight: "1.1", width: "1920px", textAlign: "center", left: "0px", top: "770px", zIndex: "5" });
+  css(sub1.wrap, { textAlign: "center" });
+
+  // ---------- beat 1: terminal, request, acknowledgement ----------
+  const P1 = { x: 280, y: 330, w: 1360, h: 540 };
+  const pane1 = place(mk("div", "pane", root), { left: px(P1.x), top: px(P1.y), width: px(P1.w), height: px(P1.h), zIndex: "3" });
+  [0, 1, 2].forEach((i) => css(mk("div", "dot", pane1), { left: px(34 + i * 28) }));
+  const promptLine = place(mk("div", "mono", pane1), { left: "70px", top: "84px", fontSize: "48px", lineHeight: "68px", color: IVORY, display: "flex", alignItems: "center" });
+  const pFlame = mk("span", null, promptLine, FLAME(44));
+  css(pFlame, { marginRight: "18px" });
+  const pArrow = mk("span", null, promptLine, "› ");
+  css(pArrow, { color: LIME });
+  const litSlot = mk("span", null, promptLine, "lit");
+  const restSlot = mk("span", null, promptLine, "");
+  const promptCaret = mk("div", "caret", pane1);
+  css(promptCaret, { width: "27px", height: "50px" });
+  // the whole request is one copy run: register the line element
+  text(promptLine);
+  const ackBox = place(mk("div", null, pane1), { left: "70px", top: "222px" });
+  const ackMark = markBlock(ackBox, ACK_ROWS, 40);
+  const ackLabel = place(mk("div", "mono", ackBox), { left: "308px", top: "78px", fontSize: "44px", lineHeight: "44px", display: "flex", alignItems: "center", whiteSpace: "pre" });
+  const ackFlameL = mk("span", null, ackLabel, FLAME(40)); css(ackFlameL, { marginRight: "14px" });
+  const ackText = mk("span", null, ackLabel, "");
+  const ackFlameR = mk("span", null, ackLabel, FLAME(40)); css(ackFlameR, { marginLeft: "14px" });
+  const ackSpans = gradSpans(ackText, COPY.ack);
+  text(ackText);
+  const head1 = riseLine(root, COPY.head1, "pre b7", { left: px(P1.x), top: "150px", fontSize: px(CFG.headSmall), lineHeight: "1.12", color: IVORY, zIndex: "4" });
+
+  // ---------- ember ----------
+  const ember = place(mk("div", "ember", root), { width: "26px", height: "26px", zIndex: "9", boxShadow: "0 0 44px 10px rgba(255,99,55,0.55)" });
+  const trail = [];
+  for (let i = 0; i < 8; i++) trail.push(place(mk("div", "ember", root), { width: px(22 - i * 2), height: px(22 - i * 2), zIndex: "8", opacity: "0" }));
+
+  // ---------- beat 2: plan, make, check ----------
+  const wordEls = [], wordInner = [];
+  const wordNames = [COPY.w1, COPY.w2, COPY.w3];
+  wordNames.forEach((w) => {
+    const wrap = place(mk("div", "pre b7", root), { fontSize: px(CFG.wordSize), lineHeight: "1", color: DIM, zIndex: "4" });
+    const m = mk("span", "msk", wrap);
+    css(m, { padding: "0.08em 0.03em 0.22em", margin: "-0.08em -0.03em -0.22em" });
+    const inner = mk("span", null, m, w);
+    text(wrap);
+    wordEls.push(wrap); wordInner.push(inner);
+  });
+  const trackBase = place(mk("div", null, root), { height: "3px", background: "rgba(242,239,223,0.16)", zIndex: "2" });
+  const trackDone = place(mk("div", null, root), { height: "3px", background: LIME, zIndex: "3" });
+  const nodes = [0, 1, 2].map(() => place(mk("div", null, root), { width: "26px", height: "26px", borderRadius: "50%", boxSizing: "border-box", border: "3px solid rgba(242,239,223,0.34)", background: NAVY, zIndex: "4" }));
+  const tickSvg = place(mk("svg", null, root, null, SVGNS), { left: "0px", top: "0px", width: "1920px", height: "1080px", overflow: "visible", zIndex: "5" });
+  tickSvg.setAttribute("viewBox", "0 0 1920 1080");
+  const tickRing = mk("circle", null, tickSvg, null, SVGNS);
+  const tickPath = mk("path", null, tickSvg, null, SVGNS);
+  [tickRing, tickPath].forEach((p) => { p.setAttribute("fill", "none"); p.setAttribute("stroke", LIME); p.setAttribute("stroke-linecap", "round"); p.setAttribute("stroke-linejoin", "round"); });
+  tickRing.setAttribute("stroke-width", "6"); tickPath.setAttribute("stroke-width", "10");
+
+  // ---------- beat 3: the handoff ----------
+  const head3 = riseLine(root, COPY.head3, "pre b7", { left: "140px", top: "230px", fontSize: px(CFG.headBig), lineHeight: "1.1", width: "820px", color: IVORY, zIndex: "4" });
+  css(head3.wrap, { whiteSpace: "normal", wordBreak: "keep-all" });
+  css(head3.m, { display: "block", overflow: "hidden" });
+  const card = place(mk("div", null, root), { left: "1150px", top: "170px", width: "520px", height: "660px", background: IVORY, borderRadius: "12px", boxShadow: "0 40px 90px rgba(0,0,0,0.55)", transformOrigin: "50% 50%", zIndex: "5" });
+  const cardTitle = place(mk("div", "mono", card, COPY.doc), { left: "40px", top: "40px", fontSize: "38px", lineHeight: "1", color: "#0B121A" });
+  text(cardTitle);
+  const cardRule = place(mk("div", null, card), { left: "40px", top: "104px", width: "440px", height: "3px", background: "#0B121A" });
+  const cardLabA = place(mk("div", "pre b7", card, COPY.docA), { left: "40px", top: "144px", fontSize: "34px", lineHeight: "1", color: "#4A5561" });
+  text(cardLabA);
+  const barsA = [0, 1].map((i) => place(mk("div", null, card), { left: "40px", top: px(206 + i * 34), width: px(i ? 300 : 440), height: "14px", borderRadius: "7px", background: "#B7B39F" }));
+  const cardLabB = place(mk("div", "pre b7", card, COPY.docB), { left: "40px", top: "372px", fontSize: "34px", lineHeight: "1", color: "#4A5561" });
+  text(cardLabB);
+  const barsB = [0, 1, 2].map((i) => place(mk("div", null, card), { left: "40px", top: px(434 + i * 34), width: px([440, 380, 250][i]), height: "14px", borderRadius: "7px", background: i === 0 ? "#9DBB1C" : "#B7B39F" }));
+  const pane3 = place(mk("div", "pane", root), { left: "140px", top: "600px", width: "900px", height: "256px", zIndex: "3" });
+  [0, 1, 2].forEach((i) => css(mk("div", "dot", pane3), { left: px(34 + i * 28) }));
+  const cmdLine = place(mk("div", "mono", pane3), { left: "58px", top: "70px", fontSize: "48px", lineHeight: "68px", color: IVORY, display: "flex", alignItems: "center" });
+  const cFlame = mk("span", null, cmdLine, FLAME(44)); css(cFlame, { marginRight: "18px" });
+  const cArrow = mk("span", null, cmdLine, "› "); css(cArrow, { color: LIME });
+  const cText = mk("span", null, cmdLine, "");
+  text(cmdLine);
+  const byeLine = place(mk("div", "mono", pane3, ""), { left: "58px", top: "144px", fontSize: "48px", lineHeight: "68px", color: IVORY });
+  text(byeLine);
+  const cmdCaret = mk("div", "caret", pane3); css(cmdCaret, { width: "27px", height: "50px" });
+
+  // ---------- beat 4: the next session ----------
+  const head4 = riseLine(root, COPY.head4, "pre b7", { left: "200px", top: "150px", fontSize: px(CFG.headSmall), lineHeight: "1.12", color: IVORY, zIndex: "4" });
+  const P4 = { x: 200, y: 330, w: 1060, h: 540 };
+  const pane4 = place(mk("div", "pane", root), { left: px(P4.x), top: px(P4.y), width: px(P4.w), height: px(P4.h), zIndex: "3" });
+  [0, 1, 2].forEach((i) => css(mk("div", "dot", pane4), { left: px(34 + i * 28) }));
+  const welBox = place(mk("div", null, pane4), { left: "70px", top: "84px" });
+  const welMark = markBlock(welBox, WELCOME_ROWS, 40);
+  const welName = place(mk("div", "mono", welBox, COPY.name), { left: "0px", top: "224px", fontSize: "48px", lineHeight: "56px", color: IVORY });
+  const welReady = place(mk("div", "mono", welBox, COPY.ready), { left: "0px", top: "280px", fontSize: "48px", lineHeight: "56px", color: IVORY });
+  text(welName); text(welReady);
+  const p4Line = place(mk("div", "mono", pane4), { left: "70px", top: "416px", fontSize: "48px", lineHeight: "68px", color: IVORY, display: "flex", alignItems: "center" });
+  const p4Flame = mk("span", null, p4Line, FLAME(44)); css(p4Flame, { marginRight: "18px" });
+  const p4Arrow = mk("span", null, p4Line, "› "); css(p4Arrow, { color: LIME });
+  const p4Text = mk("span", null, p4Line, "");
+  text(p4Line);
+  const p4Caret = mk("div", "caret", pane4); css(p4Caret, { width: "27px", height: "50px" });
+  const linkSvg = place(mk("svg", null, root, null, SVGNS), { left: "0px", top: "0px", width: "1920px", height: "1080px", overflow: "visible", zIndex: "6" });
+  linkSvg.setAttribute("viewBox", "0 0 1920 1080");
+  const linkPath = mk("path", null, linkSvg, null, SVGNS);
+  linkPath.setAttribute("fill", "none"); linkPath.setAttribute("stroke", LIME); linkPath.setAttribute("stroke-width", "5"); linkPath.setAttribute("stroke-linecap", "round");
+
+  // ---------- beat 5: the line ----------
+  const endWrap = place(mk("div", "pre b7", root), { left: "0px", top: "372px", width: "1920px", textAlign: "center", fontSize: px(CFG.endSize), lineHeight: "1.1", color: IVORY, zIndex: "4" });
+  const endWords = COPY.end.split(" ");
+  const endParts = [endWords.slice(0, -1).join(" "), endWords[endWords.length - 1]].map((s, i) => {
+    const m = mk("span", "msk", endWrap);
+    const inner = mk("span", null, m, s);
+    if (i === 0) m.style.marginRight = "0.27em";
+    if (i === 1) inner.style.color = LIME;
+    return { m, inner };
+  });
+  text(endWrap);
+  const endRule = place(mk("div", null, root), { left: "0px", top: "590px", height: "2px", background: "rgba(242,239,223,0.22)", zIndex: "4" });
+  const endName = riseLine(root, COPY.name, "pre b4", { left: "0px", top: "640px", width: "1920px", textAlign: "center", fontSize: "60px", lineHeight: "1.1", color: QUIET, zIndex: "4" });
+
+  // ---------- layout (measured once, after fonts are ready) ----------
+  let L = null;
+  function layout() {
+    const wordW = heroL.reduce((a, e) => a + e.getBoundingClientRect().width, 0);
+    const lw = heroL.map((e) => e.getBoundingClientRect().width);
+    const caretW = Math.round(H * 0.2), caretH = Math.round(H * 0.74);
+    const totalW = wordW + caretW + 14;
+    const hx = Math.round((1920 - totalW) / 2), hBase = 610;
+    // baseline offset inside the hero box
+    const hb = heroBase.getBoundingClientRect(), hr = hero.getBoundingClientRect();
+    const bh = hb.bottom - hr.top;
+    const hy = hBase - bh;
+    css(heroGroup, { left: px(hx), top: px(hy) });
+    css(heroCaret, { width: px(caretW), height: px(caretH), left: "0px", top: px(bh - caretH) });
+    // landing slot inside the terminal
+    const sr = litSlot.getBoundingClientRect();
+    const slotBase = mk("i", null, litSlot); css(slotBase, { display: "inline-block", width: "0px", height: "0px" });
+    const sb = slotBase.getBoundingClientRect();
+    litSlot.removeChild(slotBase);
+    const tx = sr.left, tBase = sb.bottom, tw = sr.width;
+    const s = tw / wordW;
+    // typed rest position and caret
+    const rr = restSlot.getBoundingClientRect();
+    // words of beat 2
+    const gap = CFG.wordGap;
+    const ww = wordEls.map((e) => e.getBoundingClientRect().width);
+    const totalWords = ww.reduce((a, b) => a + b, 0) + gap * 2;
+    let cx = Math.round((1920 - totalWords) / 2);
+    const wx = ww.map((w) => { const v = cx; cx += w + gap; return v; });
+    const wBase = 560;
+    const wb = mk("i", null, wordEls[0]); css(wb, { display: "inline-block", width: "0px", height: "0px" });
+    const wbb = wb.getBoundingClientRect(), wr0 = wordEls[0].getBoundingClientRect();
+    const wbh = wbb.bottom - wr0.top; wordEls[0].removeChild(wb);
+    wordEls.forEach((e, i) => css(e, { left: px(wx[i]), top: px(wBase - wbh) }));
+    const trackY = 700;
+    const nodeX = wx.map((x, i) => x + ww[i] / 2);
+    css(trackBase, { left: px(nodeX[0]), width: px(nodeX[2] - nodeX[0]), top: px(trackY - 1) });
+    nodes.forEach((n, i) => css(n, { left: px(nodeX[i] - 13), top: px(trackY - 13) }));
+    tickRing.setAttribute("cx", nodeX[2]); tickRing.setAttribute("cy", trackY); tickRing.setAttribute("r", 34);
+    tickPath.setAttribute("d", `M${nodeX[2] - 17} ${trackY + 1} L${nodeX[2] - 4} ${trackY + 15} L${nodeX[2] + 19} ${trackY - 14}`);
+    // ack flame position (ember birth)
+    const fr = ackFlameR.getBoundingClientRect();
+    // card and beat 4 geometry
+    const cl = card.getBoundingClientRect();
+    // typed caret geometry for the prompt (line box)
+    const pl = promptLine.getBoundingClientRect();
+    // end line
+    L = { wordW, lw, caretW, caretH, hx, hy, bh, s, tx, tBase, tw, hBase, wx, ww, wBase, wbh, trackY, nodeX, emberBirth: [fr.left + fr.width / 2, fr.top + fr.height / 2], cardRect: cl, pl, restLeft: rr.left, pTop: pl.top };
+    // dimensions for typed caret placement
+    const probe = mk("span", null, promptLine, "0000000000"); L.charW = probe.getBoundingClientRect().width / 10; promptLine.removeChild(probe);
+    L.lineH = 64;
+  }
+
+  // ---------- frame ----------
+  function render(t) {
+    if (!L) layout();
+    // ground light
+    css(glowA, { background: `radial-gradient(closest-side, rgba(255,99,55,${0.19 + 0.03 * Math.sin(t * 0.7)}), rgba(255,99,55,0) 100%)` });
+    css(glowB, { background: `radial-gradient(closest-side, rgba(215,247,91,${0.055 + 0.015 * Math.sin(t * 0.5 + 1)}), rgba(215,247,91,0) 100%)` });
+
+    // ----- beat 0 -----
+    const tl = [0.55, 0.85, 1.15];
+    heroL.forEach((e, i) => {
+      const p = at(t, tl[i], 0.62, rise);
+      e.style.transform = `translateY(${(1 - p) * 105}%)`;
+      e.style.visibility = p > 0 ? "" : "hidden";
+    });
+    // caret follows the typed letters
+    const cxs = [0, L.lw[0], L.lw[0] + L.lw[1], L.wordW];
+    const caretX = 14 * 0 + kf(t, [
+      { t: 0.5, v: cxs[0] }, { t: 0.62, v: cxs[0], ease: "outCubic" }, { t: 0.74, v: cxs[1] },
+      { t: 0.92, v: cxs[1], ease: "outCubic" }, { t: 1.04, v: cxs[2] },
+      { t: 1.22, v: cxs[2], ease: "outCubic" }, { t: 1.34, v: cxs[3] },
+    ]);
+    const blink = t < 1.5 ? 1 : (Math.floor((t - 1.5) * 2.4) % 2 === 0 ? 1 : 0.15);
+    heroCaret.style.transform = `translateX(${caretX + (t >= 0.5 ? 10 : 0)}px)`;
+    heroCaret.style.background = mix(EMBER_CARET, LIME, smoothstep(2.9, 3.6, t));
+    heroCaret.style.opacity = t < 2.85 ? String(blink) : String(blink * (1 - at(t, 2.85, 0.35, ease.accelerate)));
+    const handP = at(t, 2.85, 1.0, inOut);
+    const sc = Math.exp(lerp(0, Math.log(L.s), handP));
+    const X = lerp(0, L.tx - L.hx, handP), Y = lerp(0, L.tBase - L.hy - L.s * L.bh, handP);
+    heroGroup.style.transform = `translate(${X}px, ${Y}px) scale(${sc})`;
+    heroGroup.style.opacity = String(1 - smoothstep(3.62, 3.86, t));
+    vis(heroGroup, t < 3.95);
+    const subIn = at(t, 1.75, 0.75, rise), subOut = at(t, 2.75, 0.45, ease.accelerate);
+    sub1.inner.style.transform = `translateY(${(1 - subIn) * 110 + subOut * 110}%)`;
+    vis(sub1.wrap, t > 1.7 && t < 3.3);
+
+    // ----- beat 1 -----
+    const paneIn = at(t, 2.9, 0.9, rise);
+    const paneOut = at(t, 7.75, 0.55, ease.accelerate);
+    pane1.style.opacity = String(paneIn * (1 - paneOut));
+    pane1.style.transform = `translateY(${(1 - paneIn) * 34 - paneOut * 24}px) scale(${0.985 + 0.015 * paneIn - 0.03 * paneOut})`;
+    vis(pane1, t > 2.85 && t < 8.4);
+    litSlot.style.opacity = String(smoothstep(3.62, 3.86, t));
+    const restStr = typed(COPY.prompt.slice(3), t, 4.05, 34);
+    restSlot.textContent = restStr;
+    const promptDone = restStr.length >= COPY.prompt.length - 4;
+    const cPos = (COPY.prompt.length - (COPY.prompt.length - 4 - restStr.length)) ;
+    // caret sits after the visible characters of the request
+    const vChars = 3 + restStr.length;
+    const promptOff = L.tx - P1.x - 1; // slot left inside pane, minus the border
+    css(promptCaret, { left: px(promptOff + vChars * L.charW + 3), top: px(84 + 9) });
+    promptCaret.style.opacity = String(t < 3.7 ? 0 : (promptDone && t > 4.85 ? Math.max(0, 1 - (t - 4.85) / 0.25) : 1));
+    // acknowledgement
+    ackMark.rowEls.forEach((r, i) => { clipRect(r, at(t, 4.85 + i * 0.07, 0.42, ease.outCubic), { from: "left" }); });
+    const ackN = Math.floor(Math.max(0, t - 5.2) * 44);
+    ackSpans.forEach((s, i) => { s.style.opacity = i < ackN ? "1" : "0"; });
+    const labP = at(t, 5.15, 0.3);
+    ackFlameL.style.opacity = String(labP); ackFlameR.style.opacity = String(at(t, 5.8, 0.3));
+    const h1In = at(t, 5.2, 0.8, rise), h1Out = at(t, 7.55, 0.45, ease.accelerate);
+    head1.inner.style.transform = `translateY(${(1 - h1In) * 112 + h1Out * 112}%)`;
+    vis(head1.wrap, t > 5.15 && t < 8.1);
+
+    // ----- ember -----
+    const t0e = 7.35, t1e = 8.75;
+    const S = L.emberBirth, E = [L.nodeX[0], L.trackY];
+    let ex = null, ey = null, eo = 0, es = 1;
+    const bezPos = (u) => bez(S, [S[0] + 240, S[1] - 320], [E[0] - 420, E[1] - 260], E, u);
+    if (t >= t0e && t < t1e) {
+      const u = inOut(clamp((t - t0e) / (t1e - t0e), 0, 1));
+      [ex, ey] = bezPos(u); eo = at(t, t0e, 0.25); es = 1 + 0.25 * Math.sin(u * Math.PI);
+    } else if (t >= t1e && t < 11.55) {
+      const seg = t < 10.3 ? 0 : 1;
+      const a = seg === 0 ? [9.15, 10.2] : [10.45, 11.5];
+      const u = inOut(clamp((t - a[0]) / (a[1] - a[0]), 0, 1));
+      ex = lerp(L.nodeX[seg], L.nodeX[seg + 1], u); ey = L.trackY; eo = 1; es = 1;
+    } else if (t >= 12.55 && t < 13.55) {
+      const u = inOut(clamp((t - 12.55) / 1.0, 0, 1));
+      const C = [L.nodeX[2], L.trackY], D = [1600, 250];
+      [ex, ey] = bez(C, [C[0] + 200, C[1] - 380], [D[0] - 260, D[1] - 200], D, u); eo = 1 - smoothstep(13.35, 13.55, t); es = 1 - 0.2 * u;
+    }
+    if (ex !== null) {
+      ember.style.display = ""; ember.style.opacity = String(eo);
+      ember.style.transform = `translate(${ex - 13}px, ${ey - 13}px) scale(${es})`;
+    } else ember.style.display = "none";
+    trail.forEach((d, i) => {
+      let tp = null;
+      const lag = (i + 1) * 0.045;
+      if (ex !== null && t >= t0e && t < t1e) { const u = inOut(clamp((t - lag - t0e) / (t1e - t0e), 0, 1)); tp = bezPos(u); }
+      else if (ex !== null && t >= 12.55 && t < 13.55) {
+        const u = inOut(clamp((t - lag - 12.55) / 1.0, 0, 1)); const C = [L.nodeX[2], L.trackY], D = [1600, 250]; tp = bez(C, [C[0] + 200, C[1] - 380], [D[0] - 260, D[1] - 200], D, u);
+      }
+      if (tp) { d.style.display = ""; d.style.opacity = String(0.5 * (1 - i / 8) * eo); d.style.transform = `translate(${tp[0] - (11 - i)}px, ${tp[1] - (11 - i)}px)`; }
+      else d.style.display = "none";
+    });
+
+    // ----- beat 2 -----
+    const wIn = [8.3, 8.45, 8.6];
+    wordInner.forEach((e, i) => {
+      const inP = at(t, wIn[i], 0.75, rise);
+      const outP = at(t, 12.5 + i * 0.07, 0.5, ease.accelerate);
+      e.style.transform = `translateY(${(1 - inP) * 140 - outP * 112}%)`;
+      e.style.visibility = inP > 0 ? "" : "hidden";
+    });
+    const lit = [8.7, 10.2, 11.5];
+    wordEls.forEach((e, i) => { e.style.color = mix(DIM, IVORY, at(t, lit[i], 0.4, ease.outCubic)); vis(e, t > 8.25 && t < 13.3); });
+    const trackOn = t > 8.3 && t < 12.9;
+    const trackA = at(t, 8.4, 0.5) * (1 - at(t, 12.5, 0.4));
+    [trackBase].forEach((e) => { e.style.opacity = String(trackA); vis(e, trackOn); });
+    const doneX = t < 9.15 ? 0 : (t < 10.3 ? lerp(0, L.nodeX[1] - L.nodeX[0], inOut(clamp((t - 9.15) / 1.05, 0, 1))) : lerp(L.nodeX[1] - L.nodeX[0], L.nodeX[2] - L.nodeX[0], inOut(clamp((t - 10.45) / 1.05, 0, 1))));
+    css(trackDone, { left: px(L.nodeX[0]), width: px(doneX), top: px(L.trackY - 1), opacity: String(trackA) }); vis(trackDone, trackOn);
+    nodes.forEach((n, i) => {
+      const on = at(t, lit[i] - 0.05, 0.3, ease.outCubic);
+      n.style.borderColor = mix("rgba(242,239,223,0.34)".replace("rgba(242,239,223,0.34)", "#4B5561"), LIME, on);
+      n.style.background = mix(NAVY, LIME, on);
+      n.style.opacity = String(at(t, 8.3 + i * 0.1, 0.4) * (1 - at(t, 12.5, 0.4)) * (i === 2 ? 1 - at(t, 11.5, 0.2) : 1));
+      vis(n, trackOn);
+    });
+    const ringP = at(t, 11.5, 0.5, ease.outCubic);
+    tickRing.setAttribute("stroke-opacity", String(ringP * (1 - at(t, 12.5, 0.4))));
+    tickRing.setAttribute("stroke-dasharray", "1000"); tickRing.setAttribute("stroke-dashoffset", String((1 - ringP) * 215));
+    drawPath(tickPath, at(t, 11.75, 0.5, ease.inOutSine));
+    tickPath.setAttribute("stroke-opacity", String(1 - at(t, 12.5, 0.4)));
+    vis(tickSvg, t > 11.4 && t < 13.0);
+
+    // ----- beat 3 -----
+    const cardIn = at(t, 13.2, 0.9, rise);
+    const cardOut = at(t, 16.3, 0.5, inOut);
+    const dock = at(t, 16.3, 1.4, ease.inOutSine);
+    const cardUp = (1 - cardIn) * 260;
+    const dockX = 1600 - 1410, dockY = 640 - 500;
+    card.style.opacity = String((cardIn > 0 ? 1 : 0) * (1 - at(t, 20.15, 0.45, ease.accelerate)));
+    clipRect(card, cardIn, { from: "bottom" });
+    card.style.transform = `translate(${lerp(0, dockX, dock)}px, ${cardUp + lerp(0, dockY, dock)}px) rotate(${lerp(-2.5, 0, dock)}deg) scale(${lerp(1, 0.62, dock)})`;
+    vis(card, t > 13.15 && t < 20.7);
+    clipRect(cardRule, at(t, 14.0, 0.4, ease.outCubic), { from: "left" });
+    [cardTitle, cardLabA, cardLabB].forEach((e, i) => { e.style.opacity = String(at(t, 13.9 + [0, 0.2, 0.7][i], 0.35)); });
+    barsA.forEach((b, i) => clipRect(b, at(t, 14.3 + i * 0.12, 0.45, ease.outCubic), { from: "left" }));
+    barsB.forEach((b, i) => clipRect(b, at(t, 15.0 + i * 0.12, 0.45, ease.outCubic), { from: "left" }));
+    const h3In = at(t, 13.25, 0.9, rise), h3Out = at(t, 16.05, 0.45, ease.accelerate);
+    head3.inner.style.transform = `translateY(${(1 - h3In) * 112 + h3Out * 112}%)`;
+    vis(head3.wrap, t > 13.2 && t < 16.6);
+    const p3In = at(t, 13.55, 0.7, rise), p3Out = at(t, 16.35, 0.5, ease.accelerate);
+    pane3.style.opacity = String(p3In * (1 - p3Out));
+    pane3.style.transform = `translateY(${(1 - p3In) * 30 - p3Out * 20}px)`;
+    vis(pane3, t > 13.5 && t < 17.0);
+    const cStr = typed(COPY.cmd, t, 14.15, 16);
+    cText.textContent = cStr;
+    const cVis = cStr.length;
+    const cmdLeft = 58 + 44 + 18 + 2 * L.charW;
+    css(cmdCaret, { left: px(cmdLeft + cVis * L.charW + 2), top: px(70 + 9) });
+    cmdCaret.style.opacity = String(t < 14.15 ? 0 : (t < 15.1 ? 1 : (t < 15.4 ? 0 : 0)));
+    const bStr = typed(COPY.bye, t, 15.0, 18);
+    byeLine.textContent = bStr;
+    vis(byeLine, t > 14.95);
+
+    // ----- beat 4 -----
+    const h4In = at(t, 16.9, 0.9, rise), h4Out = at(t, 20.15, 0.4, ease.accelerate);
+    head4.inner.style.transform = `translateY(${(1 - h4In) * 112 + h4Out * 112}%)`;
+    vis(head4.wrap, t > 16.85 && t < 20.7);
+    const p4In = at(t, 17.0, 0.8, rise), p4Out = at(t, 20.15, 0.5, ease.accelerate);
+    pane4.style.opacity = String(p4In * (1 - p4Out));
+    pane4.style.transform = `scale(${0.96 + 0.04 * p4In - 0.03 * p4Out})`;
+    vis(pane4, t > 16.95 && t < 20.75);
+    welMark.rowEls.forEach((r, i) => clipRect(r, at(t, 17.4 + i * 0.07, 0.4, ease.outCubic), { from: "left" }));
+    welName.style.opacity = String(at(t, 17.6, 0.3)); welReady.style.opacity = String(at(t, 17.85, 0.3));
+    const p4Str = typed(COPY.p4, t, 17.95, 40);
+    p4Text.textContent = p4Str;
+    css(p4Caret, { left: px(70 + 44 + 18 + 2 * L.charW + p4Str.length * L.charW + 3), top: px(416 + 9) });
+    p4Caret.style.opacity = String(t < 17.9 ? 0 : (t < 18.85 ? 1 : 0));
+    // link from the card to the prompt
+    const linkU = at(t, 17.55, 0.7, ease.inOutSine);
+    const a0 = [1290 + 0.62 * 60 * 0 + 60 - 20, 560], a1 = [P4.x + P4.w + 4, P4.y + 452];
+    linkPath.setAttribute("d", `M1440 640 C 1380 640, 1330 ${P4.y + 452}, 1260 ${P4.y + 452}`);
+    drawPath(linkPath, linkU);
+    linkPath.setAttribute("stroke-opacity", String(1 - at(t, 20.1, 0.4)));
+    vis(linkSvg, t > 17.5 && t < 20.6);
+
+    // ----- beat 5 -----
+    endParts.forEach((p, i) => { p.inner.style.transform = `translateY(${(1 - at(t, 20.75 + i * 0.14, 0.85, rise)) * 112}%)`; });
+    vis(endWrap, t > 20.7);
+    const ruleP = at(t, 21.3, 0.9, ease.inOutSine);
+    css(endRule, { left: px(960 - 620 * ruleP), width: px(1240 * ruleP) }); vis(endRule, t > 21.25);
+    endName.inner.style.transform = `translateY(${(1 - at(t, 21.65, 0.7, rise)) * 112}%)`;
+    vis(endName.wrap, t > 21.6);
+  }
+
+  define({ width: 1920, height: 1080, fps: 60, duration: 23.2, render });
+</script>

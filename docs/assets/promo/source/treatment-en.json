@@ -1,0 +1,207 @@
+{
+  "request": "A 15 to 25 second motion promo about LitHermes for its GitHub README: what a person types, what appears and what they get.",
+  "genre": "motion-graphics",
+  "path": "stage",
+  "pathReason": "The film draws a terminal, a check track, a handoff page and one ember that travels between them; the subject is a working session, and type alone would only name it.",
+  "idea": "One word typed in a dark terminal lights a single ember that walks the work through plan, make and check, is left on a page, and is picked up by the next session.",
+  "audience": "Developers and researchers who already run Hermes Agent and are deciding whether to install a plugin for it.",
+  "channel": "The LitHermes GitHub README, autoplaying as a silent looping preview with the MP4 one click away.",
+  "format": "16:9",
+  "formatReason": "A README embeds a landscape preview at full column width; the same frames read on a phone at 390 px because the type is set very large.",
+  "durationSec": 23.2,
+  "beats": [
+    {
+      "t0": 0,
+      "t1": 3.8,
+      "purpose": "Opening motif: a single lime cursor, then one word.",
+      "onScreen": "A near-black frame with a warm ember glow low on the left. A lime block cursor sits alone, then the giant word lit types itself in ivory Pretendard beside it, and a quiet line under it says Add one word.",
+      "motion": "Letters rise through masks one by one while the cursor steps along; the subline rises through its own mask; then the whole word scales down and travels toward a terminal prompt.",
+      "sound": "A soft pad from the first frame and a slow rise into the next scene."
+    },
+    {
+      "t0": 3.8,
+      "t1": 8.2,
+      "purpose": "Set piece: the request and the reply that says the work has started.",
+      "onScreen": "The giant word has landed as the first word of a prompt inside a dark terminal pane. The rest of the request types out, and the reply opens with the small five-row LIT mark and the line LIT IGNITED with the flame. The headline It starts the work sits above the pane.",
+      "motion": "A scale hand-off: the display word cross-fades into the monospace prompt word as it lands; the mark rows wipe in from the left and the label types in gradient; the headline rises through a mask.",
+      "sound": "A hit as the word lands on the cut; the pulse steps in under the typing."
+    },
+    {
+      "t0": 8.2,
+      "t1": 12.6,
+      "purpose": "Set piece: the loop of plan, make, check, ending in a real check.",
+      "onScreen": "The terminal falls away. The words Plan, Make and Check stand very large across a hairline track. One orange ember arrives from the reply and walks the track, lighting each word and node in turn, and a lime ring and tick draw themselves at Check.",
+      "motion": "The ember travels an arc from the flame in the reply to the first node, then eases along the track; words rise through masks and brighten as it reaches them; the ring and tick stroke in.",
+      "sound": "A hit on the cut as the ember lands; the pulse thins so each node reads."
+    },
+    {
+      "t0": 12.6,
+      "t1": 16.6,
+      "purpose": "Peak: the work leaves a note behind.",
+      "onScreen": "The words slide away and the ember arcs to a paper page named HANDOFF.md that rises on the right, with a result block and a next step block whose bar is lime. On the left the headline Leave the next step, and a slim terminal types the handoff command and then says stay lit.",
+      "motion": "Words exit upward through masks; the ember flies to the page corner and dissolves into it; the page wipes up from its bottom edge and its lines write in from the left; the headline rises through a mask.",
+      "sound": "A hit on the cut; a rise into the next session."
+    },
+    {
+      "t0": 16.6,
+      "t1": 20.4,
+      "purpose": "Payoff: a new session picks the note up.",
+      "onScreen": "A fresh terminal opens on the left with the LitHermes mark in the Ignition colours, the name and LIT ready, and a prompt that types read the handoff and continue. The page has docked to the right at a smaller size and a lime line draws from it to the prompt. The headline says The next session continues.",
+      "motion": "The pane opens from its centre; the page glides and scales into its dock while rotating level; a lime path draws from the page to the prompt.",
+      "sound": "A hit as the new pane opens, then a rise toward the last line."
+    },
+    {
+      "t0": 20.4,
+      "t1": 23.2,
+      "purpose": "Resolve: everything settles into one line.",
+      "onScreen": "The terminal, page and headline fall away. On a clean near-black frame the line Keep the work lit stands large with lit in lime, a hairline draws under it, and the name LitHermes sits quietly below.",
+      "motion": "Panes fade and settle back; the line rises through masks word by word; the hairline draws outward from the centre; the name rises last.",
+      "sound": "A cadence: a struck chord under the closing line, ringing to the end."
+    }
+  ],
+  "subject": {
+    "name": "LitHermes",
+    "source": "user",
+    "specifics": [
+      "Adding the word lit to a request in Hermes Agent starts the work, and the reply opens with a LIT IGNITED line and the small LIT mark.",
+      "A task runs plan, make, check, and can end with a HANDOFF.md that the next session reads to continue.",
+      "The Ignition skin greets a new session with the LIT mark and LIT ready, and says stay lit on exit."
+    ]
+  },
+  "visualDevices": [
+    {
+      "kind": "illustration",
+      "role": "subject",
+      "beats": [
+        0,
+        1,
+        3,
+        4
+      ]
+    },
+    {
+      "kind": "diagram",
+      "role": "subject",
+      "beats": [
+        2
+      ]
+    },
+    {
+      "kind": "path",
+      "role": "support",
+      "beats": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "kind": "mask",
+      "role": "support",
+      "beats": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "kind": "shape",
+      "role": "support",
+      "beats": [
+        2,
+        3,
+        5
+      ]
+    },
+    {
+      "kind": "gradient",
+      "role": "texture",
+      "beats": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "typePlan": {
+    "faces": [
+      "Pretendard",
+      "MesloLGS NF"
+    ],
+    "hierarchy": "Pretendard 700 at 92 to 560 px for the display word, headlines and closing line, Pretendard 400 for the quiet lines, MesloLGS NF at 44 px for everything a terminal prints. Hierarchy comes from size, color, position and motion only. Archivo stays out because the new look is carried by one family.",
+    "maxWordsOnScreen": 9
+  },
+  "palette": [
+    {
+      "color": "#05090E",
+      "role": "near-black ground taken from the cover"
+    },
+    {
+      "color": "#0B121A",
+      "role": "terminal pane fill"
+    },
+    {
+      "color": "#F2EFDF",
+      "role": "ivory: type and paper"
+    },
+    {
+      "color": "#D7F75B",
+      "role": "lime: cursor, active nodes, the next step"
+    },
+    {
+      "color": "#FF6337",
+      "role": "ember: the flame and the travelling spark"
+    },
+    {
+      "color": "#66717E",
+      "role": "dim words waiting to be lit"
+    }
+  ],
+  "sound": {
+    "mode": "generated",
+    "plan": "A warm generated bed: felt strings and a brushed pulse at 84 BPM in E minor with hits on the cuts, rises into the cuts, and a struck tonic chord under the closing line.",
+    "palette": {
+      "timbre": "felt-strings",
+      "key": "E",
+      "mode": "minor",
+      "tempo": 84
+    }
+  },
+  "copy": {
+    "source": "invented",
+    "lines": [
+      "Add one word.",
+      "lit fix the failing login test",
+      "LIT IGNITED · litwork",
+      "It starts the work.",
+      "Plan",
+      "Make",
+      "Check",
+      "Leave the next step.",
+      "/lit-handoff",
+      "HANDOFF.md",
+      "result",
+      "next step",
+      "stay lit",
+      "The next session continues.",
+      "LitHermes",
+      "LIT ready",
+      "read the handoff and continue",
+      "Keep the work lit."
+    ]
+  },
+  "inventions": [
+    "The example request lit fix the failing login test and the sample line read the handoff and continue.",
+    "The order of beats and the wording of every headline and quiet line; the product strings LIT IGNITED, LIT ready, stay lit, HANDOFF.md and the four colours are the product's own.",
+    "The page rows result and next step as a picture of what a handoff holds."
+  ],
+  "ambition": "A restrained type film rather than a screen recording: one giant word that becomes a prompt by a scale hand-off, one ember that carries the eye through the loop, large Pretendard headlines with wide margins, masks and path draws for every transition, and a first frame that is only a lime cursor on near-black.",
+  "posterBeat": 1
+}

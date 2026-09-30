@@ -895,31 +895,50 @@ test("Jev screenshots ship on the GitHub pages only, in both themes, with alt te
 test("the motion promo ships on the GitHub pages only, inside its size caps, and the pages label it honestly", () => {
   const { createHash } = require("node:crypto");
   const dir = path.join(repoRoot, "docs", "assets", "promo");
-  assert.deepEqual(fs.readdirSync(dir).sort(), ["promo-poster.webp", "promo-preview.webp", "promo-reduced-motion.webp", "promo.mp4"], "docs/assets/promo must hold the film, its preview, its poster and its reduced-motion still");
+  assert.deepEqual(fs.readdirSync(dir).sort(), ["promo-ko.mp4", "promo-poster-ko.webp", "promo-poster.webp", "promo-preview-ko.webp", "promo-preview.webp", "promo-reduced-motion-ko.webp", "promo-reduced-motion.webp", "promo.mp4", "source"], "docs/assets/promo must hold each film, its preview, its poster and its reduced-motion still, and the film source");
+  assert.deepEqual(fs.readdirSync(path.join(dir, "source")).sort(), ["Pretendard-OFL.txt", "stage-en.html", "stage-ko.html", "treatment-en.json", "treatment-ko.json"], "the film source must keep the Pretendard license beside the pages");
   const digest = (name) => createHash("sha256").update(fs.readFileSync(path.join(dir, name))).digest("hex");
-  assert.equal(digest("promo.mp4"), "d2d477a642c4c23525e9664254a2387206613ee72750136f6bc8c2141e861116");
-  assert.equal(digest("promo-preview.webp"), "858cc078780f6149afda61a11f3a6c19d21e09b6aabf59a8a29268a7dee56d42");
-  assert.equal(digest("promo-poster.webp"), "dfa5f22cc531b888db6873fe583a5be03684cbc54078261c8e8631286b590a8d");
-  assert.equal(digest("promo-reduced-motion.webp"), "b77f3ae05e07014b0efb266225a211b19818460318011f98ba28309a3258e3f6");
-  const film = fs.readFileSync(path.join(dir, "promo.mp4"));
-  assert.equal(film.toString("ascii", 4, 8), "ftyp", "promo.mp4 must be an MP4");
-  assert.ok(film.length <= 8 * 1024 * 1024, `the film must stay under 8 MiB (${film.length} bytes)`);
-  const preview = fs.readFileSync(path.join(dir, "promo-preview.webp"));
-  assert.ok(preview.length <= 2_621_440, `the inline preview must stay under 2.5 MiB (${preview.length} bytes)`);
-  for (const name of ["promo-preview.webp", "promo-poster.webp", "promo-reduced-motion.webp"]) {
+  const pins = {
+    "promo.mp4": "5ac75c6feffcc503d8bd90d19986a39d3081cd3316ca46e73481726e29914cc6",
+    "promo-preview.webp": "21906d2054266bc908951b1ef681540a7adf7a2aa77681517c585490e817fe5e",
+    "promo-poster.webp": "9a56203c046d35535c1c682b91d2f5b819695a2b26663a5146c918650d341d14",
+    "promo-reduced-motion.webp": "fd59c5313a815a16cb8cfb3822400e0abe0bf5e27cfe4ee4b2a93680869c46b1",
+    "promo-ko.mp4": "640061beb6b3c9e09f1ca6ca278d7bfb1cb0d893c54d2a5a3c8c1fa821239b9f",
+    "promo-preview-ko.webp": "7ca7310c7a70114fdf5d7d28cae25e9b1327f4923ab4245c7b66c2106ef250f3",
+    "promo-poster-ko.webp": "65470f5e8258561869ecfd5bf2785e6edb18d45d788bff9dd16c3e4497d0d056",
+    "promo-reduced-motion-ko.webp": "fd59c5313a815a16cb8cfb3822400e0abe0bf5e27cfe4ee4b2a93680869c46b1",
+  };
+  for (const [name, sha] of Object.entries(pins)) assert.equal(digest(name), sha, `${name} changed; update the pin together with the README embedding`);
+  for (const name of ["promo.mp4", "promo-ko.mp4"]) {
+    const film = fs.readFileSync(path.join(dir, name));
+    assert.equal(film.toString("ascii", 4, 8), "ftyp", `${name} must be an MP4`);
+    assert.ok(film.length <= 8 * 1024 * 1024, `${name} must stay under 8 MiB (${film.length} bytes)`);
+  }
+  for (const name of Object.keys(pins).filter((file) => file.endsWith(".webp"))) {
     const bytes = fs.readFileSync(path.join(dir, name));
     assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
     assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
+    if (name.startsWith("promo-preview")) assert.ok(bytes.length <= 2_621_440, `${name} must stay under 2.5 MiB (${bytes.length} bytes)`);
   }
+  // The film is set in Pretendard and the drawn terminal in the monospace face; no other family is asked for.
+  for (const stage of ["stage-en.html", "stage-ko.html"]) {
+    const page = fs.readFileSync(path.join(dir, "source", stage), "utf8");
+    const families = new Set([...page.matchAll(/font-family:\s*"([^"]+)"/g)].map((match) => match[1]));
+    assert.deepEqual([...families].sort(), ["MesloLGS NF", "Pretendard"], `${stage} must use Pretendard and MesloLGS NF only`);
+    assert.doesNotMatch(page, /font-weight:\s*(?!400|700)\d+/, `${stage} must ask for weights 400 and 700 only`);
+    assert.doesNotMatch(page, /letter-spacing|font-stretch/, `${stage} must not animate tracking or width`);
+  }
+  assert.match(fs.readFileSync(path.join(dir, "source", "Pretendard-OFL.txt"), "utf8"), /SIL Open Font License, Version 1\.1/);
   for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
+    const suffix = lang === "en" ? "" : "-ko";
     const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
     const start = text.indexOf(lang === "en" ? "\n## Watch it in motion\n" : "\n## 움직이는 모습 보기\n");
     const section = text.slice(start, text.indexOf("\n## ", start + 1));
     assert.ok(start > text.indexOf(lang === "en" ? "\n## Quick start\n" : "\n## 빠른 시작\n"), `${name}: the film belongs after the quick start`);
-    const picture = section.match(/<p align="center"><a href="\.\/docs\/assets\/promo\/promo\.mp4"><picture><source media="\(prefers-reduced-motion: reduce\)" srcset="\.\/docs\/assets\/promo\/promo-reduced-motion\.webp" \/><img src="\.\/docs\/assets\/promo\/promo-preview\.webp" width="100%" alt="([^"]+)" \/><\/picture><\/a><\/p>/);
+    const picture = section.match(new RegExp(`<p align="center"><a href="\\./docs/assets/promo/promo${suffix}\\.mp4"><picture><source media="\\(prefers-reduced-motion: reduce\\)" srcset="\\./docs/assets/promo/promo-reduced-motion${suffix}\\.webp" /><img src="\\./docs/assets/promo/promo-preview${suffix}\\.webp" width="100%" alt="([^"]+)" /></picture></a></p>`));
     assert.ok(picture, `${name}: the film needs the reduced-motion source first, the preview as the img and the MP4 as its link`);
     assert.ok(picture[1].length > 200 && picture[1].includes("Keep the work lit."), `${name}: the alt text must describe the film`);
-    assert.ok(section.includes("](./docs/assets/promo/promo.mp4)"), `${name}: the MP4 needs its own text link`);
+    assert.ok(section.includes(`](./docs/assets/promo/promo${suffix}.mp4)`), `${name}: the MP4 needs its own text link`);
     assert.match(section, lang === "en" ? /^\*The request and the sample replies in the film are examples\./m : /^\*영상 속 요청과 응답은 예시입니다\./m, `${name}: the caption must say what is an example`);
     assert.ok(text.indexOf(section) > text.indexOf("cover-motion.webp") && text.startsWith('<p align="center"><picture>'), `${name}: the first-screen cover stays where it was`);
   }
@@ -928,7 +947,7 @@ test("the motion promo ships on the GitHub pages only, inside its size caps, and
   const mark = fs.readFileSync(path.join(plugin, "lit_mark.py"), "utf8");
   assert.ok(mark.includes("LIT IGNITED"), "lit_mark.py must still print LIT IGNITED");
   const skin = fs.readFileSync(path.join(packageRoot, "src", "lib", "skins.js"), "utf8");
-  for (const shown of ["LIT ready", "stay lit", "igniting", "forging", "burning", "tempering", "#FF6337", "#D7F75B", "#F2EFDF", "#080D14"]) {
+  for (const shown of ["LIT ready", "stay lit", "#FF6337", "#D7F75B", "#F2EFDF", "#080D14"]) {
     assert.ok(skin.includes(shown), `the installer no longer ships the skin string the film shows: ${shown}`);
   }
   // The film stays out of the package.
@@ -937,5 +956,61 @@ test("the motion promo ships on the GitHub pages only, inside its size caps, and
   assert.ok(!fs.readdirSync(path.join(packageRoot, "readme-assets")).some((name) => /promo/.test(name)), "the package must not carry the promo");
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /promo/, `${name} npm card must not embed the promo`);
+  }
+});
+
+test("terminal screens ship on the GitHub pages only, in both themes, with captions that say capture or illustration", () => {
+  const dir = path.join(repoRoot, "docs", "assets", "screens");
+  const stems = ["install", "doctor", "welcome", "lit-ack", "update-notice"];
+  const expected = stems.flatMap((stem) => [`${stem}-dark.webp`, `${stem}-light.webp`]).sort();
+  assert.deepEqual(fs.readdirSync(dir).sort(), expected, "docs/assets/screens must hold exactly the five pictures in dark and light");
+  for (const name of expected) {
+    const bytes = fs.readFileSync(path.join(dir, name));
+    assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
+    assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
+    assert.ok(bytes.length <= 61_440, `${name} must stay near 60 KiB (${bytes.length} bytes)`);
+  }
+  // Every string the pictures show comes from the installer or the plugin, so a rewording there fails here.
+  const lib = (name) => fs.readFileSync(path.join(packageRoot, "src", "lib", name), "utf8");
+  const plugin = (name) => fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", name), "utf8");
+  for (const [source, printed] of [
+    [fs.readFileSync(path.join(packageRoot, "src", "cli.js"), "utf8"), "Motion runtime: pre-warm skipped (--offline)"],
+    [lib("install.js"), "Installed LitHermes"],
+    [lib("check.js"), "LitHermes check PASS"],
+    [lib("check.js"), "installed skill payload"],
+    [lib("check.js"), "PASS (native PluginContext.inject_message)"],
+    [lib("updateNotifier.js"), "LitHermes update available:"],
+    [lib("updateNotifier.js"), "Then restart the Hermes CLI and any Hermes gateways."],
+    [lib("skins.js"), "LIT ready"],
+    [lib("skins.js"), "stay lit"],
+    [plugin("lit_mark.py"), "LIT IGNITED · "],
+  ]) assert.ok(source.includes(printed), `the product no longer prints: ${printed}`);
+  const labels = { en: /^(Captured|Illustration)/, ko: /(얻은 출력|예시 그림)/ };
+  for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
+    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
+    const start = text.indexOf(lang === "en" ? "\n### What you will see on your first run\n" : "\n### 처음 실행하면 보이는 것\n");
+    const section = text.slice(start, text.indexOf("\n## ", start + 1));
+    assert.ok(start > text.indexOf(lang === "en" ? "\n## Quick start\n" : "\n## 빠른 시작\n"), `${name}: the screens belong inside the quick start`);
+    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/screens\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/screens\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+    assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the five pictures in order`);
+    for (const [, dark, light, alt] of pictures) {
+      assert.equal(dark, light, `${name}: dark and light must be the same picture`);
+      assert.ok(alt.length > 150, `${name}: ${dark} alt text must state the exact text shown`);
+    }
+    const { version } = require("../package.json");
+    assert.ok(pictures[0][3].includes(`Installed LitHermes ${version}`), `${name}: the install alt must quote the first line`);
+    assert.ok(pictures[3][3].includes("🔥 LIT IGNITED · litwork 🔥"), `${name}: the acknowledgement alt must quote the line`);
+    assert.ok(pictures[4][3].includes(`LitHermes update available: ${version} → 1.0.14`), `${name}: the notice alt must quote the notice`);
+    const captions = [...section.matchAll(/^\*([^*\n]+)\*$/gm)].map((match) => match[1]);
+    assert.equal(captions.length, 5, `${name} needs one caption per picture`);
+    for (const caption of captions) assert.match(caption, labels[lang], `${name}: caption must label the picture honestly`);
+    assert.equal(captions.filter((caption) => (lang === "en" ? /^Illustration/ : /예시 그림/).test(caption)).length, 1, `${name}: exactly the acknowledgement picture is an illustration`);
+    assert.ok(section.includes(lang === "en" ? "(#optional-jev-skill-hint)" : "(#선택-기능-jev-스킬-힌트)"), `${name}: link to the Jev pictures instead of repeating them`);
+  }
+  const manifest = require("../package.json");
+  assert.ok(!manifest.files.some((entry) => entry.startsWith("docs")), "docs must not be enrolled in the package");
+  assert.ok(!fs.existsSync(path.join(packageRoot, "readme-assets", "screens")), "the package must not carry copies of the screens");
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /assets\/screens|(?:install|doctor|welcome|lit-ack|update-notice)-(?:dark|light)\.webp/, `${name} npm card must not embed the pictures`);
   }
 });

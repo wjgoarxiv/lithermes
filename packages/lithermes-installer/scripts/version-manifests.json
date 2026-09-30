@@ -11,14 +11,14 @@
     {
       "path": "README.md",
       "kind": "pinned",
-      "occurrences": 2,
-      "why": "Source version and the release badge alt text pin the current release."
+      "occurrences": 4,
+      "why": "Source version and the release badge alt text pin the current release, and so do the alt texts of the install and update-notice screens, which quote lines that print the version and must be recaptured on each release."
     },
     {
       "path": "README_Ko-KR.md",
       "kind": "pinned",
-      "occurrences": 2,
-      "why": "Source version and the release badge alt text pin the current release."
+      "occurrences": 4,
+      "why": "Source version and the release badge alt text pin the current release, and so do the alt texts of the install and update-notice screens, which quote lines that print the version and must be recaptured on each release."
     },
     {
       "path": "docs/assets/readme/badge-version.svg",
