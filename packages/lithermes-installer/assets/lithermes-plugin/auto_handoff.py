@@ -87,6 +87,7 @@ _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 _PERCENT = re.compile(r"[0-9]{1,2}")
 _BARE_HANDOFF = re.compile(r"^\s*handoff\s*$", re.IGNORECASE)
 _HEADING = re.compile(r"^#{1,4}\s*(.+?)\s*$")
+_MARKDOWN_DECORATION = re.compile(r"[*_`]|<!--|-->")
 _WANTED_SECTIONS = (("current state", "Current State"), ("next steps", "Next Steps"))
 _LOCK = threading.RLock()
 _SESSIONS: dict[str, dict[str, Any]] = {}
@@ -666,6 +667,14 @@ def _directive_block(state: Mapping[str, Any], percent: int) -> str:
     ])
 
 
+def _marker_on_line(line: str, nonce: str) -> bool:
+    """True when the line carries this session's marker, however Markdown dresses it (bullet, quote,
+    bold, italics, backticks, comment, a leading label). The id must match exactly and end on a
+    non-hex character."""
+    plain = _MARKDOWN_DECORATION.sub("", line)
+    return re.search(rf"(?i:auto-handoff-id)[ \t]*:[ \t]*{re.escape(nonce)}(?![0-9a-f])", plain) is not None
+
+
 def _find_handoff(state: Mapping[str, Any]) -> tuple[str, float, str] | None:
     found: tuple[str, float, str] | None = None
     for relative in HANDOFF_CANDIDATES:
@@ -681,7 +690,7 @@ def _find_handoff(state: Mapping[str, Any]) -> tuple[str, float, str] | None:
                 text = handle.read(MAX_HANDOFF_READ_BYTES).decode("utf-8", "replace")
         except OSError:
             continue
-        if re.search(rf"auto-handoff-id:[ \t]*{re.escape(state['nonce'])}(?![0-9a-f])", text) is None:
+        if not any(_marker_on_line(line, state["nonce"]) for line in text.splitlines()):
             continue
         if found is None or info.st_mtime > found[1]:
             found = (relative, info.st_mtime, text)
@@ -698,7 +707,7 @@ def _digest(text: str, nonce: str) -> str:
             title = heading.group(1).lower()
             current = next((label for key, label in _WANTED_SECTIONS if key in title), "")
             continue
-        if nonce in line or not line.strip():
+        if nonce in line or _marker_on_line(line, nonce) or not line.strip():
             continue
         if len(body) < MAX_DIGEST_LINES:
             body.append(line.strip()[:MAX_DIGEST_LINE_CHARS])

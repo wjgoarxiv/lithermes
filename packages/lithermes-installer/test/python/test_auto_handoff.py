@@ -499,6 +499,111 @@ class Reload(AutoHandoffCase):
         self.assertNotIn(self.sid, self.ah._SESSIONS)
 
 
+class DecoratedMarker(AutoHandoffCase):
+    """The marker line may arrive as a bullet, in backticks or in bold; the reload must still find it."""
+
+    BODY = (
+        "# HANDOFF: Finish the parser rewrite\n\n**Written**: 2026-10-01\n**Status**: at-checkpoint\n\n"
+        "## Current State\n\nParser rewrite is half done.\n\n## What Was Done\n\n"
+        "- Edited parser.py\n{marker}\n\n## Next Steps\n\n1. Run the parser tests.\n"
+    )
+
+    def fire_with_fresh_session(self):
+        self.ah._reset_for_tests()
+        self._runs = getattr(self, "_runs", 0) + 1
+        self.sid = f"{self.sid.split('-run')[0]}-run{self._runs}"
+        self.turn_on(60)
+        self.observe(130_000)
+        block = self.ask()
+        self.assertIn("<lithermes-auto-handoff", block)
+        return self.nonce_of(block)
+
+    def reload_with(self, marker_template):
+        nonce = self.fire_with_fresh_session()
+        self.write_handoff(nonce, body=self.BODY.format(marker=marker_template.format(n=nonce)))
+        return self.ask(history=[self.summary()]), nonce
+
+    DECORATED = {
+        "dash bullet": "- auto-handoff-id: {n}",
+        "star bullet": "* auto-handoff-id: {n}",
+        "plus bullet": "+ auto-handoff-id: {n}",
+        "numbered item": "1. auto-handoff-id: {n}",
+        "blockquote": "> auto-handoff-id: {n}",
+        "bold label": "**auto-handoff-id:** {n}",
+        "bold label with colon outside": "**auto-handoff-id**: {n}",
+        "bold value": "auto-handoff-id: **{n}**",
+        "italic label": "_auto-handoff-id:_ {n}",
+        "italic value": "auto-handoff-id: *{n}*",
+        "backticked label": "`auto-handoff-id:` {n}",
+        "backticked value": "auto-handoff-id: `{n}`",
+        "backticked whole marker": "`auto-handoff-id: {n}`",
+        "leading label": "Auto-handoff marker: auto-handoff-id: {n}",
+        "bullet, leading label, backticked marker (the live failure)": "- Auto-handoff marker: `auto-handoff-id: {n}`",
+        "html comment": "<!-- auto-handoff-id: {n} -->",
+        "extra spaces": "auto-handoff-id:    {n}",
+        "capitalised label": "Auto-Handoff-Id: {n}",
+        "windows line ending": "- auto-handoff-id: {n}\r",
+    }
+
+    def test_every_decoration_still_reloads_the_handoff(self):
+        for label, template in self.DECORATED.items():
+            with self.subTest(label):
+                block, _ = self.reload_with(template)
+                self.assertIn("<lithermes-handoff-reload", block)
+                self.assertNotIn('status="refused"', block)
+                self.assertIn("Parser rewrite is half done.", block)
+
+    def test_the_decorated_marker_line_stays_out_of_the_digest(self):
+        for label, template in self.DECORATED.items():
+            with self.subTest(label):
+                block, nonce = self.reload_with(template)
+                self.assertIn("Parser rewrite is half done.", block)
+                self.assertNotIn("auto-handoff-id", block.lower())
+                self.assertEqual(block.count(nonce), 1, block)
+
+    def test_the_digest_drops_a_marker_line_even_when_decoration_splits_the_id(self):
+        nonce = "0123456789ab"
+        text = f"## Current State\n- Marker: **auto-handoff-id:** `{nonce[:6]}``{nonce[6:]}`\nParser rewrite is half done.\n"
+        digest = self.ah._digest(text, nonce)
+        self.assertIn("Parser rewrite is half done.", digest)
+        self.assertNotIn("auto-handoff-id", digest)
+
+    def refused_with(self, marker_template, age=None):
+        nonce = self.fire_with_fresh_session()
+        path = self.write_handoff(nonce, body=self.BODY.format(marker=marker_template.format(n=nonce, other="ffffffffffff")))
+        if age is not None:
+            old = time.time() - age
+            os.utime(path, (old, old))
+        block = self.ask(history=[self.summary()])
+        self.assertIn('status="refused"', block)
+        self.assertNotIn("Parser rewrite", block)
+
+    def test_another_sessions_decorated_marker_is_refused(self):
+        self.refused_with("- Auto-handoff marker: `auto-handoff-id: {other}`")
+        self.refused_with("**auto-handoff-id:** {other}")
+
+    def test_an_id_that_only_starts_with_this_sessions_id_is_refused(self):
+        self.refused_with("- `auto-handoff-id: {n}0`")
+        self.refused_with("auto-handoff-id: **{n}a**")
+
+    def test_an_id_that_is_only_a_prefix_of_this_sessions_id_is_refused(self):
+        nonce = self.fire_with_fresh_session()
+        self.write_handoff(nonce, body=self.BODY.format(marker=f"- `auto-handoff-id: {nonce[:-1]}`"))
+        block = self.ask(history=[self.summary()])
+        self.assertIn('status="refused"', block)
+        self.assertNotIn("Parser rewrite", block)
+
+    def test_a_decorated_marker_in_a_file_older_than_the_trigger_is_refused(self):
+        self.refused_with("- Auto-handoff marker: `auto-handoff-id: {n}`", age=3600)
+
+    def test_the_id_alone_without_the_label_is_refused(self):
+        self.refused_with("- `{n}`")
+        self.refused_with("The session was {n} when it saved.")
+
+    def test_the_label_and_the_id_on_different_lines_are_refused(self):
+        self.refused_with("auto-handoff-id:\n{n}")
+
+
 class RotatedSession(AutoHandoffCase):
     """Hermes compaction moves the agent to a new session id; the handoff must follow it."""
 
