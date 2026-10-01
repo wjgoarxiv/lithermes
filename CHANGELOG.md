@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.16] - 2026-10-01
+
+- Automatic handoff now finds the handoff it asked for after compaction even when the model formats the marker line, for example as a bullet, in backticks or in bold. A handoff from another session is still ignored.
+
 ## [1.0.15] - 2026-09-30
 
 - `gpt-6.1-sol` is now the recommended coding-lead alternative, because OpenAI lists `gpt-6-sol` as the previous generation. You see it in the installer's lead-model menu, in `hermes lithermes doctor` and in the guide. `gpt-6-sol` still works for anyone who already chose it.

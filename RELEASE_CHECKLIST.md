@@ -38,12 +38,11 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.15 factual release scope
+### 1.0.16 factual release scope
 
-This checklist covers the 1.0.15 release.
+This checklist covers the 1.0.16 release.
 
-- [ ] `gpt-6.1-sol` is the recommended coding-lead alternative in the installer's lead-model menu, in `doctor` and in the guide; the previous generation `gpt-6-sol` stays selectable with the same efforts, so existing configs keep working.
-- [ ] Automatic handoff loads the saved handoff after compaction although Hermes gives the compacted conversation a new session id; it stays off by default with no built-in percent.
+- [ ] Automatic handoff finds the handoff it asked for after compaction even when the model formats the marker line as a bullet, in backticks or in bold; a handoff from another session is still ignored, and the feature stays off by default with no built-in percent.
 - [ ] The install and update-notice pictures were recaptured at this version.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass; the packed tarball stays under the 12 MiB cap.
 
@@ -347,7 +346,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.15 version`.
+  from `npm view @litfamily/lithermes@1.0.16 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -369,10 +368,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.15 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.16 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.15 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.15.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.15.tgz"
+  npm pack @litfamily/lithermes@1.0.16 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.16.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.16.tgz"
 rm -rf "$VERIFY_DIR"
 ```

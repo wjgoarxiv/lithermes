@@ -264,7 +264,7 @@ test("guard runs every required gate and artifact step serially without publicat
     "git ls-remote --exit-code origin refs/heads/main",
     "npm config get registry",
     "npm whoami --registry=https://registry.npmjs.org/",
-    "npm view @litfamily\/lithermes@1.0.15 version --json --loglevel=silent --registry=https://registry.npmjs.org/",
+    "npm view @litfamily\/lithermes@1.0.16 version --json --loglevel=silent --registry=https://registry.npmjs.org/",
     "npm test",
     "npm run test:python",
   ];
@@ -319,7 +319,7 @@ test("last local snapshot rejects state changed after the final network checks",
     await assert.rejects(async () => loadGuard().runPrepublishGuard(harness.dependencies), message);
     const commands = harness.calls.map(commandText);
     const finalViewAt = commands.lastIndexOf(
-    "npm view @litfamily\/lithermes@1.0.15 version --json --loglevel=silent --registry=https://registry.npmjs.org/",
+    "npm view @litfamily\/lithermes@1.0.16 version --json --loglevel=silent --registry=https://registry.npmjs.org/",
     );
     assert.ok(finalViewAt >= 0);
     assert.deepEqual(commands.slice(finalViewAt + 1, finalViewAt + 4), [

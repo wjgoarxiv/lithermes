@@ -34,7 +34,7 @@
 <p align="center"><img src="./docs/assets/lithermes-clay-icon.png" width="160" alt="LitHermes clay mark" /></p>
 
 <p align="center">
-<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.15" /></a>
+<a href="#install"><img src="./docs/assets/readme/badge-version.svg" alt="1.0.16" /></a>
 <a href="./LICENSE"><img src="./docs/assets/readme/badge-license.svg" alt="MIT license" /></a>
 </p>
 
@@ -69,7 +69,7 @@ Plan → Make → Check → Leave the next step
 
 ## Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.15`.
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.16`.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -154,7 +154,7 @@ Here is what LitHermes puts on your screen, from the install to your first task.
 
 **The install.** The installer copies the plugin into your Hermes home, writes the default model routes for a fresh home and saves a backup of your configuration first, so you can see where the backup file sits. It ends with the reminder to restart any running gateway, and one line about whether the film tools were fetched.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/install-dark.webp" /><img src="./docs/assets/screens/install-light.webp" width="690" alt="A terminal. The command &quot;lithermes install --yes --no-style --offline&quot; prints &quot;Installed LitHermes 1.0.15&quot;, &quot;plugin: ~/.hermes/plugins/lithermes&quot;, &quot;model config: updated&quot;, &quot;model backup: ~/.hermes/config.yaml.lithermes-model.bak&quot;, then &quot;lead route: configured (gpt-6-astra, effort xhigh)&quot; and &quot;ordinary worker route: configured (gpt-6-luna, effort max)&quot;, &quot;HUD skins: 13 accents installed — pick one with `npx --package @litfamily/lithermes -- lithermes hud &lt;accent&gt;`&quot;, &quot;Restart any running Hermes gateway to load new plugins.&quot; and &quot;Motion runtime: pre-warm skipped (--offline); run `lithermes motion-runtime install` before rendering a film.&quot; Two lines of dots mark cut lines." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/install-dark.webp" /><img src="./docs/assets/screens/install-light.webp" width="690" alt="A terminal. The command &quot;lithermes install --yes --no-style --offline&quot; prints &quot;Installed LitHermes 1.0.16&quot;, &quot;plugin: ~/.hermes/plugins/lithermes&quot;, &quot;model config: updated&quot;, &quot;model backup: ~/.hermes/config.yaml.lithermes-model.bak&quot;, then &quot;lead route: configured (gpt-6-astra, effort xhigh)&quot; and &quot;ordinary worker route: configured (gpt-6-luna, effort max)&quot;, &quot;HUD skins: 13 accents installed — pick one with `npx --package @litfamily/lithermes -- lithermes hud &lt;accent&gt;`&quot;, &quot;Restart any running Hermes gateway to load new plugins.&quot; and &quot;Motion runtime: pre-warm skipped (--offline); run `lithermes motion-runtime install` before rendering a film.&quot; Two lines of dots mark cut lines." /></picture></p>
 
 *Captured from the real installer in a scratch Hermes home, run with three extra flags so that nothing left the machine and no Hermes installation was touched: offline, no automatic update and no compatibility patch. It read the local Hermes source without changing it. The lines about model routes are cut ("…"), and the scratch folder is written as ~/.hermes.*
 
@@ -178,9 +178,9 @@ Here is what LitHermes puts on your screen, from the install to your first task.
 
 **The update notice.** When a newer release is known and automatic updates are switched off, check, doctor and install end with a three-line notice: the two versions, the exact command to run, and a reminder to restart Hermes. The notice only tells you; nothing is installed until you run that command.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/update-notice-dark.webp" /><img src="./docs/assets/screens/update-notice-light.webp" width="690" alt="A terminal. The command &quot;lithermes check --no-auto-update&quot; prints &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.15 → 1.0.16&quot;, a line that starts &quot;Run exactly:&quot; and gives the npx command that installs that release, and &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;" /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/screens/update-notice-dark.webp" /><img src="./docs/assets/screens/update-notice-light.webp" width="690" alt="A terminal. The command &quot;lithermes check --no-auto-update&quot; prints &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.16 → 1.0.17&quot;, a line that starts &quot;Run exactly:&quot; and gives the npx command that installs that release, and &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;" /></picture></p>
 
-*Captured from the real check command in the scratch home. To make the notice appear, a saved update file naming 1.0.16 was placed there, so that release number is a stand-in. The banner above the result lines is cut.*
+*Captured from the real check command in the scratch home. To make the notice appear, a saved update file naming 1.0.17 was placed there, so that release number is a stand-in. The banner above the result lines is cut.*
 
 ## Watch it in motion
 
