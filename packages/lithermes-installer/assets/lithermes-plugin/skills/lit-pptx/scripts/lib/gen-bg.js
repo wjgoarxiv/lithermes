@@ -52,11 +52,9 @@ async function genMeshBg(palette, outDir) {
   const tint2 = pick(palette, "tint_2", "#DCE9FF");
   const paper = pick(palette, "paper", "#F6F9FE");
 
-  // LIGHT: airy wash on near-white. Low opacities keep luminance very high so
-  // dark ink clears WCAG (qa assumes white bg; real bg is only marginally darker).
+  // LIGHT: airy wash on near-white.
   const light = meshSvg("#FFFFFF", [
-    // broad central wash so the glass effect reads across the WHOLE slide (not just
-    // corners) — tint2 is a very pale blue, so luminance stays high and dark ink is safe.
+    // broad central wash so the glass effect reads across the WHOLE slide (not just corners) — tint2 is a very pale blue, so luminance stays high and dark ink is safe.
     { cx: 1000, cy: 560, r: 1500, color: tint2, op: 0.55 },
     { cx: 120, cy: 160, r: 820, color: soft, op: 0.5 },
     { cx: 1880, cy: 240, r: 760, color: tint2, op: 0.9 },

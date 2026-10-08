@@ -9,16 +9,12 @@
 
 const { extractBlocks, parseTable, parseImage } = require("./directive-parser");
 
-// The primitives addDecorations() can actually draw. confidential_mark and
-// disclaimer are deliberately absent: they are brand furniture owned by a
-// template, not general shapes an author composes with.
+// The primitives addDecorations() can actually draw.
 const SHAPE_KINDS = new Set([
   "rect", "roundRect", "pill", "ellipse", "ring", "line", "text", "image",
 ]);
 
-// Style attributes forwarded to the decoration renderer, which owns their
-// meaning. Anything outside this set is rejected so a typo fails loudly rather
-// than being silently dropped at render time.
+// Style attributes forwarded to the decoration renderer, which owns their meaning.
 const SHAPE_STYLE_KEYS = new Set([
   "fill", "line", "lw", "radius", "rotate", "text", "color", "size",
   "align", "valign", "char_spacing", "bold", "asset", "dir", "src", "note",
@@ -139,12 +135,16 @@ function buildBlocks(layout, content) {
       continue;
     }
 
-    // Check for standalone image
-    const img = parseImage(remaining);
-    if (img && !remaining.split("\n").some((l) => l.trim() && !l.trim().startsWith("!["))) {
-      blocks.push({ type: "image", src: img.src, caption: img.alt || "" });
-      if (img.alt) {
-        blocks.push({ type: "figure-caption", caption: img.alt });
+    // Check for standalone images: a run of image lines keeps every image, each with its caption.
+    const imageLines = remaining.split("\n").filter((l) => l.trim());
+    if (imageLines.length && imageLines.every((l) => l.trim().startsWith("![")) && imageLines.some((l) => parseImage(l))) {
+      for (const line of imageLines) {
+        const img = parseImage(line);
+        if (!img) continue;
+        blocks.push({ type: "image", src: img.src, caption: img.alt || "" });
+        if (img.alt) {
+          blocks.push({ type: "figure-caption", caption: img.alt });
+        }
       }
       continue;
     }
@@ -394,28 +394,6 @@ function buildDirectiveBlocks(seg, layout) {
       }];
     }
 
-    case "chart": {
-      const kind = String(attrs.kind || "bar");
-      if (!["bar", "line"].includes(kind)) throw new Error(`"::: chart" kind must be bar or line`);
-      const table = parseTable(value);
-      if (!table || table.headers.length < 2 || table.rows.length < 2) {
-        throw new Error('"::: chart" needs a category column and at least two numeric rows');
-      }
-      const labels = table.rows.map((row) => String(row[0] || "").trim());
-      if (labels.some((label) => !label)) throw new Error('"::: chart" categories cannot be blank');
-      const series = table.headers.slice(1).map((name, index) => ({
-        name: String(name).trim(),
-        labels,
-        values: table.rows.map((row) => {
-          const raw = String(row[index + 1] || "").trim();
-          if (!/^-?\d[\d,]*(?:\.\d+)?$/.test(raw)) throw new Error(`"::: chart" requires numeric values; got "${raw}"`);
-          return Number(raw.replaceAll(",", ""));
-        }),
-      }));
-      if (series.some((item) => !item.name)) throw new Error('"::: chart" series names cannot be blank');
-      return [{ type: "chart", kind, labels, series }];
-    }
-
     case "shape": {
       const kind = positional[0];
       if (!SHAPE_KINDS.has(kind)) {
@@ -424,8 +402,7 @@ function buildDirectiveBlocks(seg, layout) {
           `${[...SHAPE_KINDS].join(", ")}.`
         );
       }
-      // A line is drawn as a hairline rect, so its thickness comes from the
-      // stroke width rather than from a height the author has to supply.
+      // A line is drawn as a hairline rect, so its thickness comes from the stroke width rather than from a height the author has to supply.
       const required = kind === "line" ? ["x", "y", "w"] : ["x", "y", "w", "h"];
       for (const key of required) {
         if (typeof attrs[key] !== "number") {
@@ -454,9 +431,77 @@ function buildDirectiveBlocks(seg, layout) {
       return [block];
     }
 
+    case "chart":
+      return buildChartBlocks(value, attrs, positional);
+
     default:
       return [buildDirectiveBlock(directive, value)];
   }
+}
+
+function buildNativeChart(value, attrs) {
+  const kind = String(attrs.kind || "bar");
+  if (!["bar", "line"].includes(kind)) throw new Error(`"::: chart" kind must be bar or line`);
+  const table = parseTable(value);
+  if (!table || table.headers.length < 2 || table.rows.length < 2) {
+    throw new Error('"::: chart" needs a category column and at least two numeric rows');
+  }
+  const labels = table.rows.map((row) => String(row[0] || "").trim());
+  if (labels.some((label) => !label)) throw new Error('"::: chart" categories cannot be blank');
+  const series = table.headers.slice(1).map((name, index) => ({
+    name: String(name).trim(),
+    labels,
+    values: table.rows.map((row) => {
+      const raw = String(row[index + 1] || "").trim();
+      if (!/^-?\d[\d,]*(?:\.\d+)?$/.test(raw)) throw new Error(`"::: chart" requires numeric values; got "${raw}"`);
+      return Number(raw.replaceAll(",", ""));
+    }),
+  }));
+  if (series.some((item) => !item.name)) throw new Error('"::: chart" series names cannot be blank');
+  return [{ type: "chart", kind, labels, series }];
+}
+
+const CHART_TYPES = new Set(["bar", "column", "line", "area", "pie", "doughnut", "stacked"]);
+
+/**
+ * A native, editable chart. The body is a pipe table: the first column holds the
+ * categories, every further column is one series. It travels as a kpi-table block
+ * with a `chart` field, so any layout that accepts a table accepts a chart, and a
+ * renderer that cannot draw charts still shows the numbers as a table.
+ *
+ *   ::: chart type=column unit="억 원"
+ *   | 분기 | 매출 | 영업이익 |
+ *   |---|---|---|
+ *   | 1Q | 1,120 | 101 |
+ *   > 분기별 매출과 영업이익 (예시 데이터)
+ *   :::
+ */
+function buildChartBlocks(value, attrs, positional) {
+  // `kind=bar|line` is this product's older native-chart dialect.
+  if (attrs.kind != null && attrs.type == null) return buildNativeChart(value, attrs);
+  const table = parseTable(value);
+  if (!table || table.headers.length < 2 || table.rows.length === 0) {
+    throw new Error('"::: chart" needs a pipe table: categories in the first column, one column per series');
+  }
+  const type = String(attrs.type || positional[0] || "column").toLowerCase();
+  if (!CHART_TYPES.has(type)) {
+    throw new Error(`"::: chart" type must be one of ${[...CHART_TYPES].join(", ")}; got "${type}"`);
+  }
+  const captionLine = value.split("\n").map((l) => l.trim()).find((l) => l.startsWith("> "));
+  const caption = captionLine ? captionLine.replace(/^>\s*/, "") : null;
+  const chart = { type };
+  if (attrs.unit != null) chart.unit = String(attrs.unit);
+  if (attrs.title != null) chart.title = String(attrs.title);
+  if (attrs.labels != null) chart.labels = attrs.labels !== false && attrs.labels !== "false";
+  const blocks = [{
+    type: "kpi-table",
+    headers: table.headers,
+    rows: table.rows,
+    chart,
+    ...(caption ? { caption } : {}),
+  }];
+  if (caption) blocks.push({ type: "table-caption", caption, figure: true });
+  return blocks;
 }
 
 /**

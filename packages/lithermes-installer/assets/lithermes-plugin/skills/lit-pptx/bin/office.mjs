@@ -64,11 +64,12 @@ const target = {
   edit: [python, join(plugin, 'skills', 'lit-docx', 'scripts', 'edit_docx.py')],
   pdf: [python, join(plugin, 'skills', 'lit-docx', 'scripts', 'convert_md_to_pdf.py')],
   audit: [python, join(plugin, 'skills', 'lit-docx', 'scripts', 'visual_audit.py')],
+  gate: [python, join(plugin, 'skills', 'lit-docx', 'scripts', 'docx_gate.py')],
   lint: [python, join(plugin, 'skills', 'lit-docx', 'scripts', 'slop_lint.py')],
   learn: [python, join(root, 'scripts', 'learn_template.py')],
 }[action];
 if (!target) {
-  console.error('usage: node office.mjs doctor|pptx|qa|integrity|docx|edit|pdf|audit|lint|learn [arguments]');
+  console.error('usage: node office.mjs doctor|pptx|qa|integrity|docx|edit|pdf|audit|gate|lint|learn [arguments]');
   process.exit(2);
 }
 if (!nodeSupported) throw new Error('LitHermes Office requires Node.js 20.9 or newer for its pinned image runtime');

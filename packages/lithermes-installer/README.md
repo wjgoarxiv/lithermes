@@ -57,15 +57,15 @@ The spark is that record. Once the session closes, nothing carries on in the bac
 | `handoff` or `/lit-handoff` | `lit-handoff` | Carrying the work into the next session |
 | `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose without changing its meaning |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A checked, editable diagram |
-| `/lit-pptx <brief>` | `lit-pptx` | A PowerPoint deck with its Markdown source |
-| `/lit-docx <brief>` | `lit-docx` | A styled Word report with its Markdown source |
+| `/lit-pptx <brief>` | `lit-pptx` | A PowerPoint deck in one of eight named looks, with its Markdown source |
+| `/lit-docx <brief>` | `lit-docx` | A restrained Word document in one of six named shapes, with its Markdown source |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. The other bundled skills are `litgoal`, `lit-recap`, `deep-interview`, `lit-crucible`, `lit-init`, `lit-comprehend`, `frontend-ui-ux`, `readme-studio`, `lit-scientific-visualization`, `visual-qa`, `browser-drive`, `structural-search`, `wikify`, `debugging`, `refactor`, `lit-burnoff`, `lit-burnoff-file`, `lit-code`, `lit-commit`, `lsp-setup`, `lsp`, `rules`, `comment-checker`, `autoresearch` and `autoconference`. The GitHub page shows each one with a picture.
 
 ## Making more than code
 
-- **Reports and slides.** Ask for a report or a presentation with a bare `lit`, and it goes to `lit-docx` or `lit-pptx`. You get a DOCX, a PPTX or both, with the Markdown source beside them. Unless you choose otherwise, Korean documents use the korean-generic profile and slides use AZURE-PRO with Pretendard. The first time, the Office runtime installs the pinned tools it needs into a LitHermes cache.
+- **Reports and slides.** Ask for a report or a presentation with a bare `lit`, and it goes to `lit-docx` or `lit-pptx`. You get a DOCX, a PPTX or both, with the Markdown source beside them. Before building, the skill picks a look that suits your reader and material and tells you which, with two alternatives you can switch to: eight for decks (Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night) and six for documents (Report, Brief, Manual, Proposal, Memo, Journal). Decks come out dense in Pretendard with topic titles; documents stay restrained, with near-black headings, ruled tables and Korean conventions. A journal profile you name is used as is. The first time, the Office runtime installs the pinned tools it needs into a LitHermes cache.
 - **Diagrams.** `lit-diagram-drawer` draws concept maps and technical diagrams. Product pages belong to `frontend-ui-ux`, and plots of measured data to `lit-scientific-visualization`.
 - **Films.** `lit-typographic-motion` writes a treatment first. When the film passes its final check, you get a 60 fps film with a poster, a reduced-motion still and a QA report. A render never downloads anything, so its helper packages and fonts must already be cached. `lithermes install` tries to fetch them; if that was skipped or failed, run `lithermes motion-runtime install`. `lithermes motion-runtime status` shows whether Chrome, ffmpeg, WebGL2 and the fonts are ready.
 - **Prose.** `lit-humanizer` revises Korean and English drafts while keeping their facts. Its detector reads what Hermes writes for people through `write_file` and `patch`. A serious (block-tier) finding can stop the write; a milder warning comes back as advice.

@@ -124,7 +124,7 @@ _SKILL_ROUTE_CONTRACTS = {
     "lit-pptx": (
         "Office document task",
         "Mode Contract: create a PowerPoint deck and keep its Markdown source. If the request also asks for a report or document, load lithermes:lit-docx and create the DOCX too.",
-        "Read the installed lit-pptx skill. Default to AZURE-PRO and Pretendard under lit; an explicit user choice wins. When ordinary facts are missing, finish a realistic example and mark assumptions on each affected slide and in the reply. Use native editable charts for numeric series. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
+        "Read the installed lit-pptx skill. Before building, pick one of its eight tonalities from the deck type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; an explicit template, tonality or font wins. Titles are noun-phrase labels, figures carry a basis and stay at title size, Pretendard by default, slides dense. When ordinary facts are missing, finish a realistic example and mark assumptions on each affected slide and in the reply. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
     ),
     "lit-typographic-motion": (
         "Film request",
@@ -133,7 +133,7 @@ _SKILL_ROUTE_CONTRACTS = {
     "lit-docx": (
         "Office document task",
         "Mode Contract: create a DOCX and keep its Markdown source. If the request also asks for slides, load lithermes:lit-pptx and create the PPTX too.",
-        "Read the installed lit-docx skill. Use korean-generic for Korean or plain styling otherwise unless the user specifies a profile. When ordinary facts are missing, finish a realistic example and mark assumptions in each affected section and in the reply. Render pages when possible and inspect them.",
+        "Read the installed lit-docx skill. Before building, pick one of its six tonalities (Report, Brief, Manual, Proposal, Memo, Journal) from the document type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; a named publisher profile or tonality wins. Keep the page restrained: ink headings, one accent at most, booktabs tables, three component kinds at most, Korean conventions. When ordinary facts are missing, finish a realistic example and mark assumptions in each affected section and in the reply. Run the document gate, render pages when possible, and inspect them.",
     ),
     "readme-studio": (
         "README target",

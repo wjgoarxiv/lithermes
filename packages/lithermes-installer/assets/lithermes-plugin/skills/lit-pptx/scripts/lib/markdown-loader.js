@@ -22,10 +22,8 @@ function parseSimpleYaml(raw) {
   return result;
 }
 
-// Slide-local keys the engine acts on. This set is deliberately closed: a key
-// the engine ignores has no effect a reader can see, so admitting one buys
-// nothing and costs the body line it was indistinguishable from.
-const SLIDE_KEYS = new Set(["variant"]);
+// Slide-local keys the engine acts on.
+const SLIDE_KEYS = new Set(["variant", "title"]);
 
 /**
  * Split the text after a `layout:` line into slide-local keys and body content.
@@ -79,15 +77,16 @@ function load(source) {
 
   const fm = parseSimpleYaml(fmRaw);
 
-  if (!fm.template) {
-    throw new Error("Frontmatter must declare a 'template' field");
+  if (!fm.template && !fm.tonality) {
+    throw new Error("Frontmatter must declare a 'template' or a 'tonality' field");
   }
   if (!fm.title) {
     throw new Error("Frontmatter must declare a 'title' field");
   }
 
   const deck = {
-    template: fm.template,
+    // A tonality-only deck records its pack as the design it was written for.
+    template: fm.template || `tonality:${fm.tonality}`,
     title: fm.title,
     metadata: {},
   };

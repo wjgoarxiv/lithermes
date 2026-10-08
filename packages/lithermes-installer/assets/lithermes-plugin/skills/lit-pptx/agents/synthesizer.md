@@ -27,9 +27,8 @@ You take the thesis (initial deck) and the antithesis (critique) and produce an 
 - [ ] No FORBIDDEN_TERMS; tables well-formed; no slide overloaded
 
 ### 4. Overflow prevention
-- Content slides: ~2 section headers, 2–3 sub-items each
+- Trim only what overflows its frame; do not thin a slide that fits. Content slides keep their basis, comparison, period, source and implication (`references/density-and-fill.md`)
 - Tables: ≤ 6 columns × ~8 rows; Summary groups: ≤ 4 items
-- Bullet text ideally ≤ ~50 chars
 
 ## Critical Rules
 - Preserve the user's intent and key data points.

@@ -19,11 +19,11 @@ Standardizes numbers, tables, and KPI tiles. Colors below refer to the chosen te
 ### 2. Comparison matrix (alternatives / vendors / scenarios)
 - Alternating row bands; strong header row; one emphasis column only; right-align all quantitative columns.
 
-### 3. KPI strip (3–4 headline numbers before a narrative/chart)
-- Value on top, label below; primary value in the template's metric color; positive/negative only for deltas (with ▲/▼ glyph); center within each tile.
+### 3. KPI strip (four to six headline figures before a narrative/chart)
+- One-row table of values plus a second row giving each figure's basis or comparison ("전년 동기 18.2%", sample). Values stay at or below the title size; no hero numerals. Positive/negative color only for deltas (with ▲/▼ glyph).
 
 ## Source-note pattern
-Place source text under the table/chart, smaller than body text:
+End every data slide with a line starting `출처:` or `Source:` (optionally a `주:` / `Note:` line); under a tonality the engine sets it as a source strip at the foot of the body. Examples:
 - `Source: ERP export, 2026-04-14, Procurement`
 - `출처: 내부 운항 데이터, 2026.04 기준`
 - `Source: Clarkson Research, 2026-04, LNG orderbook`

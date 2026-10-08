@@ -1,7 +1,6 @@
-# Azure Professional — SOTA Blue & White Design System (2026)
+# Azure Professional — legacy blue and white template
 
-A pro-designer blue-and-white system for `BOILERPLATE-AZURE` (flagship). 16:9 widescreen.
-Goal aesthetic: modern, geometric, confident — like a paid premium template, not a stock deck.
+The fixed look behind the legacy `AZURE-PRO` and `AZURE-A2Z` templates, 16:9 widescreen: geometric covers, tinted cards, navy dividers. It is not a default. Hermes Agent applies it only when the user names one of these templates or an existing source already says `template:`; every other deck gets a tonality from `direction-step.md`, and even then the direction card offers two tonalities as alternatives. On this template the gate reports the variety and median-band checks as advisories.
 
 ## Color tokens (locked)
 
@@ -55,4 +54,4 @@ Contrast (verified intent): ink/white very high; ink-muted/white ≈5.6:1; prima
 - 4pt spacing scale. Generous margins (16:9): outer ≈0.6in.
 
 ## Canvas
-- 16:9 widescreen: **13.333 × 7.5 in** (1280×720px @96). (Modern default; upgrade from 4:3.)
+- 16:9 widescreen: **13.333 × 7.5 in** (1280×720px @96).

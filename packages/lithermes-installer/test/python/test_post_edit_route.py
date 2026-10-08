@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 import unittest
 from pathlib import Path
 
@@ -109,7 +110,13 @@ class PostEditConditionTable(unittest.TestCase):
         self.assertIn('<lithermes-skill-body name="frontend-ui-ux">', block)
         self.assertIn("lithermes:visual-qa", block)
         self.assertNotIn(_skill_body("visual-qa"), block)
-        self.assertLessEqual(len(block.encode("utf-8")), 3840)
+        # The block names the probe by its absolute install path. Measure it at a
+        # fixed 180-byte path, so the margin does not depend on where this checkout lives.
+        probe = shlex.split(self.core.installed_web_probe_command())[1]
+        quoted = shlex.quote(probe)
+        self.assertIn(quoted, block)
+        sized = block.replace(quoted, "/" + "p" * 179)
+        self.assertLessEqual(len(sized.encode("utf-8")), 3840)
 
 
 class MutatedToolPaths(unittest.TestCase):

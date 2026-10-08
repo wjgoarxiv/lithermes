@@ -27,8 +27,8 @@ export const FONT_PINS = pins.entries;
 
 // This product's own lit-pptx Hangul pair, checked against its recorded hashes (MO-A-55).
 export const HANGUL_PAIR = Object.freeze([
-  { id: 'pretendard-400', file: 'PretendardGOV-Regular.otf', sha256: 'e8c1d911bda79376b2029be4f1c61c1d5b48a9459123a80d5ea23dd055f70bb6' },
-  { id: 'pretendard-700', file: 'PretendardGOV-Bold.otf', sha256: 'a3cd22c442e4ddb8e29501ca2136bfd9d187c70d608cd9feeaead09e4da7be19' },
+  { id: 'pretendard-400', file: 'Pretendard-Regular.otf', sha256: '3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93' },
+  { id: 'pretendard-700', file: 'Pretendard-Bold.otf', sha256: '2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7' },
 ]);
 export const hangulPath = (file) => join(skillRoot, '..', 'lit-pptx', 'pretendard-font', 'public', 'static', file);
 

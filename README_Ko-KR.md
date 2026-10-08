@@ -269,12 +269,12 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td>슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다." /></td>
+<td><img src="./docs/assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 먼저 여덟 가지 디자인 방향 가운데 하나를 고르고 다른 후보 둘과 함께 알려 준 뒤, 편집 가능한 PowerPoint 파일과 원고 Markdown을 만듭니다. 완성된 파일로 제목·배치·채움 검사를 돌립니다." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td><code>lit</code>으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/lit-docx.webp" width="240" alt="lit으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다." /></td>
+<td><img src="./docs/assets/skills/lit-docx.webp" width="240" alt="lit으로 보고서를 요청하면 여섯 가지 문서 형식 가운데 하나를 고르고 다른 후보 둘과 함께 알려 준 뒤, 절제된 인쇄용 Word 파일과 원고 Markdown을 만듭니다. 렌더링한 페이지를 검사로 확인합니다." /></td>
 <td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
 <td><code>lit</code>으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다.</td>
 </tr>
@@ -402,9 +402,15 @@ flowchart TD
 
 ### 보고서와 발표자료
 
-보고서나 발표자료를 요청하면서 단독 `lit`을 붙이면, LitHermes가 함께 들어 있는 Word·PowerPoint 스킬에 일을 넘깁니다. 요청에 따라 DOCX나 PPTX, 또는 둘 다 나오고, 파일마다 Markdown 원본이 옆에 남습니다. 따로 고르지 않으면 한국어 문서는 korean-generic 프로필을, 발표자료는 AZURE-PRO와 Pretendard를 씁니다.
+보고서나 발표자료를 요청하면서 단독 `lit`을 붙이면, LitHermes가 함께 들어 있는 Word·PowerPoint 스킬에 일을 넘깁니다. 요청에 따라 DOCX나 PPTX, 또는 둘 다 나오고, 파일마다 Markdown 원본이 옆에 남습니다.
 
-두 스킬 중 하나를 처음 쓸 때는 Office 런타임이 필요한 도구를 고정된 버전으로 LitHermes 캐시에 설치합니다. 완성된 문서나 발표자료는 그다음 QA 검사를 거칩니다. 스킬을 바로 부르려면 `/lit-docx <brief>`나 `/lit-pptx <brief>`를 입력하세요.
+스킬은 무엇을 쓰기 전에 결과물이 어떤 모습이어야 할지부터 정하고 알려 줍니다. 책상에서 읽는 분기 실적 보고라면 표가 많고 글자가 차분해야 합니다. 화면에 띄우는 투자 제안이라면 한 장에 생각 하나가 맞고, 강의라면 단계가 차례대로 보여야 합니다. 그래서 답변은 짧은 방향 카드로 시작합니다. 고른 디자인과 그 이유, 그리고 그다음으로 어울리는 후보 둘이 적혀 있습니다. 단독 `lit` 요청이라면 스타일을 따로 묻지 않습니다. 후보 가운데 다른 쪽이 좋으면 이름만 말하면 다시 만듭니다.
+
+발표자료의 디자인 방향은 Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night 여덟 가지입니다. 방향마다 색, 제목 자리, 슬라이드 배치, 표지·간지·마무리 장이 따로 있어서 같은 메모로 만들어도 덱마다 생김새가 달라집니다. 슬라이드는 기본적으로 정보를 빽빽하게 담고 Pretendard로 짭니다. 제목은 그 장의 주제를 이름으로 달고 주장은 본문에 둡니다. 숫자는 항목 이름, 기준, 출처와 함께 두고 제목보다 크게 키우지 않습니다.
+
+문서는 Report, Brief, Manual, Proposal, Memo, Journal 여섯 가지입니다. 이 여섯을 가르는 것은 구조입니다. 메모는 표지 없이 수신·발신 줄로 시작하고, 개조식 보고는 결론을 번호 붙은 요점으로 먼저 내놓습니다. 제안서는 글자만으로 짠 표지와 결정 요청 상자 하나, 예산표를 갖추고, 한국어 보고서는 번호 붙은 장으로 이어지는 연구원 보고서처럼 읽힙니다. 페이지는 잘 만든 인쇄 보고서처럼 절제합니다. 제목은 먹색으로 두고 강조색은 많아야 하나만 쓰며, 표는 칠하지 않고 가로줄로만 나눕니다. `<표 1>` 표 제목, 단위 줄, 2026. 10. 5. 같은 날짜 표기처럼 한국어 문서 관례도 지킵니다. 학술지 프로필(Elsevier, ACS, IEEE, Nature, korean-generic)을 지정하면 그 프로필을 씁니다.
+
+두 스킬 중 하나를 처음 쓸 때는 Office 런타임이 필요한 도구를 고정된 버전으로 LitHermes 캐시에 설치합니다. 만든 뒤에는 완성된 파일을 검사합니다. 발표자료는 제목과 배치가 고루 섞였는지, 반쯤 빈 슬라이드가 없는지를 봅니다. 문서는 렌더링한 페이지에서 채움, 쪼개진 표, 페이지 끝에 홀로 남은 제목, 절제 규칙을 확인합니다. 스킬을 바로 부르려면 `/lit-docx <brief>`나 `/lit-pptx <brief>`를 입력하세요.
 
 설치된 스킬 ID는 `lit-pptx`와 `lit-docx`이고, Hermes 목록에는 `lithermes:lit-pptx`와 `lithermes:lit-docx`로 나옵니다.
 

@@ -15,7 +15,7 @@ import { pickPreset } from './presets.mjs';
 import { eojeols, readingCounts, readingFloor } from './type.mjs';
 import { hexToHsl, hueDistance, passSeed, srgbToLinear, contrastRatio } from './util.mjs';
 
-const HANGUL_FONTS = new Set(['PretendardGOV-Regular.otf', 'PretendardGOV-Bold.otf', 'Galmuri9.ttf']);
+const HANGUL_FONTS = new Set(['Pretendard-Regular.otf', 'Pretendard-Bold.otf', 'Galmuri9.ttf']);
 const STROKE_FONTS = new Set(['EMSAllure.svg', 'EMSFelix.svg', 'EMSOsmotron.svg', 'EMSReadability.svg', 'EMSTech.svg']);
 const EPS = 1e-6;
 

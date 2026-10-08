@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Honest, renderer-agnostic QA gate for generated PPTX decks.
 
-Brand-neutral: works for any enrolled template. Combines three checks and
+Brand-neutral: works for any enrolled template. Combines these checks and
 exits non-zero if ANY real defect is found:
 
   1. Layout issues  — inventory.py --issues-only (overflow / overlap / off-slide)
   2. Anti-slop      — validate_pptx.py (forbidden/placeholder terms, default fonts)
   3. WCAG contrast  — text colour vs its fill (body < 4.5:1, large < 3:1)
+  4. Office craft   — craft_extras.py and deck_output.py (OF-101..OF-119); with
+                      --sibling, the same source under another tonality must
+                      draw another skeleton on two content slides (OF-116)
 
 No LibreOffice / rendering engine required: everything is read from the OOXML
 via python-pptx. (A renderer is only ever needed for *visual* preview, which is
@@ -14,6 +17,9 @@ separate and must be inspected after the structural gate.)
 """
 
 from __future__ import annotations
+import sys as _sys
+
+_sys.dont_write_bytecode = True  # the installed skill directory stays read-only
 
 import argparse
 import json
@@ -30,6 +36,7 @@ from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 
 from craft_extras import check as check_office_craft
+from deck_output import compare_skeletons
 
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATE = ROOT / "scripts" / "validate_pptx.py"
@@ -95,10 +102,22 @@ def _bbox(shape):
         return None
 
 
-def _resolve_bg(shape, idx, filled):
+def _slide_ground(slide) -> tuple[int, int, int]:
+    """The slide's own solid background, white when it has none (or inherits one)."""
+    try:
+        fill = slide.background.fill
+        if fill.type == 1:  # solid
+            return _hex_to_rgb(fill.fore_color.rgb) or (255, 255, 255)
+    except (AttributeError, TypeError, ValueError):
+        pass
+    return (255, 255, 255)
+
+
+def _resolve_bg(shape, idx, filled, ground=(255, 255, 255)):
     """Effective background for a text shape: its own fill, else the topmost
     filled shape drawn *behind* it (lower z-order) that contains its centre,
-    else white. Prevents false positives like white text over a charcoal band."""
+    else the slide background. Prevents false positives like white text over a
+    charcoal band, or light text on a dark slide."""
     own = _shape_fill_rgb(shape)
     if own is not None:
         return own
@@ -113,7 +132,7 @@ def _resolve_bg(shape, idx, filled):
                 best = f_rgb  # later (higher idx) wins -> topmost behind text
         if best is not None:
             return best
-    return (255, 255, 255)
+    return ground
 
 
 def check_contrast(path: Path) -> dict[str, Any]:
@@ -124,10 +143,11 @@ def check_contrast(path: Path) -> dict[str, Any]:
     for s_idx, slide in enumerate(prs.slides, start=1):
         shapes = list(slide.shapes)
         filled = [(i, rgb, _bbox(sh)) for i, sh in enumerate(shapes) if (rgb := _shape_fill_rgb(sh)) is not None]
+        ground = _slide_ground(slide)
         for idx, shape in enumerate(shapes):
             if not getattr(shape, "has_text_frame", False):
                 continue
-            bg = _resolve_bg(shape, idx, filled)
+            bg = _resolve_bg(shape, idx, filled, ground)
             for para in shape.text_frame.paragraphs:
                 for run in para.runs:
                     if not run.text.strip():
@@ -155,11 +175,7 @@ def check_contrast(path: Path) -> dict[str, Any]:
     return {"pass": not violations, "checked_runs": checked, "violations": violations[:30]}
 
 
-# ── picture / table overlap ─────────────────────────────────────────────────
-# inventory.py only considers text shapes, so a chart image drawn on top of a
-# data table (or another image / body text) slips through. This check covers
-# PICTURE and TABLE (graphicFrame) shapes against every other content-bearing
-# shape and fails on any real overlap.
+# ── picture / table overlap ───────────────────────────────────────────────── inventory.py only considers text
 OVERLAP_TOL_IN = 0.06  # inches; ignore hairline touches / rounding
 MIN_TEXT_PT = 6.0
 
@@ -270,8 +286,7 @@ def check_overlaps(path: Path) -> dict[str, Any]:
             for z2, sh2, kind2, box2 in shapes:
                 if z2 >= z or kind2 is None:
                     continue  # only shapes drawn *behind* this picture/table
-                # A full-bleed background image (mesh/gradient wash) is never an
-                # occlusion victim — anything may sit on top of it by design.
+                # A full-bleed background image (mesh/gradient wash) is never an occlusion victim — anything may sit on top of
                 if kind2 == "picture" and is_full_bleed(box2):
                     continue
                 # Picture-over-picture is intentional decorative layering.
@@ -394,9 +409,7 @@ def check_figure_table_occlusion(path: Path) -> dict[str, Any]:
         for victim_idx, victim, victim_kind, victim_box in shapes:
             if victim_kind not in ("picture", "table"):
                 continue
-            # A generic picture may intentionally be a background or decorated
-            # asset. Only pictures explicitly declared as evidence/figures have
-            # objective occlusion semantics; tables are always data objects.
+            # A generic picture may intentionally be a background or decorated asset.
             if victim_kind == "picture" and not _EVIDENCE_MARKER.search(_semantic_label(victim)):
                 continue
             victim_area = (victim_box[2] - victim_box[0]) * (victim_box[3] - victim_box[1])
@@ -445,7 +458,11 @@ def check_evidence_binding(path: Path) -> dict[str, Any]:
             checked += 1
             figure_box = _bbox_in(shape)
             nearby: list[str] = []
-            if figure_box is not None:
+            page_area = (prs.slide_width / 914400.0) * (prs.slide_height / 914400.0)
+            if figure_box is not None and _is_full_bleed(figure_box, page_area):
+                # A full-bleed picture carries its caption on the panel laid over it.
+                nearby = [text for other in shapes if other is not shape and (text := _shape_text(other))]
+            elif figure_box is not None:
                 figure_width = figure_box[2] - figure_box[0]
                 for other in shapes:
                     text = _shape_text(other)
@@ -584,6 +601,14 @@ def check_objective_quality(path: Path) -> dict[str, Any]:
     return {"pass": all(check["pass"] for check in checks.values()), **checks}
 
 
+TEXT_FAMILIES = {"text-column", "text-two-column", "summary-box-list", "sidebar-note", "agenda", "references-appendix"}
+
+
+def _centre_inside(inner, outer) -> bool:
+    cx, cy = inner.left + inner.width / 2, inner.top + inner.height / 2
+    return outer.left <= cx <= outer.left + outer.width and outer.top <= cy <= outer.top + outer.height
+
+
 def check_slide_craft(path: Path) -> dict[str, Any]:
     """Catch sparse table slides and visible empty frames before visual review."""
     prs = Presentation(str(path))
@@ -592,19 +617,28 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
     text_only = 0
     content_slides = 0
     for slide_number, slide in enumerate(prs.slides, 1):
+        # A pack-built slide names its family
+        family = next((shape.name.split("@", 1)[1] for shape in slide.shapes if shape.name.startswith("family@")), "")
+        if family and re.match(r"(cover|section)(-|$)|(statement|quote|closing-statement|image-full)$", family):
+            continue
         tables = [shape for shape in slide.shapes if getattr(shape, "has_table", False)]
         charts = [shape for shape in slide.shapes if getattr(shape, "has_chart", False)]
+        # A bottom-anchor title puts the figure at the top of a pack slide, so position says nothing there.
         pictures = [
             shape for shape in slide.shapes
             if shape.shape_type == MSO_SHAPE_TYPE.PICTURE
-            and shape.top >= prs.slide_height * 0.20
+            and (family or shape.top >= prs.slide_height * 0.20)
         ]
-        body_text = [
+        # Body text is judged on what the frames say together
+        frames = [
             shape for shape in slide.shapes
             if getattr(shape, "has_text_frame", False)
             and shape.top >= prs.slide_height * 0.16
-            and len(shape.text_frame.text.strip()) >= 65
+            and not shape.name.startswith(("title@", "lit-notice"))
         ]
+        said = "".join(shape.text_frame.text.strip() for shape in frames)
+        weight = len(said) + len(re.findall(r"[\uac00-\ud7a3]", said))
+        body_text = frames if (weight >= 65 if family else any(len(s.text_frame.text.strip()) >= 65 for s in frames)) else []
         panels = [
             shape for shape in slide.shapes
             if _shape_fill_rgb(shape) is not None
@@ -613,7 +647,9 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
         ]
         if tables or charts or body_text or len(panels) >= 2:
             content_slides += 1
-        if body_text and not tables and not charts and not pictures and len(panels) < 2:
+        # On a pack slide the family says whether the page is a plain text page
+        plain_text = family in TEXT_FAMILIES if family else len(panels) < 2
+        if body_text and not tables and not charts and not pictures and plain_text:
             text_only += 1
         if tables and not charts and not pictures and not body_text:
             table_only += 1
@@ -631,6 +667,12 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
             if shape.width < 0.7 * 914400 or shape.height < 0.5 * 914400:
                 continue
             if shape.width * shape.height > prs.slide_width * prs.slide_height * 0.8:
+                continue
+            # An outline drawn around other frames (a matrix quadrant, a card whose text is its own box) frames that
+            if any(_centre_inside(other, shape) for other in slide.shapes if other is not shape
+                   and (getattr(other, "has_table", False) or getattr(other, "has_chart", False)
+                        or other.shape_type == MSO_SHAPE_TYPE.PICTURE
+                        or (getattr(other, "has_text_frame", False) and other.text_frame.text.strip()))):
                 continue
             if shape.fill.type is None and shape.line.fill.type is not None:
                 violations.append({
@@ -684,9 +726,7 @@ def summarize_inventory(issues: dict[str, Any]) -> dict[str, Any]:
                     slide_overflow += 1
                 if "frame" in ov:
                     frame_overflow += 1
-            # inventory.py nests this under "overlap"; reading it at the top
-            # level silently counted zero and left this arm dead for the whole
-            # life of the gate. It is repaired here but reports only — see qa().
+            # inventory.py nests this under "overlap"
             if (shape.get("overlap") or {}).get("overlapping_shapes"):
                 overlap += 1
     return {
@@ -710,7 +750,7 @@ def run_validate(pptx: Path) -> dict[str, Any]:
 
 
 # ── gate ───────────────────────────────────────────────────────────────────
-def qa(pptx: Path) -> dict[str, Any]:
+def qa(pptx: Path, sibling: Path | None = None) -> dict[str, Any]:
     validate_report = run_validate(pptx)
     inv_summary = summarize_inventory(load_inventory_issues(pptx))
     contrast = check_contrast(pptx)
@@ -719,21 +759,16 @@ def qa(pptx: Path) -> dict[str, Any]:
     objective = check_objective_quality(pptx)
     craft = check_slide_craft(pptx)
     office_craft = check_office_craft(pptx)
+    if sibling is not None:
+        office_craft["findings"] += compare_skeletons(Presentation(str(pptx)), Presentation(str(sibling)), sibling.name)
+        office_craft["pass"] = office_craft["pass"] and not any(f["rule"] == "OF-116" for f in office_craft["findings"])
 
     reasons: list[str] = []
     if not validate_report.get("pass", False):
         reasons.append("anti-slop: " + ", ".join(
             k for k, v in validate_report.get("checks", {}).items() if isinstance(v, dict) and not v.get("pass", True)
         ) or "anti-slop: validate_pptx failed")
-    # Fail only on real layout defects (overflow / off-slide). The inventory also
-    # flags "manual bullet symbols", which is an authoring lint for the HTML path
-    # — the markdown engine legitimately renders "• " bullet runs, so that lint
-    # must not fail the gate (issue_shapes stays informational).
-    #
-    # inv_summary["overlap_shapes"] is deliberately NOT part of this sum. It is
-    # raw pairwise geometry with no notion of z-order or shape kind, so every
-    # tinted card counts its own text as an overlap. check_semantic_overlaps owns
-    # the overlap verdict; this number is carried in the report for transparency.
+    # Fail only on real layout defects (overflow / off-slide).
     layout_defects = inv_summary["overflow_shapes"]
     if layout_defects:
         reasons.append(
@@ -781,8 +816,9 @@ def qa(pptx: Path) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Honest renderer-agnostic QA gate for PPTX decks.")
     parser.add_argument("pptx", type=Path)
+    parser.add_argument("--sibling", type=Path, help="the same source built under another tonality (OF-116)")
     args = parser.parse_args(argv)
-    report = qa(args.pptx.resolve())
+    report = qa(args.pptx.resolve(), args.sibling.resolve() if args.sibling else None)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["pass"] else 1
 

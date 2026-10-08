@@ -13,11 +13,6 @@ No upstream scripts, templates, CLI, installers, manifests, screenshots, preview
 documentation, premium features, host integrations, code-example columns,
 documentation-URL columns, or google-fonts.csv data are included.
 
-Craft-floor and slop-register mechanisms were independently re-expressed after
-studying pbakaus/impeccable (https://github.com/pbakaus/impeccable), by Paul
-Bakaus, Apache License, Version 2.0, consulted at commit 9d715cc. No source
-file, prose, or fixture from that project is reproduced here.
-
 Mode, review-format, and routing-governance mechanisms were independently
 re-expressed after studying jakubkrehel/skills
 (https://github.com/jakubkrehel/skills), Copyright (c) 2026 Jakub Krehel,

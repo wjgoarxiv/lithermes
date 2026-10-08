@@ -13,14 +13,10 @@
 
 const APPROVED_LAYOUTS = new Set(["cover", "content", "main", "summary", "closing", "section"]);
 
-// A layout name is checked for shape here, not for membership. Which layouts
-// exist is a fact about the chosen template, and the AST is deliberately
-// template-independent — layout-resolver is what compares a slide against the
-// template's mapping and names the available layouts when one is missing.
+// A layout name is checked for shape here, not for membership.
 const LAYOUT_NAME = /^[a-z][a-z0-9-]*$/;
 
-// Placement blocks position themselves and so are legal wherever a template
-// allows them; the per-layout tables below describe v1 content blocks only.
+// Placement blocks position themselves and so are legal wherever a template allows them.
 const PLACEMENT_BLOCKS = new Set(["box", "shape", "columns"]);
 
 const LAYOUT_BLOCKS = {
@@ -73,9 +69,7 @@ function validateSlide(slide) {
     throw new Error(`Slide ${slide.index}: missing blocks array`);
   }
 
-  // Only the v1 layouts have a fixed block set to enforce here. A template may
-  // declare any other layout, and layout-resolver validates those against the
-  // capabilities the template actually publishes.
+  // Only the v1 layouts have a fixed block set to enforce here.
   const allowed = LAYOUT_BLOCKS[slide.layout];
   if (!allowed) return;
 

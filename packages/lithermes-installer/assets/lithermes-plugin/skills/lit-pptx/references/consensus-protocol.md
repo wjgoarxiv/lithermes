@@ -7,6 +7,7 @@ Sequential Planner → Architect → Critic loop for PPTX slide structure planni
 
 ### Planner (Orchestrator acts as Planner)
 - Reads the interview spec (or direct user request)
+- Writes the direction card first (`direction-step.md`): tonality, two named alternatives, reason from the measured content; no style question for a bare request
 - Creates a slide-by-slide implementation plan
 - Specifies layout, content, data, and render path per slide
 
@@ -46,7 +47,7 @@ Iteration 3: (final attempt)
 ## Approval Gates
 
 ### Architect APPROVE Criteria
-- All layouts valid
+- All layouts valid: under a tonality, every `layout:` is a family or variant the chosen pack lists (`--list-layouts <tonality>`)
 - Font usage matches the chosen template (for per-weight-family fonts like 에이투지체/Example Sans, weight is selected by family name, not a bold flag)
 - Dimensions match the chosen template (e.g. 10×7.5in 4:3 for BOILERPLATE-*, 10.833×7.5in for a custom template)
 - No anti-slop violations
@@ -85,6 +86,7 @@ Write to `.pptx-pipeline/plan-{slug}.md`:
 - Architect verdict: APPROVE
 - Critic verdict: APPROVE
 - Quality score: N/10
+- Direction: {tonality} (alternatives: {a}, {b}); density/variance {d}/{v}
 
 ## Slide-by-Slide Implementation
 ### Slide 1: Cover
@@ -115,11 +117,13 @@ Write to `.pptx-pipeline/plan-{slug}.md`:
 - Render path: compile-deck.js
 
 ### Slide N+2: Closing
-- Layout: closing
+- Layout: closing variant of the pack (e.g. closing-ask, closing-decision-box)
+- Title: noun-phrase label naming the request (never "감사합니다" alone)
+- Body: items to approve, next step with owner and date
 - Render path: compile-deck.js
 
 ## QA Plan
-- Compile: `node scripts/compile-deck.js deck.md --template <TEMPLATE> --pptx output.pptx --embed-fonts` (default `<TEMPLATE>` = BOILERPLATE-PRETENDARD)
+- Compile: `node scripts/compile-deck.js deck.md --template <TEMPLATE> --pptx output.pptx --embed-fonts` (omit `--template` for a tonality deck; the frontmatter `tonality:` sets the look, and a legacy template is used only when the user named it)
 - Verify: `python scripts/inventory.py output.pptx verify.json --issues-only`
 - No FORBIDDEN_TERMS check: `python validate_pptx.py output.pptx`
 ```

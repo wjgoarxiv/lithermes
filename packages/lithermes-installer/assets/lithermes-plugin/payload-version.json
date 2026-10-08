@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-01T12:46:03.128Z",
+  "syncedAt": "2026-10-08T09:41:48.471Z",
   "source": "bundled-payload",
-  "sourceHash": "e01bfaa1dbee52cc21eceee9f7c8095f7eaa94685e92eadaaeed08998fbd9e43",
+  "sourceHash": "55c730c517c789a18788389b6b5d05a47d89522d4ee72f98162c7b17e04e72d9",
   "files": [
     {
       "path": "NOTICE.md",
@@ -41,7 +41,7 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "bd320ddaa559d94a2aea8e96062902bef98eeac1702699617f816fed23333e96"
+      "sha256": "5831929f9b2eb855263fcc29fe9df3be7a0a56c4b265fb22d0bd208d5810500a"
     },
     {
       "path": "core_contract.py",
@@ -1345,7 +1345,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/slop-register.md",
-      "sha256": "ab8d4560acb299d010c0fae3937cb7a2f6cb4890dc30d7173a15a33296302f38"
+      "sha256": "0972d88fee7f2b63034f02cef4e9a060047480dcd6703e85052b14b0f84bfe1e"
     },
     {
       "path": "skills/frontend-ui-ux/references/system-foundations.md",
@@ -1373,7 +1373,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/resources/THIRD-PARTY-NOTICE.txt",
-      "sha256": "085fe93ae2c6bcf4045c0f8f4381d3e32b6c1ad61042059cc35976cf521afed5"
+      "sha256": "fa2301aa29ed324a55ffe25312cbb2bf8065358ee600af9b221719c7ccacee56"
     },
     {
       "path": "skills/frontend-ui-ux/resources/design-intelligence.json",
@@ -3033,7 +3033,51 @@
     },
     {
       "path": "skills/lit-docx/SKILL.md",
-      "sha256": "594b4c8d0588a0f5b92a058610dfe36f4e5e6ca578505b7df31fb461ea403380"
+      "sha256": "6855f71f74ac5a973a33313f0aebb257b7804dd8ce9b67c0d02100c3cea4edb6"
+    },
+    {
+      "path": "skills/lit-docx/references/components.md",
+      "sha256": "0bbd2a4fce110e114e281f528a7f97a8ff968d5871693791d28dd8dc2f5848f5"
+    },
+    {
+      "path": "skills/lit-docx/references/direction-step.md",
+      "sha256": "e98f5165ae61d921ac9178490bccae6fc79a09360e9b3f4fa65339cbd00b3e97"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/01-report-ko.md",
+      "sha256": "86852d7930766e81122e4483538693ad23dc79a6b2e4ce4e5124f701a92dbc14"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/02-brief-ko.md",
+      "sha256": "a3bfa9064819904ca9c8b30d43bb0ecc81714e5266667558c236676b2defee5c"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/03-manual-ko.md",
+      "sha256": "7fe056b804c432b330309fee61dd76ecfd8abe5362775202dd44ea8c05f72fb7"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/04-proposal-ko.md",
+      "sha256": "0191c9786d1e7d1213dfca228ea0bf3fb0c4b8fa33e3c7fd0137d3b7688e93e2"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/05-memo-en.md",
+      "sha256": "7919e45e5c97c24c61c3a4a6945b61ea5a7fa81be9eb48f3ddab90c152ec0612"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/06-journal-en.md",
+      "sha256": "f67b6c52c15c67f06b7ecea4e25bbb345e4ad84d116d9d280f5d6c883a77b1e5"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/07-report-en.md",
+      "sha256": "8e48d755358f395da8631e193e4c17d31f19cba46ff22fbd2b834dd6c082a8f2"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/08-proposal-en.md",
+      "sha256": "13f5386989676235db57515c13b2f47aa2426b0dee52be8fd22c1d417d9582d0"
+    },
+    {
+      "path": "skills/lit-docx/references/examples/09-memo-ko.md",
+      "sha256": "39ebadd810f5ec718b23d3e52d4a45c3c67c22d1bfd3edfd0aec5ccba7e1ca15"
     },
     {
       "path": "skills/lit-docx/references/frontmatter_schema.md",
@@ -3048,6 +3092,10 @@
       "sha256": "3e1f9242927f16f7085824d6cd7082cc10662e6120ceb3e1f14ee29d6b7dbf26"
     },
     {
+      "path": "skills/lit-docx/references/page-composition.md",
+      "sha256": "b2d7ae498076e1b5773e6ec46fd067689a1245011e154d96a86156a8e68f0a44"
+    },
+    {
       "path": "skills/lit-docx/references/slop_phrase_list.yaml",
       "sha256": "b4cb5dc858b2ea44b5558e8be4cb51199af40de53b901fb563b53c5416c50bdc"
     },
@@ -3056,12 +3104,36 @@
       "sha256": "3d182b85a5643e42411ab6552d23e76e963854ec9e88e8953c20bf8df8614a57"
     },
     {
+      "path": "skills/lit-docx/references/tonalities/brief.md",
+      "sha256": "27065815e505c89aac40423d29155ecf8a4df5397b01cdb7dbcbffa62e49c1fe"
+    },
+    {
+      "path": "skills/lit-docx/references/tonalities/journal.md",
+      "sha256": "90b926aa28bc3de8712d14153a6c8293edc0f3d3007616c06bb91e722be31bd4"
+    },
+    {
+      "path": "skills/lit-docx/references/tonalities/manual.md",
+      "sha256": "8a386ca1ae3558d1ac52775d768d2f8052f58d79ff5a63efbd0e9a5096f92655"
+    },
+    {
+      "path": "skills/lit-docx/references/tonalities/memo.md",
+      "sha256": "afbde5b987a71cad9f37ff36a9fc0bb99a044ebba62633dc02c36f19f902b701"
+    },
+    {
+      "path": "skills/lit-docx/references/tonalities/proposal.md",
+      "sha256": "74203993e05ed2c5a59cc272ab51d0fb1ca24558c7daaba5920562d9623a0ac4"
+    },
+    {
+      "path": "skills/lit-docx/references/tonalities/report.md",
+      "sha256": "03e7d3bdcecda1eb394f63cca35f1a2da3ab9a4dd379c4e56b965e6365890494"
+    },
+    {
       "path": "skills/lit-docx/scripts/clean_markdown.py",
       "sha256": "d9116e22d26f4334c07e952443d9ceb8d8fc0f5d3c992d4fa3407a891187e225"
     },
     {
       "path": "skills/lit-docx/scripts/convert_md_to_docx.py",
-      "sha256": "c75942b070a173c9f96b2be07b553d3d851aa79e9790342cf95f09e7b7155cc2"
+      "sha256": "ff82a906377c376379b64dd94e315a966c9e94137b5af4caeee104f5f57a6db3"
     },
     {
       "path": "skills/lit-docx/scripts/convert_md_to_pdf.py",
@@ -3070,6 +3142,18 @@
     {
       "path": "skills/lit-docx/scripts/convert_pdf.py",
       "sha256": "383b01f74dd2696b7a02c5e97bb42bb49105bae41ed2c5a74188ce9d93e4aa13"
+    },
+    {
+      "path": "skills/lit-docx/scripts/docx_design.py",
+      "sha256": "ca1b2e10252b7939434277f0f0b054d4788e8de346e4a73783e0add6636192da"
+    },
+    {
+      "path": "skills/lit-docx/scripts/docx_gate.py",
+      "sha256": "e8ef921d20de6bd49e9efe8749c4af6936392620b2e969e36e45b9ff86719fae"
+    },
+    {
+      "path": "skills/lit-docx/scripts/docx_layout.py",
+      "sha256": "15ced918d1a3ccf76c11d388451b761a4839025edee1570943d47055b2dde611"
     },
     {
       "path": "skills/lit-docx/scripts/edit_docx.py",
@@ -3085,7 +3169,7 @@
     },
     {
       "path": "skills/lit-docx/scripts/slop_lint.py",
-      "sha256": "bf2a98f9cc4ccbe85a6be6f3b0148531eec820dc408c3dcbb59af1a3fd106e5c"
+      "sha256": "3282b2f683abe74980b3ceef0c58b37f8333660065aecaff2ac1d28f75f1f896"
     },
     {
       "path": "skills/lit-docx/scripts/visual_audit.py",
@@ -3154,6 +3238,30 @@
     {
       "path": "skills/lit-docx/templates/registry.yaml",
       "sha256": "950c0adf003f773c84756e73df352bc29c771a8399f91c8ee93c14c39b6b9c7d"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/brief.yaml",
+      "sha256": "73a466263bad4f876671de0121b117223f0659f896d99cabde76e8d6a86385f5"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/journal.yaml",
+      "sha256": "aae647c0d62e6b801923651df754933e92c3db8c07c0fe7e12977e1c8473e028"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/manual.yaml",
+      "sha256": "de31b0bfa3dc46d172b84af6d60ade9ac1411ba0fb34bb2e402e3a0f80486c67"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/memo.yaml",
+      "sha256": "bac736a847c6b3f127875af9677f944af3e6ae1da3ec824e8f956f61bd2460de"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/proposal.yaml",
+      "sha256": "7cf710c09ae8d30a208f59167e9b47f0222a2184231a68047aa596f2c7e135d4"
+    },
+    {
+      "path": "skills/lit-docx/templates/tonalities/report.yaml",
+      "sha256": "ad8312bba2752e142ef40b560c13339f5411be73acb0f01634a4e744b215e5d8"
     },
     {
       "path": "skills/lit-handoff/ORIGIN.json",
@@ -3437,31 +3545,31 @@
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
-      "sha256": "8ff037d53cc4414607fae4f35e2eb76c59803742a9637e64f8bdb9cf176eb376"
+      "sha256": "2d07bcb558bc7eb63fff31bcb0ee16a88c8b823a726713755a105e6f201381bc"
     },
     {
       "path": "skills/lit-pptx/agents/analyst.md",
-      "sha256": "93ab81384b223da9a4b63427d161081b45b89b2a7323b57c514f9a1206eb88d1"
+      "sha256": "6cedd285a5046e1abda902376265c4c8683c283c7a661d9eb62d2e810450398b"
     },
     {
       "path": "skills/lit-pptx/agents/antithesis.md",
-      "sha256": "e21d5596b76b836b6b551d5e80d4cd655932fba26cc3dec000d1ef673a3296df"
+      "sha256": "414c5742c412934baaa5800235878aff426bb42a5155b0006d30edcf73d67b6a"
     },
     {
       "path": "skills/lit-pptx/agents/architect.md",
-      "sha256": "fdb4ea992b344324d234ec9d43937fb71794a432dad6d0bb61fc26067b0acabe"
+      "sha256": "c62fec92c2deafc6a3fad1a7d8149341d601aec858028a448c2a0b4a55c89e46"
     },
     {
       "path": "skills/lit-pptx/agents/critic.md",
-      "sha256": "f35029f7a4ccca7947f445a29255c5c801915ac8fb461b4ff5f82bca6b30666d"
+      "sha256": "a54113b131049c2ba258d5505f2a4147c86ad1246874bc4fd285dc03b527a68f"
     },
     {
       "path": "skills/lit-pptx/agents/synthesizer.md",
-      "sha256": "1f810e89a0680b5085ca7b41d8d72868d0e4f7753d82e9956fd6f2939d636ebb"
+      "sha256": "86ecec829df82a1c63f4695803a6513ed268dbc1003574ad4a3d29a57bb0eb28"
     },
     {
       "path": "skills/lit-pptx/agents/thesis.md",
-      "sha256": "e009773852a178fd0ffa08da8edcead8f647d79e8198becc7129583536da3698"
+      "sha256": "0ef22dfc1c2b904da90249e3022a3825e7d4525098944c6c690015abe99413e7"
     },
     {
       "path": "skills/lit-pptx/assets/azure/circle-lg.png",
@@ -3477,7 +3585,7 @@
     },
     {
       "path": "skills/lit-pptx/bin/office.mjs",
-      "sha256": "73a9a6205518d791cc641122a4c98dfea5b8ef2463b5a2ba2a23585f1ffe1ee7"
+      "sha256": "e3f4ebbf38bf58b2a4f0d8daa26ee663e842cecb7322c032501fcd93e1388e39"
     },
     {
       "path": "skills/lit-pptx/fonts/PRETENDARD-OFL.txt",
@@ -3528,32 +3636,128 @@
       "sha256": "5af89baef4991b664382c81617a850b0bf84d2dcfea2ee19e4010794db5d643e"
     },
     {
-      "path": "skills/lit-pptx/pretendard-font/public/static/PretendardGOV-Bold.otf",
-      "sha256": "a3cd22c442e4ddb8e29501ca2136bfd9d187c70d608cd9feeaead09e4da7be19"
+      "path": "skills/lit-pptx/pretendard-font/public/static/Pretendard-Bold.otf",
+      "sha256": "2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7"
     },
     {
-      "path": "skills/lit-pptx/pretendard-font/public/static/PretendardGOV-Regular.otf",
-      "sha256": "e8c1d911bda79376b2029be4f1c61c1d5b48a9459123a80d5ea23dd055f70bb6"
+      "path": "skills/lit-pptx/pretendard-font/public/static/Pretendard-Regular.otf",
+      "sha256": "3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93"
     },
     {
       "path": "skills/lit-pptx/references/anti-slop-checklist.md",
-      "sha256": "59c266911c70a2a23067a33c29d821d177273cbd78005d7acc0a834ded45d5d8"
+      "sha256": "3fc0bb2f62195ef6ae76bfa6051c7e2c9ec0c778268d4205839e5ea3cb50d22d"
     },
     {
       "path": "skills/lit-pptx/references/authoring-guide.md",
-      "sha256": "42a40e5300cf00721fe78b66ec0a9befce33546020311d1fea4731901efe3f37"
+      "sha256": "7292b5f702f56ac756392df1cdae873d707568a923a0ff6554ad7b064db7154a"
     },
     {
       "path": "skills/lit-pptx/references/consensus-protocol.md",
-      "sha256": "677e141c37540bf99c88e49e797012a32b581b75022f5df1ed5d7d533242c0a9"
+      "sha256": "0646e4e2a262a91bcdddfffc20aace45d5c568cbad3fc6a1a47a31513e5742da"
     },
     {
       "path": "skills/lit-pptx/references/data-display-cookbook.md",
-      "sha256": "ec70898d28c98a8306037430908b203333c427f908e98a50f3e61d6b4670d7f6"
+      "sha256": "c73e7d480bf26c2e512b1f1ac69b378e949e7615d135dcbd5e8458c5705fbd4b"
+    },
+    {
+      "path": "skills/lit-pptx/references/density-and-fill.md",
+      "sha256": "98043193c49c919c8642b10266729e433a092c56560a881bacde8c232f3f60c2"
     },
     {
       "path": "skills/lit-pptx/references/design-system-azure.md",
-      "sha256": "e5a7b2a4507fefea8b1536291c557ab74e3af5ef7cb7297618310df83e05f0a1"
+      "sha256": "ae168c1a22c2b2847630eea3cc8c8bcf67ca763d991faa5a87c41b8fe7f648f4"
+    },
+    {
+      "path": "skills/lit-pptx/references/direction-step.md",
+      "sha256": "38bca17392fe3cbb4a68f24f6d764e4811578b7989f99594906eebfd49a41861"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/01-pitch-signal-ko.md",
+      "sha256": "360e0f147ef7b97a3154358d706724eef8d215cc2276d67785e45301ca570c92"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/02-business-review-ledger-ko.md",
+      "sha256": "3e3d477a083b62989e2229130e94bd39c5078734fdac0eb1f6a6607dc4082891"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/03-research-talk-paper-en.md",
+      "sha256": "dd27704f58d37065488012e768fddb38759969e7e44a4f020128afd11a43910d"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/04-lecture-chalk-ko.md",
+      "sha256": "6c7a3eff86d35ffc53ac40e07076330e32659fd3fc126cda19c27a1cc98c25e3"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/05-data-review-night-en.md",
+      "sha256": "414a77f71aadedc846c206edf92027a922bd4db5d070d1077475bcd24d220d53"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/06-image-led-atlas-ko.md",
+      "sha256": "3d32e2533bc2926ee45a7c261ca9258de47cf9b1c00a06c8770aeb138c7c76be"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/07-briefing-gazette-ko.md",
+      "sha256": "907bd2df9c63f24b10d3d338e8e08a98e3a389b61e64cebde3eb51c41c471551"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/08-status-update-ledger-en.md",
+      "sha256": "fe88e9dbccc13fe7fa289e1bd4ff81b9c8baa6dd38a733f8105d1a4a30e09759"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/09-image-led-studio-en.md",
+      "sha256": "e996073112523c98fc80d1cdfbced078f2bec6b0fa2c2cd9a80e0300f5e0f2c3"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/10-research-talk-night-ko.md",
+      "sha256": "f53b289d338234d3e5ec3e18a723f366fa54effd55ef08407aab0df337b07f4b"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/11-lecture-studio-en.md",
+      "sha256": "09518d213f42b29f8859fa9942617b5338c5f06ea3081ba9ca0435e69c8118c0"
+    },
+    {
+      "path": "skills/lit-pptx/references/examples/12-status-update-gazette-ko.md",
+      "sha256": "9d28abc0d09a94288848039cd4db563bf2705b911a33991ff40ad919070e7fba"
+    },
+    {
+      "path": "skills/lit-pptx/references/layout-families.md",
+      "sha256": "206fc5a68cabe2b5e47d5f078d6b7ba277d3bfe53d1558973d763c20067a0252"
+    },
+    {
+      "path": "skills/lit-pptx/references/title-treatments.md",
+      "sha256": "92bd359f32ba335c870b77d432e4266ef972b4bc5ae3054f86655f714954f731"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/atlas.md",
+      "sha256": "2a935a7bf99a584a601be9deed936bdfe56b99333e1122ef98b9ed8fe2265377"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/chalk.md",
+      "sha256": "34f83faeb54c86841b260e0bdee0a6432fee529ee8d8accd7dcd691193934082"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/gazette.md",
+      "sha256": "3f86da1d60d6def6a8bfcce0406e33247792ac8941aa0e598fc20fb7dc453692"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/ledger.md",
+      "sha256": "cc9ace54cabc6caa3bcb49682b02fd88ad770cc279ffe5c433ffd93a52496d33"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/night.md",
+      "sha256": "e2cfb2ac3ce8540b16e608b68233c8cb97f71ea8948410ce52c971a7551dd1c9"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/paper.md",
+      "sha256": "cadea4db242bf89c0a4b512b06d028ddfd171c4b84db0c2a20c2a66fb6e295ce"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/signal.md",
+      "sha256": "b15bf1652d67cedc93b12036a9ceecf8d8e1a943bc48ebf448ddc3c8b28da9b5"
+    },
+    {
+      "path": "skills/lit-pptx/references/tonalities/studio.md",
+      "sha256": "9b308cc9d11da875dbb86a79089fdb1417094c332d139819b6c1efdd3b398c4c"
     },
     {
       "path": "skills/lit-pptx/runtime/package-lock.json",
@@ -3573,15 +3777,19 @@
     },
     {
       "path": "skills/lit-pptx/scripts/compile-deck.js",
-      "sha256": "903534ad4e70a0cd3d42530a28095827724f1ff4baa07f5d29af908213f41a11"
+      "sha256": "4d5085c9ed8687ee96f729ecd26a1b9a3f8036fe8ffb26060947fccf0d2e944c"
     },
     {
       "path": "skills/lit-pptx/scripts/craft_extras.py",
-      "sha256": "3f05c3a02fb875b1d430d8781d524c301cff2c0c16c370d8e8b66261060bea23"
+      "sha256": "730f1179d5df2fe79c48c7d4f180343445923d03bdd72aa5bbbc84e6f1c9e188"
+    },
+    {
+      "path": "skills/lit-pptx/scripts/deck_output.py",
+      "sha256": "41ebf2c196bc84825de5f5a4495a8e31312584467b5511a996fb8b901487b8af"
     },
     {
       "path": "skills/lit-pptx/scripts/embed_fonts.py",
-      "sha256": "734070345587563370c0bcdd4e09063493453274d4895beb5503949b3c03970f"
+      "sha256": "5aa16fbf33347ebce83f784e47d27675e0b1853584785e16b551a76c3c54dda7"
     },
     {
       "path": "skills/lit-pptx/scripts/integrity.py",
@@ -3601,7 +3809,7 @@
     },
     {
       "path": "skills/lit-pptx/scripts/lib/directive-parser.js",
-      "sha256": "725a3e724185013e6c724d215d86d31eae617545ff43634245142ec1fa905d66"
+      "sha256": "73ea7d59761adc0da94c499fd82662f3321b423efcb18a32d78de8167e42c029"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/font-map.js",
@@ -3609,47 +3817,55 @@
     },
     {
       "path": "skills/lit-pptx/scripts/lib/gen-bg.js",
-      "sha256": "3e62aeadd1bf532a43e3ebf7a170ae113f8aec01528df0e31dc27b2607c67482"
+      "sha256": "67bfdefd6fcec04076849311735f3853fc78e31b4ca1445d15125729b561f28b"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/gen-gradient-assets.js",
       "sha256": "9c7c5023cc7b3ed8d4b7fa0d04ebf144b05414660c94c040bb756f3b2eedf486"
     },
     {
+      "path": "skills/lit-pptx/scripts/lib/grid-resolver.js",
+      "sha256": "1c627cb2d50964e693e9190f71578c8245fb36568ea96c40c37fb48fd9971be7"
+    },
+    {
       "path": "skills/lit-pptx/scripts/lib/layout-resolver.js",
-      "sha256": "c96579c95f00bb022699f8a8b7d8d811ea8bcef4a74398649b9c7f654626037f"
+      "sha256": "6438f899c12c234cbc96e5628e0cd499dafbfc9099c0045aef8a104437a08e9c"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/markdown-loader.js",
-      "sha256": "141d3c866b0426e172581013d01868c3c620af174a9ce18f289f31008905a74d"
+      "sha256": "8a61f9da6a31493ae57594bdd7d451e3eb71f87fddad5687ffd611a61a64068d"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/render-adapter-html.js",
-      "sha256": "da6aefedcd564ad2827d795fd94a3617de418b1a6d3aae39b619b7b259eda7ae"
+      "sha256": "cd24a2905a8e0ecb093ea8956025a71d4e50c825701956ca30cd89c89babb6eb"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/render-adapter-pptx.js",
-      "sha256": "ba11ce258cb8918749a0b807693826df728527873f791f867dfe84d464b55c67"
+      "sha256": "cc861196e992d5029b714490b5d7a79cab02e09340db7f3a8d23511ebb176fdf"
+    },
+    {
+      "path": "skills/lit-pptx/scripts/lib/render-pack.js",
+      "sha256": "8d5fb7bfa836f22ffd9a91358c45d7d4de07875ce45e3a41bc0ca8ccbd603119"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/slide-ast.js",
-      "sha256": "6e3f3ec64ec4b9fb507804309c4068c9a6308e337c07f761418d1f4188b8888f"
+      "sha256": "d3777107f1216b2da9c89316fd037406430ef6a6a2b3c7a762ac4a016bbd48b2"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/spec-validator.js",
-      "sha256": "bf4687d73a21714032e06a9ec3d04fd432853c9eddb15cccbb087aabcc0acb0e"
+      "sha256": "8c2cea40c2a88c7faba8e613e80e24eda3d21dfc5a70db3bbdc97503896e9a60"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/template-registry.js",
-      "sha256": "67f8d4c190d48d6f8d24f80fc03ba43d7eaec7bb817e03abd85cf46bde274f09"
+      "sha256": "41554defc6997719578047c3d050c7f5f7a4e38e93d47494615dda23bf5ec902"
     },
     {
       "path": "skills/lit-pptx/scripts/qa_deck.py",
-      "sha256": "e48dd66b55e0e685f9c7904982f6ff48a5c15060ea6d29e9cf019428d3dcba6e"
+      "sha256": "7458195bb988ee1f719620bb729ad69dbd0c534d649c1ebf0993fcb96cca0e0b"
     },
     {
       "path": "skills/lit-pptx/scripts/validate_pptx.py",
-      "sha256": "0e0644a6f7889945b2435f9e87fc6862b396ad0253619e76c48e289a97423a8f"
+      "sha256": "3a0830acf3a647878bacd599f4ade17462a83c0a24cbda378bb69a6a05b4d362"
     },
     {
       "path": "skills/lit-pptx/slide-formats/markdown-slide-spec-v1.md",
@@ -3677,11 +3893,11 @@
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/AZURE-A2Z/layout-mapping.yaml",
-      "sha256": "e34442f0b9616e547fc71f7cbcee37f963a634945bda10354bc581ebf95697cc"
+      "sha256": "e3aeeb5a6a591a3a89031a5dcfbdb53a507d8af2107fc667ad6b009c7b02480c"
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/AZURE-A2Z/template.yaml",
-      "sha256": "fd62c19661b5af30a8134360cdd81c2de22db19d4f55295645b066fbdeb686b0"
+      "sha256": "119c8f9a7b45394fcfb382fa2d9ef8558b4b03a115673cde87d880080a468730"
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/AZURE-PRO/capabilities.yaml",
@@ -3689,11 +3905,11 @@
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/AZURE-PRO/layout-mapping.yaml",
-      "sha256": "054c7d3db974b00c5f1e92a70a604ee30b7177b1a893a6be8097a9ce8bb4f5fa"
+      "sha256": "ea52d71cab96268e949273749ea7ad783290817c19d112af54e28c0e28674fdf"
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/AZURE-PRO/template.yaml",
-      "sha256": "f4bd423a5bba67837a92cd703ff687844b3c109c0d519060357a3abf928aea11"
+      "sha256": "ff27cfe309e1ca00904a98f8f670256b0edf28a9304cfe8fc62b5d42fb2b957f"
     },
     {
       "path": "skills/lit-pptx/templates/enrolled/BOILERPLATE-A2Z/capabilities.yaml",
@@ -3718,6 +3934,38 @@
     {
       "path": "skills/lit-pptx/templates/enrolled/BOILERPLATE-PRETENDARD/template.yaml",
       "sha256": "1c0c136c28be71cea930b729363e829eb51d02f6fbbc6926e09804d6748b780c"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/atlas/pack.yaml",
+      "sha256": "1a55367348e8304266e6038a34ec1c84060e3667c9f42c1707e2818c01b535da"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/chalk/pack.yaml",
+      "sha256": "e386a50ad64fd12a8457af60379682892c3e41e2ff5a536afee0a2167ffa00a7"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/gazette/pack.yaml",
+      "sha256": "b9f58d62e14bd18d004a928210e01678db923895c8d117f8f93d06286c31ce6c"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/ledger/pack.yaml",
+      "sha256": "67a4a4fa8ecd9d98c0780d3a49610ccc83993d4f20ee7a875d1fe3c32f3da369"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/night/pack.yaml",
+      "sha256": "631c84ee1388b8d69673bf392b704d4d4061433b12957a29c16c37dd5875eb33"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/paper/pack.yaml",
+      "sha256": "f93ab4059ddfd2bcfff93e73112d158620b80f770a9b9fdac678ed4615e5b3e7"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/signal/pack.yaml",
+      "sha256": "db5d0acb28b845ec3049afb84678f1d03d4670e0a607a1aeb9e7141e3fcbb9eb"
+    },
+    {
+      "path": "skills/lit-pptx/templates/tonalities/studio/pack.yaml",
+      "sha256": "4fb169a8c2cd4807fadfcbead64e3cf85927fb7d61da2796090ec31ad5c80a25"
     },
     {
       "path": "skills/lit-recap/SKILL.md",
@@ -3745,7 +3993,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/bin/runtime.mjs",
-      "sha256": "26af4158eedd0f85859acd22bc4752f3b1c8831b308d16ee535928cba88aee62"
+      "sha256": "81bd14b1f4cb767ae624767def2f915f2135ea751f5d148ec00f4b575a0f12b8"
     },
     {
       "path": "skills/lit-typographic-motion/engine/NOTICE",
@@ -3753,7 +4001,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/THIRD_PARTY_NOTICES",
-      "sha256": "cc06fe8cb2332e9675d63fa6c18889810dc2ae6491d1a24b2d7748c4a6f4f64d"
+      "sha256": "b53d8a16333dd33454a5545840cd059c6ae7579530ea2814af88fb9ed09e28ef"
     },
     {
       "path": "skills/lit-typographic-motion/engine/browser.mjs",
@@ -3781,11 +4029,11 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/frame.mjs",
-      "sha256": "81fd4daf5f9f69ad94f1c28e961cc9131ce1d9fa8f7823e8026630faec508ea1"
+      "sha256": "21d06c6d8ae4a25f770b6360e472f6bd13766624d3053f1e27aaa1086fdb07d7"
     },
     {
       "path": "skills/lit-typographic-motion/engine/gate.mjs",
-      "sha256": "4626a2ed9338fdbdfdbac3d5967659bb49e8b161fe691af99dc8edfc4329e58c"
+      "sha256": "d9d00474b87d342679e7f5611c6d34745d50b1e45c0d0018246ebf0e7afb9f0b"
     },
     {
       "path": "skills/lit-typographic-motion/engine/look.mjs",
@@ -3865,7 +4113,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/runtime.md",
-      "sha256": "bc842082cb96c6040996191326ea42832610003f7daec8fac320105d20cbda82"
+      "sha256": "11245a022bdcf4adbaaf542c99fd846ba2137b488cbdfa4ca9eef071cb542d61"
     },
     {
       "path": "skills/lit-typographic-motion/references/stage.md",
@@ -3873,7 +4121,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/style-bibles.md",
-      "sha256": "c80140ba6a813bb75181d058d45e6aa49e87c7078220d885ad31c30baa6232a0"
+      "sha256": "574009205d0a9bdd6d0901e9eebab9d5b2b30ea6e195837a3a5f2da513cbdc4d"
     },
     {
       "path": "skills/lit-typographic-motion/references/treatment.md",
@@ -3881,7 +4129,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/type-craft.md",
-      "sha256": "7934a73440b3291d9eeaa57753caf284c481351b76121d98baad3ab6558850ce"
+      "sha256": "fb132c40955fad9011cd4d9cf87c79b4921042b36dcd9e2277c70cb3e70f69ec"
     },
     {
       "path": "skills/lit-typographic-motion/runtime/fonts.json",

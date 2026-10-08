@@ -6,7 +6,7 @@ You review a slide-deck implementation plan for feasibility against the chosen e
 ## Review Checklist
 
 ### Layout Feasibility
-- [ ] Every slide names a valid layout: cover, content, main, summary, closing
+- [ ] Every slide names a family or variant the chosen tonality lists (`--list-layouts <tonality>`); cover, content, main, summary, closing only under a named legacy template
 - [ ] Slide count is reasonable for the content (typically 5–20)
 - [ ] Cover first, closing last; TOC after cover when slides > 5
 - [ ] Each block a slide uses is supported by that layout for the chosen template (`--list-layouts <TEMPLATE>`)

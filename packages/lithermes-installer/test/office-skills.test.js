@@ -52,3 +52,73 @@ test('package excludes the restricted source bytes by digest', () => {
     assert.equal(restricted.has(digest), false, `restricted source bytes in ${path.relative(pkg, file)}`);
   }
 });
+
+test('Office skills choose a named direction and ship its packs, references and gates', () => {
+  const pptx = skill('lit-pptx');
+  const docx = skill('lit-docx');
+  const tonalities = ['ledger', 'signal', 'atlas', 'chalk', 'paper', 'gazette', 'studio', 'night'];
+  const documents = ['report', 'brief', 'manual', 'proposal', 'memo', 'journal'];
+  for (const name of tonalities) {
+    assert.ok(fs.existsSync(path.join(pptx, 'templates', 'tonalities', name, 'pack.yaml')), `${name} pack`);
+    assert.ok(fs.existsSync(path.join(pptx, 'references', 'tonalities', `${name}.md`)), `${name} sheet`);
+  }
+  for (const name of documents) {
+    assert.ok(fs.existsSync(path.join(docx, 'templates', 'tonalities', `${name}.yaml`)), `${name} document pack`);
+    assert.ok(fs.existsSync(path.join(docx, 'references', 'tonalities', `${name}.md`)), `${name} document sheet`);
+  }
+  for (const file of ['direction-step.md', 'title-treatments.md', 'layout-families.md', 'density-and-fill.md']) {
+    assert.ok(fs.existsSync(path.join(pptx, 'references', file)), file);
+  }
+  for (const file of ['direction-step.md', 'components.md', 'page-composition.md']) {
+    assert.ok(fs.existsSync(path.join(docx, 'references', file)), file);
+  }
+  assert.ok(fs.readdirSync(path.join(pptx, 'references', 'examples')).filter((f) => f.endsWith('.md')).length >= 12);
+  assert.ok(fs.readdirSync(path.join(docx, 'references', 'examples')).filter((f) => f.endsWith('.md')).length >= 8);
+  for (const script of ['grid-resolver.js', 'render-pack.js']) assert.ok(fs.existsSync(path.join(pptx, 'scripts', 'lib', script)), script);
+  assert.ok(fs.existsSync(path.join(pptx, 'scripts', 'deck_output.py')));
+  for (const script of ['docx_design.py', 'docx_layout.py', 'docx_gate.py']) assert.ok(fs.existsSync(path.join(docx, 'scripts', script)), script);
+  assert.match(fs.readFileSync(path.join(pptx, 'bin', 'office.mjs'), 'utf8'), /gate: \[python, join\(plugin, 'skills', 'lit-docx', 'scripts', 'docx_gate\.py'\)\]/);
+
+  const deckContract = fs.readFileSync(path.join(pptx, 'SKILL.md'), 'utf8');
+  const docContract = fs.readFileSync(path.join(docx, 'SKILL.md'), 'utf8');
+  for (const contract of [deckContract, docContract]) {
+    assert.match(contract, /## Direction card/);
+    assert.match(contract, /two alternatives/);
+    assert.match(contract, /noun-phrase/);
+    assert.doesNotMatch(contract, /Default to `AZURE-PRO`|default to the `korean-generic` publisher profile/);
+  }
+  for (const name of tonalities) assert.match(deckContract, new RegExp('`' + name + '`'));
+  for (const name of ['Report', 'Brief', 'Manual', 'Proposal', 'Memo', 'Journal']) assert.match(docContract, new RegExp(`\\| ${name} \\|`));
+  assert.match(deckContract, /OF-110[\s\S]*OF-114[\s\S]*OF-115[\s\S]*OF-117[\s\S]*--sibling[\s\S]*OF-116/);
+  assert.match(docContract, /`memo\.fit`/);
+  assert.match(deckContract, /OF-118[\s\S]*OF-119/);
+  for (const check of ['notice.dash', 'page.spill', 'list.split', 'heading.apart']) assert.match(docContract, new RegExp('`' + check.replace('.', '\\.') + '`'));
+  assert.match(docContract, /office\.mjs gate|`office\.mjs gate`/);
+  const contexts = fs.readFileSync(path.join(plugin, 'core_contexts.py'), 'utf8');
+  assert.match(contexts, /eight tonalities[\s\S]*two alternatives/);
+  assert.match(contexts, /six tonalities[\s\S]*two alternatives/);
+  assert.doesNotMatch(contexts, /Default to AZURE-PRO/);
+});
+
+test('Pretendard is the official release pair, shared with the motion skill', () => {
+  const dir = path.join(skill('lit-pptx'), 'pretendard-font', 'public', 'static');
+  const pins = {
+    'Pretendard-Regular.otf': '3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93',
+    'Pretendard-Bold.otf': '2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7',
+  };
+  assert.deepEqual(fs.readdirSync(dir).sort(), Object.keys(pins).sort());
+  for (const [file, sha] of Object.entries(pins)) {
+    assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, file))).digest('hex'), sha, file);
+  }
+  const motion = fs.readFileSync(path.join(skill('lit-typographic-motion'), 'bin', 'runtime.mjs'), 'utf8');
+  for (const [file, sha] of Object.entries(pins)) assert.match(motion, new RegExp(`file: '${file}', sha256: '${sha}'`));
+});
+
+test('a line the deck engine sets never breaks inside a short parenthetical such as (▲ +3.9%)', () => {
+  const G = require(path.join(skill('lit-pptx'), 'scripts', 'lib', 'grid-resolver.js'));
+  for (let w = 6; w <= 16; w += 0.5) {
+    for (const set of [G.keepLines('정비 1,184건으로 계획보다 44건(▲ +3.9%) 많았다', w, 12), G.keepLines('Repairs beat the plan by 44 (▲ +3.9 %) this quarter', w, 12), G.balanceLines('재정비 110건(▲ +10.0%)', 2, w)]) {
+      for (const line of set.split('\n')) assert.ok(!/\([^)]*$/u.test(line), `a break inside a short parenthetical: ${JSON.stringify(set)}`);
+    }
+  }
+});

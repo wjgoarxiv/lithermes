@@ -269,12 +269,12 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file." /></td>
+<td><img src="./docs/assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and the skill first picks one of eight looks for your deck, names it with two alternatives, then builds an editable PowerPoint file and its Markdown source. QA checks title, layout and fill variety on the finished file." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td>Ask for slides with <code>lit</code> and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file.</td>
 </tr>
 <tr>
-<td><img src="./docs/assets/skills/lit-docx.webp" width="240" alt="Ask for a report with lit and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow." /></td>
+<td><img src="./docs/assets/skills/lit-docx.webp" width="240" alt="Ask for a report with lit and the skill picks one of six document shapes, names it with two alternatives, and sets a restrained, print-grade Word file with its Markdown source. A gate checks the rendered pages." /></td>
 <td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
 <td>Ask for a report with <code>lit</code> and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow.</td>
 </tr>
@@ -402,9 +402,15 @@ The plugin decides where a request goes; Hermes Agent still runs the model. Perm
 
 ### Reports and slides
 
-Ask for a report or a presentation with a bare `lit`, and LitHermes hands it to its bundled Word and PowerPoint skills. You get a DOCX, a PPTX or both, with the Markdown source kept beside each file. Korean documents use the korean-generic profile unless you pick another, and slides use AZURE-PRO with Pretendard unless you ask for something else.
+Ask for a report or a presentation with a bare `lit`, and LitHermes hands it to its bundled Word and PowerPoint skills. You get a DOCX, a PPTX or both, with the Markdown source kept beside each file.
 
-The first time you use either skill, its Office runtime installs the pinned versions of the tools it needs into a LitHermes cache. Then it runs its QA checks on the finished document or deck. To call a skill directly, type `/lit-docx <brief>` or `/lit-pptx <brief>`.
+Before anything is written, the skill works out how the result should look and tells you. A quarterly review that people read at their desks wants tables and quiet type. A pitch on a projector wants one idea per slide, and a lecture wants its steps laid out in order. So the reply starts with a short direction card: the look that was chosen, why it suits your reader and your material, and the two looks that came next. A bare request gets no style question. If you would rather have one of the alternatives, name it and the file is rebuilt.
+
+Decks have eight of these looks, called Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio and Night. Each brings its own colours, title placements, slide layouts and cover, section and closing pages, so two decks made from the same notes come out looking different. Slides are dense by default and set in Pretendard. A slide title names its topic and leaves the argument to the body, and every figure keeps its label, basis and source and is never blown up past title size.
+
+Documents have six looks: Report, Brief, Manual, Proposal, Memo and Journal. What tells them apart is structure. A memo opens with its To and From lines and has no cover; a brief leads with its conclusion as numbered points; a proposal gets a typographic cover, one decision box and a budget table; a Korean report reads like an institute paper with numbered sections. The pages stay as restrained as a good printed report: near-black headings, one accent colour at most, ruled tables without fills, and Korean conventions such as `<표 1>` captions, a units line and dates written as 2026. 10. 5. If you name a journal profile (Elsevier, ACS, IEEE, Nature or korean-generic), that profile is used instead.
+
+The first time you use either skill, its Office runtime installs the pinned versions of the tools it needs into a LitHermes cache. After building, it checks the finished file. A deck is checked for title and layout variety and for slides left half empty; a document is checked for page fill, split tables, stranded headings and the restraint rules on its rendered pages. To call a skill directly, type `/lit-docx <brief>` or `/lit-pptx <brief>`.
 
 The installed skill IDs are `lit-pptx` and `lit-docx`; Hermes lists them as `lithermes:lit-pptx` and `lithermes:lit-docx`.
 

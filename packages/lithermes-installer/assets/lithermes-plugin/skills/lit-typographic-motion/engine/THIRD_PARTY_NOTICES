@@ -49,7 +49,7 @@ font: <cache>/assets/fonts/stroke/EMSReadability.svg
   licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
 font: <cache>/assets/fonts/stroke/EMSTech.svg
   licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
-font: ../lit-pptx/pretendard-font/public/static/PretendardGOV-Regular.otf (reused by path, unmodified)
+font: ../lit-pptx/pretendard-font/public/static/Pretendard-Regular.otf (reused by path, unmodified)
   licence: ../lit-pptx/fonts/PRETENDARD-OFL.txt (SIL OFL 1.1)
-font: ../lit-pptx/pretendard-font/public/static/PretendardGOV-Bold.otf (reused by path, unmodified)
+font: ../lit-pptx/pretendard-font/public/static/Pretendard-Bold.otf (reused by path, unmodified)
   licence: ../lit-pptx/fonts/PRETENDARD-OFL.txt (SIL OFL 1.1)

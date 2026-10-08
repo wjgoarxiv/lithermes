@@ -59,7 +59,7 @@ reserved for non-text marks.
 
 Voices: Archivo for display type (fetched width instances 75/100/125 at weights
 500/700/900; 500 stands in for 400 because that is what the pinned set ships),
-PretendardGOV Regular or Bold for any Hangul, MesloLGS NF for annotations.
+Pretendard Regular or Bold for any Hangul, MesloLGS NF for annotations.
 Motion tokens: `slam` (180 ms on the proven deceleration curve, entrance scale
 0.96 to 1, never from zero), `hold` for the reading time, `snap-cut` at the beat.
 The title slam steps Latin width from 125 to 100 halfway through its landing;
@@ -101,7 +101,7 @@ teal `#124559` and violet `#4C3B6E`; type off-white `#E8ECEF` (15:1 on indigo,
 8:1 or better on either stop, so no scrim is needed). Coral `#E07856` is a rare
 accent for one moment only.
 
-Voices: Archivo at a calmer weight (700) for display, PretendardGOV for Hangul,
+Voices: Archivo at a calmer weight (700) for display, Pretendard for Hangul,
 Meslo for small notes. Motion tokens: `drift` (opacity over up to 1.2 s and a
 24 px rise over up to 2.4 s, both on the in-out sine token, matched to the
 gradient's flow speed) and `surge-punch`, a gradient brightening with attack

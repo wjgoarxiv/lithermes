@@ -100,7 +100,7 @@ async function goodRun() {
       determinism: { checks: [{ frame: 108, sequential: 'a'.repeat(64), seeked: 'a'.repeat(64), match: true }], warnings: [] }, perf: { p95Ms: 18, frames: 120, software: false }, reducedInk: 5000, poster: { ink: 4000 } },
   };
   const records = [];
-  const box = (t) => ({ elementId: t.id, text: t.text, voice: 'display', fontFile: t.script === 'hangul' ? 'PretendardGOV-Bold.otf' : 'Archivo-w1000-900.ttf', fontSizePx: 120, capHeightPx: 84, weight: 900, fill: '#0C0E13', fills: ['#0C0E13'], bbox: [120, 470, 900, 600], lines: [t.text], lineHeight: 1.5, trackingEm: t.script === 'hangul' ? 0 : -0.02, script: t.script, runs: [{ script: t.script, fontFile: t.script === 'hangul' ? 'PretendardGOV-Bold.otf' : 'Archivo-w1000-900.ttf', trackingEm: t.script === 'hangul' ? 0 : -0.02, widthStep: t.script === 'hangul' ? null : 100 }], scaleX: 1, scaleY: 1, settled: true, role: 'text', outline: false, halo: false });
+  const box = (t) => ({ elementId: t.id, text: t.text, voice: 'display', fontFile: t.script === 'hangul' ? 'Pretendard-Bold.otf' : 'Archivo-w1000-900.ttf', fontSizePx: 120, capHeightPx: 84, weight: 900, fill: '#0C0E13', fills: ['#0C0E13'], bbox: [120, 470, 900, 600], lines: [t.text], lineHeight: 1.5, trackingEm: t.script === 'hangul' ? 0 : -0.02, script: t.script, runs: [{ script: t.script, fontFile: t.script === 'hangul' ? 'Pretendard-Bold.otf' : 'Archivo-w1000-900.ttf', trackingEm: t.script === 'hangul' ? 0 : -0.02, widthStep: t.script === 'hangul' ? null : 100 }], scaleX: 1, scaleY: 1, settled: true, role: 'text', outline: false, halo: false });
   for (let f = 0; f < total; f++) {
     const t = f / fps;
     const shot = timeline.find((s) => t >= s.start && t < s.end) || timeline.at(-1);

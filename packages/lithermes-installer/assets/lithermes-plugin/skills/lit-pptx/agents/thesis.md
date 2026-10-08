@@ -10,19 +10,19 @@ Before generating, read from the skill directory:
 - The chosen template's capabilities: run `node scripts/compile-deck.js --list-layouts <TEMPLATE>` to see which blocks/regions each layout supports.
 
 ## Template-Parameterized Rules (NOT hardcoded brand)
-- The deck's `template:` frontmatter selects an enrolled template. Default: `BOILERPLATE-PRETENDARD` (4:3, Pretendard). Other bundled options: `BOILERPLATE-A2Z` (4:3, 에이투지체), `AZURE-PRO` (16:9, Pretendard).
+- The deck's `tonality:` frontmatter carries the direction from the direction card (`references/direction-step.md`); write each `layout:` as a family of that pack (`references/layout-families.md`) and follow `references/density-and-fill.md`. A legacy template (`BOILERPLATE-PRETENDARD`, `BOILERPLATE-A2Z`, `AZURE-PRO`, `AZURE-A2Z`) goes in `template:` only when the user named it.
 - **Do not write fonts, colors, dimensions, or decorations into content** — the template injects them. Never add logos/lines/confidential marks manually; decorations are automatic per template.
 - Slide separator is exact: a `---` line, a blank line, then `---` + the next slide's `layout:` (see the spec). Getting this wrong silently breaks slide splitting.
-- Use only approved layouts: `cover`, `content`, `main`, `summary`, `closing`.
+- Under a legacy template use only its layouts: `cover`, `content`, `main`, `summary`, `closing`.
 
 ## Content Structure
-A typical deck: **Cover → (TOC as a `content` slide, for >5 slides) → Content/Main slides → Summary → Closing.** Cover carries title + metadata; closing is a single title (e.g. "감사합니다" / "Thank you").
+A typical deck: **Cover → (TOC as a `content` slide, for >5 slides) → Content/Main slides → Summary → Closing.** Cover carries title + metadata; the closing's label names the request and its body lists items to approve and the next step with owner and date ("감사합니다" alone is not a closing).
 
 ## Content Quality Standards
 - Every bullet conveys specific information — no padding, no restating the heading.
 - Concrete numbers and data where available; tables have meaningful headers with units.
 - Match the user's language (Korean-primary with English technical terms is fine for KR decks).
-- Section titles are specific ("LNG 운반선 용접 자동화 현황", not "개요").
+- Section and slide titles are specific noun-phrase labels ("LNG 운반선 용접 자동화 현황", not "개요"), never declarative sentences; the claim opens the body.
 - Images carry alt text describing the content.
 - No FORBIDDEN_TERMS (placeholder/AI-slop phrases — see `FORBIDDEN_TERMS.json`).
 

@@ -47,3 +47,23 @@ test('Office contracts require complete labelled examples under bare lit', () =>
     assert.match(contract, /no `?\[placeholder\]/i);
   }
 });
+
+test('the deck compiler lists the eight tonalities and the legacy templates', () => {
+  const { spawnSync } = require('node:child_process');
+  const run = spawnSync(process.execPath, [path.join(skill, 'scripts/compile-deck.js'), '--list-tonalities'], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stderr);
+  for (const name of ['atlas', 'chalk', 'gazette', 'ledger', 'night', 'paper', 'signal', 'studio']) assert.match(run.stdout, new RegExp(`^${name} — `, 'm'));
+  assert.match(run.stdout, /AZURE-PRO \(legacy template\)/);
+  const layouts = spawnSync(process.execPath, [path.join(skill, 'scripts/compile-deck.js'), '--list-layouts', 'gazette'], { encoding: 'utf8' });
+  assert.equal(layouts.status, 0, layouts.stderr);
+  assert.match(layouts.stdout, /treatments: band/);
+  const bad = spawnSync(process.execPath, [path.join(skill, 'scripts/compile-deck.js'), '--list-layouts', 'glossy'], { encoding: 'utf8' });
+  assert.notEqual(bad.status, 0);
+  assert.match(bad.stderr, /Tonalities: .*ledger/);
+});
+
+test('the older native chart dialect still compiles next to the pack chart', () => {
+  const blocks = buildBlocks('content', '# Demand trend\n\n::: chart type=column unit="units"\n| Quarter | Product A |\n|---|---|\n| Q1 | 12 |\n| Q2 | 17 |\n:::');
+  const table = blocks.find((block) => block.type === 'kpi-table');
+  assert.ok(table && table.chart && table.chart.type === 'column' && table.chart.unit === 'units');
+});

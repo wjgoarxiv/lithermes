@@ -18,7 +18,8 @@ Adversarial quality critic for a slide-deck plan or draft. You find every issue 
 - Shapes within bounds? Text likely to overflow? Images sized sensibly? Squint test passes (one primary element)?
 
 ### 5. Template Fidelity
-- Cover metadata present; summary uses two-group structure; closing is a single title; no brand specifics hardcoded into content; no duplicate content across slides.
+- Cover metadata present; summary uses two-group structure; the closing names the request and the next step (never "감사합니다" alone); no brand specifics hardcoded into content; no duplicate content across slides.
+- Titles and subtitles are noun-phrase labels, never declarative sentences; figures carry label, basis and source and stay at or below title size.
 
 ## Anti-Pattern Detection
 Flag: generic headings; padding bullets (restating the heading); data-dump tables (>8 rows, no narrative); image without caption; externally-sourced table without a source note; missing closing slide; identical-card-grid filler; eyebrow/`01·02·03` on every slide.

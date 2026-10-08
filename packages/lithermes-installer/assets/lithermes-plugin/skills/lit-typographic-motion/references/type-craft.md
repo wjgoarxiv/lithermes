@@ -7,14 +7,14 @@ when you write the brief and read the stills.
 
 | Voice | Latin | Hangul |
 |---|---|---|
-| display (swiss, tidal) | Archivo width instance 75/100/125 x weight 500/700/900 | PretendardGOV Bold (700) |
-| body (swiss, tidal) | Archivo 100 width | PretendardGOV Regular or Bold |
+| display (swiss, tidal) | Archivo width instance 75/100/125 x weight 500/700/900 | Pretendard Bold (700) |
+| body (swiss, tidal) | Archivo 100 width | Pretendard Regular or Bold |
 | display and body (terminalcore) | VT323 | Galmuri9 |
-| machine | MesloLGS NF | PretendardGOV Regular (swiss, tidal) or Galmuri9 (terminalcore) |
+| machine | MesloLGS NF | Pretendard Regular (swiss, tidal) or Galmuri9 (terminalcore) |
 | chrome label (terminalcore) | Silkscreen | Galmuri9 |
 | stroke | EMS single-stroke SVG (Allure for signatures) | none; stroke text is Latin only |
 
-PretendardGOV Regular and Bold are this product's own lit-pptx pair, reused by
+Pretendard Regular and Bold are this product's own lit-pptx pair, reused by
 path and checked against its recorded hashes. Hangul weight moves only between
 those two files. Every other font is fetched by the pre-warm from a pinned URL
 and checked by sha256 before a render may use it. Galmuri and Pretendard carry

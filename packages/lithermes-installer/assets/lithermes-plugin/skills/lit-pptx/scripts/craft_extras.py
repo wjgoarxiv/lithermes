@@ -10,6 +10,8 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.enum.text import PP_ALIGN
 
+from deck_output import review as review_deck_output
+
 
 RULES = {
     "accent_saturation": .12, "accent_light_min": .12, "accent_light_max": .93,
@@ -54,6 +56,12 @@ def _radius(shape):
     return float(match.group(1)) / 100000 * min(shape.width, shape.height) / EMU if match else None
 
 
+def _bleeds(shape, width, height, tol=.03 * EMU):
+    """A fill touching two canvas edges is a band, rail or caption field: page decoration, not a card."""
+    left, top = shape.left, shape.top
+    return sum([left <= tol, top <= tol, left + shape.width >= width - tol, top + shape.height >= height - tol]) >= 2
+
+
 def _title_or_display(shapes):
     text = [shape for shape in shapes if getattr(shape, "has_text_frame", False) and shape.text.strip()]
     if len(text) <= 1:
@@ -95,6 +103,10 @@ def check(path: Path) -> dict:
     for slide_no, slide in enumerate(deck.slides, 1):
         shapes = list(slide.shapes)
         display = _title_or_display(shapes)
+        # A pack slide names its family: a cover, section, statement, quote or full-bleed picture is a display slide.
+        family = next((shape.name.split("@", 1)[1] for shape in shapes if shape.name.startswith("family@")), "")
+        if family:
+            display = bool(re.match(r"(cover|section)(-|$)|(statement|quote|closing-statement|image-full)$", family))
         page_area = deck.slide_width * deck.slide_height
         hues = []
         for shape in shapes:
@@ -139,18 +151,24 @@ def check(path: Path) -> dict:
                                     add("OF-103", "HIGH", slide_no, shape, paragraph.alignment, "right-aligned numeric column")
                                 elif paragraph.alignment is None:
                                     add("OF-103", "MEDIUM", slide_no, shape, "inherited alignment", "verified right alignment", tier="derived")
-            if getattr(shape, "has_text_frame", False) and shape.text.strip():
+            # The body measure governs reading text; a display slide's lines are display type (pack decks only,
+            # where the family says which slide is which).
+            if getattr(shape, "has_text_frame", False) and shape.text.strip() and not (family and display):
                 content = shape.text.strip()
                 sizes = [run.font.size.pt for paragraph in shape.text_frame.paragraphs for run in paragraph.runs if run.font.size]
                 size = max(sizes, default=14)
                 if RULES["body_min_pt"] < size < RULES["display_pt"] and shape.width > 0:
                     cjk = sum("가" <= char <= "힣" for char in content) / len(content) >= .5
-                    glyphs = sum(1 if "가" <= char <= "힣" else .55 for char in content)
                     capacity = max(1, (shape.width / EMU) * 72 / size)
-                    lines = max(1, round(glyphs / capacity))
+                    # Each line the author or the engine broke wraps on its own; estimating one block hid the
+                    # breaks and charged the break characters to the measure.
+                    pieces = [piece for piece in re.split(r"[\n\v]", content) if piece.strip()]
+                    lines = max(1, sum(max(1, round(sum(1 if "가" <= char <= "힣" else .55 for char in piece) / capacity))
+                                       for piece in pieces))
+                    printed = sum(len(piece) for piece in pieces)
                     ceiling = RULES["cjk_line_max"] if cjk else RULES["latin_line_max"]
-                    if lines >= 2 and len(content) / lines > ceiling:
-                        add("OF-102", "HIGH", slide_no, shape, round(len(content) / lines, 1), ceiling, tier="derived")
+                    if lines >= 2 and printed / lines > ceiling:
+                        add("OF-102", "HIGH", slide_no, shape, round(printed / lines, 1), ceiling, tier="derived")
 
         rounded = [(shape, _radius(shape)) for shape in shapes]
         for outer, outer_radius in rounded:
@@ -169,7 +187,8 @@ def check(path: Path) -> dict:
                     add("OF-104", "HIGH", slide_no, inner, round(inner_radius, 3), round(expected, 3), tier="derived")
 
         cards = [shape for shape in shapes if _rgb(shape) is not None and
-                 .05 * page_area <= shape.width * shape.height < RULES["full_bleed"] * page_area]
+                 .05 * page_area <= shape.width * shape.height < RULES["full_bleed"] * page_area
+                 and not _bleeds(shape, deck.slide_width, deck.slide_height)]
         groups = [(card, [child for child in shapes if _contains(card, child) and
                           (getattr(child, "has_text_frame", False) and child.text.strip() or getattr(child, "has_chart", False))])
                   for card in cards]
@@ -182,7 +201,7 @@ def check(path: Path) -> dict:
             if within > 0 and outer_gap < RULES["group_ratio"] * within:
                 add("OF-105", "MEDIUM", slide_no, slide, round(outer_gap / within, 2), RULES["group_ratio"], tier="derived")
         trailing_by_card = []
-        for card, children in groups:
+        for card, children in ([] if family and display else groups):
             if _title_or_display(children):
                 continue
             _, cy, _, ch = _box(card)
@@ -211,5 +230,7 @@ def check(path: Path) -> dict:
             if severity:
                 add("OF-109", severity, slide_no, slide, round(trailing, 3), RULES["empty_band_high"], tier="derived")
 
+    # Deck-wide checks for pack-built decks: treatments, composition variety, body use, title frames, labels.
+    findings.extend(review_deck_output(deck))
     return {"pass": not any(item["severity"] == "HIGH" and not item.get("advisory_template") for item in findings),
             "template_id": template_id, "findings": findings}

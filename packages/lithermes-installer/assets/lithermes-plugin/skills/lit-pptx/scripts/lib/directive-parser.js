@@ -13,14 +13,10 @@
 
 const APPROVED_DIRECTIVES = new Set(["main-box", "kpi-table", "notes", "image", "key-message"]);
 
-// A void directive is a single line: it draws something and has no body, so it
-// takes no closing fence. Shapes are the only such directive.
+// A void directive is a single line.
 const VOID_DIRECTIVES = new Set(["shape"]);
 
-// Containers nest by fence length, the pandoc fenced-div convention: a block is
-// closed by a run of the same length, so a ::: block inside a :::: block is
-// unambiguous. v1 forbade nesting outright and every v1 deck used ::: only,
-// which is why those decks keep parsing exactly as before.
+// Containers nest by fence length, the pandoc fenced-div convention.
 const FENCE_OPEN = /^\s*(:{3,})\s*([a-z][\w-]*)\s*(.*)$/;
 const FENCE_CLOSE = /^\s*(:{3,})\s*$/;
 const MAX_FENCE_DEPTH = 2;
@@ -178,8 +174,7 @@ function extractBlocks(content) {
       continue;
     }
 
-    // validate() has already guaranteed no fence of this length opens inside,
-    // so the first close of the same length is this block's close.
+    // validate() has already guaranteed no fence of this length opens inside, so the first close of the same length is this block's close.
     let end = -1;
     for (let j = i + 1; j < lines.length; j++) {
       const closeMatch = lines[j].match(FENCE_CLOSE);

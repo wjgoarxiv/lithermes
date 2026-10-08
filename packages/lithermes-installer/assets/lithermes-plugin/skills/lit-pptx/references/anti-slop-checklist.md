@@ -10,7 +10,11 @@ Run after building any deck. Brand specifics (palette, fonts) come from the chos
 ## Human-eye checks
 
 ### Slide-level
-- Every slide has a real, specific title (not placeholder text).
+- Every slide has a real, specific title written as a noun-phrase label, never a declarative sentence (OF-114; see `title-treatments.md`).
+- No region stands empty (OF-115): a bottom title on the floor, a used side rail, a takeaway column as long as its visual (its largest empty band counts, not its last block), a title panel as tall as its text, no plate under an empty page.
+- Two tonalities offered from one source differ in skeleton on at least two content slides (`office.mjs qa deck.pptx --sibling other.pptx`, OF-116).
+- A bold run-in label keeps its colon (OF-118); an agenda title stands without a numeral (OF-119).
+- No mostly-white figure on a dark tonality (OF-117): add its `.dark` variant or draw it as a native chart.
 - Accent colors are semantic, not decorative.
 - No slide looks like a spreadsheet pasted without editing.
 
@@ -19,7 +23,7 @@ Run after building any deck. Brand specifics (palette, fonts) come from the chos
 - Units in headers, not repeated per row; totals obvious but not over-decorated.
 
 ### KPI / metrics
-- Primary metric is the largest element; delta color is consistent deck-wide; labels are secondary. ≤ 1 accent + optional delta color.
+- Each figure carries a label, a basis and a source and is set no larger than the slide title; delta color is consistent deck-wide. ≤ 1 accent + optional delta color.
 
 ### Text hygiene
 - No `TBD`/`TODO`/placeholder/AI-hype wording (gated by `FORBIDDEN_TERMS.json`).
@@ -31,8 +35,8 @@ Run after building any deck. Brand specifics (palette, fonts) come from the chos
 - **Review-only:** unsupported absolutes (`논문이 없다`, `없다는 것이 발견`), empty rhetoric (`판이 굳었다`, `전제로 깐다`), command-like planning (`닫아야 할 게이트`, `역전 금지`), unexplained RAM/FTO/CNKI/코퍼스/전이원, and arbitrary dates or day counts without an approved source.
 - Review-only findings must be recorded and rewritten where warranted, but they do not become brittle automated failures. Prefer “검토한 데이터베이스 범위에서는 확인되지 않았다” and expand specialist terms on first use.
 
-## Visual design laws (impeccable-adapted)
-Apply with a human eye AFTER automated checks. Targets a static export (no motion/gradients; no borders/shadows on text).
+## Visual review rules
+LitHermes judges every rendered deck against these rules by eye, once the automated checks are clean. They assume a static export: nothing moves, no gradient or border or shadow sits on text.
 
 ### Anti-slop visual bans (absolute)
 - [ ] No side-stripe accents (colored `border-left/right` > 1px) — use a 1px hairline, a flat tint, a leading numeral, or an icon on a wrapper `<div>`.
@@ -63,7 +67,7 @@ Apply with a human eye AFTER automated checks. Targets a static export (no motio
 
 ### Objective evidence checks
 
-- [ ] No explicit run is below the absolute 6pt floor. Primary reading text remains ≥12pt; captions/sources may use 6–10.5pt.
+- [ ] No explicit run is below the absolute 6pt floor. Under a tonality the readable floor is stricter: body ≥12pt, table cells ≥11pt, captions and sources ≥9pt (`density-and-fill.md`).
 - [ ] No colored vertical side-stripe is attached to a card. A full-width structural rule is not a side stripe.
 - [ ] A picture or table is not materially covered by a later text/image/table object.
 - [ ] A picture declared as `figure`, `evidence`, or `source capture` has a visible adjacent numbered caption and `Source:`/`출처:`.

@@ -57,15 +57,15 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `handoff` 또는 `/lit-handoff` | `lit-handoff` | 다음 세션으로 작업 넘기기 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | 검사를 거친, 편집 가능한 다이어그램 |
-| `/lit-pptx <brief>` | `lit-pptx` | Markdown 원본이 딸린 PowerPoint 발표자료 |
-| `/lit-docx <brief>` | `lit-docx` | Markdown 원본이 딸린 Word 보고서 |
+| `/lit-pptx <brief>` | `lit-pptx` | 여덟 가지 디자인 방향 가운데 하나로 만든 PowerPoint 발표자료와 Markdown 원본 |
+| `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |
 
 Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 그 밖에 번들된 스킬은 `litgoal`, `lit-recap`, `deep-interview`, `lit-crucible`, `lit-init`, `lit-comprehend`, `frontend-ui-ux`, `readme-studio`, `lit-scientific-visualization`, `visual-qa`, `browser-drive`, `structural-search`, `wikify`, `debugging`, `refactor`, `lit-burnoff`, `lit-burnoff-file`, `lit-code`, `lit-commit`, `lsp-setup`, `lsp`, `rules`, `comment-checker`, `autoresearch`, `autoconference`입니다. GitHub 페이지에서 스킬마다 그림과 함께 볼 수 있습니다.
 
 ## 코드 밖의 결과물
 
-- **보고서와 발표자료.** 보고서나 발표자료를 부탁하면서 단독 `lit`을 붙이면 `lit-docx`나 `lit-pptx`가 맡습니다. DOCX나 PPTX, 또는 둘 다 나오고 Markdown 원본이 옆에 남습니다. 따로 고르지 않으면 한국어 문서는 korean-generic 프로필을, 발표자료는 AZURE-PRO와 Pretendard를 씁니다. 처음 쓸 때는 Office 런타임이 필요한 도구를 고정된 버전으로 LitHermes 캐시에 설치합니다.
+- **보고서와 발표자료.** 보고서나 발표자료를 부탁하면서 단독 `lit`을 붙이면 `lit-docx`나 `lit-pptx`가 맡습니다. DOCX나 PPTX, 또는 둘 다 나오고 Markdown 원본이 옆에 남습니다. 만들기 전에 독자와 자료에 맞는 디자인을 골라 다른 후보 둘과 함께 알려 줍니다. 발표자료는 Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night 여덟 가지, 문서는 Report, Brief, Manual, Proposal, Memo, Journal 여섯 가지입니다. 발표자료는 Pretendard로 빽빽하게, 제목은 주제 이름으로 달고, 문서는 먹색 제목과 가로줄 표, 한국어 관례를 지켜 절제합니다. 학술지 프로필을 지정하면 그대로 씁니다. 처음 쓸 때는 Office 런타임이 필요한 도구를 고정된 버전으로 LitHermes 캐시에 설치합니다.
 - **다이어그램.** `lit-diagram-drawer`가 개념도와 기술 다이어그램을 그립니다. 제품 화면은 `frontend-ui-ux`, 측정한 데이터 그래프는 `lit-scientific-visualization`이 맡습니다.
 - **영상.** `lit-typographic-motion`은 트리트먼트부터 씁니다. 마지막 검사를 통과하면 포스터, 움직임 축소용 정지 이미지, 검사 보고서가 딸린 60fps 영상이 나옵니다. 렌더링 중에는 아무것도 내려받지 않으므로 보조 패키지와 폰트가 미리 캐시에 있어야 합니다. `lithermes install`이 이것을 받아 두려고 시도하고, 건너뛰었거나 실패했다면 `lithermes motion-runtime install`을 실행하면 됩니다. Chrome, ffmpeg, WebGL2, 폰트가 준비됐는지는 `lithermes motion-runtime status`로 볼 수 있습니다.
 - **글 다듬기.** `lit-humanizer`는 사실을 지키며 한국어와 영어 초안을 다듬습니다. 감지기는 Hermes가 `write_file`과 `patch`로 쓰는, 사람이 읽을 글을 살핍니다. 심각한 문제(차단 등급)가 보이면 쓰기를 멈출 수 있고, 가벼운 문제(주의 등급)는 조언으로 돌려줍니다.

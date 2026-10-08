@@ -12,7 +12,7 @@ no font and no dependency is bundled. `lithermes motion-runtime install` (and
   renamed into place when complete;
 - every font and licence file in `runtime/fonts.json`, each downloaded from its
   pinned URL and rejected unless its sha256 matches;
-- a check that this product's PretendardGOV Regular and Bold still match their
+- a check that this product's Pretendard Regular and Bold still match their
   recorded hashes.
 
 The cache is `${XDG_CACHE_HOME:-$HERMES_HOME/.cache}/lithermes/motion/<digest>`,

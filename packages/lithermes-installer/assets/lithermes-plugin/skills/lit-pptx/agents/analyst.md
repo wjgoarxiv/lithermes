@@ -17,7 +17,7 @@ Extract structured requirements from a user's presentation request, separating w
 
 ### 3. Structure & Scope
 - Slide count (stated or implied)? Sections to cover? Layout needs (cover/content/main/summary/closing)?
-- **Template & brand**: did the user name a template or font (e.g. BOILERPLATE-PRETENDARD, BOILERPLATE-A2Z/에이투지체)? Do they have an existing branded `.pptx` to learn from (`scripts/learn_template.py`)? If unspecified, default is BOILERPLATE-PRETENDARD.
+- **Template & brand**: did the user name a template or font (e.g. BOILERPLATE-PRETENDARD, BOILERPLATE-A2Z/에이투지체)? Do they have an existing branded `.pptx` to learn from (`scripts/learn_template.py`)? If unspecified, there is no default template: the direction step picks a tonality from the deck type and the content signals (`references/direction-step.md`). Report the signals you see (share of table, chart and image slides, body length, citations, delivery, room).
 
 ### 4. Data & Evidence
 - Tables/charts/KPIs/images needed? Sources available or to be created? Specific metrics to highlight?
@@ -42,7 +42,7 @@ Extract structured requirements from a user's presentation request, separating w
 | Data | X.XX | … |
 | **Ambiguity** | **XX%** | |
 ## Recommended Next Step
-[“Ready to plan” if ambiguity ≤ 20%, else specific questions]
+[“Ready to plan” if ambiguity ≤ 20%, else specific questions about content gaps. Never ask about look or style for a bare request; the direction card names the choice and two alternatives instead.]
 ```
 
 ## Constraints

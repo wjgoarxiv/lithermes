@@ -7,7 +7,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const hashFiles = ["impeccable-skill-sha256.txt", "krehel-skills-sha256.txt"];
+const hashFiles = ["reference-a-skill-sha256.txt", "krehel-skills-sha256.txt"];
 const forbidden = hashFiles.flatMap((name) => {
   const source = fs.readFileSync(path.join(packageRoot, "test/fixtures", name), "utf8");
   const rows = source.trim().split(/\r?\n/).map((line) => {
