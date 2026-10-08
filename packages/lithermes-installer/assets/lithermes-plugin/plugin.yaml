@@ -1,5 +1,5 @@
 name: lithermes
-version: 1.0.16
+version: 1.0.17
 description: "Hermes-native workflow toolkit: litgoal durable runtime, 5-lane review orchestrator, Litwork commands, skills, and prompt steering."
 author: "LitHermes contributors"
 kind: standalone

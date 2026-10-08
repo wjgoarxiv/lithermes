@@ -6,6 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.17] - 2026-10-08
+
+- `lit-pptx` now works out how a deck should look before it builds anything. It picks one of eight looks (Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio and Night), each with its own colours, title placements, slide layouts and cover, section and closing pages. The reply opens with the look it chose, why it suits your reader and material, and the two looks that came next; name one of those and the deck is rebuilt.
+- `lit-docx` does the same for documents with six looks: Report, Brief, Manual, Proposal, Memo and Journal. They differ in structure. A memo opens with its To and From lines, a brief leads with numbered conclusions, and a proposal gets a typographic cover and a budget table. Pages stay restrained, with near-black headings, ruled tables and Korean conventions. A journal profile you name is still used as is.
+- New checks read every slide and every rendered page, and the build fails until the layout is fixed. They catch empty areas, a column much shorter than its neighbour, a heading stranded at the foot of a column or page, a short list split across pages and unbalanced columns on the last page.
+- Decks and films now ship the official, unmodified Pretendard font files.
+
 ## [1.0.16] - 2026-10-01
 
 - Automatic handoff now finds the handoff it asked for after compaction even when the model formats the marker line, for example as a bullet, in backticks or in bold. A handoff from another session is still ignored.
