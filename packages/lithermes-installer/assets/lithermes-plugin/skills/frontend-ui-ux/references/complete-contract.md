@@ -445,7 +445,7 @@ isolated Hermes home. Use `--hermes-home`; never `--home`.
 
 ```text
 $ node packages/lithermes-installer/bin/lithermes.js install --yes --offline --no-hud --hermes-home "$ISOLATED"
-Installed LitHermes 1.0.17
+Installed LitHermes 1.0.18
 plugin: $ISOLATED/plugins/lithermes
 model config: updated
 
@@ -462,7 +462,7 @@ installed payload: PASS
 enabled config: PASS
 
 $ hermes lithermes doctor
-[OK] plugin.yaml readable (version 1.0.17)
+[OK] plugin.yaml readable (version 1.0.18)
 [OK] skills bundled: 36
 [OK] litgoal durable runtime importable
 ```

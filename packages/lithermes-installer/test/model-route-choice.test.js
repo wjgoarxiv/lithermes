@@ -319,8 +319,8 @@ test("renderModelRouteCard prints one helper row without the provider when it ma
 
 test("renderInstallBanner uses the canonical banner and product lockup", () => {
   const mark = require("../src/lib/litMark");
-  const banner = renderInstallBanner({ version: "1.0.17", color: false, env: { LANG: "en_US.UTF-8" } });
-  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.17", mark.banner));
+  const banner = renderInstallBanner({ version: "1.0.18", color: false, env: { LANG: "en_US.UTF-8" } });
+  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.18", mark.banner));
   assert.equal(banner.split("\n").length, 20);
   assert.doesNotMatch(banner, /\x1b/);
 });

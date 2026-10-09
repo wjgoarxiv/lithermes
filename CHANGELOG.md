@@ -6,6 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.18] - 2026-10-09
+
+- The deck and document looks no longer list settings the engines never applied, such as Latin letter case, figure style, chart annotations, image bleed and crop, and a page-fill target. Their reference pages no longer promise those settings either, so what a look describes is what you get.
+- The deck check now ships its placeholder word list, so placeholder text such as "Lorem ipsum" or "Click to add text" fails a deck again; before, the list was missing and the check found nothing.
+- The deck check reads a one-word placeholder term such as "todo", "tbd", "fixme" or "placeholder" as a word. A word that only contains one, like "Mastodon", no longer fails a deck, while "TODO:", "TODOs" and "(TBD)" still do.
+- The install and update-notice pictures on the GitHub page show the new version again.
+
 ## [1.0.17] - 2026-10-08
 
 - `lit-pptx` now works out how a deck should look before it builds anything. It picks one of eight looks (Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio and Night), each with its own colours, title placements, slide layouts and cover, section and closing pages. The reply opens with the look it chose, why it suits your reader and material, and the two looks that came next; name one of those and the deck is rebuilt.
