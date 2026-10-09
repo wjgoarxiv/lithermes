@@ -46,9 +46,8 @@ Families: `asymmetric-feature`, `big-number`, `image-split`, `image-full`, `phot
 - Covers `cover-split-image` (first when a picture exists), `cover-rail`, `cover-numeral`; sections
   `section-numeral`, `section-rail`; closings `closing-contact-split`, `closing-summary-list`.
 - Display devices: statement `rules` (two hairlines; the offset rail stood empty), number `tint`, closing `band`.
-- Table: open, ink header over a 2 pt ink rule, no row rules or banding, right-tabular, bold
-  totals. Chart: no gridlines, direct labels, protagonist in accent, annotations on. Image: bleed
-  and crop allowed, no frame.
+- Table: open, ink header over a 2 pt ink rule, no row rules or banding, numbers right-aligned,
+  bold totals. Chart: no gridlines, direct labels, protagonist in accent. Image: no frame.
 - Fill order: change-family, step-up, anchor-visual, distribute.
 
 ## Do

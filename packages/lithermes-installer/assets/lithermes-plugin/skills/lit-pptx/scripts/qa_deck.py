@@ -175,7 +175,7 @@ def check_contrast(path: Path) -> dict[str, Any]:
     return {"pass": not violations, "checked_runs": checked, "violations": violations[:30]}
 
 
-# ── picture / table overlap ───────────────────────────────────────────────── inventory.py only considers text
+# ── picture / table overlap ───────────────────────────────────────────────── inventory.py only considers text shapes.
 OVERLAP_TOL_IN = 0.06  # inches; ignore hairline touches / rounding
 MIN_TEXT_PT = 6.0
 
@@ -286,7 +286,7 @@ def check_overlaps(path: Path) -> dict[str, Any]:
             for z2, sh2, kind2, box2 in shapes:
                 if z2 >= z or kind2 is None:
                     continue  # only shapes drawn *behind* this picture/table
-                # A full-bleed background image (mesh/gradient wash) is never an occlusion victim — anything may sit on top of
+                # A full-bleed background image (mesh/gradient wash) is never an occlusion victim; anything may sit on it.
                 if kind2 == "picture" and is_full_bleed(box2):
                     continue
                 # Picture-over-picture is intentional decorative layering.
@@ -617,7 +617,7 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
     text_only = 0
     content_slides = 0
     for slide_number, slide in enumerate(prs.slides, 1):
-        # A pack-built slide names its family
+        # A pack-built slide names its family; display slides are never judged sparse.
         family = next((shape.name.split("@", 1)[1] for shape in slide.shapes if shape.name.startswith("family@")), "")
         if family and re.match(r"(cover|section)(-|$)|(statement|quote|closing-statement|image-full)$", family):
             continue
@@ -629,7 +629,7 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
             if shape.shape_type == MSO_SHAPE_TYPE.PICTURE
             and (family or shape.top >= prs.slide_height * 0.20)
         ]
-        # Body text is judged on what the frames say together
+        # Body text is judged on what the frames say together.
         frames = [
             shape for shape in slide.shapes
             if getattr(shape, "has_text_frame", False)
@@ -647,7 +647,7 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
         ]
         if tables or charts or body_text or len(panels) >= 2:
             content_slides += 1
-        # On a pack slide the family says whether the page is a plain text page
+        # On a pack slide the family says whether the page is a plain text page.
         plain_text = family in TEXT_FAMILIES if family else len(panels) < 2
         if body_text and not tables and not charts and not pictures and plain_text:
             text_only += 1
@@ -668,7 +668,7 @@ def check_slide_craft(path: Path) -> dict[str, Any]:
                 continue
             if shape.width * shape.height > prs.slide_width * prs.slide_height * 0.8:
                 continue
-            # An outline drawn around other frames (a matrix quadrant, a card whose text is its own box) frames that
+            # An outline drawn around other frames frames that content; only an empty outline is an empty frame.
             if any(_centre_inside(other, shape) for other in slide.shapes if other is not shape
                    and (getattr(other, "has_table", False) or getattr(other, "has_chart", False)
                         or other.shape_type == MSO_SHAPE_TYPE.PICTURE
@@ -726,7 +726,7 @@ def summarize_inventory(issues: dict[str, Any]) -> dict[str, Any]:
                     slide_overflow += 1
                 if "frame" in ov:
                     frame_overflow += 1
-            # inventory.py nests this under "overlap"
+            # inventory.py nests this under "overlap"; it reports only (see qa()).
             if (shape.get("overlap") or {}).get("overlapping_shapes"):
                 overlap += 1
     return {

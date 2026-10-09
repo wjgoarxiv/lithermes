@@ -49,9 +49,9 @@ Families: `statement`, `big-number`, `image-split`, `asymmetric-feature`, `proce
   `section-numeral`; closings `closing-statement`, `closing-ask` (amount-keyed rows with share
   bars, next step on a floor band).
 - Display devices: cover `drench`, statement `open`, number `field`, closing `band`.
-- Table: open, ink header without fill, hairlines top and bottom only, no banding, right-tabular,
-  bold totals, protagonist row on accent-tint. Chart: no gridlines, direct labels, protagonist in
-  accent, annotations on. Image: bleed and crop allowed, no frame.
+- Table: open, ink header without fill, hairlines top and bottom only, no banding, numbers
+  right-aligned, bold totals, protagonist row on accent-tint. Chart: no gridlines, direct labels,
+  protagonist in accent. Image: no frame.
 - Fill order: step-up, change-family, anchor-visual, distribute.
 
 ## Do

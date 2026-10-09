@@ -51,9 +51,8 @@ Families: `step-diagram`, `process`, `method`, `sidebar-note`, `comparison`, `im
 - Covers `cover-rail`, `cover-typographic`, `cover-numeral`; sections `section-numeral`,
   `section-rail`; closings `closing-summary-list`, `closing-ask`.
 - Display devices: cover `rail`, statement `drench`, number `tint`, closing `box`.
-- Table: accent-tint header with accent-deep labels, hairline rows, right-tabular, bold totals.
-  Chart: hairline grid, direct labels, accent over muted ink, annotations on. Image: side bleed,
-  no crop, no frame.
+- Table: accent-tint header with accent-deep labels, hairline rows, numbers right-aligned, bold
+  totals. Chart: hairline grid, direct labels, accent over muted ink. Image: no frame.
 - Fill order: distribute, step-up, change-family, anchor-visual.
 
 ## Do

@@ -155,7 +155,7 @@ def title_treatment(title, marks, W, H):
     beside = [m for m in body if m["x"] + m["w"] / 2 > title["x"] + title["w"]]
     if (title["w"] <= rail_w + TOL and beside and min(m["x"] for m in beside) >= column5 - TOL
             and not any(m["x"] < column5 - TOL and m["y"] > bottom and m["x"] + m["w"] > column5 + TOL for m in body)):
-        # What stands in the rail under the title (criteria labels, takeaways, the source) belongs to the rail
+        # What stands in the rail under the title (criteria labels, takeaways, the source) belongs to the rail.
         return "side-rail"
     for m in rest:
         if (m["kind"] == "text" and m["sizes"] and ORDINAL.fullmatch(m["text"]) and max(m["sizes"]) >= 44 - SIZE_TOL
@@ -296,7 +296,7 @@ def is_claim(text):
     return bool(EN_AUX.search(t)) or any(word.lower() in EN_REPORT_VERBS for word in words[1:])
 
 
-# ── OF-115
+# ── OF-115: no region left empty
 
 def _title_lines(title):
     """How many lines a title sets: each broken line wraps on its own (Hangul about 1 em a glyph, Latin 0.55 em)."""
@@ -332,7 +332,7 @@ def _short_column(p, content, title, shown, body_floor, column5, W, H):
     for cut in sorted({m["x"] + m["w"] for m in body}):
         a = [m for m in body if m["x"] + m["w"] <= cut + TOL]
         b = [m for m in body if m["x"] >= cut - TOL]
-        # A block across most of the body (a note under both columns) belongs to neither column
+        # A block across most of the body (a note under both columns) belongs to neither column.
         across = [m for m in body if m not in a and m not in b]
         if not a or not b or any(m["w"] < 0.7 * (right_edge - left_edge) for m in across):
             continue
@@ -380,7 +380,7 @@ def _empty_regions(pages, W, H, note):
                 if share > REGION_SHARE:
                     note("OF-115", "HIGH", p["n"], title["name"], f"{share:.0%} of the side rail under the title is empty", REGION_SHARE,
                          "Put the slide's criteria labels, takeaways or source in the rail, or give it a top or bottom title.")
-            # A takeaway column beside a chart, table or picture that runs on below it
+            # A takeaway column beside a chart, table or picture may run on below it.
             body_floor = title["y"] - TOL if shown == "bottom-anchor" else FLOOR
             fields = [m for m in p["marks"] if m["kind"] == "shape" and m["filled"] and m["w"] * m["h"] >= 0.1 * W * H]
             short = _short_column(p, content, title, shown, body_floor, column5, W, H)
@@ -418,7 +418,7 @@ def _empty_regions(pages, W, H, note):
                      "Set the sentence on the whole-page field or on the open page; a plate needs content above it.")
 
 
-# ── OF-116
+# ── OF-116: another tonality draws another skeleton
 
 def skeleton(prs):
     W, H = prs.slide_width / 12700.0, prs.slide_height / 12700.0
@@ -441,7 +441,7 @@ def compare_skeletons(prs, sibling, sibling_name):
     a, b = skeleton(prs), skeleton(sibling)
     n = min(len(a), len(b))
     differ = sum(1 for x, y in zip(a, b) if x != y)
-    # Two slides once the deck has four content slides
+    # Two slides must differ once the deck has four content slides.
     need = 2 if n >= 4 else 1
     if not n or differ >= need:
         return []
@@ -450,7 +450,7 @@ def compare_skeletons(prs, sibling, sibling_name):
              "tier": "derived", "hint": "Give the tonality its own structure: its role defaults, another title zone or partition on the slides it shares."}]
 
 
-# ── OF-117
+# ── OF-117: no light figure card on a dark ground
 
 def _light_figures(number, slide, W, H, note):
     try:
@@ -478,7 +478,7 @@ def _light_figures(number, slide, W, H, note):
                  "Put the figure's dark variant beside it (name.dark.png) or draw it as a native chart.")
 
 
-# ── OF-118
+# ── OF-118: a run-in label keeps its separator
 
 def _run_ins(number, slide, note):
     for shape in slide.shapes:

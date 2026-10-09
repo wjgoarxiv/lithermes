@@ -45,8 +45,8 @@ Families: `figure-academic`, `figure-pair`, `method`, `chart-insight`, `full-cha
   `section-field`; closings `closing-summary-list`, `closing-ask`.
 - Display devices: cover, statement and closing `rules`, number `outline`, deck index on.
 - Table: booktabs, 1 pt top and bottom, 0.5 pt under the header, no verticals, fills or banding,
-  right-tabular, bold totals. Chart: hairline grid, direct labels, series order (method in accent,
-  baselines in ink and muted ink), no annotation. Image: no bleed, crop or frame.
+  numbers right-aligned, bold totals. Chart: hairline grid, direct labels, series order (method in
+  accent, baselines in ink and muted ink). Image: no frame.
 - Fill order: anchor-visual, distribute, step-up, change-family.
 
 ## Do

@@ -48,8 +48,8 @@ Families: `image-full`, `image-split`, `photo-grid`, `figure-pair`, `asymmetric-
 - Picture families and image covers need a real file beside the source; without one use
   `cover-typographic`, `section-field`, `text-column`, `kpi-row`, `comparison`, `timeline`.
 - Table (timeline, KPI and closing rows): light grid, ink header without fill, hairline rows,
-  right-tabular. Chart: hairline grid, direct labels, accent over muted ink, no annotation.
-  Image: bleed and crop allowed, no frame, cropped to its box in its own proportions.
+  numbers right-aligned. Chart: hairline grid, direct labels, accent over muted ink.
+  Image: no frame, cropped to its box in its own proportions.
 - Fill order: anchor-visual, change-family, distribute, step-up.
 
 ## Do

@@ -45,7 +45,6 @@ This checklist covers the 1.0.17 release.
 - [ ] `lit-pptx` picks one of eight deck looks before building and `lit-docx` one of six document looks before writing; each reply names the chosen look, the reason and two alternatives.
 - [ ] The deck and page checks fail a build on empty areas, a column much shorter than its neighbour, a heading stranded at the foot of a column or page, a short list split across pages and unbalanced last-page columns.
 - [ ] Decks and films ship the official, unmodified Pretendard Regular and Bold files.
-- [ ] The install and update-notice pictures were recaptured at this version.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass; the packed tarball stays under the 12 MiB cap.
 
 ### 1.0.3 factual release scope

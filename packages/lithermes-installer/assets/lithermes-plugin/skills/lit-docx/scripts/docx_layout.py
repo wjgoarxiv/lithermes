@@ -83,7 +83,7 @@ def norm(text: str) -> str:
     return text.translate(str.maketrans({"–": "-", "—": "-", "‘": "'", "’": "'", "“": '"', "”": '"'}))
 
 
-# ── heading.declarative ───────────────────────────────────────────────────── A heading names what its section
+# ── heading.declarative ───────────────────────────────────────────────────── A heading names what its section covers.
 
 KO_SENTENCE = re.compile(r"(?:니다|[어아해세에예네지군래게]요|죠|[었았였했겠됐](?:다|음)|[가-힣]다|[가-힣](?:함|됨)|(?:있|없)음)$")
 KO_LABEL_WORDS = {"바다", "판다", "소다", "람다", "캐나다", "어젠다", "아젠다", "포함", "보다", "함", "다", "중심", "가능성", "다음"}
@@ -480,7 +480,7 @@ def structure(path: Path) -> dict:
         body = ET.fromstring(z.read("word/document.xml")).find(W + "body")
     caps = [((t.find(f"{W}tblPr/{W}tblCaption").get(W + "val") if t.find(f"{W}tblPr/{W}tblCaption") is not None else "") or "")
             for t in body.iter(W + "tbl")]
-    # A cover page
+    # A cover page ends its section before any heading.
     cover_page = False
     sects = [el.find(f"{W}pPr/{W}sectPr") for el in body if el.tag == W + "p" and el.find(f"{W}pPr/{W}sectPr") is not None]
     sects.append(body.find(W + "sectPr"))
@@ -734,11 +734,11 @@ def paged(info: dict, pages: list[dict], tonality: bool, front: dict | None = No
         if not exempt and fill < FILL_MIN:
             found.append(finding("fill.page", "FAIL", i, f"page {i} is filled to {fill:.2f} of its frame (floor {FILL_MIN})",
                                  "Let the next block move up: drop a forced break, keep a short section with its neighbour, or move a table under its text."))
-    # A memo that spills under a quarter of a page onto page 2 is a one-page memo set loosely
+    # A memo that spills under a quarter of a page onto page 2 is a one-page memo set loosely.
     if info.get("memo") and n == 2 and fills[-1]["fill"] < MEMO_SPILL:
         found.append(finding("memo.fit", "FAIL", 2, f"the memo runs onto a second page filled to {fills[-1]['fill']:.2f} of its frame",
                              "Set the memo on one page: the Memo pack's tight spacing, or shorten the text by the lines that spill."))
-    # A second page filled under a third of its frame is a one-page document set loosely or a block left over
+    # A second page filled under a third of its frame is a one-page document set loosely or a block left over.
     if not info.get("memo") and n >= 2:
         last = fills[-1]["fill"]
         if n == 2 and last < SPILL_SECOND:
@@ -809,7 +809,7 @@ def paged(info: dict, pages: list[dict], tonality: bool, front: dict | None = No
         if block["t"] == "h":
             find(block["text"])
         elif block["t"] == "tbl" and block["component"] in ("keyfigures", "callout", "sidebar"):
-            # A component box is short by design
+            # A component box is short by design.
             hits = []
             for text in block.get("cells", []):
                 if len(text) < 2:
@@ -919,7 +919,7 @@ def paged(info: dict, pages: list[dict], tonality: bool, front: dict | None = No
             # the box's own lines share its left edge; body lines that open alike stand elsewhere
             mine = []
             if anchor:
-                # the box
+                # The box is its title line and the lines that follow it.
                 mine = [anchor]
                 for bx in sorted((b for b in boxes if b[1] > anchor[1] and b[0] >= anchor[0] - 24), key=lambda b: b[1]):
                     if bx[1] - mine[-1][3] > 20:

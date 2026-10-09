@@ -246,7 +246,7 @@ def shape_table(doc, table, texts: list[list[str]]) -> None:
     for ci in range(cols):
         column = [row[ci] for row in texts if ci < len(row)]
         want.append(max([width_of(t) for t in column] + [4.0]))
-    # Each column first gets its natural width
+    # Each column first gets its natural width, capped at 45% of the line.
     unit = Inches(0.085)
     cap = usable * 0.45
     natural = [min(w * unit, cap) for w in want]
@@ -376,7 +376,7 @@ def html_to_docx(html: str, doc: Document, md_path: Path):
             html_to_docx(str(element), doc, md_path)
 
 
-# =========================================================================== M1
+# =========================================================================== M1: Journal workflow
 
 
 def _load_yaml():
@@ -651,7 +651,7 @@ def apply_table_style(doc, design: dict) -> None:
     for table in doc.tables:
         table.style = None  # detach Table Grid
         if table.autofit and table.rows and table.columns:
-            # A table no builder has measured yet gets a fixed page-width grid, so Word cannot squeeze its cells into
+            # A table no builder has measured yet gets a fixed page-width grid, so Word cannot squeeze its cells.
             section = doc.sections[0]
             available = section.page_width - section.left_margin - section.right_margin
             weights = [
@@ -699,14 +699,14 @@ def apply_table_style(doc, design: dict) -> None:
         _add_border("insideV", "nil", "0")       # explicit no verticals
         tblPr.append(tblBorders)
 
-        # Bold header row + add bottom border only to header cells so the thicker rule sits under the header
+        # Bold header row + add bottom border only to header cells so the thicker rule sits under the header.
         if table.rows:
             header_row = table.rows[0]
             for cell in header_row.cells:
                 for p in cell.paragraphs:
                     for r in p.runs:
                         r.bold = True
-            # Remove insideH to prevent inner body rules
+            # Remove insideH to prevent inner body rules.
             insideH = tblBorders.find(qn("w:insideH"))
             if insideH is not None:
                 insideH.set(qn("w:val"), "nil")
@@ -900,7 +900,7 @@ def apply_cjk_font_pairing(doc, font_cfg: dict) -> None:
     def _walk(paragraphs):
         for para in paragraphs:
             for run in para.runs:
-                # Only fix runs that already have a font set to something other than the registry-banned default
+                # Only fix runs that already have a font set to something other than the registry-banned default.
                 current_name = run.font.name
                 if current_name and current_name != "Courier New":
                     _set_run_fonts(run, latin, cjk)
@@ -973,7 +973,7 @@ def inject_title_block(doc, frontmatter: dict, design: dict) -> None:
     )
     _add_run(tp, str(title), tb.get("title", {}).get("size_pt", 18), bold=True)
 
-    # Report-style frontmatter
+    # Report-style frontmatter adds a subtitle and a byline.
     if frontmatter.get("subtitle"):
         sp = _p_center(13, space_after=6)
         _add_run(sp, str(frontmatter["subtitle"]), 13)
@@ -1223,7 +1223,7 @@ def convert_md_to_docx(
 
     # Pre-MD micro-typography filters
     if detected_locale in ("ko", "mixed"):
-        # On every path
+        # On every path, Korean text loses ISO dates before the dash filter.
         body = docx_design.korean_dates(body)
         if frontmatter.get("date"):
             frontmatter["date"] = docx_design.format_date(frontmatter["date"], "ko")
@@ -1233,7 +1233,7 @@ def convert_md_to_docx(
         text = fix_quotes(fix_dashes(text, dash_rules))
         return normalize_double_spaces(fix_ellipsis(fix_unit_spacing(text)))
 
-    # 
+    # Only text between ::: fence lines is typeset.
     pieces = re.split(r"^([ \t]*:{3,}.*)$", body, flags=re.M)
     body = "".join(piece if index % 2 else typeset(piece) for index, piece in enumerate(pieces))
 

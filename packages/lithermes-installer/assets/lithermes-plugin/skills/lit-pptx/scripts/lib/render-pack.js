@@ -55,7 +55,7 @@ function titleRuns(text, S, base) {
   });
 }
 
-/** Display text broken at word boundaries into lines of near-equal width, at the line count the frame was */
+/** Breaks display text at word boundaries into lines of near-equal width, at the frame's measured line count. */
 function balanced(S, text, w, size, role, room = Infinity) {
   const s = String(text || "");
   if (/\*\*/u.test(s)) return s;
@@ -205,7 +205,7 @@ function bodySize(S, state, role = "body") {
   return state.stepped ? S.sizes[G.stepRole(role)] : S.sizes[role];
 }
 
-/** A point that opens with a bold run-in label reads "label */
+/** A point that opens with a bold run-in label reads "label: rest"; a bold line alone is a heading. */
 function runIn(text) {
   const m = /^\*\*(.+?)\*\*\s+(\S[\s\S]*)$/u.exec(String(text == null ? "" : text));
   if (!m || /[:：.)\]?!–—-]$/u.test(m[1].trim())) return text;
@@ -245,7 +245,7 @@ function measureTable(item, w, S, state) {
   const widths = headers.length ? shared().proportionalWidths(headers, rows, IN(w)).map((v) => v * 72) : [w];
   const cell = 6;
   const minRow = S.tok.rowMin * (state.anchor ? 1.25 : 1);
-  // Rows are measured at the face's natural line (about 1.45 of the size with its gap), which is what office
+  // Rows are measured at the face's natural line (about 1.45 of the size with its gap), as office renderers set cells.
   const rowH = (cells, size) => Math.max(minRow, ...cells.map((t, i) => G.textHeight(plainText(t), (widths[i] || w) - cell * 2, size, 1.45) + cell * 2));
   const heights = [rowH(headers, header), ...rows.map((r) => rowH(r, data))];
   const tableH = heights.reduce((a, b) => a + b, 0);
@@ -370,7 +370,7 @@ function shiftGroup(p, dy) {
   }
 }
 
-/** Pitch for n rows that share a region */
+/** Pitch for n rows that share a region; the last row ends on the region floor. */
 function rowPitch(n, rowH, R, gap, max) {
   if (n <= 1) return rowH;
   return Math.max(rowH + gap, Math.min(max, (R.bottom - R.y - rowH) / (n - 1)));
@@ -382,21 +382,21 @@ function textAt(paras, R, S, state, o = {}) {
   return { ...m, x: R.x, y: R.y, limit: R.bottom };
 }
 
-// ── Layout families ───────────────────────────────────────────────────────── Each plan gets ctx = { spec, S
+// ── Layout families ───────────────────────────────────────────────────────── Each plan gets ctx and returns placements.
 
 /** A visual with its takeaway: beside it (share of the columns), or under it on a narrow body. */
 function visualWithText(ctx, visuals, texts, share, o = {}) {
   const { S, state, Z } = ctx;
   const out = [];
-  // A visual alone (its takeaways in the rail, or none)
+  // A visual alone (its takeaways in the rail, or none) takes the body: a table opens its rows.
   if (!texts.length) return ((S.tok.tight && !ctx.railValues && valuesUnder(visuals, Z, S, state)) || openRows(stack(visuals, Z, S, state).placed, Z, S));
   if (!visuals.length) return stack(texts, Z, S, state).placed;
-  // Takeaways too short for their column give the visual columns
+  // Takeaways too short for their column give the visual columns.
   if (!o.fixed && Z.b - Z.a + 1 >= 6 && visuals.some((v) => v.type === "image" || (v.content || {}).chart)) {
     const n = Z.b - Z.a + 1;
     const base = visualWithText(ctx, visuals, texts, share, { ...o, fixed: true });
     let pick = base;
-    // A picture drawn short of its column (a wide one in a narrow column) takes columns while either side leaves
+    // A picture drawn short of its column takes columns while either side leaves over a fifth of the body empty.
     const target = visuals.some((v) => v.type === "image") ? 0.2 : RAIL_EMPTY;
     for (let step = 1; shortColumn(pick, Z.bottom, S).share > target; step++) {
       const k = o.textFirst ? share - step / n : share + step / n;
@@ -407,7 +407,7 @@ function visualWithText(ctx, visuals, texts, share, o = {}) {
       const size = (plan) => Math.max(0, ...plan.filter((q) => q.kind === "text" && !q.strip && !q.muted).map((q) => q.size || 0));
       if (!overflows(next) && size(next) >= size(base) && shortColumn(next, Z.bottom, S).share < shortColumn(pick, Z.bottom, S).share) pick = next;
     }
-    // Takeaways too few for even a three-column column beside a chart run under it instead, side by side, and the
+    // Takeaways too few for a three-column column beside a chart run under it; the chart takes the full width.
     if (shortColumn(pick, Z.bottom, S).share > RAIL_EMPTY && visuals.some((v) => (v.content || {}).chart)) {
       const paras = texts.flatMap(itemParas);
       const half = Math.ceil(paras.length / 2);
@@ -431,7 +431,7 @@ function visualWithText(ctx, visuals, texts, share, o = {}) {
     let v = stack(visuals, vR, S, state);
     const col = takeawayColumn(ctx, texts, visuals, full, v.bottom);
     const t = col.t;
-    // When the chart's values found no room beside it, they stand under the chart, which gives up the height the
+    // When the chart's values find no room beside it, they stand under the chart as a compact table.
     if (S.tok.tight && !col.values) {
       const under = valuesUnder(visuals, vR, S, state, true);
       if (under) v = under;
@@ -449,7 +449,7 @@ function visualWithText(ctx, visuals, texts, share, o = {}) {
         : stack(texts, below, S, state).placed;
       const end = Math.max(...notes.map((q) => q.y + q.h));
       if (end <= Z.bottom) {
-        // Still short of the density band
+        // Still short of the density band, the table's rows open up first.
         let room = Z.bottom - end;
         let grow = 0;
         const table = top.placed.find((q) => q.kind === "table");
@@ -466,7 +466,7 @@ function visualWithText(ctx, visuals, texts, share, o = {}) {
         return [...top.placed, ...notes.map((q) => ({ ...q, y: q.y + dy }))];
       }
     }
-    // A picture drawn shorter than its box (a wide one in a tall column) stands on the box floor when the takeaways
+    // A picture shorter than its box stands on the box floor when the takeaways beside it run past its top.
     for (const q of v.placed) if (q.kind === "image") q.beside = t.bottom;
     out.push(...v.placed, ...t.placed);
     if (S.deco.has("column-hairlines")) out.push(columnHairline(S, o.textFirst ? right : right, Z));
@@ -475,7 +475,7 @@ function visualWithText(ctx, visuals, texts, share, o = {}) {
   return stack([...visuals, ...texts], Z, S, state).placed;
 }
 
-/** A chart over its values as a compact table in region R */
+/** A chart over its values as a compact table in region R; returns the placements or null. */
 function valuesUnder(visuals, R, S, state, asStack = false) {
   // Across the body the values run across (two or three rows under a wide chart); in a column, as columns.
   const order = R.w >= S.grid.span(1, 8).w ? [chartTable(visuals, true), chartTable(visuals)] : [chartTable(visuals), chartTable(visuals, true)];
@@ -510,7 +510,7 @@ function takeawayColumn(ctx, texts, visuals, full, visualBottom) {
   return { ...pick, strip, R };
 }
 
-/** A table standing alone in its region (its takeaways in a side title's rail) opens its rows, at most one */
+/** A table alone in its region opens its rows while the region leaves more than the density band empty. */
 function openRows(placed, Z, S) {
   const tables = placed.filter((q) => q.kind === "table");
   if (tables.length !== 1 || placed.some((q) => q.flex)) return placed;
@@ -562,9 +562,9 @@ const PLANS = {
     const { visuals, texts } = sortItems(items);
     if (visuals.length && texts.length) return visualWithText(ctx, visuals, texts, 7 / 12);
     const placed = stack(items, R, S, state).placed;
-    // Two to five points that each open with a bold head, and that leave the body more than the density band empty
+    // Two to five bold-headed points that leave the body more than the density band empty read as rows.
     const ents = !visuals.length && ctx.cls !== "side" ? entries(texts.flatMap(itemParas)) : [];
-    // Groups of sub-points under bold heads, held to one reading measure narrower than the body, run in two columns
+    // Groups of sub-points under bold heads, held to one reading measure, run in two columns instead.
     const groups = ents.length >= 2 && ents.every((e) => e.head && !e.rest && e.children.length);
     if (groups && R.w < Z.w - S.grid.pitch) {
       const two = PLANS["text-two-column"](ctx);
@@ -602,7 +602,7 @@ const PLANS = {
       acc += heights[i];
     }
     let out = [textAt(paras.slice(0, cut), l, S, state), textAt(paras.slice(cut), r, S, state)];
-    // Two sections of unequal length leave one column half empty
+    // Two sections of unequal length leave one column half empty, so the break moves to even them.
     if (shortColumn(out, Z.bottom, S).share > 0.35) {
       const evenest = (ok) => {
         let best = null;
@@ -676,7 +676,7 @@ const PLANS = {
       const m = measureText(itemParas(note), nR.w - pad * 2, S, state);
       out.push({ kind: "box", x: nR.x, y: nR.y, w: nR.w, h: m.h + pad * 2, surface: true, limit: Z.bottom },
         { ...m, x: nR.x + pad, y: nR.y + pad, limit: Z.bottom });
-      // A short note beside a long main column leaves its column mostly empty
+      // A short note beside a long main column stands across the top; the points run in two columns.
       if (main.length && shortColumn(out, Z.bottom, S).share > RAIL_EMPTY && Z.b - Z.a + 1 >= 12) {
         // First a narrower note column at the body size (the note never set larger than the main points), the main
         const [mR3, nR3] = splitRegion(S, Z, 9 / 12);
@@ -693,7 +693,7 @@ const PLANS = {
         const boxH = lead.h + pad * 2;
         const below = { ...Z, y: Z.y + boxH + state.blockGap };
         const fits = (plan) => !plan.some((q) => !q.decor && q.y + q.h > Z.bottom + 0.5);
-        // One column at the reading measure when it holds the points and reaches the density band
+        // The points take one column at the reading measure when it holds them and reaches the density band.
         for (const z of [S.sizes.lead, bodySize(S, state)]) {
           const m = measureText(itemParas(note).map((p) => ({ ...p, kind: "text" })), Math.min(Z.w - pad * 2, (korean ? 30 : 35) * z), S, state, { size: z });
           const top = Z.y + m.h + pad * 2 + state.blockGap;
@@ -754,7 +754,7 @@ const PLANS = {
     const { S, state, Z } = ctx;
     const paras = sortItems(ctx.items).texts.flatMap(itemParas).map((p) => ({ ...p, kind: "text" }));
     let size = S.tok.ramp === "presented" ? (state.stepped ? S.sizes.body : S.sizes.label) : bodySize(S, state);
-    // Entries are scanned for a name or a year
+    // Entries are scanned for a name or a year, one per row.
     const fits = (z, w, n) => n * Math.max(...paras.slice(0, n).map((p) => G.textHeight(plainText(p.text), w, z, 1.3))) + 12 * (n - 1) <= Z.bottom - Z.y;
     let cols = [Z];
     if (!fits(size, Z.w, paras.length)) {
@@ -782,7 +782,7 @@ const PLANS = {
     if (!kpi) return PLANS["table-insight"](ctx);
     const others = visuals.filter((v) => v !== kpi);
     if (ctx.cls === "side" || Z.b - Z.a + 1 < 10 || (state.anchor && ctx.cls === "top")) {
-      // Under a side title, or when the values take the room, they run down the body as rows
+      // Under a side title, or when the values take the room, they run down the body as rows.
       const cards = shared().kpiCards(kpi.content).slice(0, 6);
       const out = [];
       const restTexts = texts;
@@ -807,7 +807,7 @@ const PLANS = {
         const out = [rows, ...notes.placed];
         if (kpi.caption) out.push({ kind: "caption", item: { content: kpi.caption }, x: fR.x, y: fR.bottom - capH + 6, w: fR.w, h: capH - 6, limit: Z.bottom });
         if (shortColumn(out, Z.bottom, S).share <= 0.35) return out;
-        // Takeaways too few to fill the column beside the rows
+        // Takeaways too few to fill the column beside the rows stand under them, side by side.
         const paras = texts.flatMap(itemParas);
         const half = Math.ceil(paras.length / 2);
         // Up to three points read down one column at the reading measure; four or more stand side by side.
@@ -868,7 +868,7 @@ const PLANS = {
       const R = tR ? region(S, tR.a + 1, tR.b, Z.y, Z.bottom)
         : ctx.cls === "bottom" ? { ...Z, bottom: y - state.blockGap } : { ...Z, y: Z.y + blockH + state.blockGap };
       const evidence = stack(texts, R, S, { ...state, stepped: true });
-      // Beside a number on the floor the evidence ends level with the number block, so it reads with the number
+      // Beside a number on the floor the evidence ends level with the number block, not at the page top.
       const lift = tR && ctx.cls === "bottom" ? Math.max(0, Math.min(y + blockH, Z.bottom) - evidence.bottom) : 0;
       out.push(...evidence.placed.map((q) => ({ ...q, y: q.y + lift })));
     }
@@ -947,7 +947,7 @@ const PLANS = {
       return { head: headIdx >= 0 ? paras[headIdx].text : null,
         items: paras.filter((_, j) => j !== headIdx).map((p) => String(p.text).replace(/^\(\d+\)\s*/u, "")) };
     });
-    // Points that open with the same label on both sides
+    // Points that open with the same label on both sides ("비용: …") read as criteria rows.
     const LABEL = /^([^:：]{1,24})[:：]\s*(.+)$/u;
     const isLabel = (t) => { const m = LABEL.exec(plainText(t)); return Boolean(m) && m[1].trim().split(/\s+/u).length <= 3; };
     let criteria = null;
@@ -962,13 +962,13 @@ const PLANS = {
         for (const sd of sides) sd.items = sd.items.map((t) => LABEL.exec(plainText(t))[2]);
       }
     }
-    // Under a side title the criteria stand in the rail, level with their rows, and the two sides take the body
+    // Under a side title the criteria stand in the rail, level with their rows, and the two sides take the body.
     const inRail = Boolean(criteria && ctx.rail);
     const floor = inRail ? Math.min(Z.bottom, ctx.rail.bottom) : Z.bottom;
     const critR = inRail ? { ...ctx.rail, bottom: floor } : criteria ? region(S, Z.a, Z.a + 1, Z.y, Z.bottom) : null;
     const parts = criteria && !inRail ? splitRegion(S, region(S, Z.a + 2, Z.b, Z.y, Z.bottom), 0.5) : splitRegion(S, Z, 0.5);
     const headSize = bodySize(S, state, "lead");
-    // Up to three rows of short points are set a step or two larger when that still keeps a dozen glyphs a line and
+    // Up to three rows of short points are set a step or two larger while a line keeps a dozen glyphs.
     const rowsN = Math.max(...sides.map((sd) => sd.items.length));
     const fitsAt = (z) => {
       if (parts[0].w / z < 12) return false;
@@ -1025,7 +1025,7 @@ const PLANS = {
   process(ctx) {
     const { S, state } = ctx;
     const all = entries(sortItems(ctx.items).texts.flatMap(itemParas));
-    // Points without a bold head after the steps are the slide's takeaways
+    // Points without a bold head after the steps are the slide's takeaways, set under the steps.
     const headed = all.filter((e) => e.head);
     const loose = headed.length >= 2 && headed.length < all.length ? all.filter((e) => !e.head) : [];
     const ents = loose.length ? headed : all;
@@ -1109,7 +1109,7 @@ const PLANS = {
     const slots = equalParts(S, Z, events.length);
     const dateSize = bodySize(S, state, "lead");
     const labelSize = bodySize(S, state);
-    // The axis runs under the tallest date at the top of the body
+    // The axis runs under the tallest date at the top of the body.
     const dateH = Math.max(...events.map((e, i) => G.textHeight(e.date, slots[i].w, dateSize, 1.25)));
     const axisY = Math.round(Z.y + dateH + 18);
     const items = events.map((e, i) => {
@@ -1127,10 +1127,10 @@ const PLANS = {
       const top = Math.max(...out.map((q) => q.y + q.h)) + state.blockGap;
       out.push(...stack(texts, { ...Z, y: top }, S, state).placed);
     }
-    // Room past the density band is shared evenly
+    // Room past the density band is shared evenly around the axis.
     const room = Z.bottom - contentBottom(out, Z.y);
     if (room / (Z.bottom - Z.y) > S.tok.cap) {
-      // A single takeaway line stays with the axis it reads (a band over one line set it adrift), so the pair moves
+      // A single takeaway line stays with the axis it reads, so the pair moves together.
       const single = texts.flatMap(itemParas).length === 1;
       const blocks = out.length > (cap ? 2 : 1) && !single ? 3 : 2;
       const step = Math.floor(room / blocks);
@@ -1151,7 +1151,7 @@ const PLANS = {
     const c = (table && table.content) || {};
     if (!table || (c.headers || []).length !== 3 || (c.rows || []).length !== 2) return PLANS["table-insight"](ctx);
     const [yName, xName] = String(plainText(c.headers[0])).split(/\s*[\\/]\s*/u);
-    // The takeaways stand beside the quadrants in the last four columns (under the matrix on a narrow body), so the
+    // The takeaways stand beside the quadrants in the last four columns, so the matrix never drops them.
     const wide = texts.length && Z.b - Z.a + 1 >= 10;
     const M = wide ? region(S, Z.a, Z.b - 4, Z.y, Z.bottom) : Z;
     const notesH = texts.length && !wide ? stack(texts, Z, S, state).bottom - Z.y + state.blockGap : 0;
@@ -1166,7 +1166,7 @@ const PLANS = {
     const qh = (grid.bottom - capH - top - gap) / 2;
     const qw = (grid.w - gap) / 2;
     const pad = 18;
-    // A cell is its item over its details
+    // A cell is its item over its details, one detail a line under the item.
     const head = bodySize(S, state, "lead");
     const detail = bodySize(S, state);
     const cells = [0, 1].flatMap((ri) => [0, 1].map((ci) => {
@@ -1195,7 +1195,7 @@ const PLANS = {
     const size = S.sizes.title;
     const h = G.textHeight(plainText(said), R.w, size, 1.3);
     const blockH = h + (by ? 18 + S.sizes.label * 1.4 : 0);
-    // Beside a side title the quote is the slide's display element
+    // Beside a side title the quote is the slide's display element, set in the middle of the body.
     const y = ctx.cls === "side" ? Math.max(R.y, Math.round(Z.y + (Z.bottom - Z.y - blockH) / 2)) : R.y;
     return [{ kind: "quote", text: said, by: by ? plainText(by.text) : "", size, x: R.x, w: R.w, y, h: blockH, textH: h, markX: Z.x, markW, limit: Z.bottom }];
   },
@@ -1230,7 +1230,7 @@ const PLANS = {
     if (!defsItem.length) { place(Z); return out; }
     const defsAt = (R) => textAt(defs, R, S, { ...state, itemGap: Math.max(state.itemGap, 12) });
     if (!visuals.length && Z.b - Z.a + 1 >= 8) {
-      // The formula runs across the top and its terms in columns under it, instead of one line over an empty column
+      // The formula runs across the top and its terms in columns under it, never beside an empty column.
       place(Z);
       const below = { ...Z, y: Math.max(...out.map((q) => q.y + q.h)) + state.blockGap };
       // Two columns of terms, else three (a formula beside its terms left its own column four-fifths empty).
@@ -1240,7 +1240,7 @@ const PLANS = {
       }
       out.length = 0;
     }
-    // A wide figure (twice as wide as tall or more) set in half the body is drawn at a third of its column's height
+    // A wide figure set in half the body would draw at a third of its height, so it runs across the top.
     const size = visuals.length === 1 && visuals[0].type === "image" && visuals[0].imageSize;
     if (S.tok.tight && size && size.width / size.height >= 2 && Z.b - Z.a + 1 >= 8) {
       const cap = captionHeight(visuals[0].caption, Z.w, S);
@@ -1261,7 +1261,7 @@ const PLANS = {
     }
     const [vR, full] = splitRegion(S, Z, 7 / 12);
     place(vR);
-    // Beside a figure the terms' column closes with the source strip when it ends above the figure, and terms that
+    // Beside a figure the terms' column closes with the source strip, and sparse terms are set a step up.
     const strip = ctx.strip && visuals.length ? stripPlacements(ctx.strip, full, S) : null;
     const dR = strip ? { ...full, bottom: full.bottom - strip.h - S.tok.block } : full;
     let beside = defsAt(dR);
@@ -1271,7 +1271,7 @@ const PLANS = {
     }
     if (strip && beside.y + beside.h <= dR.bottom + 0.5) out.push(...strip.placed.map((q) => ({ ...q, strip: true })));
     if (S.tok.tight && visuals.length && beside.y + beside.h > Z.bottom) {
-      // Terms too long for five columns beside the figure
+      // Terms too long for five columns beside the figure take one column, then two.
       const [hR, tR6] = splitRegion(S, Z, 6 / 12);
       const strip6 = ctx.strip ? stripPlacements(ctx.strip, tR6, S) : null;
       const one = textAt(defs, strip6 ? { ...tR6, bottom: tR6.bottom - strip6.h - S.tok.block } : tR6, S, { ...state, itemGap: Math.max(state.itemGap, 12) });
@@ -1280,14 +1280,14 @@ const PLANS = {
         place(hR);
         return [...out, { ...one, limit: Z.bottom - one.h * 0.1 }, ...(strip6 ? strip6.placed.map((q) => ({ ...q, strip: true })) : [])];
       }
-      // The text estimate runs short of what a renderer sets for Latin, so the columns keep a tenth of their height
+      // The text estimate runs short of what a renderer sets for Latin, so the columns keep a tenth spare.
       for (const share of [5 / 12, 4 / 12]) {
         out.length = 0;
         const [fR, tR] = splitRegion(S, Z, share);
         const cols = defsInColumns(defs, tR);
         if (share < 5 / 12 || cols.every((q) => q.y + q.h * 1.1 <= Z.bottom)) {
           place(fR);
-          // The spare tenth is part of each column's limit, so a slide that cannot keep it reads as overflowing and takes
+          // The spare tenth is part of each column's limit, so a slide that cannot keep it reads as overflowing.
           return [...out, ...cols.map((q) => ({ ...q, limit: Z.bottom - q.h * 0.1 }))];
         }
       }
@@ -1295,7 +1295,7 @@ const PLANS = {
     out.push(beside);
     return out;
 
-    // The terms split between two columns at the entry that brings the first nearest half the height
+    // The terms split between two columns at the entry that brings the first nearest half the height.
     function defsInColumns(list, R, n = 2) {
       const ents = entries(list);
       const flat = (part) => part.flatMap((e) => [{ kind: e.kind === "section" ? "section" : "bullet", text: e.head ? `**${e.head}** ${e.rest}`.trim() : e.rest },
@@ -1419,7 +1419,7 @@ const PLANS = {
     const { S, state, Z } = ctx;
     const { visuals, texts } = sortItems(ctx.items);
     const acts = visuals.length === 1 && visuals[0].type === "kpi-table" && !visuals[0].content.chart ? actionRows(visuals[0].content) : null;
-    // The field starts where the rows' text ends (at most seven of twelve columns, at least five), so each key
+    // The field starts where the rows' text ends (five to seven of twelve columns), so each key stands near its row.
     const n = Z.b - Z.a + 1;
     if (acts && !ctx.splitCols) {
       const at = (k) => PLANS["closing-contact-split"]({ ...ctx, splitCols: k });
@@ -1441,7 +1441,7 @@ const PLANS = {
     const F = { ...fR, x: fieldX + inset, w: fR.x + fR.w - fieldX - inset, y: Z.y + inset, bottom: Z.bottom };
     const field = { decor: true, kind: "rect", x: fieldX, y: Z.y, w: S.grid.W - fieldX, h: S.grid.H - Z.y, fill: "field", bleed: true };
     if (acts) {
-      // The field is the ask
+      // The field is the ask, each row's key in line with its row.
       const total = actionTotal(acts) || actionSpan(acts);
       // The band stops at the field's edge.
       const stepW = total ? fieldX - lR.x : F.x + F.w - lR.x;
@@ -1474,7 +1474,7 @@ const PLANS = {
 PLANS["step-diagram"] = PLANS.process;
 PLANS.statement = PLANS["text-column"];
 
-/** Headed points as rows */
+/** Headed points run as rows, the head bold in the first three columns. */
 function headedRows(ctx, ents) {
   const { S, state, Z } = ctx;
   const headR = region(S, Z.a, Z.a + 2, Z.y, Z.bottom);
@@ -1514,7 +1514,7 @@ function figureRows(cards, Z, S, state, spread = null) {
   return { kind: "figrows", rows, x: Z.x, w: Z.w, valueW, labelX, labelW, value, labelSize, noteSize, pitch, y: Z.y, h: (n - 1) * pitch + heights[n - 1], limit: Z.bottom };
 }
 
-/** A big-number slide as a data panel */
+/** A big-number slide is a data panel, one row per figure. */
 function numberPanel(ctx, table, texts) {
   const { S, state, Z } = ctx;
   const c = table.content || {};
@@ -1572,7 +1572,7 @@ function actionRows(content) {
   const rows = (content.rows || []).map((r) => r.map((cell) => plainText(cell).trim()))
     .filter((r, i, all) => !(all.length > 1 && i === all.length - 1 && TOTALS.test(r[0] || "")));
   if (rows.length < 1 || rows.length > 5 || headers.length < 2) return null;
-  // A bare number under a head that names its unit ("Budget (k USD)") carries that unit, as a key and in a row's
+  // A bare number under a head that names its unit ("Budget (k USD)") carries that unit wherever it stands.
   const units = headers.map((h) => (/\(([^()]{1,12})\)\s*$/u.exec(h) || [])[1] || null);
   const withUnit = (cell, j) => (units[j] && /^\d[\d,.]*$/u.test(cell) ? joinUnit(cell, units[j]) : cell);
   let key = -1;
@@ -1629,7 +1629,7 @@ function actionSpan(acts) {
   return first && last && first !== last ? `${count} · ${first} – ${last}` : count;
 }
 
-/** Action rows down a region */
+/** Action rows run down a region, the key large on the left. */
 function placeActions(ctx, acts, R, o = {}) {
   const { S, state } = ctx;
   const n = acts.rows.length;
@@ -1639,7 +1639,7 @@ function placeActions(ctx, acts, R, o = {}) {
   const sizes = [S.sizes.title, S.sizes.lead, S.sizes.body];
   const total = acts.kind === "amount" ? acts.rows.reduce((a, r) => a + r.value, 0) : 0;
   const gaps = o.last ? n : Math.max(1, n - 1);
-  // At lead size first
+  // Rows start at lead size and step down until they fit.
   const fit = (step) => {
     const fitting = sizes.filter((v) => v && longest * v * 1.04 <= keyR.w);
     const keySize = fitting[Math.min(step, fitting.length - 1)] || S.sizes.body;
@@ -1662,7 +1662,7 @@ function placeActions(ctx, acts, R, o = {}) {
   if (chosen.room < 0) return null;
   const { keySize, head, meta, rows } = chosen;
   const sum = rows.reduce((a, r) => a + r.h, 0);
-  // Rows sit at most 96 pt apart
+  // Rows sit at most 96 pt apart.
   const gap = Math.max(state.itemGap, Math.min(96, (R.bottom - R.y - sum) / gaps));
   const spare = Math.max(0, R.bottom - R.y - sum - gap * gaps);
   let y = R.y + Math.round(spare / 2);
@@ -1672,20 +1672,20 @@ function placeActions(ctx, acts, R, o = {}) {
     head, meta, total, gap, x: R.x, y: R.y, w: (o.keys ? keyR.x + keyR.w : R.x + R.w) - R.x, h, limit: R.bottom }];
 }
 
-/** The next step of a closing, set at lead size on the body floor in the pack's closing device */
+/** The next step of a closing, set at lead size on the body floor in the pack's closing device. */
 function nextStep(ctx, texts, R, device, o = {}) {
   const { S, state } = ctx;
   const lead = bodySize(S, { ...state, stepped: false }, "lead");
   const ruled = device === "rules" || device === "field";
   const pad = ruled ? 0 : Math.max(18, S.tok.pad);
-  // Each point keeps its own line
+  // Each point keeps its own line; a source line is a note at label size.
   const paras = texts.flatMap(itemParas).map((p) => plainText(p.text));
   const notes = paras.filter((t) => /^(출처|자료|sources?)\b/iu.test(t));
   const points = paras.filter((t) => !notes.includes(t)).map((t) => t.replace(/^([^:：]{1,16})([:：])\s*/u, "**$1$2** "));
   const size = points.length > 2 || o.small ? S.sizes.body : lead;
   const box = R.w - pad * 2;
   const inner = Math.min(box, (G.isKorean(paras.join("")) ? 34 : 70) * size * (G.isKorean(paras.join("")) ? 1 : 0.5));
-  // A line that fits the box on one line takes the box's width
+  // A line that fits the box on one line takes the box's width.
   const widthOf = (t, z) => {
     if (G.lineCount(plainText(t), box, z) <= 1) return box;
     const n = G.lineCount(plainText(t), inner, z);
@@ -1749,7 +1749,7 @@ function drawPlaced(slide, S, p, ctx) {
     const soft = p.onField ? S.colour("on-field") : S.colour("ink-muted");
     for (const para of p.paras) {
       y += para.gap;
-      // The marker is a small dot centred on the first line
+      // The marker is a small dot centred on the first line, drawn as a shape so no font swaps it.
       if (para.kind === "bullet") {
         const d = Math.max(4, Math.round(p.size * 0.28));
         const lineH = p.size * G.leading(para.text);
@@ -1910,7 +1910,7 @@ function drawPlaced(slide, S, p, ctx) {
   if (p.kind === "caption") drawCaption(slide, S, p.item.content, p.x, p.y, p.w, p.role === "on-field" ? "on-field" : "ink-muted");
 }
 
-/** A figure on a dark ground is drawn from its dark variant when the source folder has one beside it */
+/** A figure on a dark ground is drawn from its dark variant when the source folder has one beside it. */
 function forGround(file, S) {
   const c = (i) => parseInt(String(S.P.ground).replace("#", "").slice(i, i + 2), 16) / 255;
   if (0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4) >= 0.25) return file;
@@ -1945,7 +1945,7 @@ function periodOf(name) {
   return y * 100 + (within || 0);
 }
 
-/** The series a chart highlights */
+/** The series a chart highlights is the latest period, else the measured one. */
 function primarySeries(names) {
   const periods = names.map(periodOf);
   if (periods.every((v) => v != null) && new Set(periods).size === periods.length) return periods.indexOf(Math.max(...periods));
@@ -1959,7 +1959,7 @@ function seriesKey(name) {
   return plainText(name).replace(/\s*[(（][^)）]*[)）]\s*$/u, "").trim().toLowerCase();
 }
 
-/** A native chart in the pack's chart style */
+/** Draws a native chart in the pack's chart style. */
 function drawChart(slide, S, c, p) {
   const P = S.P;
   const chart = S.pack.chart || {};
@@ -1967,7 +1967,7 @@ function drawChart(slide, S, c, p) {
   const muted = mix(P["ink-muted"], P.ground, 0.45);
   let colours;
   if (series <= 1) {
-    // One series is one hue (a per-point highlight would make the chart read as categories)
+    // One series is one hue; a per-point highlight would make the chart read as categories.
     const other = S.seriesRole && S.seriesRole.get(seriesKey((c.headers || [])[1])) === "other";
     const receding = chart.highlight === "accent-on-muted" ? muted : P.series.find((h) => String(h).toUpperCase() !== String(P.accent).toUpperCase()) || muted;
     colours = [other ? receding : P.accent];
@@ -2068,7 +2068,7 @@ function overflows(placed) {
   return placed.some((p) => !p.decor && p.limit != null && p.y + p.h > p.limit + 0.5);
 }
 
-/** The zones of one treatment frame */
+/** Returns the zones of one treatment frame. */
 function zonesOf(frame, S) {
   const t = frame.title;
   const cls = frame.id === "side-rail" ? "side" : frame.id === "bottom-anchor" ? "bottom" : "top";
@@ -2077,11 +2077,11 @@ function zonesOf(frame, S) {
   return { cls, Z, bandTop: cls === "bottom" ? Z.y : Math.min(t.y + t.h, Z.y) };
 }
 
-/** Lay a content slide out under one frame and, when the body leaves more than the density band empty, try the */
+/** Lay a content slide out under one frame, then try the pack's fill policies while the body stays under-filled. */
 // A line that names the slide's source or a note on its basis ("출처:", "주:", "Source:", "Note:").
 const STRIP = /^(?:출처|자료|주|Sources?|Notes?)\s*[:：]/iu;
 
-/** The source and note lines of a content slide's text, taken out of its takeaways */
+/** The source and note lines of a content slide's text, taken out of its takeaways into a foot strip. */
 function takeStrip(spec, items) {
   // A closing with a next step keeps its source there; a closing summary has no such line, so it takes the strip.
   if (G.VARIANTS.closing.includes(spec.family) && spec.family !== "closing-summary-list") return { items, lines: [] };
@@ -2103,20 +2103,20 @@ function stripPlacements(lines, Z, S) {
   paras[0].gap = 0;
   const h = paras.reduce((a, q) => a + q.gap + q.h, 0);
   const y = Z.bottom - h;
-  // A hairline sets the strip off where the pack draws hairlines
+  // A hairline sets the strip off where the pack draws hairlines.
   return { h: h + 10, placed: [
     ...(S.deco.has("hairline-rule") ? [{ decor: true, kind: "rect", x: Z.x, y: y - 6, w: Z.w, h: 0.5, fill: "line" }] : []),
     { kind: "text", paras, size, x: Z.x, y, w: Z.w, h, muted: true, limit: Z.bottom },
   ] };
 }
 
-// Families that pair a visual with its takeaways
+// Families that pair a visual with its takeaways may use the rail.
 const RAIL_TAKEAWAYS = new Set(["chart-insight", "full-chart", "table-insight", "figure-academic", "image-split",
   "kpi-row", "big-number", "kpi-over-chart", "dashboard-grid", "photo-grid", "figure-pair", "asymmetric-feature"]);
 // A rail more empty than this, from the title down, costs the slide the side rail.
 const RAIL_EMPTY = 0.4;
 
-/** The rail under a side title */
+/** The rail under a side title holds the slide's supporting content. */
 function railOf(frame, S) {
   const t = frame.title;
   const s = S.grid.span(1, 4);
@@ -2143,7 +2143,7 @@ function planSlide(spec, frame, S, items) {
   const rail = z.cls === "side" ? railOf(frame, S) : null;
   const railPlaced = [];
   const taken = takeStrip(spec, items);
-  // The source strip
+  // The source strip stands at the rail's foot or the body's.
   let lines = taken.lines;
   items = taken.items;
   if (lines.length && rail) {
@@ -2152,11 +2152,11 @@ function planSlide(spec, frame, S, items) {
     rail.bottom -= strip.h + S.tok.block;
     lines = [];
   }
-  // A visual's takeaways stand in the rail when they fit there, a chart's values table under them
+  // A visual's takeaways stand in the rail when they fit there, a chart's values table under them.
   if (rail && RAIL_TAKEAWAYS.has(spec.family) && !spec.stacked) {
     const { texts, visuals } = sortItems(items);
     const paras = texts.filter((t) => t.type !== "main-box").flatMap(itemParas);
-    // A table keeps its own height
+    // A table keeps its own height.
     const fills = () => {
       // Figure rows and number panels spread to the floor; so do charts and pictures.
       if (["kpi-row", "big-number"].includes(spec.family) || visuals.some((v) => v.type !== "kpi-table" || (v.content || {}).chart)) return true;
@@ -2174,7 +2174,7 @@ function planSlide(spec, frame, S, items) {
       // Body size when it fills the rail; else whichever size leaves the rail least empty.
       const pick = sets.find((x) => x.band <= RAIL_EMPTY) || sets.reduce((a, b) => (b.band < a.band ? b : a), sets[0]);
       if (pick) {
-        // Takeaways that still leave a quarter of the rail empty share that room between them, at most a sixth of the
+        // Takeaways that still leave a quarter of the rail empty share that room as gaps, a sixth of the rail at most.
         const [m] = pick.set;
         const breaks = m.paras.filter((para, i) => i > 0 && para.kind !== "child");
         const room = rail.bottom - S.tok.block - (pick.set[pick.set.length - 1].y + pick.set[pick.set.length - 1].h);
@@ -2188,7 +2188,7 @@ function planSlide(spec, frame, S, items) {
       }
     }
   }
-  // A sidebar note is the slide's supporting content
+  // A sidebar note stands in the rail under a side title.
   if (rail && spec.family === "sidebar-note") {
     const texts = sortItems(items).texts;
     const note = texts.find((t) => t.type === "main-box") || (texts.length > 1 ? texts[texts.length - 1] : null);
@@ -2257,7 +2257,7 @@ function planSlide(spec, frame, S, items) {
     }
   }
   z.Z = zone();
-  // A text column that stops short of the column beside it is filled by layout
+  // A text column that stops short of the column beside it is filled by layout.
   const floor = full.bottom;
   let short = shortColumn([...out.placed, ...(across && !offer ? across.placed : [])], floor, S);
   // The fill starts a little under the line (0.35), so a column the gate reads a point or two emptier than the
@@ -2301,7 +2301,7 @@ function chooseTreatment(spec, S, deck) {
   const cost = (x) => x.plan.band + (x.plan.band > S.tok.cap ? 0.15 : 0) + 0.07 * (deck.count[x.t] || 0) +
     (x.t === deck.prev ? 0.08 : 0) - (x.t === options[0] ? 0.03 : 0) + ((deck.count[x.t] || 0) >= deck.limit ? 1 : 0);
   const best = pool.reduce((b, x) => (cost(x) < cost(b) - 1e-9 ? x : b));
-  // The role's own title is the pack's structure
+  // The role's own title is the pack's structure and usually stays.
   const ownT = options[0] === "bottom-anchor" && !drawn(spec) ? options.find((t) => t !== "bottom-anchor") : options[0];
   const own = pool.find((x) => x.t === ownT);
   const margin = best.plan.band > S.tok.cap ? 0.15 : 0.1;
@@ -2334,7 +2334,7 @@ function spreadTreatments(choices, S, pack, slideCount) {
     choices.set(best.spec, { t: best.t, plan: best.plan });
     lines.push(`variety: slide ${best.spec.index + 1} drawn under ${best.t} so the deck carries ${used().size} title treatments`);
   }
-  // No title zone on more than 40 % of the content slides
+  // No title zone may hold over 40 % of the content slides.
   const content = [...choices.keys()].filter((spec) => spec.kind === "content");
   const movable = (spec) => spec.role === "data" || spec.role === "data-takeaway";
   const cap = 0.4 * content.length;
@@ -2370,7 +2370,7 @@ function spreadTreatments(choices, S, pack, slideCount) {
     if (!crowded || n <= cap) break;
     let best = moveOut(crowded, zones, new Set());
     if (!best) {
-      // Every zone a crowded slide could take is full
+      // When every zone is full, a data slide moves on to a third zone first.
       for (const [full, m] of Object.entries(zones)) {
         if (full === crowded || m + 1 <= cap) continue;
         const first = moveOut(full, zones, new Set([crowded]));
@@ -2390,7 +2390,7 @@ function spreadTreatments(choices, S, pack, slideCount) {
   const counted = content.filter((spec) => !G.VARIANTS.closing.includes(spec.family));
   const layoutsNeeded = Math.min(5, Math.ceil(0.6 * counted.length));
   const layoutOf = (t, plan) => `${ZONE_OF[t]}/${partitionOf(plan, S)}`;
-  // The check also fails a deck where one layout covers more than 40 % of those slides, so while one does, a
+  // The check also fails one layout on more than 40 % of those slides, so slides move off that layout.
   const shareCap = 0.4 * counted.length;
   for (let guard = 0; guard < counted.length; guard++) {
     const keys = {};
@@ -2418,7 +2418,7 @@ function spreadTreatments(choices, S, pack, slideCount) {
       }
     }
     if (!best) {
-      // No title gives a new layout
+      // No title gives a new layout, so the takeaways may stack under the visual.
       for (const spec of counted) {
         const current = choices.get(spec);
         const from = layoutOf(current.t, current.plan);
@@ -2444,7 +2444,7 @@ function spreadTreatments(choices, S, pack, slideCount) {
   return lines;
 }
 
-/** The boxes a placement draws as the composition check reads them from the page */
+/** The boxes a placement draws, as the composition check reads them from the page. */
 function drawnBoxes(p, S) {
   const B = (x, y, w, h, card = false) => ({ x, y, w, h, card });
   const filled = S.pack.edge !== "border";
@@ -2478,7 +2478,7 @@ function drawnBoxes(p, S) {
     // A chart's caption is its own frame under the plot, as the check reads it.
     case "chart": return p.cap ? [B(p.x, p.y, p.w, p.h - p.cap), B(p.x, p.y + p.h - p.cap + 6, p.w, p.cap - 6)] : [B(p.x, p.y, p.w, p.h)];
     case "image": {
-      // A single picture is drawn contained in its box (on the box floor beside a taller takeaway column), its
+      // A single picture is drawn contained in its box, its caption under it, as the check reads them.
       const size = p.item && p.item.type === "image" && p.item.imageSize;
       if (!size) return [B(p.x, p.y, p.w, p.h)];
       const fit = shared().containBox(p.x, p.y, p.w, p.h - p.cap, size);
@@ -2491,7 +2491,7 @@ function drawnBoxes(p, S) {
   }
 }
 
-/** The column partition a plan draws, read the way the composition check reads the page */
+/** The column partition a plan draws, read the way the composition check reads the page. */
 function partitionOf(plan, S) {
   const Z = plan.z && plan.z.Z;
   // What stands in a side title's rail is part of the title zone, as the check reads it.
@@ -2532,7 +2532,7 @@ function partitionOf(plan, S) {
   return "one";
 }
 
-/** The emptiest text column of a two-column body, read as the gate reads it (OF-115) */
+/** The emptiest text column of a two-column body, read as the gate reads it (OF-115). */
 const TEXT_KINDS = new Set(["text", "caption", "callout", "box", "panel"]);
 // A picture drawn smaller than its box leaves its own column empty above it as a short text column does.
 const SHORT_KINDS = new Set([...TEXT_KINDS, "image"]);
@@ -2552,7 +2552,7 @@ function shortColumn(placed, floor, S) {
   for (const cut of [...new Set(boxes.map((b) => b.x + b.w))].sort((m, n) => m - n)) {
     const a = boxes.filter((b) => b.x + b.w <= cut + 2);
     const c = boxes.filter((b) => b.x >= cut - 2);
-    // A block across most of the body (a note under both columns) belongs to neither
+    // A block across most of the body (a note under both columns) belongs to neither column.
     const across = boxes.filter((b) => !a.includes(b) && !c.includes(b));
     if (!a.length || !c.length || across.some((b) => b.w < 0.7 * (right - left))) continue;
     const top = Math.min(...[...a, ...c].map((b) => b.y));
@@ -2576,7 +2576,7 @@ function shortColumn(placed, floor, S) {
   return worst;
 }
 
-/** Fill a short text column by layout */
+/** Fills a short text column by layout; type never shrinks. */
 function fillColumn(short, floor, S, state) {
   const texts = short.owners.filter((q) => q.kind === "text" && !q.muted && !q.strip && q.paras);
   if (!texts.length) return;
@@ -2625,7 +2625,7 @@ function drawDecor(slide, S, list) {
   for (const d of list || []) packRect(slide, S, d, { fill: d.role, alpha: d.alpha });
 }
 
-/** A content slide */
+/** Draws a content slide, the title frame last. */
 function renderContent(slide, spec, S, ctx, chosen) {
   const f = frameFor(spec, chosen.t);
   const t = f.title;
@@ -2671,7 +2671,7 @@ function renderContent(slide, spec, S, ctx, chosen) {
   });
 }
 
-/** What carries a statement, from the pack's display keys */
+/** What carries a statement, from the pack's display keys; returns the colour the sentence takes. */
 function statementDevice(slide, S, f, supportH) {
   const g = S.grid;
   const t = f.title;
@@ -2681,7 +2681,7 @@ function statementDevice(slide, S, f, supportH) {
     return "on-field";
   }
   if (device === "plate") {
-    // The sentence moves down onto a plate that bleeds off three edges and covers less than half of the page, so
+    // The sentence moves down onto a plate that bleeds off three edges and covers under half the page.
     const top = Math.round((376 - t.h / 2) / 6) * 6;
     if (top - 24 < 282 || top + t.h + 24 + supportH > G.ZONE.floor) return t.colour;
     f.support.y += top - t.y;
@@ -2697,7 +2697,7 @@ function statementDevice(slide, S, f, supportH) {
     return t.colour;
   }
   if (device === "offset") {
-    // The rail stops a column short of the sentence, so the gap between them is part of the grid, and at the body
+    // The rail stops a column short of the sentence and at the body floor, so both gaps belong to the grid.
     packRect(slide, S, { x: 0, y: 0, w: t.x - g.gutter / 2 - g.pitch, h: G.ZONE.floor }, { fill: S.pack.rail === "field" ? "field" : "surface" });
     return t.colour;
   }
@@ -2721,14 +2721,14 @@ function coverImage(slide, box, src, sourceDir) {
   slide.addImage({ path: file, ...croppedTo(file, box), altText: src.caption || path.basename(file) });
 }
 
-/** A picture that fills a box by cropping, never by stretching */
+/** A picture that fills a box by cropping, never by stretching. */
 function croppedTo(file, box) {
   const size = shared().readImageSize(file);
   const ratio = size && size.width && size.height ? size.height / size.width : box.h / box.w;
   return { x: IN(box.x), y: IN(box.y), w: IN(box.w), h: IN(box.w * ratio), sizing: { type: "cover", w: IN(box.w), h: IN(box.h) } };
 }
 
-/** A type-led cover drawn with the pack's display device */
+/** A type-led cover drawn with the pack's display device. */
 const TYPE_COVERS = {
   drench(slide, spec, S, meta) {
     const g = S.grid;
@@ -2830,7 +2830,7 @@ const COVERS = {
     const g = S.grid;
     coverImage(slide, { x: 0, y: 0, w: g.W, h: g.H }, spec.cover.image, spec.sourceDir);
     const span = g.span(1, 8);
-    // The panel is as tall as the title and its meta line and stands on the page foot
+    // The panel is as tall as the title and its meta line and stands on the page foot.
     const { size, h } = coverTitle(S, spec.title, span.w, 2, S.sizes.display);
     const line = [meta.subtitle, metaLine(meta)].filter(Boolean).join("  ·  ");
     const lineH = line ? G.textHeight(line, span.w, S.sizes.label, 1.3) : 0;
@@ -2847,7 +2847,7 @@ const COVERS = {
     packText(slide, S, spec.title, { ...span, y: Math.max(48, 180 - h), h }, { face: "display", size, colour: S.colour("on-field"), lineSpacing: 1.1, title: true, balance: true, name: "title@cover" });
     const subH = meta.subtitle ? G.textHeight(meta.subtitle, g.span(1, 8).w, S.sizes.lead) : 0;
     if (meta.subtitle) packText(slide, S, meta.subtitle, { ...g.span(1, 8), y: 252, h: subH }, { name: "subtitle@cover", size: S.sizes.lead, colour: S.colour("ink-muted") });
-    // Under the band, the deck's parts (else its headline figures) run across the page as the issue's contents
+    // Under the band, the deck's parts (else its headline figures) run across the page as its contents.
     const parts = (spec.cover.index || []).length >= 2 ? spec.cover.index.map((name, i) => [String(i + 1).padStart(2, "0"), name])
       : (spec.cover.figures || []).length >= 2 ? spec.cover.figures.map((f) => [f.value, f.label]) : [];
     if (parts.length) {
@@ -2896,7 +2896,7 @@ const COVERS = {
     const g = S.grid;
     const span = g.span(1, 9);
     const { size, h } = coverTitle(S, spec.title, span.w, 2, S.sizes.display);
-    // The figures sit between the title and the meta line, with a hairline above them
+    // The figures sit between the title and the meta line, with a hairline above them.
     const figs = spec.cover.figures.slice(0, 4);
     // The row stands in the middle of the room between the title and the meta line.
     const rowH = S.sizes.title * 1.3 + 6 + S.sizes.body * 1.4;
@@ -2959,7 +2959,7 @@ const SECTIONS = {
     } });
   },
   "section-band"(slide, spec, S) {
-    // The header band deepened to y 216
+    // The header band deepened to y 216.
     const g = S.grid;
     packRect(slide, S, { x: 0, y: 0, w: g.W, h: 216 }, { fill: "field" });
     const index = showsIndex(spec, S);
@@ -2978,7 +2978,7 @@ const SECTIONS = {
     const numeral = S.sizes.title;
     if (spec.parts) partNumeral(slide, S, spec, { ...g.span(1, 3), y: 216, h: numeral * 1.15 }, numeral, "on-field");
     else if ((spec.contents || []).length) {
-      // No part count
+      // Without a part count the rail lists what the section opens with.
       const w = g.span(1, 3).w;
       let y = 216;
       for (const entry of spec.contents) {
@@ -3028,7 +3028,7 @@ function sectionTitle(slide, spec, S, o = {}) {
   return box;
 }
 
-/** A section the deck gives no part count (one section, no agenda) */
+/** A section the deck gives no part count (one section, no agenda), set as a statement with a preview. */
 function sectionOpener(slide, spec, S, o = {}) {
   const g = S.grid;
   const span = g.span(1, 10);
@@ -3049,7 +3049,7 @@ function sectionOpener(slide, spec, S, o = {}) {
   return box;
 }
 
-/** A section with no part count whose slides carry body lines */
+/** A section with no part count whose slides carry body lines previews them under a hairline. */
 function sectionDigestPage(slide, spec, S, o, d) {
   const g = S.grid;
   const head = S.sizes.lead;
@@ -3062,7 +3062,7 @@ function sectionDigestPage(slide, spec, S, o, d) {
   const right = g.span(1, k);
   const ink = S.colour(d.onField ? "on-field" : "ink");
   const soft = S.colour(d.onField ? "on-field" : "ink-muted");
-  // Each opened slide shows up to two of its lines (a preview, not a copy)
+  // Each opened slide shows up to two of its lines (a preview, not a copy).
   const gap = 24;
   const room = G.ZONE.floor - Math.max(o.top || 0, G.ZONE.body) - d.h - 54;
   const build = (entries, per) => entries.map((e) => {
@@ -3081,7 +3081,7 @@ function sectionDigestPage(slide, spec, S, o, d) {
   }
   if (!rows) rows = build(d.digest.slice(0, 1), 1);
   const sum = rows.reduce((a, r) => a + r.h, 0);
-  // Title, hairline and preview form one block centred in the body (under `top` when a band sits above), like a
+  // Title, hairline and preview form one block centred in the body, like a statement of what the part holds.
   const total = d.h + 54 + sum + gap * (rows.length - 1);
   const y = Math.max(o.top || 0, G.ZONE.body, Math.round(((o.centre || 303) - total / 2) / 6) * 6);
   const listTop = y + d.h + 54;
@@ -3097,7 +3097,7 @@ function sectionDigestPage(slide, spec, S, o, d) {
   return box;
 }
 
-/** A section in a deck with an agenda, set as its index page */
+/** A section in a deck with an agenda, set as its index page. */
 function sectionIndex(slide, spec, S) {
   const g = S.grid;
   const left = g.span(1, 6);
@@ -3210,7 +3210,7 @@ async function renderPack(resolved, templateObj, outputPath) {
   const deck = { used: new Set(), max: pack.dials.varianceMax, count: {}, prev: null, limit: Math.max(3, Math.floor(contentSlides * 0.34)) };
   const chosenBy = {};
   const choices = new Map();
-  // One colour per series name across the deck
+  // One colour per series name across the deck.
   S.seriesRole = new Map();
   for (const spec of resolved.slides || []) {
     for (const item of spec.items || []) {

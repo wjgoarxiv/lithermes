@@ -48,9 +48,9 @@ Families: `full-chart`, `chart-insight`, `kpi-row`, `kpi-over-chart`, `dashboard
 - Covers `cover-numeral`, `cover-typographic`, `cover-figures`; sections `section-numeral`,
   `section-field`; closings `closing-statement`, `closing-decision-box`.
 - Display devices: cover `numeral`, statement `open`, number `tint`, closing `band`.
-- Table: surface header with ink labels, hairline rows in line colour, no banding, right-tabular,
-  bold totals, highlighted row on accent-tint. Chart: hairline grid, direct labels, accent on the
-  series that matters, annotations on. Image: side bleed, crop allowed, no frame.
+- Table: surface header with ink labels, hairline rows in line colour, no banding, numbers
+  right-aligned, bold totals, highlighted row on accent-tint. Chart: hairline grid, direct labels,
+  accent on the series that matters. Image: no frame.
 - Fill order: anchor-visual, step-up, distribute, change-family.
 
 ## Do

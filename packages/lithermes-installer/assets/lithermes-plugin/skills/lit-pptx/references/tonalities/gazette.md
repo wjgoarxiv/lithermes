@@ -50,8 +50,8 @@ Families: `summary-box-list`, `text-two-column`, `text-column`, `ledger-table`, 
   `closing-ask`.
 - Display devices: cover `band`, number `outline`, closing `box`, deck index on.
 - Table: field header with white labels, 0.75 pt grid on every cell, first column on the surface
-  tint, right-tabular, bold totals. Chart: hairline grid, direct labels, key series in accent, no
-  annotation. Image: no bleed or crop, hairline frame.
+  tint, numbers right-aligned, bold totals. Chart: hairline grid, direct labels, key series in
+  accent. Image: hairline frame.
 - Fill order: step-up, distribute, change-family, anchor-visual.
 
 ## Do

@@ -6,7 +6,7 @@ threshold is never the fix.
 ## Grid and margins by density
 
 A4; sides never under 25 mm, bottom never under top, text block 150-160 mm. Pack defaults are
-density 9 (Proposal 8) with a median fill target of 0.80 (Proposal 0.75).
+density 9 (Proposal 8).
 
 | Density | Margins top / bottom / left / right (mm) | Text block (mm) | Body size | Pitch ko / en | Word multiple ko / en |
 |---|---|---|---|---|---|
@@ -119,8 +119,6 @@ node <installed-plugin>/skills/lit-pptx/bin/office.mjs gate report.docx --source
 | `cover.block` | no filled shape over 25 % of the cover |
 | `folio.total` | "page / total" counts real pages |
 | `sidebar.overlap` | a floating sidebar ends before the next heading |
-
-The median fill is reported against the pack target, not failed.
 
 ### Restraint checks (A4.11)
 

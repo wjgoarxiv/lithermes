@@ -1,8 +1,8 @@
 # Ledger (`ledger`)
 
-A statement of accounts made readable: small exact type, tabular figures, tables and figure rows
-carrying the argument. The green-teal accent marks only the current period and the one figure that
-matters.
+A statement of accounts made readable: small exact type, right-aligned numbers, tables and figure
+rows carrying the argument. The green-teal accent marks only the current period and the one
+figure that matters.
 
 ## Pick it when
 
@@ -48,8 +48,8 @@ Families: `kpi-row`, `kpi-over-chart`, `dashboard-grid`, `ledger-table`, `table-
   with an agenda), `section-numeral`; closings `closing-decision-box`, `closing-ask`.
 - Display devices: cover `figures`, number `tint`, closing `box`, deck index on.
 - Table: field header with white labels, hairline under the header and above totals, no banding,
-  right-tabular numbers, bold totals. Chart: hairline grid, direct labels, this period in accent
-  over muted ink, annotations on. Image: side bleed only, no crop, hairline frame.
+  numbers right-aligned, bold totals. Chart: hairline grid, direct labels, this period in accent
+  over muted ink. Image: hairline frame.
 - Fill order: step-up, distribute, anchor-visual, change-family.
 
 ## Do

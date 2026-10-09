@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-08T21:55:12.732Z",
+  "syncedAt": "2026-10-09T09:48:06.257Z",
   "source": "bundled-payload",
-  "sourceHash": "6e5ed05051565a240e04710f3f2a27e16cef0d537fb6c589686e8344b0392928",
+  "sourceHash": "90f18b14eab2e47045be7a922a5041c6fe49545db58ed695a927c5df441e0d38",
   "files": [
     {
       "path": "NOTICE.md",
@@ -3093,7 +3093,7 @@
     },
     {
       "path": "skills/lit-docx/references/page-composition.md",
-      "sha256": "b2d7ae498076e1b5773e6ec46fd067689a1245011e154d96a86156a8e68f0a44"
+      "sha256": "5d6d845d3ad1cf8b44607961a1e148a678828358324d0dff6e04ab2d0f04d7d0"
     },
     {
       "path": "skills/lit-docx/references/slop_phrase_list.yaml",
@@ -3133,7 +3133,7 @@
     },
     {
       "path": "skills/lit-docx/scripts/convert_md_to_docx.py",
-      "sha256": "ff82a906377c376379b64dd94e315a966c9e94137b5af4caeee104f5f57a6db3"
+      "sha256": "be4fdb8c3f831ed157747f36670465bf891b2467ff6b584d14276039dced9dda"
     },
     {
       "path": "skills/lit-docx/scripts/convert_md_to_pdf.py",
@@ -3145,7 +3145,7 @@
     },
     {
       "path": "skills/lit-docx/scripts/docx_design.py",
-      "sha256": "ca1b2e10252b7939434277f0f0b054d4788e8de346e4a73783e0add6636192da"
+      "sha256": "37c9102ec8533f69536d23b46a1c9d3da8b9f23defbb532e3e796d108b119aee"
     },
     {
       "path": "skills/lit-docx/scripts/docx_gate.py",
@@ -3153,7 +3153,7 @@
     },
     {
       "path": "skills/lit-docx/scripts/docx_layout.py",
-      "sha256": "15ced918d1a3ccf76c11d388451b761a4839025edee1570943d47055b2dde611"
+      "sha256": "b47e702721b24e3f8360c000ddb3499d7d65da2feb58a52650a25c5ec8baae27"
     },
     {
       "path": "skills/lit-docx/scripts/edit_docx.py",
@@ -3241,27 +3241,27 @@
     },
     {
       "path": "skills/lit-docx/templates/tonalities/brief.yaml",
-      "sha256": "73a466263bad4f876671de0121b117223f0659f896d99cabde76e8d6a86385f5"
+      "sha256": "41bf481cd799b28ee53538a3cf88a58c4b2f9db365d1ca1ee10b3adfcad1ab8e"
     },
     {
       "path": "skills/lit-docx/templates/tonalities/journal.yaml",
-      "sha256": "aae647c0d62e6b801923651df754933e92c3db8c07c0fe7e12977e1c8473e028"
+      "sha256": "0a7ae34ccd6e91f289c472bfeb8bcfd6736005f15c55a63dd4cc43e55606ec57"
     },
     {
       "path": "skills/lit-docx/templates/tonalities/manual.yaml",
-      "sha256": "de31b0bfa3dc46d172b84af6d60ade9ac1411ba0fb34bb2e402e3a0f80486c67"
+      "sha256": "cc965f5523c7cbaa4c1d0bc06e5260641dfc8113b77f2c252862a397eb97ce84"
     },
     {
       "path": "skills/lit-docx/templates/tonalities/memo.yaml",
-      "sha256": "bac736a847c6b3f127875af9677f944af3e6ae1da3ec824e8f956f61bd2460de"
+      "sha256": "37ef41eafd19a05246713523c01eb886af3d754c7d23162b2f3015dab8854772"
     },
     {
       "path": "skills/lit-docx/templates/tonalities/proposal.yaml",
-      "sha256": "7cf710c09ae8d30a208f59167e9b47f0222a2184231a68047aa596f2c7e135d4"
+      "sha256": "b1b7f4875a89208939ca82d69e6cfb30c35b64ea91d67d5aecc98fe04bde3bfc"
     },
     {
       "path": "skills/lit-docx/templates/tonalities/report.yaml",
-      "sha256": "ad8312bba2752e142ef40b560c13339f5411be73acb0f01634a4e744b215e5d8"
+      "sha256": "23ac1d24f8936c6d522e19354d5948f0d00dce6d60c34fa42e37adafcc68cb8c"
     },
     {
       "path": "skills/lit-handoff/ORIGIN.json",
@@ -3540,6 +3540,10 @@
       "sha256": "650e2e90ee3d932416cde84b6db380e3664db585d5f70a356d274a540f486200"
     },
     {
+      "path": "skills/lit-pptx/FORBIDDEN_TERMS.json",
+      "sha256": "8ef78f42a519c513c9291d8145dedd6180d4130e31553d1036821f1afd61cc81"
+    },
+    {
       "path": "skills/lit-pptx/NOTICE",
       "sha256": "8a32f7ace88e748624b8f3fd019ba9a740f6d8b1893254fee5f1b76bb44b6ad2"
     },
@@ -3729,35 +3733,35 @@
     },
     {
       "path": "skills/lit-pptx/references/tonalities/atlas.md",
-      "sha256": "2a935a7bf99a584a601be9deed936bdfe56b99333e1122ef98b9ed8fe2265377"
+      "sha256": "37cbc87a2347aa2b640fb5d99dfd641e7bdc2d05d5764ffb92c911450000eda5"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/chalk.md",
-      "sha256": "34f83faeb54c86841b260e0bdee0a6432fee529ee8d8accd7dcd691193934082"
+      "sha256": "b6d10b50437a6e46e498425fa0bd4d2e3943b33af7180d9935e87b79d9f8ce5f"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/gazette.md",
-      "sha256": "3f86da1d60d6def6a8bfcce0406e33247792ac8941aa0e598fc20fb7dc453692"
+      "sha256": "d26daffd3c7229f1cf017ebe130e3be1fff04ef6a8c2d71bec62ab101f740aba"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/ledger.md",
-      "sha256": "cc9ace54cabc6caa3bcb49682b02fd88ad770cc279ffe5c433ffd93a52496d33"
+      "sha256": "530dd885b308a92607aa3d961399d54975869960ff82e312d61052e861f092a5"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/night.md",
-      "sha256": "e2cfb2ac3ce8540b16e608b68233c8cb97f71ea8948410ce52c971a7551dd1c9"
+      "sha256": "c60f7f08c79fe71f4d2b7c567f77109eb9b0c17a8d59509aca62ff47cb8119ac"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/paper.md",
-      "sha256": "cadea4db242bf89c0a4b512b06d028ddfd171c4b84db0c2a20c2a66fb6e295ce"
+      "sha256": "e33f03bada9548a29086a71055d8c4ecc1cd4cd346dbd8d8d4490c13a0d7c424"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/signal.md",
-      "sha256": "b15bf1652d67cedc93b12036a9ceecf8d8e1a943bc48ebf448ddc3c8b28da9b5"
+      "sha256": "4af361cb2bdf658f032a77adf9095c56ff37be083c1eeb60b9937dfe0e2c1993"
     },
     {
       "path": "skills/lit-pptx/references/tonalities/studio.md",
-      "sha256": "9b308cc9d11da875dbb86a79089fdb1417094c332d139819b6c1efdd3b398c4c"
+      "sha256": "82b93ab9369fc2e9cc3ee375bd714a975f321af56480922533ab70a01cb8dce0"
     },
     {
       "path": "skills/lit-pptx/runtime/package-lock.json",
@@ -3785,7 +3789,7 @@
     },
     {
       "path": "skills/lit-pptx/scripts/deck_output.py",
-      "sha256": "41ebf2c196bc84825de5f5a4495a8e31312584467b5511a996fb8b901487b8af"
+      "sha256": "928cf0a8e22988c059b787047439362f6056413b1b2b494b4bb0e32f8e4211eb"
     },
     {
       "path": "skills/lit-pptx/scripts/embed_fonts.py",
@@ -3845,7 +3849,7 @@
     },
     {
       "path": "skills/lit-pptx/scripts/lib/render-pack.js",
-      "sha256": "8d5fb7bfa836f22ffd9a91358c45d7d4de07875ce45e3a41bc0ca8ccbd603119"
+      "sha256": "967783ec4023c66c9f849f811e9b48e884f20ee6ac9e1bef264f7b794c2b3346"
     },
     {
       "path": "skills/lit-pptx/scripts/lib/slide-ast.js",
@@ -3857,15 +3861,15 @@
     },
     {
       "path": "skills/lit-pptx/scripts/lib/template-registry.js",
-      "sha256": "41554defc6997719578047c3d050c7f5f7a4e38e93d47494615dda23bf5ec902"
+      "sha256": "145cefcf8d21b54045c6fc67ae059755a2fed7e375918c0af0e23826ddd21d79"
     },
     {
       "path": "skills/lit-pptx/scripts/qa_deck.py",
-      "sha256": "7458195bb988ee1f719620bb729ad69dbd0c534d649c1ebf0993fcb96cca0e0b"
+      "sha256": "5ce04775a3737276fd7518240e104525c52ce020cf22b311714af19b8fa8755b"
     },
     {
       "path": "skills/lit-pptx/scripts/validate_pptx.py",
-      "sha256": "3a0830acf3a647878bacd599f4ade17462a83c0a24cbda378bb69a6a05b4d362"
+      "sha256": "dbca7e6106ac9f767d61c8f1f9c113624991b9d12526df3b26ac52f8145f029a"
     },
     {
       "path": "skills/lit-pptx/slide-formats/markdown-slide-spec-v1.md",
@@ -3937,35 +3941,35 @@
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/atlas/pack.yaml",
-      "sha256": "1a55367348e8304266e6038a34ec1c84060e3667c9f42c1707e2818c01b535da"
+      "sha256": "9eb26f4796425816ec2691270c6d7a566482b148234bef0e259192726d5ee1a3"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/chalk/pack.yaml",
-      "sha256": "e386a50ad64fd12a8457af60379682892c3e41e2ff5a536afee0a2167ffa00a7"
+      "sha256": "b54ab8c33219a5df54e6965b825d5688f338d74986d0fbc80300d089e6801f1e"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/gazette/pack.yaml",
-      "sha256": "b9f58d62e14bd18d004a928210e01678db923895c8d117f8f93d06286c31ce6c"
+      "sha256": "1c210b4e537b4233647d40c34f9d42cd3564838180f32a964c453a0f8f2ee6b1"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/ledger/pack.yaml",
-      "sha256": "67a4a4fa8ecd9d98c0780d3a49610ccc83993d4f20ee7a875d1fe3c32f3da369"
+      "sha256": "7a697afe423be320c1450a85d23ea8e77280fb5ada175b3838068cf0138d259e"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/night/pack.yaml",
-      "sha256": "631c84ee1388b8d69673bf392b704d4d4061433b12957a29c16c37dd5875eb33"
+      "sha256": "7142a4695e245056a1a38243028c502580b7b075c3c31e78a5512700e2cbf760"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/paper/pack.yaml",
-      "sha256": "f93ab4059ddfd2bcfff93e73112d158620b80f770a9b9fdac678ed4615e5b3e7"
+      "sha256": "70f3bf8ee490abcf6e56968adbc6c3a218a2377724be6f3414a7cec000ea5d0f"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/signal/pack.yaml",
-      "sha256": "db5d0acb28b845ec3049afb84678f1d03d4670e0a607a1aeb9e7141e3fcbb9eb"
+      "sha256": "c4c92302e739b1a9f4fde25b2961272207a56a943cb8dde94cbd3a401b05a7d8"
     },
     {
       "path": "skills/lit-pptx/templates/tonalities/studio/pack.yaml",
-      "sha256": "4fb169a8c2cd4807fadfcbead64e3cf85927fb7d61da2796090ec31ad5c80a25"
+      "sha256": "fc1ed798a6a8fc192fdc27dfcb08f2ef4bfb72e63e9233c0b2c85ec75d76558f"
     },
     {
       "path": "skills/lit-recap/SKILL.md",

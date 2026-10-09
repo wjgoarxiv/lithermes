@@ -52,16 +52,21 @@ def _load_terms() -> tuple[list[str], list[str], bool, bool]:
     )
 
 
-def _build_regex(terms: list[str], case_insensitive: bool, whole_word: bool) -> re.Pattern[str] | None:
+def _build_regex(terms: list[str], case_insensitive: bool, whole_word: bool, latin_words_whole: bool = False) -> re.Pattern[str] | None:
     if not terms:
         return None
     # An acronym (RAM, FTO) is a word in capitals: matched as that word, so "diagram" or "program"
     # does not contain it. Every other term keeps the file's case and word settings.
     acronyms = [term for term in terms if re.fullmatch(r"[A-Z]{2,5}", term)]
-    escaped = [re.escape(term) for term in terms if term not in acronyms]
+    # With latin_words_whole (the hard list), a single Latin word (todo, tbd) is matched as that word or its
+    # plural in s, in the file's case setting: "TODOs" fails, "Mastodon" or "photodocument" does not.
+    words = [term for term in terms if latin_words_whole and term not in acronyms and re.fullmatch(r"[A-Za-z]+", term)]
+    escaped = [re.escape(term) for term in terms if term not in acronyms and term not in words]
     pattern = "|".join(escaped)
     if whole_word and pattern:
         pattern = rf"(?:(?<=\W)|^)(?:{pattern})(?:(?=\W)|$)"
+    if words:
+        pattern = "|".join(filter(None, [pattern, rf"(?<![A-Za-z])(?:{'|'.join(map(re.escape, words))})s?(?![A-Za-z])"]))
     if case_insensitive and pattern:
         pattern = f"(?i:{pattern})"
     if acronyms:
@@ -138,7 +143,7 @@ def _slide_has_title(slide, slide_height: int | None) -> bool:
 def lint(path: str | Path) -> dict[str, Any]:
     prs = Presentation(str(path))
     hard_terms, soft_terms, case_insensitive, whole_word = _load_terms()
-    hard_re = _build_regex(hard_terms, case_insensitive, whole_word)
+    hard_re = _build_regex(hard_terms, case_insensitive, whole_word, latin_words_whole=True)
     soft_re = _build_regex(soft_terms, case_insensitive, whole_word)
 
     missing_titles: list[int] = []

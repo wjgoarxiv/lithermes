@@ -59,7 +59,7 @@ LABELS = {
 }
 PACK_KEYS = {"schema_version", "tonality", "summary", "dials", "docx", "design"}
 DESIGN_KEYS = {"ramp", "numbering", "h1_rule", "title_block", "contents", "summary_form", "conclusion_first", "running_head", "justify",
-               "palette", "accent_on", "page_geometry", "components", "figure_style", "fill", "spacing"}
+               "palette", "accent_on", "page_geometry", "components", "figure_style", "spacing"}
 ACCENT_PLACES = ("title_rule", "callout_rule", "sidebar_rule")
 DIRECTIVE_KEYS = {
     "cover": {"variant", "image", "kicker"},
@@ -101,7 +101,7 @@ def _half(x: float) -> float:
     return math.floor(x * 2 + 0.5) / 2
 
 
-# Margins (top, bottom, left, right) in mm by density
+# Margins (top, bottom, left, right) in mm by density; sides never go under 25 mm.
 MARGINS = [(2, (30, 32, 30, 30)), (4, (28, 30, 28, 28)), (6, (27, 29, 27, 27)), (8, (26, 28, 26, 26)), (9, (25, 27, 25, 25)), (10, (24, 26, 25, 25))]
 
 
@@ -776,7 +776,7 @@ def setup_styles(doc, T: Tonality):
             set_run_fonts(doc.styles[name].element.get_or_add_rPr(), *head_font)
         except KeyError:
             pass
-    # Every style the document carries is in ink, including the ones this build does not use
+    # Every style the document carries is in ink, including the ones this build does not use.
     for el in doc.styles.element.iter(qn("w:color")):
         el.set(qn("w:val"), ink)
         for key in ("themeColor", "themeShade", "themeTint"):
@@ -990,7 +990,7 @@ def add_columns(ctx, d: Directive):
     gap = float(d.attrs.get("gap") or T.column_gap_mm)
     parts = COLUMN_BREAK.split(d.body)
     if len(parts) > 1 and n > 1:
-        # The author placed the break
+        # The author placed the break, one cell per part.
         side_by_side(ctx, parts[: n - 1] + ["\n\n".join(parts[n - 1:])], gap, d.attrs.get("rule") in ("true", "1"))
         return
     ctx.section_break(cols=n, gap=gap, rule=d.attrs.get("rule") in ("true", "1"))
@@ -1452,12 +1452,12 @@ def treat_headings(doc, T: Tonality):
             continue  # a level under a missing parent stays unnumbered
         number = heading_number(scheme, counters, level)
         if number and scheme == "roman-ko":
-            # The institute manner
+            # The institute manner sets "Ⅴ. 소요 예산" with one space.
             _prefix_runs(p, [(number, None, T.colour("ink"), True), (" ", None, T.colour("ink"), False)])
         elif number:
             _prefix_runs(p, [(number, None, T.colour("ink"), True), "\t"])
             numbered.append((p, level, number))
-    # Decimal numbers
+    # Decimal numbers hang one width per level.
     hang = {}
     for _, level, number in numbered:
         need = _advance(number, T.sizes[f"h{level}"]) * 1.1 / 2.835 + 3
@@ -1637,7 +1637,7 @@ def keep_heading_with_table(doc):
         while after is not None and between(after):
             Paragraph(after, doc._body).paragraph_format.keep_with_next = True
             after = after.getnext()
-        # A short lead (about two lines) and a table of up to eight body rows
+        # A short lead (about two lines) and a table of up to eight body rows move together.
         rows = len(after.findall(qn("w:tr"))) if after is not None and after.tag == qn("w:tbl") else 99
         if after is not None and after.tag == qn("w:tbl") and rows <= 9 and len(re.sub(r"\s+", "", "".join(t.text or "" for t in lead.iter(qn("w:t"))))) <= 200:
             p.paragraph_format.keep_with_next = True
@@ -1979,7 +1979,7 @@ def finish_tables(doc, T: Tonality, lang: str):
             nxt = table._tbl.getnext()
             noted = nxt is not None and nxt.tag == qn("w:p") and bool(SOURCE_LINE.match("".join(t.text or "" for t in nxt.iter(qn("w:t"))).strip()))
             rows = list(table.rows)
-            # A long table (header + 6 body rows or more) may break between rows, header repeated, only where a quarter of
+            # A long table (header + 6 body rows or more) may break between rows, header repeated, with a quarter page left.
             head, filled = 0, 0.0
             while head < len(rows) and (head < 4 or filled < 0.25 * frame_h):
                 filled += heights[head]
@@ -2350,7 +2350,7 @@ def build(doc, front: dict, body: str, T: Tonality, render_md, lang: str, filter
         _check(cover.attrs.get("variant") or "typographic", COVERS, f"line {cover.line}: cover variant")
         if not front.get("title"):
             raise DesignError(f"line {cover.line}: a cover takes its title from frontmatter title:, which is missing")
-        # Key figures never stand on a cover
+        # Key figures never stand on a cover.
         figures = [b for b in split_directives(cover.body, cover.line) if isinstance(b, Directive) and b.name == "keyfigures"]
         if figures and not T.neutral:
             if "keyfigures" in T.allowed_kinds:
