@@ -627,9 +627,14 @@ def _normalized_exact_phrase(text: str) -> str:
     return re.sub(r"\s+", " ", text.strip()).lower()
 
 
+def _first_sentence(text: str) -> str:
+    # A stop ends a sentence only before whitespace or the end, so notes.md, v1.2 and example.com stay whole.
+    return re.split(r"\n|[.!?](?=\s|$)", text, maxsplit=1)[0]
+
+
 def _bare_lit_mode(objective: str) -> str:
     prose = re.sub(r"(?m)^\s*#{1,6}\s+.*$", "", objective).strip()
-    first = re.split(r"[\n.!?]", prose, maxsplit=1)[0]
+    first = _first_sentence(prose)
     slide = re.search(r"발표자료|발표|슬라이드|피피티|(?:^|[^A-Za-z])(?:slides?|deck|presentation|pptx?)(?![A-Za-z])", first, re.IGNORECASE)
     document = re.search(r"보고서|리포트|기획서|제안서|문서|워드|(?:^|[^A-Za-z])(?:report|docx?|word)(?![A-Za-z])", first, re.IGNORECASE)
     authoring = re.search(r"만들|작성|써\s*줘|써줘|제작|생성|정리|(?:^|[^A-Za-z])(?:make|create|write|draft|prepare|build|produce|generate)(?![A-Za-z])", first, re.IGNORECASE)
@@ -781,7 +786,7 @@ def detect_lit_mode(message: str) -> NaturalLitRoute | None:
 
         # After the named routes and before `design` (which names the UI skill):
         # "lit design a lyric video" is a film request (MO-C-18).
-        if detect_motion_video_intent(re.split(r"[\n.!?]", after, maxsplit=1)[0]):
+        if detect_motion_video_intent(_first_sentence(after)):
             return NaturalLitRoute(mode=MOTION_MODE, objective=_clamp_task(after), visible_message=visible)
         rest = _after_mode_word(after, "design")
         if rest is not None:

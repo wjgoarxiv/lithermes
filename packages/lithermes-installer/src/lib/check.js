@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { configHasLitHermes, formatConcurrencyCapability, inspectHermesCapabilities, readConfig, readExternalSkillDirsConfig } = require("./config");
+const { configHasLitHermes, formatConcurrencyCapability, inspectHermesCapabilities, readConfig, readExternalSkillDirsConfig, readStatusBarFields, suggestStatusBarFields } = require("./config");
 const { detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, expandHome, inspectHermesHostCapabilities, LitHermesError } = require("./hermesDiscovery");
 const { formatManagedRoute } = require("./modelRoutePolicy");
 const { inspectPythonCache } = require("./files");
@@ -223,6 +223,17 @@ function motionProbeLines(pluginPath, hermesHome) {
   ];
 }
 
+function formatStatusBarFields(configText) {
+  const suggested = suggestStatusBarFields(configText);
+  if (suggested) {
+    return `status bar fields: DEFAULT (suggest display.status_bar.fields: [${suggested.join(", ")}]; LitHermes does not write it)`;
+  }
+  const fields = readStatusBarFields(configText);
+  return fields === null
+    ? "status bar fields: UNKNOWN (config.yaml did not parse)"
+    : `status bar fields: CUSTOM (${fields.length} ${fields.length === 1 ? "field" : "fields"}, left as configured)`;
+}
+
 function doctorLitHermes(flags = {}) {
   const bundledBytecodeEntries = inspectPythonCache(assetRoot);
   const { hermesHome, hermesRepo } = ensureHermesHome(flags);
@@ -290,6 +301,7 @@ function doctorLitHermes(flags = {}) {
     `loaded plugin: ${loaded.status} (${loaded.reason})`,
     `skill shadow check: ${skillShadows.length ? "WARNING" : "PASS"}`,
     ...skillShadows.map(formatSkillShadowWarning),
+    formatStatusBarFields(configText),
     `auto-compaction: ${auto.status}${auto.reason ? ` (${auto.reason})` : ""}`,
 		`concurrency: ${formatConcurrencyCapability(concurrency)}`,
 		`recursion: ${recursion.status}${recursion.status === "hard" ? recursion.flatBy === "depth" ? ` (depth ${recursion.limit}, flat)` : ` (configured depth ${recursion.limit}, flat via orchestrator kill switch)` : ` (${recursion.reason})`}`,

@@ -31,6 +31,7 @@ const TOKYONIGHT_DAY_PALETTE = Object.freeze({
   primary: "#2E7DE9",
   secondary: "#9854F1",
   selection: "#FFFFFF",
+  severity: { good: "#4F6933", warn: "#785D35", bad: "#984F00", critical: "#AE3B3B" },
 });
 const TOKYONIGHT_NIGHT_PALETTE = Object.freeze({
   background: "#1A1B26",
@@ -38,7 +39,23 @@ const TOKYONIGHT_NIGHT_PALETTE = Object.freeze({
   primary: "#7AA2F7",
   secondary: "#BB9AF7",
   selection: "#292E42",
+  severity: { good: "#9ECE6A", warn: "#E0AF68", bad: "#FF9E64", critical: "#F7768E" },
 });
+
+// Status-bar severity ink for the LIT accents and Ignition. The accents only
+// recolor brand surfaces, so one set per polarity keeps good/warn/bad/critical
+// readable apart under every accent.
+const LIT_SEVERITY_DARK = Object.freeze({ good: "#5FD38D", warn: "#FFC24B", bad: "#FF8A3D", critical: "#FF4D5E" });
+const LIT_SEVERITY_LIGHT = Object.freeze({ good: "#1E7B45", warn: "#8A5A00", bad: "#B4490F", critical: "#B3192B" });
+
+function severityColors(severity) {
+  return {
+    status_bar_good: severity.good,
+    status_bar_warn: severity.warn,
+    status_bar_bad: severity.bad,
+    status_bar_critical: severity.critical,
+  };
+}
 const TOKYONIGHT_DAY = Object.freeze({
   accent: "tokyonight-day",
   code: null,
@@ -72,6 +89,7 @@ function ignitionColorBlock(name, light = false) {
     prompt: ink,
     status_bar_bg: light ? "#F2EFDF" : "#080D14",
     completion_menu_bg: light ? "#F2EFDF" : "#080D14",
+    ...severityColors(light ? LIT_SEVERITY_LIGHT : LIT_SEVERITY_DARK),
   });
   return [name + ":", ...Object.entries(colors).map(([key, value]) => `  ${key}: "${value}"`)];
 }
@@ -105,8 +123,12 @@ function darkenHex(hex, factor = 0.55) {
   return `#${rgb.map(channel).join("")}`;
 }
 
-function colorBlock(name, hex) {
-  return [`${name}:`, ...ACCENT_COLOR_KEYS.map((key) => `  ${key}: "${hex}"`)];
+function colorBlock(name, hex, severity = LIT_SEVERITY_DARK) {
+  return [
+    `${name}:`,
+    ...ACCENT_COLOR_KEYS.map((key) => `  ${key}: "${hex}"`),
+    ...Object.entries(severityColors(severity)).map(([key, value]) => `  ${key}: "${value}"`),
+  ];
 }
 
 function paletteColorBlock(name, palette) {
@@ -134,10 +156,7 @@ function paletteColorBlock(name, palette) {
     ui_warn: palette.foreground,
     ui_error: palette.foreground,
     ui_ok: palette.foreground,
-    status_bar_good: palette.foreground,
-    status_bar_warn: palette.foreground,
-    status_bar_bad: palette.foreground,
-    status_bar_critical: palette.foreground,
+    ...severityColors(palette.severity),
   });
   return [name + ":", ...Object.entries(colors).map(([key, value]) => `  ${key}: "${value}"`)];
 }
@@ -172,7 +191,7 @@ function renderSkinYaml(entry) {
     : [
       ...(entry === IGNITION ? ignitionColorBlock("colors") : colorBlock("colors", h)),
       ...(entry === IGNITION ? ignitionColorBlock("dark_colors") : colorBlock("dark_colors", h)),
-      ...(entry === IGNITION ? ignitionColorBlock("light_colors", true) : colorBlock("light_colors", darkenHex(h))),
+      ...(entry === IGNITION ? ignitionColorBlock("light_colors", true) : colorBlock("light_colors", darkenHex(h), LIT_SEVERITY_LIGHT)),
     ];
   const welcomeRows = theme ? recolorMarkup(microLogo(), theme) : microLogo();
   const logoRows = theme ? recolorMarkup(skinLogo(), theme) : skinLogo();
@@ -181,8 +200,9 @@ function renderSkinYaml(entry) {
     `description: LitHermes ${entry.label} accent HUD`,
     ...colorBlocks,
     "spinner:",
-    '  waiting_faces: ["🔥", "🔥", "🔥", "🔥"]',
-    "  thinking_verbs: [igniting, forging, burning, tempering]",
+    '  waiting_faces: ["(lit)", "(◜)", "(◝)", "(◞)", "(◟)"]',
+    '  thinking_faces: ["(lit)", "(✦)", "(◇)", "(⌁)"]',
+    "  thinking_verbs: [lit-looping, planning, verifying, gathering evidence, checking criteria, reviewing]",
     "  wings:",
     '    - ["◜", "◝"]',
     '    - ["◞", "◟"]',

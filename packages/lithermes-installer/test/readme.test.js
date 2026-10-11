@@ -73,20 +73,23 @@ function assertCanonicalHero(text, expectedHero, repository, label) {
   assert.equal(hero?.[1], expectedHero, `${label} must preserve Ignition B rows with only trailing canvas padding omitted`);
 }
 
-test("bilingual entry pages preserve the canonical banner and use repository artwork and guides", () => {
+const TOUR_PAGES = [path.join(repoRoot, "docs", "tour.md"), path.join(repoRoot, "docs", "tour.ko.md")];
+
+test("bilingual entry pages open with one cover, and the tour page keeps the canonical banner", () => {
   const mark = require("../src/lib/litMark");
   const expectedHero = mark.lockup("lithermes", mark.banner).map((row) => row.trimEnd()).join("\n");
+  for (const file of TOUR_PAGES) {
+    const text = fs.readFileSync(file, "utf8");
+    assertCanonicalHero(text, expectedHero, true, file);
+    assert.ok(text.includes('<p align="center"><img src="./assets/readme/ascii-readme.svg" width="480"'), file + " must load its ASCII mark from the repository artwork");
+  }
   for (const directory of [repoRoot, packageRoot]) {
     for (const name of ["README.md", "README_Ko-KR.md"]) {
       const file = path.join(directory, name);
       const text = fs.readFileSync(file, "utf8");
-      // The copyable banner belongs to the GitHub page; the npm card keeps only the mark image.
-      if (directory === repoRoot) assertCanonicalHero(text, expectedHero, true, file);
-      else assert.doesNotMatch(text, /<details>/, file + " is a short npm card without collapsible sections");
-      const markSrc = directory === repoRoot
-        ? "./docs/assets/readme/ascii-readme.svg"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/ascii-readme.svg";
-      assert.ok(text.includes('<p align="center"><img src="' + markSrc + '" width="480"'), file + " must load its ASCII mark from its own surface");
+      // Landing pages show one cover; the copyable banner, wordmark and clay mark live on the tour page.
+      assert.doesNotMatch(text, /<details>/, file + " keeps collapsible extras off the landing page");
+      assert.doesNotMatch(text, /ascii-readme\.svg|lithermes-wordmark\.svg|lithermes-clay-icon\.png/, file + " must not stack logo images under the cover");
       const coverSrc = directory === repoRoot
         ? "./docs/assets/cover-motion.webp"
         : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/cover-motion.webp";
@@ -134,12 +137,12 @@ test("npm READMEs use current-version package URLs for media and local file link
 test("the collapsible banner guard rejects lost copyability, changed rows and an uncentered mark", () => {
   const mark = require("../src/lib/litMark");
   const expectedHero = mark.lockup("lithermes", mark.banner).map((row) => row.trimEnd()).join("\n");
-  const text = fs.readFileSync(path.join(repoRoot, "README.md"), "utf8");
+  const text = fs.readFileSync(TOUR_PAGES[0], "utf8");
   for (const damaged of [
     text.replace("<details>", "<div>"),
     text.replace("```\n", "<pre>\n"),
     text.replace(expectedHero, expectedHero.replace("▗", " ")),
-    text.replace('<p align="center"><img src="./docs/assets/readme/ascii-readme.svg"', '<p align="left"><img src="./docs/assets/readme/ascii-readme.svg"'),
+    text.replace('<p align="center"><img src="./assets/readme/ascii-readme.svg"', '<p align="left"><img src="./assets/readme/ascii-readme.svg"'),
   ]) {
     assert.throws(() => assertCanonicalHero(damaged, expectedHero, true, "negative control"), assert.AssertionError);
   }
@@ -147,13 +150,48 @@ test("the collapsible banner guard rejects lost copyability, changed rows and an
 });
 
 const GITHUB_SECTIONS = {
-  en: ["Why LitHermes", "Install", "Quick start", "Watch it in motion", "Skills", "How it works", "Beyond code", "The Ignition skin", "Commands", "Automatic handoff", "Optional: Jev skill hint", "When something goes wrong", "More docs and contributing"],
-  ko: ["왜 LitHermes인가요", "설치", "빠른 시작", "움직이는 모습 보기", "스킬", "작동 방식", "코드 밖의 결과물", "Ignition 스킨", "명령", "자동 핸드오프", "선택 기능: Jev 스킬 힌트", "문제가 생겼을 때", "더 읽을 문서와 기여"],
+  en: ["Why LitHermes", "Quick start", "What you get", "How it works", "Requirements, updates and removal", "Learn more", "Contributing"],
+  ko: ["왜 LitHermes인가요", "빠른 시작", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "기여"],
 };
 const NPM_SECTIONS = {
-  en: ["Install", "Your first task", "Routes you will use most", "Making more than code", "What changes after install", "Automatic handoff", "Optional: Jev skill hint", "Check, remove, stay safe", "Learn more"],
-  ko: ["설치", "첫 작업", "자주 쓰는 경로", "코드 밖의 결과물", "설치 후 달라지는 것", "자동 핸드오프", "선택 기능: Jev 스킬 힌트", "확인, 삭제, 안전", "더 알아보기"],
+  en: ["Install", "Your first task", "What you get", "Check, update, remove", "Learn more"],
+  ko: ["설치", "첫 작업", "할 수 있는 일", "확인, 업데이트, 삭제", "더 알아보기"],
 };
+// Material that left the landing pages, by language: each page must exist and be linked from its README.
+const DOCS_PAGES = {
+  en: ["install.md", "tour.md", "skills.md", "automatic-handoff.md", "jev.md"],
+  ko: ["install.ko.md", "tour.ko.md", "skills.ko.md", "automatic-handoff.ko.md", "jev.ko.md"],
+};
+
+test("the landing READMEs link every docs page that holds their moved material, and keep the demo slot", () => {
+  for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
+    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
+    for (const page of DOCS_PAGES[lang]) {
+      assert.ok(fs.statSync(path.join(repoRoot, "docs", page)).isFile(), `docs/${page} must exist`);
+      assert.ok(text.includes(`](./docs/${page})`), `${name} must link docs/${page} from its Learn more list`);
+    }
+    const demo = text.split("\n").filter((line) => line.includes("<!-- demo-gif -->"));
+    assert.equal(demo.length, 1, `${name} keeps exactly one marked demo slot`);
+    assert.match(demo[0], /<img src="\.\/docs\/assets\/[^"]+" width="\d+" alt="[^"]{40,}"/, `${name} demo slot needs a real picture with alt text`);
+    assert.ok(demo[0].includes('<img src="./docs/assets/demo.webp"'), `${name} demo slot shows the session film`);
+    assert.ok(text.indexOf("<!-- demo-gif -->") < text.indexOf("\n## "), `${name} demo slot belongs above the first section`);
+    const lines = text.split("\n").length;
+    assert.ok(lines <= 300, `${name} stays a short landing page (${lines} lines)`);
+  }
+});
+
+test("the README demo film is an animated WebP that lives outside the package and stays off the npm cards", () => {
+  const film = path.join(repoRoot, "docs", "assets", "demo.webp");
+  const bytes = fs.readFileSync(film);
+  assert.equal(bytes.toString("ascii", 0, 4), "RIFF", "demo.webp must be a RIFF container");
+  assert.equal(bytes.toString("ascii", 8, 12), "WEBP", "demo.webp must be a WebP");
+  assert.ok(bytes.length <= 8 * 1024 * 1024, `demo.webp must stay within 8 MiB (${bytes.length} bytes)`);
+  assert.ok(path.relative(packageRoot, film).startsWith(".."), "demo.webp must sit outside the published package folder");
+  assert.ok(!fs.readdirSync(path.join(packageRoot, "readme-assets")).includes("demo.webp"), "the package must not carry a copy of demo.webp");
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /demo\.(gif|webp)/, `${name} npm card must not embed the demo film`);
+  }
+});
 
 test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
   const pages = [
@@ -209,13 +247,15 @@ test("skill table captures ship as identical repository and package copies", () 
     const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
     assert.doesNotMatch(card, /\/skills\/[a-z0-9-]+\.webp/, `packages/lithermes-installer/${name} must leave the gallery to GitHub`);
   }
-  for (const directory of [repoRoot]) {
-    for (const name of ["README.md", "README_Ko-KR.md"]) {
+  // The GitHub gallery lives on the skills page that each landing README links.
+  for (const directory of [path.join(repoRoot, "docs")]) {
+    for (const name of ["skills.md", "skills.ko.md"]) {
       const file = path.join(directory, name);
       const text = fs.readFileSync(file, "utf8");
       const used = [...new Set([...text.matchAll(/\/skills\/([a-z0-9-]+\.webp)/g)].map((match) => match[1]))].sort();
       assert.deepEqual(used, files.skills, `${file} must show every skills image and no missing one`);
-      const skillsAt = text.indexOf(name === "README.md" ? "\n## Skills\n" : "\n## 스킬\n");
+      const skillsAt = text.indexOf(name === "skills.md" ? "\n## All skills\n" : "\n## 전체 스킬\n");
+      assert.ok(skillsAt >= 0, `${file} needs its gallery section`);
       const skillsEnd = text.indexOf("\n## ", skillsAt + 1);
       const rows = [...text.slice(skillsAt, skillsEnd).matchAll(/<td><img src="[^"]*\/skills\/([a-z0-9-]+)\.webp" width="240" alt="[^"]+" \/><\/td>\n<td><code>([a-z0-9-]+)<\/code>/g)];
       assert.equal(rows.length, 36, `${file} skill table must hold 36 illustrated rows`);
@@ -229,7 +269,6 @@ test("repository README links retain local approved artwork, motion and licensed
   const assets = path.join(repoRoot, "docs", "assets", "readme");
   const digests = {
     "ascii-readme.svg": "1d95d4d8fbffa9826e789de56bbd773b01be69db496ae4d72657f21479a1e556",
-    "badge-license.svg": "decba749e28b4b87635e62eae766899fdc3e91a8e312208ff152831f620b18d7",
     "lucide-book-open.svg": "3ae327cc4bbff19933a3ed535978ff558985b1bcca950e5484f61aa78764ebd2",
     "lucide-play.svg": "ab6e5f5c9e61ec2d8ddd6b93b5476b976c8a0086f5529142a7981284d85f8b83",
     "lucide-shield-check.svg": "aefbe606a9d7cf919208bbd64dfd453b83364f020585be43f32ba162fda4115c",
@@ -243,15 +282,19 @@ test("repository README links retain local approved artwork, motion and licensed
     assert.equal(createHash("sha256").update(fs.readFileSync(path.join(assets, name))).digest("hex"), digest, name);
   }
   const packageAssets = path.join(packageRoot, "readme-assets");
-  for (const name of ["ascii-readme.svg", "lucide-book-open.svg", "lucide-play.svg", "lucide-shield-check.svg", "Lucide-LICENSE.txt", "ignition-film.mp4"]) {
+  for (const name of ["lucide-book-open.svg", "lucide-play.svg", "lucide-shield-check.svg", "Lucide-LICENSE.txt", "ignition-film.mp4"]) {
     assert.deepEqual(fs.readFileSync(path.join(packageAssets, name)), fs.readFileSync(path.join(assets, name)), `${name} package copy must match its licensed repository asset`);
   }
+  // The npm card no longer shows the ASCII mark, so the package does not carry it; the GitHub badges come from shields.io.
+  assert.equal(fs.existsSync(path.join(packageAssets, "ascii-readme.svg")), false, "the package must not ship the unused ASCII mark");
+  for (const name of ["badge-version.svg", "badge-license.svg"]) assert.equal(fs.existsSync(path.join(assets, name)), false, `${name} belongs to the npm card only`);
+  assert.equal(createHash("sha256").update(fs.readFileSync(path.join(packageAssets, "badge-license.svg"))).digest("hex"), "decba749e28b4b87635e62eae766899fdc3e91a8e312208ff152831f620b18d7", "badge-license.svg");
   const svg = fs.readFileSync(path.join(assets, "ascii-readme.svg"), "utf8");
   const mark = require("../src/lib/litMark");
   assert.deepEqual([...svg.matchAll(/<g aria-label="([^"]*)">/g)].map((match) => match[1]),
     mark.lockup("lithermes", mark.banner).map((row) => row.trimEnd()).filter(Boolean));
   assert.doesNotMatch(svg, /<(?:image|text|script|foreignObject)\b|\b(?:href|on\w+)\s*=|data:|url\(/i);
-  const badge = fs.readFileSync(path.join(assets, "badge-version.svg"), "utf8");
+  const badge = fs.readFileSync(path.join(packageAssets, "badge-version.svg"), "utf8");
   const version = require("../package.json").version;
   assert.ok(badge.includes(`aria-label="release: ${version}"`));
   assert.ok(badge.includes(`<title>release: ${version}</title>`));
@@ -272,9 +315,8 @@ test("repository README links retain local approved artwork, motion and licensed
       assert.ok(text.includes(`<a href="${target}"><img src="./docs/assets/readme/lucide-${icon}.svg" width="16" alt="" />`), `${name} must use ${icon} in a meaningful link`);
     }
     assert.ok(text.includes(`href="#${install}"`), `${name} must link to its install section`);
-    for (const match of text.matchAll(/(?:src|href)="(\.[^"]+)"|\]\((\.[^)]+)\)/g)) {
-      const relative = match[1] || match[2];
-      assert.ok(fs.statSync(path.resolve(repoRoot, relative)).isFile(), `${name}: ${relative} must resolve to a file`);
+    for (const badge of ["npm/v/", "npm/dm/", "github/license/", "github/stars/"]) {
+      assert.ok(text.includes(`<img src="https://img.shields.io/${badge}`), `${name} needs the ${badge} badge`);
     }
     assert.doesNotMatch(text, /<img[^>]+(?:poster\.png|ignition-readme\.gif)/, "README artwork should stay within the shared decoration set");
     assert.doesNotMatch(text, /README visual draft|integrate resources and rerun/i);
@@ -302,6 +344,46 @@ test("npm READMEs are short install-first cards that send readers to the GitHub 
     assert.equal(card.match(/^# .+$/m)?.[0], full.match(/^# .+$/m)?.[0], `${name} keeps the same name on both pages`);
     assert.ok(card.includes("**Keep the work lit.**") && full.includes("**Keep the work lit.**"), `${name} keeps the same tagline on both pages`);
   }
+});
+
+// GitHub heading anchors: lower case, punctuation dropped, spaces to hyphens, repeats numbered.
+function headingAnchors(markdown) {
+  const anchors = new Set();
+  const seen = new Map();
+  const prose = markdown.replace(/^```[\s\S]*?^```/gm, "");
+  for (const [, heading] of prose.matchAll(/^#{1,6} (.+)$/gm)) {
+    const base = heading.trim().toLowerCase().replace(/<[^>]+>/g, "").replace(/[^\p{L}\p{N}\s_-]/gu, "").replace(/ /g, "-");
+    const count = seen.get(base) || 0;
+    seen.set(base, count + 1);
+    anchors.add(count ? `${base}-${count}` : base);
+  }
+  return anchors;
+}
+
+test("every relative link on the landing READMEs and their docs pages resolves to a file and heading", () => {
+  const pages = [
+    path.join(repoRoot, "README.md"),
+    path.join(repoRoot, "README_Ko-KR.md"),
+    ...[...DOCS_PAGES.en, ...DOCS_PAGES.ko].map((page) => path.join(repoRoot, "docs", page)),
+  ];
+  let checked = 0;
+  for (const file of pages) {
+    const text = fs.readFileSync(file, "utf8");
+    const label = path.relative(repoRoot, file);
+    for (const match of text.matchAll(/(?:src|srcset|href)="((?:\.{1,2}\/|#)[^"]*)"|\]\(((?:\.{1,2}\/|#)[^)]*)\)/g)) {
+      const link = match[1] || match[2];
+      const [target, anchor] = link.split("#");
+      const resolved = target ? path.resolve(path.dirname(file), target) : file;
+      assert.ok(fs.existsSync(resolved) && fs.statSync(resolved).isFile(), `${label}: ${link} must resolve to a file`);
+      if (anchor !== undefined && resolved.endsWith(".md")) {
+        assert.ok(headingAnchors(fs.readFileSync(resolved, "utf8")).has(decodeURIComponent(anchor)), `${label}: ${link} must point at an existing heading`);
+      }
+      checked += 1;
+    }
+  }
+  assert.ok(checked > 100, `link check looks too small: ${checked}`);
+  assert.ok(headingAnchors("## Requirements, updates and removal\n### `/lit` start\n").has("requirements-updates-and-removal"), "anchor helper must follow GitHub slugs");
+  assert.ok(headingAnchors("## 문제가 생겼을 때\n").has("문제가-생겼을-때"), "anchor helper must keep Hangul");
 });
 
 function localPublishPolicyErrors(text) {
@@ -477,7 +559,10 @@ test("package metadata points at the renamed GitHub repository", () => {
   assert.equal(pkg.repository.type, "git");
   assert.equal(pkg.repository.url, "git+https://github.com/wjgoarxiv/lithermes.git");
   assert.equal(pkg.repository.directory, "packages/lithermes-installer");
-  assert.equal(pkg.homepage, "https://www.npmjs.com/package/@litfamily/lithermes");
+  assert.equal(pkg.homepage, "https://github.com/wjgoarxiv/lithermes");
+  assert.match(pkg.description, /^[^.]*Hermes Agent[^.]*\.$/, "description is one plain sentence that names the host");
+  assert.ok(Array.isArray(pkg.keywords) && pkg.keywords.length >= 8 && pkg.keywords.length <= 14, "8-14 keywords");
+  assert.ok(pkg.keywords.includes("hermes-agent"), "keywords must name the host");
   assert.equal(pkg.bugs.url, "https://github.com/wjgoarxiv/lithermes/issues");
   for (const required of ["bin", "src", "assets", "README.md", "README_Ko-KR.md", "readme-assets"]) {
     assert.ok(pkg.files.includes(required), `package files missing ${required}`);
@@ -823,13 +908,14 @@ test("Jev screenshots ship on the GitHub pages only, in both themes, with alt te
   for (const printed of ["✦ Jev skill hint ON", "on — no hint yet", "flag on but TYPESAFE_API_KEY missing", "LitHermes skill hint unavailable (", "continuing normally.", "Jev skill hint: "]) {
     assert.ok(source.includes(printed), `jev_hint.py no longer prints: ${printed}`);
   }
-  for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
-    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
-    const jevAt = text.indexOf(lang === "en" ? "\n## Optional: Jev skill hint\n" : "\n## 선택 기능: Jev 스킬 힌트\n");
-    const jevEnd = text.indexOf("\n## ", jevAt + 1);
-    const section = text.slice(jevAt, jevEnd);
-    assert.ok(section.includes(lang === "en" ? "### What you will see" : "### 화면에서 보이는 것"), `${name} needs its what-you-will-see subsection inside the Jev section`);
-    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/jev\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/jev\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+  for (const [name, lang] of [["jev.md", "en"], ["jev.ko.md", "ko"]]) {
+    const section = fs.readFileSync(path.join(repoRoot, "docs", name), "utf8");
+    assert.ok(section.startsWith(lang === "en" ? "# Optional: Jev skill hint\n" : "# 선택 기능: Jev 스킬 힌트\n"), `${name} is the Jev page`);
+    assert.ok(section.includes(lang === "en" ? "\n## What you will see\n" : "\n## 화면에서 보이는 것\n"), `${name} needs its what-you-will-see section`);
+    for (const required of ["typesafe.ai", "2,000", "LITHERMES_JEV=1", "TYPESAFE_API_KEY", "1.5"]) {
+      assert.ok(section.includes(required), `${name} must keep the data-egress facts: ${required}`);
+    }
+    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/jev\/([a-z-]+)-dark\.webp" \/><img src="\.\/assets\/jev\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
     assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the four pictures in order`);
     for (const [, dark, light, alt] of pictures) {
       assert.equal(dark, light, `${name}: dark and light must be the same picture`);
@@ -857,30 +943,32 @@ test("every README page explains the automatic handoff honestly: off by default,
   for (const printed of ["Handoff saved. Run", "LITHERMES_AUTO_HANDOFF", "LITHERMES_AUTO_HANDOFF_PERCENT", "/lit-handoff auto", "a whole number from 1 to 99", "auto-handoff.json", "Automatic handoff: "]) {
     assert.ok(source.includes(printed), `auto_handoff.py no longer carries: ${printed}`);
   }
-  const pages = [
-    ["README.md", repoRoot, "## Automatic handoff\n"],
-    ["README_Ko-KR.md", repoRoot, "## 자동 핸드오프\n"],
-    ["README.md", packageRoot, "## Automatic handoff\n"],
-    ["README_Ko-KR.md", packageRoot, "## 자동 핸드오프\n"],
-  ];
-  for (const [name, directory, heading] of pages) {
-    const file = path.join(directory, name);
-    const text = fs.readFileSync(file, "utf8");
-    const start = text.indexOf(`\n${heading}`);
-    assert.ok(start > 0, `${file} needs its automatic handoff section`);
-    const section = text.slice(start, text.indexOf("\n## ", start + 1));
+  for (const [name, lang] of [["automatic-handoff.md", "en"], ["automatic-handoff.ko.md", "ko"]]) {
+    const file = path.join(repoRoot, "docs", name);
+    const section = fs.readFileSync(file, "utf8");
+    assert.ok(section.startsWith(lang === "en" ? "# Automatic handoff\n" : "# 자동 핸드오프\n"), `${file} is the automatic handoff page`);
     for (const required of ["/lit-handoff auto on", "/lit-handoff auto off", "/lit-handoff auto status", "LITHERMES_AUTO_HANDOFF=1", "LITHERMES_AUTO_HANDOFF_PERCENT", "/compact"]) {
-      if (directory === packageRoot && required.startsWith("/lit-handoff auto o") && required !== "/lit-handoff auto on") continue;
-      assert.ok(section.includes(required), `${file} automatic handoff section must mention ${required}`);
+      assert.ok(section.includes(required), `${file} must mention ${required}`);
     }
     assert.match(section, /1[^0-9]+99/, `${file} must state the 1 to 99 range`);
     assert.doesNotMatch(section, /기본 ?퍼센트는 \d|default (percent|value) (is|of) \d/i, `${file} must not promise a built-in percent`);
-    if (directory === repoRoot) {
-      assert.match(section, /\| Step \| |\| 단계 \| /, `${file} must label each step in a table`);
-      for (const who of name === "README.md" ? ["Automatic", "You, with `/compact`"] : ["자동입니다", "사용자가 `/compact`"]) {
-        assert.ok(section.includes(who), `${file} must say who does each step (${who})`);
-      }
+    assert.match(section, /\| Step \| |\| 단계 \| /, `${file} must label each step in a table`);
+    for (const who of lang === "en" ? ["Automatic", "You, with `/compact`"] : ["자동입니다", "사용자가 `/compact`"]) {
+      assert.ok(section.includes(who), `${file} must say who does each step (${who})`);
     }
+  }
+  // Each landing page still says the honest short version and links the full page.
+  for (const [name, directory, lang] of [["README.md", repoRoot, "en"], ["README_Ko-KR.md", repoRoot, "ko"], ["README.md", packageRoot, "en"], ["README_Ko-KR.md", packageRoot, "ko"]]) {
+    const file = path.join(directory, name);
+    const text = fs.readFileSync(file, "utf8");
+    const page = lang === "en" ? "docs/automatic-handoff.md" : "docs/automatic-handoff.ko.md";
+    assert.ok(text.includes(directory === repoRoot ? `](./${page})` : `](https://github.com/wjgoarxiv/lithermes/blob/main/${page})`), `${file} must link ${page}`);
+    const at = text.indexOf("/lit-handoff auto on");
+    assert.ok(at > 0, `${file} must show how to switch automatic handoff on`);
+    const nearby = text.slice(Math.max(0, at - 400), at + 400);
+    assert.match(nearby, lang === "en" ? /off by default/ : /기본값이 꺼짐/, `${file} must say it is off by default`);
+    assert.match(nearby, /1[^0-9]+99/, `${file} must state the 1 to 99 range`);
+    assert.ok(nearby.includes("/compact"), `${file} must say the user runs /compact`);
   }
 });
 
@@ -921,18 +1009,21 @@ test("the motion promo ships on the GitHub pages only, inside its size caps, and
     assert.doesNotMatch(page, /letter-spacing|font-stretch/, `${stage} must not animate tracking or width`);
   }
   assert.match(fs.readFileSync(path.join(dir, "source", "Pretendard-OFL.txt"), "utf8"), /SIL Open Font License, Version 1\.1/);
-  for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
+  for (const [name, lang] of [["tour.md", "en"], ["tour.ko.md", "ko"]]) {
     const suffix = lang === "en" ? "" : "-ko";
-    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
+    const text = fs.readFileSync(path.join(repoRoot, "docs", name), "utf8");
     const start = text.indexOf(lang === "en" ? "\n## Watch it in motion\n" : "\n## 움직이는 모습 보기\n");
+    assert.ok(start > 0, `${name} needs its film section`);
     const section = text.slice(start, text.indexOf("\n## ", start + 1));
-    assert.ok(start > text.indexOf(lang === "en" ? "\n## Quick start\n" : "\n## 빠른 시작\n"), `${name}: the film belongs after the quick start`);
-    const picture = section.match(new RegExp(`<p align="center"><a href="\\./docs/assets/promo/promo${suffix}\\.mp4"><picture><source media="\\(prefers-reduced-motion: reduce\\)" srcset="\\./docs/assets/promo/promo-reduced-motion${suffix}\\.webp" /><img src="\\./docs/assets/promo/promo-preview${suffix}\\.webp" width="100%" alt="([^"]+)" /></picture></a></p>`));
+    assert.ok(start > text.indexOf(lang === "en" ? "\n## What you will see on your first run\n" : "\n## 처음 실행하면 보이는 것\n"), `${name}: the film follows the first-run screens`);
+    const picture = section.match(new RegExp(`<p align="center"><a href="\\./assets/promo/promo${suffix}\\.mp4"><picture><source media="\\(prefers-reduced-motion: reduce\\)" srcset="\\./assets/promo/promo-reduced-motion${suffix}\\.webp" /><img src="\\./assets/promo/promo-preview${suffix}\\.webp" width="100%" alt="([^"]+)" /></picture></a></p>`));
     assert.ok(picture, `${name}: the film needs the reduced-motion source first, the preview as the img and the MP4 as its link`);
     assert.ok(picture[1].length > 200 && picture[1].includes("Keep the work lit."), `${name}: the alt text must describe the film`);
-    assert.ok(section.includes(`](./docs/assets/promo/promo${suffix}.mp4)`), `${name}: the MP4 needs its own text link`);
+    assert.ok(section.includes(`](./assets/promo/promo${suffix}.mp4)`), `${name}: the MP4 needs its own text link`);
     assert.match(section, lang === "en" ? /^\*The request and the sample replies in the film are examples\./m : /^\*영상 속 요청과 응답은 예시입니다\./m, `${name}: the caption must say what is an example`);
-    assert.ok(text.indexOf(section) > text.indexOf("cover-motion.webp") && text.startsWith('<p align="center"><picture>'), `${name}: the first-screen cover stays where it was`);
+  }
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    assert.ok(fs.readFileSync(path.join(repoRoot, name), "utf8").startsWith('<p align="center"><picture>'), `${name}: the first-screen cover stays where it was`);
   }
   // Every string the film shows as product output comes from the plugin or the skin.
   const plugin = path.join(packageRoot, "assets", "lithermes-plugin");
@@ -978,12 +1069,12 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     [plugin("lit_mark.py"), "LIT IGNITED · "],
   ]) assert.ok(source.includes(printed), `the product no longer prints: ${printed}`);
   const labels = { en: /^(Captured|Illustration)/, ko: /(얻은 출력|예시 그림)/ };
-  for (const [name, lang] of [["README.md", "en"], ["README_Ko-KR.md", "ko"]]) {
-    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
-    const start = text.indexOf(lang === "en" ? "\n### What you will see on your first run\n" : "\n### 처음 실행하면 보이는 것\n");
+  for (const [name, lang] of [["tour.md", "en"], ["tour.ko.md", "ko"]]) {
+    const text = fs.readFileSync(path.join(repoRoot, "docs", name), "utf8");
+    const start = text.indexOf(lang === "en" ? "\n## What you will see on your first run\n" : "\n## 처음 실행하면 보이는 것\n");
+    assert.ok(start > 0, `${name}: the screens open the tour`);
     const section = text.slice(start, text.indexOf("\n## ", start + 1));
-    assert.ok(start > text.indexOf(lang === "en" ? "\n## Quick start\n" : "\n## 빠른 시작\n"), `${name}: the screens belong inside the quick start`);
-    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/screens\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/screens\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/screens\/([a-z-]+)-dark\.webp" \/><img src="\.\/assets\/screens\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
     assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the five pictures in order`);
     for (const [, dark, light, alt] of pictures) {
       assert.equal(dark, light, `${name}: dark and light must be the same picture`);
@@ -997,7 +1088,7 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     assert.equal(captions.length, 5, `${name} needs one caption per picture`);
     for (const caption of captions) assert.match(caption, labels[lang], `${name}: caption must label the picture honestly`);
     assert.equal(captions.filter((caption) => (lang === "en" ? /^Illustration/ : /예시 그림/).test(caption)).length, 1, `${name}: exactly the acknowledgement picture is an illustration`);
-    assert.ok(section.includes(lang === "en" ? "(#optional-jev-skill-hint)" : "(#선택-기능-jev-스킬-힌트)"), `${name}: link to the Jev pictures instead of repeating them`);
+    assert.ok(section.includes(lang === "en" ? "(./jev.md)" : "(./jev.ko.md)"), `${name}: link to the Jev pictures instead of repeating them`);
   }
   const manifest = require("../package.json");
   assert.ok(!manifest.files.some((entry) => entry.startsWith("docs")), "docs must not be enrolled in the package");

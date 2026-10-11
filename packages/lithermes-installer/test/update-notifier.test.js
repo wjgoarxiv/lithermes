@@ -823,6 +823,19 @@ test("automatic update recovers a bounded stale owner but never steals a fresh l
   assert.equal(spawnCount, 1);
 });
 
+test("the Python first-turn bridge waits longer than the Node transaction it launches", () => {
+  // The bridge's own npx fetch, the inner 30-second install child, doctor and
+  // rollback all run inside the Python limit. An outer limit equal to the inner
+  // one kills the bridge mid-transaction and leaves the Hermes home unknown.
+  const innerMs = notifier.AUTO_UPDATE_TIMEOUT_MS;
+  assert.equal(typeof innerMs, "number");
+  const bridge = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_update.py"), "utf8");
+  const match = bridge.match(/^INSTALL_TIMEOUT_SECONDS = (\d+(?:\.\d+)?)$/mu);
+  assert.ok(match, "auto_update.py must declare INSTALL_TIMEOUT_SECONDS");
+  const outerMs = Number(match[1]) * 1000;
+  assert.ok(outerMs >= innerMs * 2, `outer ${outerMs} ms must leave at least the inner ${innerMs} ms again as headroom`);
+});
+
 test("automatic update rolls back the plugin and records a failure receipt on timeout or misleading doctor", async () => {
   const runAutomaticUpdate = requireFunction("runAutomaticUpdate");
   for (const outcome of [

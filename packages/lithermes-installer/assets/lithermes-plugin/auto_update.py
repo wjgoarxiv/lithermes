@@ -32,7 +32,10 @@ from typing import Any
 PACKAGE_NAME = "@litfamily/lithermes"
 REGISTRY_URL = f"https://registry.npmjs.org/{quote(PACKAGE_NAME, safe='')}/latest"
 REQUEST_TIMEOUT_SECONDS = 3.0
-INSTALL_TIMEOUT_SECONDS = 30.0
+# The bridge's own npx fetch plus the Node transaction (a 30-second install
+# child, doctor and rollback) must finish inside this limit, so it stays well
+# above the inner bound instead of killing the bridge mid-transaction.
+INSTALL_TIMEOUT_SECONDS = 90.0
 MAX_RESPONSE_BYTES = 64 * 1024
 AUTO_UPDATE_GUARD_ENV = "LITHERMES_AUTO_UPDATE_RUNNING"
 INSTALLER_DISTRIBUTION = "npm"

@@ -760,10 +760,16 @@ test("online doctor rejects enabled discovery when loaded plugin command fails",
 test("host capability cannot be spoofed by a version flag", () => {
   // Given: an unsupported real host and an attempted supported-version override
   const home = makeTempHome();
-  // When: install receives the obsolete override-shaped argument
-  const result = run([
+  // When: install receives the obsolete override-shaped argument, the CLI refuses it and writes nothing
+  const spoofed = run([
     "install", "--yes", "--offline", "--no-hud", "--hermes-home", home,
     "--hermes-version", "0.17.0",
+  ], "0.18.0");
+  assert.equal(spoofed.status, 2, spoofed.stdout);
+  assert.match(spoofed.stderr, /unknown option '--hermes-version'/u);
+  assert.equal(fs.existsSync(path.join(home, "lithermes", "install-manifest.json")), false, "a refused flag must not install");
+  const result = run([
+    "install", "--yes", "--offline", "--no-hud", "--hermes-home", home,
   ], "0.18.0");
   // Then: actual host detection wins. Previously this was observed indirectly — 0.18.0
   // was outside the exact-membership set, so the write was refused. Now that an unseen

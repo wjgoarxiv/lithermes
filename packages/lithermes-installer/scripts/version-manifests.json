@@ -11,20 +11,26 @@
     {
       "path": "README.md",
       "kind": "pinned",
-      "occurrences": 4,
-      "why": "Source version and the release badge alt text pin the current release, and so do the alt texts of the install and update-notice screens, which quote lines that print the version and must be recaptured on each release."
+      "occurrences": 1,
+      "why": "The Install section names the source version the page describes; the version-lockstep drift test relies on this pin."
+    },
+    {
+      "path": "docs/tour.md",
+      "kind": "pinned",
+      "occurrences": 2,
+      "why": "The alt texts of the install and update-notice screens quote lines that print the version, and must be recaptured on each release."
     },
     {
       "path": "README_Ko-KR.md",
       "kind": "pinned",
-      "occurrences": 4,
-      "why": "Source version and the release badge alt text pin the current release, and so do the alt texts of the install and update-notice screens, which quote lines that print the version and must be recaptured on each release."
+      "occurrences": 1,
+      "why": "The Install section names the source version the page describes; the version-lockstep drift test relies on this pin."
     },
     {
-      "path": "docs/assets/readme/badge-version.svg",
+      "path": "docs/tour.ko.md",
       "kind": "pinned",
-      "occurrences": 3,
-      "why": "Repository release badge repeats the source version in its accessible label, title and visible text."
+      "occurrences": 2,
+      "why": "The alt texts of the install and update-notice screens quote lines that print the version, and must be recaptured on each release."
     },
     {
       "path": "RELEASE_CHECKLIST.md",
@@ -35,14 +41,14 @@
     {
       "path": "packages/lithermes-installer/README.md",
       "kind": "pinned",
-      "occurrences": 11,
-      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, ASCII mark, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
+      "occurrences": 10,
+      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
     },
     {
       "path": "packages/lithermes-installer/README_Ko-KR.md",
       "kind": "pinned",
-      "occurrences": 11,
-      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, ASCII mark, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
+      "occurrences": 10,
+      "why": "The npm card pins its package artwork (motion cover, reduced-motion still, two badges, three link icons), the version badge alt text, the ignition film link and the translated-README link."
     },
     {
       "path": "packages/lithermes-installer/readme-assets/badge-version.svg",
@@ -95,7 +101,7 @@
     {
       "path": "packages/lithermes-installer/test/readme.test.js",
       "kind": "pinned",
-      "occurrences": 13,
+      "occurrences": 12,
       "why": "Pinned source-version and package-artwork references, plus the exact README contract assertions; updated together when landing assets are added."
     },
     {

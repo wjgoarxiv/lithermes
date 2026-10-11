@@ -536,6 +536,11 @@ test("help mentions hud", () => {
   assert.match(result.stdout, /hud/);
 });
 
+test("help lists the uninstall rollback flag that the README recommends", () => {
+  const result = run(["help"]);
+  assert.match(result.stdout, /^  uninstall \[--yes\] \[--dry-run\] \[--rollback-patches\] /m);
+});
+
 test("check reports missing Hermes home with actionable exit code", () => {
   const missing = path.join(os.tmpdir(), `lithermes-missing-${Date.now()}`);
   const result = run(["check", "--offline", "--hermes-home", missing]);
@@ -1084,6 +1089,44 @@ test("config helpers recognize Hermes indentless plugins.enabled sequences", () 
 
   // Then: doctor treats the official Hermes representation as enabled.
   assert.equal(enabled, true);
+});
+
+test("install writes a parseable config for a Hermes indentless plugins list", (t) => {
+  const home = makeTempHome();
+  t.after(() => fs.rmSync(home, { force: true, recursive: true }));
+  const config = path.join(home, "config.yaml");
+  fs.writeFileSync(config, "plugins:\n  enabled:\n  - disk-cleanup\n");
+  const result = run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const { parseDocument } = require("yaml");
+  const document = parseDocument(fs.readFileSync(config, "utf8"), { strict: true, uniqueKeys: true });
+  assert.deepEqual(document.errors, []);
+  assert.deepEqual(document.toJS().plugins.enabled.sort(), ["disk-cleanup", "lithermes"]);
+});
+
+test("install refuses before any write when the config edit would not parse", (t) => {
+  const home = makeTempHome();
+  t.after(() => fs.rmSync(home, { force: true, recursive: true }));
+  const config = path.join(home, "config.yaml");
+  const original = "plugins: {enabled: [disk-cleanup]}\n";
+  fs.writeFileSync(config, original);
+  const result = run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]);
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /config\.yaml.*left unchanged/);
+  assert.equal(fs.readFileSync(config, "utf8"), original);
+  assert.equal(fs.existsSync(path.join(home, "plugins", "lithermes")), false);
+});
+
+test("hud refuses an unparseable skin edit with skin-appropriate advice", (t) => {
+  const home = makeTempHome();
+  t.after(() => fs.rmSync(home, { force: true, recursive: true }));
+  const config = path.join(home, "config.yaml");
+  fs.writeFileSync(config, "display: {compact: true}\n");
+  const result = run(["hud", "rose", "--hermes-home", home]);
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /left unchanged: .*Edit config\.yaml by hand\./);
+  assert.doesNotMatch(result.stderr, /plugins\.enabled/);
+  assert.equal(fs.readFileSync(config, "utf8"), "display: {compact: true}\n");
 });
 
 test("doctor does not pass plugin discovery from bundled package assets alone", (t) => {

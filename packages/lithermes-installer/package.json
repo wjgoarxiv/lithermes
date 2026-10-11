@@ -1,14 +1,30 @@
 {
   "name": "@litfamily/lithermes",
   "version": "1.0.18",
-  "description": "npx/bunx installer for the LitHermes Hermes plugin",
+  "description": "Hermes Agent plugin that plans, builds, checks and hands off your work when you add one word, lit, to a request.",
+  "keywords": [
+    "hermes-agent",
+    "hermes",
+    "nous-research",
+    "plugin",
+    "ai-agent",
+    "coding-agent",
+    "agent-workflow",
+    "planning",
+    "code-review",
+    "research",
+    "handoff",
+    "korean",
+    "docx",
+    "pptx"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wjgoarxiv/lithermes.git",
     "directory": "packages/lithermes-installer"
   },
-  "homepage": "https://www.npmjs.com/package/@litfamily/lithermes",
+  "homepage": "https://github.com/wjgoarxiv/lithermes",
   "bugs": {
     "url": "https://github.com/wjgoarxiv/lithermes/issues"
   },

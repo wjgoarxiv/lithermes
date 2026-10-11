@@ -126,7 +126,7 @@ flowchart LR
 
 ### 자동 핸드오프
 
-자동 핸드오프는 기본값이 꺼짐입니다. 컨텍스트 창이 고른 퍼센트에 닿으면 모델이 핸드오프를 쓰게 하고, 압축한 뒤에 그 핸드오프를 다시 불러옵니다. 평소 쓰는 방법은 [README](../README_Ko-KR.md#자동-핸드오프)에 있고, 여기서는 동작 방식을 정리합니다.
+자동 핸드오프는 기본값이 꺼짐입니다. 컨텍스트 창이 고른 퍼센트에 닿으면 모델이 핸드오프를 쓰게 하고, 압축한 뒤에 그 핸드오프를 다시 불러옵니다. 평소 쓰는 방법은 [자동 핸드오프 문서](./automatic-handoff.ko.md)에 있고, 여기서는 동작 방식을 정리합니다.
 
 - **스위치.** `/lit-handoff auto on <percent>`, `auto off`, `auto status`는 모델을 부르지 않고 일반 텍스트로 답합니다. 같은 스위치를 `LITHERMES_AUTO_HANDOFF=1`과 `LITHERMES_AUTO_HANDOFF_PERCENT=<1-99>`로도 켤 수 있습니다. 환경 변수가 저장된 값보다 우선하고, 앞의 변수가 `1`이 아닌 값이면 꺼진 채로 있으며, 잘못된 퍼센트도 꺼진 채로 두고 `hermes lithermes doctor`에 경고를 띄웁니다. 내장 퍼센트는 없습니다. 숫자 없는 `on`은 마지막으로 저장한 값을 다시 쓰고, 저장한 값이 없으면 숫자를 물어봅니다. 저장된 스위치는 Hermes 홈의 `lithermes/auto-handoff.json`에 있습니다.
 - **측정.** `post_api_request` 훅이 모델 호출마다 프롬프트 크기를 알려 줍니다. LitHermes는 이 값을 모델의 컨텍스트 창 크기로 나눕니다. 창 크기는 Hermes 설정의 `model.context_length`에서, 없으면 Hermes 자체 조회로 얻고, 세션별 최근 측정값을 메모리에 둡니다. 도우미 에이전트는 건너뜁니다.
@@ -257,7 +257,7 @@ Astra가 다른 곳에 있다는 이유만으로 이를 재귀적으로 필터�
 `lithermes hud off`로 Hermes 기본값으로 돌아갑니다. 세션 안에서는
 `/skin lithermes-<accent>`가 즉시 적용되고, CLI에서 변경하면 Hermes를 다시 시작합니다.
 스킨은 LitHermes 이름, `LIT ready` 환영 문구, `stay lit` 종료 문구,
-`🔥 ›` 프롬프트, LIT 로고, 불꽃 스피너, CLI 팔레트와 TUI의 밝은/어두운 팔레트를 포함합니다.
+`🔥 ›` 프롬프트, LIT 로고, LIT 스피너, CLI 팔레트와 TUI의 밝은/어두운 팔레트를 포함합니다.
 대화형 설치는 확인 뒤 색상 선택기를 표시합니다.
 
 Ignition은 `lithermes hud ignition`으로 선택합니다. 기존 번호 1~10의 선택은
@@ -273,6 +273,15 @@ Ignition을 선택합니다. 빈 값을 포함한 기존 선택은 유지합니�
 목록을 확인하고 `/skin lithermes-ignition`을 선택한 뒤, 재시작해 실제 배너와
 응답 화면을 확인하세요. Gateway 메시지에는 CLI 스킨이 보이지 않습니다.
 자세한 기능은 [네이티브 Skins & Themes 안내](https://hermes-agent.nousresearch.com/docs/user-guide/features/skins)를 참고하세요.
+
+Hermes가 일하는 동안 스피너는 `lit-looping`, `planning`, `verifying` 같은 짧은 동사로
+지금 하는 일을 보여 줍니다. 모든 LIT 스킨은 상태 표시줄의 good, warn, bad, critical에
+서로 다른 색을 주고, 어두운 터미널과 밝은 터미널에 맞춰 따로 조정했습니다. 상태 표시줄에
+어떤 항목을 띄울지는 Hermes 설정 `display.status_bar.fields`가 정합니다. 이 값이 비어 있으면
+`lithermes doctor`가 `[model, context_pct, goal, bg_subagents, git_branch, prompt_elapsed, yolo]`를
+제안합니다. 기본값에서 빠지는 Git 브랜치가 여기에 들어갑니다. LitHermes는 이 키를 쓰지 않으니,
+원하면 `config.yaml`의 `display:` 아래에 직접 넣으세요. Hermes에서는 플러그인이 상태 표시줄에
+자기 항목을 더할 수 없습니다.
 
 ### Lit 스킬이 보이지 않을 때
 
@@ -296,7 +305,7 @@ Ignition을 선택합니다. 빈 값을 포함한 기존 선택은 유지합니�
 
 ## 선택 기능: Jev 스킬 힌트
 
-Jev는 기본값이 꺼짐입니다. Hermes가 실행되는 환경에 `LITHERMES_JEV=1`과 본인의 `TYPESAFE_API_KEY`를 설정하면, LitHermes의 어느 경로도 맡지 않은 평범한 프롬프트가 (가리고 2,000자로 자른 뒤) TypeSafe로 전송되고, Jev의 답은 그 턴의 컨텍스트에 조언 한 줄로 붙습니다. 각 상태가 화면에서 어떻게 보이는지는 [README](../README_Ko-KR.md#화면에서-보이는-것)에 그림으로 있습니다. 눈에 보이는 것은 다음과 같습니다.
+Jev는 기본값이 꺼짐입니다. Hermes가 실행되는 환경에 `LITHERMES_JEV=1`과 본인의 `TYPESAFE_API_KEY`를 설정하면, LitHermes의 어느 경로도 맡지 않은 평범한 프롬프트가 (가리고 2,000자로 자른 뒤) TypeSafe로 전송되고, Jev의 답은 그 턴의 컨텍스트에 조언 한 줄로 붙습니다. 각 상태가 화면에서 어떻게 보이는지는 [Jev 문서](./jev.ko.md#화면에서-보이는-것)에 그림으로 있습니다. 눈에 보이는 것은 다음과 같습니다.
 
 - 세션의 첫 응답이 `✦ Jev skill hint ON` 한 줄로 시작합니다.
 - Jev가 도움을 주지 못하면 턴은 그대로 진행되고, 세션마다 한 번 배너 아래에 `LitHermes skill hint unavailable (<reason>); continuing normally.` 한 줄이 붙습니다. 이유는 `timeout`이나 `network error` 같은 짧은 말입니다.
@@ -333,7 +342,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes --rollback-patch
 - `.hermes/lithermes/`, `plans/`, `runs/`, `evidence/`, `state.json`, `ledger.jsonl`, `notepad.md`, Wikify claims는 npm payload에 들어가지 않습니다.
 - Wikify는 구조화된 `fact`, `decision`, `failure`, `risk`, `rule`, `checkpoint`만 저장합니다. 새 record는 `review-needed`로 시작하고 accepted record만 context에 들어갑니다. 좁은 product-local review-needed 예외는 wiki page와 public source를 쓰지 않으며 descriptor-pinned POSIX operation을 사용합니다. Windows에서는 `unsupported-platform-pinned-write`를 반환합니다. `LITHERMES_WIKIFY_CAPTURE=0` 또는 `hermes lithermes knowledge capture off`로 끌 수 있습니다.
 - Native `/goal`은 user-managed이고 unobserved입니다. authoritative 기준은 durable `goal_*` state이며 native `/goal`에는 no automatic update, clear, or resume 원칙을 적용합니다.
-- LitHermes는 터미널에서 `install`, `check`, `doctor`를 실행할 때와 대화형 Hermes CLI 세션의 첫 메시지를 보낼 때 새 릴리스가 있는지 확인합니다. 새 릴리스가 있으면 플러그인 폴더와 설정을 먼저 백업하고 새 버전을 설치하며, 중간에 실패하면 백업을 되돌려 놓습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI이거나 출력이 파이프로 넘어가면 업데이트를 건너뜁니다. 전체 순서와 남는 기록은 [README의 업데이트 항목](../README_Ko-KR.md#업데이트)에 있습니다.
+- LitHermes는 터미널에서 `install`, `check`, `doctor`를 실행할 때와 기본 터미널 Hermes CLI 세션의 첫 메시지를 보낼 때 새 릴리스가 있는지 확인합니다(`hermes --tui`와 gateway에서는 확인하지 않습니다). 새 릴리스가 있으면 플러그인 폴더와 설정을 먼저 백업하고 새 버전을 설치하며, 중간에 실패하면 백업을 되돌려 놓습니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI이거나 출력이 파이프로 넘어가면 업데이트를 건너뜁니다. 전체 순서와 남는 기록은 [설치 문서의 업데이트 항목](./install.ko.md#업데이트)에 있습니다.
 - 끄려면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하거나(아래 알림은 그대로 받습니다), 한 번만 건너뛰려면 명령에 `--no-auto-update`를 붙이세요. 확인 자체를 멈추려면 `NO_UPDATE_NOTIFIER=1` 또는 `LITHERMES_NO_UPDATE_CHECK=1`을 설정합니다.
 - 업데이트 알림은 확인한 결과를 24시간에 한 번까지 `update-check.json`에 저장합니다. 더 새 릴리스가 적혀 있으면 이후 실행에서 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`를 안내하고, 실행은 직접 하시면 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI이거나 출력이 파이프로 넘어가면 알림도 나오지 않습니다.
 

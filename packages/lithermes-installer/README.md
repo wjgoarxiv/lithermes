@@ -1,7 +1,5 @@
 <p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
-<p align="center"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
-
 <p align="center">
 <a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/badge-version.svg" alt="1.0.18" /></a>
 <a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/readme-assets/badge-license.svg" alt="MIT license" /></a>
@@ -17,9 +15,9 @@
 
 **Keep the work lit.**
 
-A plugin for **Hermes Agent**. Add `lit` to a request, and Hermes plans the task, does it, checks it, and leaves a note the next session can pick up.
+A plugin for **Hermes Agent**. Put `lit` in front of a request, and Hermes plans the task, does it, checks what it did and leaves a note that the next session can pick up.
 
-**[Full guide and skills gallery on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/README_Ko-KR.md)
+**[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.18/README_Ko-KR.md)
 
 ## Install
 
@@ -29,9 +27,7 @@ You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-The command puts the plugin into your Hermes home and updates your Hermes configuration without stopping to ask. That is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. `--no-style` skips the picker for how replies are written; the Ignition skin installs either way. Nothing connects to Telegram during installation.
-
-Want to try it away from your usual setup? Point `HERMES_HOME` at a new, empty directory before installing, and start Hermes with the same value. If the Hermes installation itself lives outside that trial profile, add `--no-patch-installed-hermes` so the installer leaves it without compatibility edits.
+It installs the plugin and updates your Hermes configuration without stopping to ask; `--no-style` skips the reply-style picker. To try it in a separate profile, set `HERMES_HOME` to an empty directory first. [More install options](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
 
 ## Your first task
 
@@ -41,81 +37,39 @@ Restart the Hermes CLI or gateway, then type:
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-The reply opens with a single `🔥 **LIT IGNITED · <discipline>** 🔥` line. Once you see it, LitHermes has picked up the task and the work has started. When it finishes, open the file and try each action yourself, and ask Hermes to separate what it actually checked from what is still unverified. Then run `/lit-handoff`. A new session in the same project can read that handoff and continue from it.
+Once the work has started, the reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line. When it finishes, check the file yourself, then run `/lit-handoff` so the next session in this project can continue. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
 
-The spark is that record. Once the session closes, nothing carries on in the background; the next session picks the work up from the handoff.
-
-## Routes you will use most
+## What you get
 
 | Type | Skill | For |
 |---|---|---|
-| `lit <request>` or `/lit` | `litwork` | A bounded task that ends with checked results |
+| `lit <request>` or `/lit` | `litwork` | A task that ends with checked results |
 | `lit-plan` or `/lit-plan` | `lit-plan` | A plan, before anything is edited |
 | `/start-work <approved-plan>` | `start-work` | Running a plan you approved |
 | `lit review <target>` or `/review-work` | `review-work` | Reviewing a plan or a result |
 | `lit research <question>` | `litresearch` | Research with source notes |
-| `handoff` or `/lit-handoff` | `lit-handoff` | Carrying the work into the next session |
-| `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose without changing its meaning |
+| `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose, meaning kept |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A checked, editable diagram |
 | `/lit-pptx <brief>` | `lit-pptx` | A PowerPoint deck in one of eight named looks, with its Markdown source |
 | `/lit-docx <brief>` | `lit-docx` | A restrained Word document in one of six named shapes, with its Markdown source |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. The other bundled skills are `litgoal`, `lit-recap`, `deep-interview`, `lit-crucible`, `lit-init`, `lit-comprehend`, `frontend-ui-ux`, `readme-studio`, `lit-scientific-visualization`, `visual-qa`, `browser-drive`, `structural-search`, `wikify`, `debugging`, `refactor`, `lit-burnoff`, `lit-burnoff-file`, `lit-code`, `lit-commit`, `lsp-setup`, `lsp`, `rules`, `comment-checker`, `autoresearch` and `autoconference`. The GitHub page shows each one with a picture.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 36 with pictures.
 
-## Making more than code
-
-- **Reports and slides.** Ask for a report or a presentation with a bare `lit`, and it goes to `lit-docx` or `lit-pptx`. You get a DOCX, a PPTX or both, with the Markdown source beside them. Before building, the skill picks a look that suits your reader and material and tells you which, with two alternatives you can switch to: eight for decks (Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night) and six for documents (Report, Brief, Manual, Proposal, Memo, Journal). Decks come out dense in Pretendard with topic titles; documents stay restrained, with near-black headings, ruled tables and Korean conventions. A journal profile you name is used as is. The first time, the Office runtime installs the pinned tools it needs into a LitHermes cache.
-- **Diagrams.** `lit-diagram-drawer` draws concept maps and technical diagrams. Product pages belong to `frontend-ui-ux`, and plots of measured data to `lit-scientific-visualization`.
-- **Films.** `lit-typographic-motion` writes a treatment first. When the film passes its final check, you get a 60 fps film with a poster, a reduced-motion still and a QA report. A render never downloads anything, so its helper packages and fonts must already be cached. `lithermes install` tries to fetch them; if that was skipped or failed, run `lithermes motion-runtime install`. `lithermes motion-runtime status` shows whether Chrome, ffmpeg, WebGL2 and the fonts are ready.
-- **Prose.** `lit-humanizer` revises Korean and English drafts while keeping their facts. Its detector reads what Hermes writes for people through `write_file` and `patch`. A serious (block-tier) finding can stop the write; a milder warning comes back as advice.
-
-## What changes after install
-
-
-- The plugin goes into your Hermes home. After a restart, Hermes has new hooks, commands, skills and `goal_*` work tools.
-- Goals, plans and evidence are written to local records under `.hermes/lithermes/` in your project, where the next session can read them.
-- The Hermes CLI gains the Ignition skin. Choose it with `/skin lithermes-ignition` and restart, or use `/skin lithermes-tokyonight-day` on a light terminal and `/skin lithermes-tokyonight` on a dark one. A fresh interactive, color-capable install run with `--yes` selects Ignition only when `display.skin` is absent, and existing skin files are kept.
-- LitHermes updates itself, carefully. When you run `lithermes install`, `check` or `doctor` in a terminal, or send the first message of an interactive Hermes CLI session, it asks the npm registry for the latest stable release. If that one is newer, LitHermes backs up your plugin folder, `config.yaml`, install record and skins folder, installs it, and runs `doctor --offline`. If the install fails, takes longer than 30 seconds or does not pass that check, the backup goes back and you keep your version. Restart Hermes to load a new one.
-- Each update leaves `auto-update-journal.json` and `auto-update-receipt.json` in `<Hermes home>/lithermes/`. Updates are skipped with `--offline`, `--json` or `--dry-run`, in CI, or with piped output.
-- Separately, LitHermes looks for a newer release in the background at most once every 24 hours and saves the answer in `update-check.json`; any update notice is read from there. It suggests a command such as `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, and running it is up to you.
-- To install new versions yourself and still get the notice, set `LITHERMES_NO_AUTO_UPDATE=1`.
-- To skip the update for one command, add `--no-auto-update` to `install`, `check` or `doctor`.
-- To stop every version check, set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1`. Any value counts for these variables. The GitHub page explains the update step in full.
-- LitHermes decides where a request goes; Hermes Agent still runs the model.
-
-## Automatic handoff
-
-This is off by default, and the percent is yours to choose. `/lit-handoff auto on 60` (any whole number from 1 to 99) makes LitHermes ask the model for a handoff on the first message after a model call passes 60% of the context window, and then tell you to run `/compact`. A plugin cannot start compaction on Hermes, so you run it, or Hermes compacts on its own threshold. After compaction the handoff comes back as a short digest. `/lit-handoff auto off` and `/lit-handoff auto status` do what they say, and `LITHERMES_AUTO_HANDOFF=1` with `LITHERMES_AUTO_HANDOFF_PERCENT` sets it from the environment. The [GitHub README](https://github.com/wjgoarxiv/lithermes#automatic-handoff) lists which steps are automatic and how to pick a percent that Hermes' own compaction leaves alone.
-
-## Optional: Jev skill hint
-
-This is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` set in the environment Hermes runs in, LitHermes asks Jev, TypeSafe's hosted decision model, which bundled skill fits a plain prompt. The answer is added to that turn's context as one line of advice. It is only a suggestion: the Hermes model still decides, and the hint cannot grant permissions or start tools.
-
-While it is on, each eligible prompt is sent to TypeSafe (typesafe.ai), truncated to 2,000 characters, with home paths, email addresses and token-shaped strings redacted. Anything without a token shape is sent as written, such as hostnames, customer names, and passwords not written as `password=...`. In gateway mode, other participants' messages in a chat are eligible too. The agent's own tools can read the exported key, so use a dedicated key with a low spend limit; TypeSafe bills your account, at about $0.04 per million input tokens. Each request stops after 1.5 seconds with no retry, and a failed request leaves the turn unchanged.
-
-The first reply of each session starts with `✦ Jev skill hint ON`. Inside a Hermes session, `hermes lithermes status` and `hermes lithermes doctor` show that session's last hint, for example `Jev skill hint: on — last hint lit-humanizer (0.43s)`, or `on — no hint yet`. Outside any session they read `on — no session`; otherwise `off` or `flag on but TYPESAFE_API_KEY missing`. To turn it off, unset `LITHERMES_JEV` or set it to any value other than `1`. The full details are in the GitHub README and the [privacy notes](https://github.com/wjgoarxiv/lithermes/blob/main/docs/privacy.md).
-
-## Check, remove, stay safe
+## Check, update, remove
 
 ```sh
 npx --package @litfamily/lithermes -- lithermes doctor --offline
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-`doctor --offline` checks the install without going online. If the installer made compatibility edits to Hermes, add `--rollback-patches` when uninstalling to undo them. Uninstalling keeps the skin files and your `display.skin` choice; `npx --package @litfamily/lithermes -- lithermes hud off` clears the choice and keeps the files.
-
-- To see what the installer would change before it changes anything, run `lithermes install --dry-run`.
-- LitHermes reads pasted code, quotations and commands as plain text and does not follow them. Secrets are masked before anything is saved or passed to a model.
-- Hermes' own `/goal` stays yours. LitHermes leaves it alone and never updates, clears or resumes it. It works from the goals it saves through its `goal_*` tools.
-- Hermes sends every helper through one shared model setting, so you cannot pick a model per task or give reviewers their own. The installer's report shows what was configured; only the receipt of a real `delegate_task` run proves which model a helper used.
-- If Lit skills seem to be missing, ask Hermes to call its `skills_list` tool and look for LitHermes entries; the `/skills` command only reads the filesystem, and its list can differ by Hermes version. An import error in the Hermes log means the plugin failed to load. Keep the message rather than installing pip packages on a guess.
-- If a same-named skill elsewhere hides a LitHermes one, `lithermes doctor` prints a `skill shadow check: WARNING` line. Load the LitHermes copy as `lithermes:<name>`. The warning leaves doctor's exit status as it was.
+`doctor --offline` checks the install without going online; add `--rollback-patches` when uninstalling if the installer patched Hermes. LitHermes updates itself with a backup and a rollback; set `LITHERMES_NO_AUTO_UPDATE=1` to update by hand. [Details and troubleshooting](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
 
 ## Learn more
 
-- [Full README on GitHub](https://github.com/wjgoarxiv/lithermes#readme): the skills gallery and how it works
-- [Operating guide](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md): commands, models, skins and troubleshooting
-- [Changelog](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [Contributing](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [Security](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [Support](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
+- [README on GitHub](https://github.com/wjgoarxiv/lithermes#readme) and [a tour with screenshots](https://github.com/wjgoarxiv/lithermes/blob/main/docs/tour.md)
+- [Operating guide](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md): commands, natural routing, models, skins and safety
+- [Optional Jev skill hint](https://github.com/wjgoarxiv/lithermes/blob/main/docs/jev.md): off by default; sends eligible prompts to a third-party service when on
+- [Changelog](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [Privacy](https://github.com/wjgoarxiv/lithermes/blob/main/docs/privacy.md) · [Contributing](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [Security](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [Support](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
 
-MIT License.
+MIT License. Part of [LitFamily](https://github.com/wjgoarxiv/litfamily).

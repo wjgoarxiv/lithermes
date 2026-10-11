@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- `lithermes` now refuses an option a command does not take, a short option such as `-n`, or a stray word, and changes nothing. Before, `install --yes -n` or `uninstall --yes --bogus` ran for real, and `--home` was ignored while the default profile was used.
+- `--dry-run` (or `--dry-run=true`) now previews `uninstall`, `hud <accent>`, `hud off` and `motion-runtime install` as well as `install`: each prints what it would change and changes nothing. `--dry-run=false` runs the command normally. Before, `uninstall --yes --dry-run` really uninstalled.
+- `lithermes help` lists every option each command accepts, and `--help` after any command prints help instead of running it.
+
 ## [1.0.18] - 2026-10-09
 
 - The deck and document looks no longer list settings the engines never applied, such as Latin letter case, figure style, chart annotations, image bleed and crop, and a page-fill target. Their reference pages no longer promise those settings either, so what a look describes is what you get.

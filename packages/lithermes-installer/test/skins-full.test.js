@@ -33,6 +33,8 @@ const ACCENT_COLOR_KEYS = [
   "session_label",
 ];
 
+const SEVERITY_KEYS = ["status_bar_good", "status_bar_warn", "status_bar_bad", "status_bar_critical"];
+
 function parsedSkin(entry) {
   return yaml.parse(renderSkinYaml(entry));
 }
@@ -72,21 +74,24 @@ test("banner_logo is the canonical standard mark in native Rich markup", () => {
   }
 });
 
-test("spinner ships flame faces, ignition verbs, and wings as [left, right] pairs", () => {
+test("spinner ships LIT faces, work verbs, and wings as [left, right] pairs", () => {
   const { spinner } = parsedSkin(HUD_ACCENTS[3]);
-  assert.deepEqual(spinner.waiting_faces, ["🔥", "🔥", "🔥", "🔥"]);
-  assert.deepEqual(spinner.thinking_verbs, ["igniting", "forging", "burning", "tempering"]);
+  assert.deepEqual(spinner.waiting_faces, ["(lit)", "(◜)", "(◝)", "(◞)", "(◟)"]);
+  assert.deepEqual(spinner.thinking_faces, ["(lit)", "(✦)", "(◇)", "(⌁)"]);
+  assert.deepEqual(spinner.thinking_verbs, [
+    "lit-looping", "planning", "verifying", "gathering evidence", "checking criteria", "reviewing",
+  ]);
   assert.ok(Array.isArray(spinner.wings) && spinner.wings.length >= 1);
   for (const pair of spinner.wings) {
     assert.ok(Array.isArray(pair) && pair.length === 2, "skin_engine.get_spinner_wings drops non-pair entries");
   }
 });
 
-test("colors, dark_colors, and light_colors carry the nine accent keys per accent", () => {
+test("colors, dark_colors, and light_colors carry the nine accent keys plus severity per accent", () => {
   for (const entry of HUD_ACCENTS) {
     const skin = parsedSkin(entry);
     for (const block of ["colors", "dark_colors", "light_colors"]) {
-      assert.deepEqual(Object.keys(skin[block]), ACCENT_COLOR_KEYS, `${entry.accent}.${block}`);
+      assert.deepEqual(Object.keys(skin[block]), [...ACCENT_COLOR_KEYS, ...SEVERITY_KEYS], `${entry.accent}.${block}`);
     }
     for (const key of ACCENT_COLOR_KEYS) {
       assert.equal(skin.colors[key], entry.hex, `${entry.accent}.colors.${key}`);

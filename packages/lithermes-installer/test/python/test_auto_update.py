@@ -257,6 +257,20 @@ class AutoUpdateTests(unittest.TestCase):
             for command in ("help", "uninstall", "hud", "version"):
                 self.assertFalse(auto_update.should_auto_update(kwargs=self._eligible(home, command=command), env={}), command)
 
+    def test_full_screen_tui_and_gateway_turns_never_auto_update(self):
+        """Only the classic terminal CLI first turn updates; the TUI backend and gateways use pipes."""
+
+        class Pipe:
+            def isatty(self):
+                return False
+
+        piped = {"stdin": Pipe(), "stdout": Pipe(), "stderr": Pipe()}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HERMES_HOME": tmp}, clear=True):
+            home = Path(tmp)
+            for platform in ("tui", "telegram", "discord"):
+                kwargs = {"platform": platform, "is_first_turn": True, "session_id": platform, "streams": piped}
+                self.assertFalse(auto_update.should_auto_update(kwargs=kwargs, env={}), platform)
+
     def test_sanitized_environment_drops_credentials_and_recursion_options(self):
         home = Path("/tmp/hermes-home").resolve()
         safe = auto_update.sanitized_environment(
@@ -306,7 +320,8 @@ class AutoUpdateTests(unittest.TestCase):
             self.assertEqual(command[:7], ["npx", "--yes", "--package", "@litfamily/lithermes@0.8.42", "--", "lithermes", "__auto-update"])
             self.assertIn("--hermes-home", command)
             self.assertNotIn("--home", command)
-            self.assertEqual(options["timeout"], 30.0)
+            self.assertEqual(options["timeout"], auto_update.INSTALL_TIMEOUT_SECONDS)
+            self.assertGreaterEqual(options["timeout"], 60.0)
             self.assertEqual(options["env"][auto_update.AUTO_UPDATE_GUARD_ENV], "1")
             self.assertNotIn("NPM_TOKEN", options["env"])
 

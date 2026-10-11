@@ -1,11 +1,11 @@
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const readline = require("node:readline");
-const { installLitHermes, previewModelRoute, uninstallLitHermes } = require("./lib/install");
+const { installLitHermes, previewModelRoute, previewUninstall, uninstallLitHermes } = require("./lib/install");
 const { promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
 const { checkLitHermes, doctorLitHermes } = require("./lib/check");
 const { createSpinner, renderInstallReceipt, shouldUseSpinner } = require("./lib/spinner");
-const { listHud, applyHud, clearHud, promptAccent, resolveHome } = require("./lib/hud");
+const { listHud, applyHud, clearHud, previewClearHud, previewHud, promptAccent, resolveHome } = require("./lib/hud");
 const { supportsColor, findAccent, skinName } = require("./lib/skins");
 const {
   readConfig,
@@ -22,29 +22,145 @@ const {
   shouldAutoUpdate,
 } = require("./lib/updateNotifier");
 
+// Every option the CLI understands. A flag is a boolean switch unless it is listed in VALUE_FLAGS.
+const VALUE_FLAGS = new Set([
+  "hermes-home", "hermes-repo", "provider", "model", "effort", "child-provider", "child-model", "child-effort",
+  "hud", "style", "installed-version",
+]);
+
+// What each command accepts, and how help shows it. A command refuses anything not listed here.
+const HOME = { "hermes-home": "PATH" };
+const COMMAND_SPECS = {
+  install: {
+    usage: "install",
+    positionals: [0, 0],
+    flags: {
+      yes: "", "dry-run": "", offline: "", json: "", force: "", "reconfigure-model": "",
+      provider: "ID", model: "ID", effort: "LEVEL", "child-provider": "ID", "child-model": "ID", "child-effort": "LEVEL",
+      spinner: "", "no-spinner": "", hud: "<accent>", "no-hud": "", style: "ID", "no-style": "",
+      "patch-installed-hermes": "", "no-patch-installed-hermes": "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH",
+    },
+  },
+  check: {
+    usage: "check",
+    positionals: [0, 0],
+    flags: { offline: "", "gateway-offline": "", json: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
+  },
+  doctor: {
+    usage: "doctor",
+    positionals: [0, 0],
+    flags: { offline: "", json: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
+  },
+  "motion-runtime": {
+    usage: "motion-runtime install|status",
+    positionals: [1, 1],
+    actions: ["install", "status"],
+    flags: { "dry-run": "", audio: "", "word-timing": "", ...HOME },
+    note: "Typographic-motion engine adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit ca251e3.",
+  },
+  uninstall: {
+    usage: "uninstall",
+    positionals: [0, 0],
+    flags: { yes: "", "dry-run": "", "rollback-patches": "", offline: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
+  },
+  hud: {
+    usage: "hud [<accent>|off]",
+    positionals: [0, 1],
+    flags: { list: "", "dry-run": "", ...HOME },
+    note: "(Hermes HUD skin accents)",
+  },
+  version: { usage: "version", positionals: [0, 0], flags: {} },
+  help: { usage: "help", positionals: [0, 1], flags: {}, hidden: true },
+  // Private bridge for the installed plugin's automatic update; deliberately absent from help.
+  "__auto-update": { usage: "__auto-update", positionals: [0, 0], flags: { ...HOME, "installed-version": "VERSION" }, hidden: true },
+};
+
+const COMMAND_ALIASES = { "--version": "version", "-v": "version", "--help": "help", "-h": "help" };
+
+class UsageError extends Error {
+  constructor(message) {
+    super(`${message}\nRun \`lithermes help\` for the options each command accepts.`);
+    this.exitCode = 2;
+  }
+}
+
 function parseArgs(argv) {
   const flags = {};
   const positionals = [];
+  const problems = [];
+  let helpRequested = false;
   for (let i = 0; i < argv.length; i += 1) {
     const item = argv[i];
-    if (!item.startsWith("--")) {
+    if (positionals.length === 0 && COMMAND_ALIASES[item]) {
+      positionals.push(COMMAND_ALIASES[item]);
+      continue;
+    }
+    if (item === "--help" || item === "-h") {
+      helpRequested = true;
+      continue;
+    }
+    if (!item.startsWith("-") || item === "-") {
       positionals.push(item);
       continue;
     }
-    const key = item.slice(2);
-    if (["yes", "offline", "json", "dry-run", "spinner", "no-spinner", "gateway-offline", "force", "patch-installed-hermes", "no-patch-installed-hermes", "rollback-patches", "list", "no-hud", "no-style", "no-auto-update", "reconfigure-model", "audio", "word-timing"].includes(key)) {
-      flags[key] = true;
+    if (!item.startsWith("--")) {
+      problems.push(`unknown option '${item}'`);
       continue;
     }
-    const value = argv[i + 1];
-    if (!value || value.startsWith("--")) {
-      flags[key] = "";
+    const equals = item.indexOf("=");
+    const key = equals === -1 ? item.slice(2) : item.slice(2, equals);
+    const inline = equals === -1 ? undefined : item.slice(equals + 1);
+    if (VALUE_FLAGS.has(key)) {
+      const value = inline ?? argv[i + 1];
+      if (value === undefined || value === "" || (inline === undefined && value.startsWith("-"))) {
+        problems.push(`option '--${key}' needs a value`);
+        continue;
+      }
+      flags[key] = value;
+      if (inline === undefined) i += 1;
       continue;
     }
-    flags[key] = value;
-    i += 1;
+    if (inline === undefined || inline === "true") flags[key] = true;
+    else if (inline !== "false") problems.push(`option '--${key}' expects true or false, not '${inline}'`);
   }
-  return { command: positionals[0] || "help", flags, positionals };
+  return { command: positionals[0] || "help", flags, positionals, problems, helpRequested };
+}
+
+// Refuse before anything runs: unknown options, options another command owns, and stray words.
+function validateArgs({ command, flags, positionals, problems }) {
+  const spec = COMMAND_SPECS[command];
+  if (!spec) throw new UsageError(`lithermes: unknown command '${command}'.`);
+  const issues = [...problems];
+  for (const key of Object.keys(flags)) {
+    if (!Object.prototype.hasOwnProperty.call(spec.flags, key)) issues.push(`unknown option '--${key}'`);
+  }
+  const extra = positionals.slice(1);
+  const [min, max] = spec.positionals;
+  if (extra.length > max) issues.push(`unexpected argument '${extra[max]}'`);
+  else if (extra.length < min) issues.push(spec.actions ? `missing action (${spec.actions.join(" or ")})` : "missing argument");
+  else if (spec.actions && !spec.actions.includes(extra[0])) issues.push(`unexpected argument '${extra[0]}' (expected ${spec.actions.join(" or ")})`);
+  if (issues.length) throw new UsageError(`lithermes ${command}: ${issues.join("; ")}.`);
+}
+
+function helpText() {
+  const lines = ["lithermes commands:"];
+  for (const spec of Object.values(COMMAND_SPECS)) {
+    if (spec.hidden) continue;
+    const options = Object.entries(spec.flags).map(([key, value]) => `[--${key}${value ? ` ${value}` : ""}]`);
+    const rows = [];
+    let row = `  ${spec.usage}`;
+    for (const option of options) {
+      if (row.length + option.length + 1 > 100) {
+        rows.push(row);
+        row = `${" ".repeat(spec.usage.length + 2)} ${option}`;
+      } else row += ` ${option}`;
+    }
+    rows.push(spec.note && row.length + spec.note.length < 100 && !spec.note.includes("MIT") ? `${row}   ${spec.note}` : row);
+    if (spec.note && spec.note.includes("MIT")) rows.push(`  ${spec.note}`);
+    lines.push(...rows);
+  }
+  lines.push("  --dry-run (or --dry-run=true) shows what a command would change and changes nothing; --dry-run=false runs it normally.");
+  return lines.join("\n");
 }
 
 function packageVersion() {
@@ -65,6 +181,27 @@ function motionRuntime(action, flags = {}) {
     status: result.status,
     output: (result.stdout || result.stderr || result.error?.message || "motion runtime did not return a result").trim(),
   };
+}
+
+// Dry run of `motion-runtime install`: the runtime module only reads its pins and the cache here.
+async function motionRuntimePlan(flags = {}) {
+  const { pathToFileURL } = require("node:url");
+  const script = path.join(__dirname, "..", "assets", "lithermes-plugin", "skills", "lit-typographic-motion", "bin", "runtime.mjs");
+  const runtime = await import(pathToFileURL(script).href);
+  const env = { ...process.env, HERMES_HOME: resolveHome(flags) };
+  const ready = runtime.findCache(env);
+  const fonts = runtime.fontState(env);
+  const lines = ["DRY RUN: would install the motion runtime", `cache: ${ready || runtime.cacheRoots(env)[0]}`];
+  if (flags["word-timing"]) lines.push(`word-timing: would be refused (fail-closed): ${runtime.wordTimingPlan().reason}`);
+  else if (ready && fonts.ok) lines.push("node packages and fonts: already READY; nothing to install");
+  else lines.push(`would run npm ci for the pinned node packages and fetch ${runtime.FONT_PINS.length} pinned fonts`);
+  if (flags.audio && !flags["word-timing"]) {
+    lines.push(runtime.audioState(env).state === "ready"
+      ? "audio venv: already READY"
+      : "would create the audio venv and pip-install the hash-pinned requirements.lock");
+  }
+  lines.push("Nothing was downloaded or written.");
+  return lines.join("\n");
 }
 
 function printCommandBanner(command, flags, runtime = {}) {
@@ -269,9 +406,15 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
 }
 
 async function main(argv, runtime = {}) {
-  const { command, flags, positionals } = parseArgs(argv);
+  const parsed = parseArgs(argv);
+  const { command, flags, positionals } = parsed;
+  if (parsed.helpRequested) {
+    console.log(helpText());
+    return;
+  }
+  validateArgs(parsed);
   printCommandBanner(command, flags, runtime);
-  if (command === "version" || command === "--version" || command === "-v") {
+  if (command === "version") {
     console.log(packageVersion());
     return;
   }
@@ -282,11 +425,11 @@ async function main(argv, runtime = {}) {
       return;
     }
     if (accent === "off" || accent === "clear" || accent === "none") {
-      console.log(clearHud(flags));
+      console.log(flags["dry-run"] ? previewClearHud(flags) : clearHud(flags));
       return;
     }
     try {
-      console.log(applyHud(accent, flags));
+      console.log(flags["dry-run"] ? previewHud(accent, flags) : applyHud(accent, flags));
     } catch (error) {
       console.error(error.message);
       process.exitCode = error.exitCode || 1;
@@ -295,9 +438,8 @@ async function main(argv, runtime = {}) {
   }
   if (command === "motion-runtime") {
     const action = positionals[1];
-    if (!['install', 'status'].includes(action)) {
-      console.error('usage: lithermes motion-runtime install|status [--audio] [--word-timing]');
-      process.exitCode = 2;
+    if (action === "install" && flags["dry-run"]) {
+      console.log(await motionRuntimePlan(flags));
       return;
     }
     const result = motionRuntime(action, flags);
@@ -358,7 +500,7 @@ async function main(argv, runtime = {}) {
     return;
   }
   if (command === "uninstall") {
-    const result = uninstallLitHermes(flags);
+    const result = flags["dry-run"] ? previewUninstall(flags) : uninstallLitHermes(flags);
     console.log(result.message);
     return;
   }
@@ -407,19 +549,7 @@ async function main(argv, runtime = {}) {
     if (result.ok !== false) scheduleUpdateSafely(command, flags, runtime);
     return;
   }
-  console.log([
-    "lithermes commands:",
-    "  install [--yes] [--dry-run] [--reconfigure-model] [--provider ID] [--model ID] [--effort LEVEL]",
-    "          [--child-provider ID] [--child-model ID] [--child-effort LEVEL]",
-    "          [--spinner] [--no-spinner] [--hud <accent>] [--no-hud] [--no-auto-update] [--hermes-home PATH]",
-    "  check [--offline] [--gateway-offline] [--hermes-home PATH]",
-    "  doctor [--offline] [--hermes-home PATH] [--hermes-repo PATH]",
-    "  motion-runtime install|status [--audio] [--word-timing]",
-    "  Typographic-motion engine adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit ca251e3.",
-    "  uninstall [--yes] [--hermes-home PATH]",
-    "  hud [<accent>|off|--list] [--hermes-home PATH]   (Hermes HUD skin accents)",
-    "  version",
-  ].join("\n"));
+  console.log(helpText());
 }
 
-module.exports = { main, parseArgs };
+module.exports = { COMMAND_SPECS, helpText, main, parseArgs, validateArgs };

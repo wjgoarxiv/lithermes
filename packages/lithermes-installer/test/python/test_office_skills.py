@@ -22,6 +22,22 @@ class OfficeSkillRoutes(NaturalRoutingCase):
                 if expected in {"lit-pptx", "lit-docx"}:
                     self.assertIn(f"skills/{expected}/SKILL.md", context)
 
+    def test_a_dot_inside_a_file_name_version_or_url_does_not_end_the_first_sentence(self):
+        examples = {
+            # The README's Korean deck example: the `.` in notes.md once cut the sentence before 슬라이드.
+            "lit notes.md로 월요일 팀 회의용 슬라이드 10장 만들어줘": "lit-pptx",
+            "lit make a 10-slide deck from notes.md for Monday's team meeting": "lit-pptx",
+            "lit v1.2 기준으로 분기 실적 발표자료 만들어줘": "lit-pptx",
+            "lit example.com 자료로 신제품 기획서 써줘": "lit-docx",
+            "lit from lyrics.txt make a lyric video": "lit-typographic-motion",
+            # A real sentence end still ends the first sentence.
+            "lit fix the parser. Then make slides about it": "litwork",
+        }
+        for prompt, expected in examples.items():
+            with self.subTest(prompt=prompt):
+                context = self._hook(prompt, session=f"office-dot-{len(prompt)}")["context"]
+                self.assertIn('mode: litwork' if expected == 'litwork' else f'mode="{expected}"', context)
+
     def test_native_commands_and_skill_registry(self):
         ctx = _FakeCtx()
         self.pkg.register(ctx)

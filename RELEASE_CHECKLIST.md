@@ -74,7 +74,7 @@ This checklist covers the 1.0.3 release.
 
 - [ ] The installer exposes the approved provider choice and separate lead/child
   model routes, with the xAI key warning and fail-closed unsafe combinations.
-- [ ] The bundled skins expose branding, flame spinner, logo, and light/dark
+- [ ] The bundled skins expose branding, LIT spinner, logo, and light/dark
   palettes for all ten accents; `/agents` visibility is documented honestly and
   the SessionStart hint/nudge remains set-if-absent.
 - [ ] Package, lockfile, plugin manifest, bundled contract transcripts, public

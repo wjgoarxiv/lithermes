@@ -53,7 +53,8 @@ committing the diff, and revert a timestamp-only change.
 - `# REFERENCE/` is a read-only archive (the name literally starts with `# `, so quote it in
   shell). It holds the legacy ancestor project, whose name is a forbidden token that must
   never appear in tracked files.
-- Never pass `--home` to lithermes — it is silently ignored and writes the live profile.
+- `lithermes` has no `--home` option and refuses it (older releases ignored it and wrote the live
+  profile). Select a profile with `--hermes-home PATH`.
 - `HANDOFF.md` in this directory is **deprecated**. The authoritative handoff is
   `../HANDOFF.md` at the family root.
 

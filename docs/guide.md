@@ -126,7 +126,7 @@ The installed workflow skill set also includes `autoresearch`, `autoconference`,
 
 ### Automatic handoff
 
-Automatic handoff is off by default. It has the model write a handoff when the context window reaches a percent you choose, and it loads that handoff again after compaction. The [README](../README.md#automatic-handoff) shows the everyday use; this section lists the mechanics.
+Automatic handoff is off by default. It has the model write a handoff when the context window reaches a percent you choose, and it loads that handoff again after compaction. The [automatic handoff page](./automatic-handoff.md) shows the everyday use; this section lists the mechanics.
 
 - **Switch.** `/lit-handoff auto on <percent>`, `auto off` and `auto status` answer in plain text and make no model call. The same switch exists as `LITHERMES_AUTO_HANDOFF=1` plus `LITHERMES_AUTO_HANDOFF_PERCENT=<1-99>`. The environment wins over the saved value, any flag value other than `1` keeps it off, and an invalid percent keeps it off with a warning in `hermes lithermes doctor`. There is no built-in percent: `on` without a number reuses the last saved one, and asks when none exists. The saved switch lives in Hermes home `lithermes/auto-handoff.json`.
 - **Reading.** The `post_api_request` hook reports the prompt size of each model call. LitHermes divides it by the model's context window, taken from `model.context_length` in the Hermes config or else from Hermes' own lookup, and keeps the latest reading per session in memory. Helper agents are skipped.
@@ -199,7 +199,7 @@ creates the named `lithermes-ignition` skin and ten accent skins under
 `$HERMES_HOME/skins` (normally `~/.hermes/skins`). Existing files, including
 user-edited presets, are preserved. These skins provide LitHermes
 branding (`LitHermes` agent name, `LIT ready` welcome, `stay lit`
-goodbye, `🔥 ›` prompt), the LIT banner logo, a flame spinner, a base accent
+goodbye, `🔥 ›` prompt), the LIT banner logo, a LIT spinner, a base accent
 palette for the classic CLI, and paired dark/light palettes for the TUI — one
 per accent. Ignition uses orange `#FF6337` for the banner, lime `#D7F75B`
 for active elements, ivory `#F2EFDF` for text, and navy `#080D14` for status
@@ -227,6 +227,16 @@ restart the Hermes CLI to inspect its actual banner and response UI. Gateway
 messages do not display the CLI Skin. See the native
 [Skins & Themes documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/skins).
 
+While Hermes works, the spinner names what it is doing with short verbs such
+as `lit-looping`, `planning` and `verifying`. Every LIT skin also gives the
+status bar four separate colours for good, warn, bad and critical, tuned for
+dark and light terminals. Which status bar segments appear is a Hermes setting,
+`display.status_bar.fields`. When it is unset, `lithermes doctor` suggests
+`[model, context_pct, goal, bg_subagents, git_branch, prompt_elapsed, yolo]`,
+which adds the Git branch the default leaves out. LitHermes never writes this
+key; add it under `display:` in `config.yaml` yourself if you want it. Plugins
+cannot add their own status bar segments in Hermes.
+
 ### When Lit skills are missing
 
 Restart the same Hermes profile used for installation. Ask the agent to call
@@ -252,7 +262,7 @@ interactive session start prints `helper agents: type /agents`.
 
 ## Optional Jev skill hint
 
-Jev is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` in the environment Hermes runs in, a plain prompt that no LitHermes route claimed is sent to TypeSafe (redacted and cut to 2,000 characters), and Jev's answer becomes one line of advice in that turn's context. The [README](../README.md#what-you-will-see) shows each of these on screen. Here is the list of what you can see:
+Jev is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` in the environment Hermes runs in, a plain prompt that no LitHermes route claimed is sent to TypeSafe (redacted and cut to 2,000 characters), and Jev's answer becomes one line of advice in that turn's context. The [Jev page](./jev.md#what-you-will-see) shows each of these on screen. Here is the list of what you can see:
 
 - The first reply of each session starts with the plain line `✦ Jev skill hint ON`.
 - When Jev cannot help, the turn carries on and one line follows the banner, once per session: `LitHermes skill hint unavailable (<reason>); continuing normally.` The reason is a short word such as `timeout` or `network error`.
@@ -351,7 +361,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes --rollback-patch
 - Local `.hermes/lithermes/`, `plans/`, `runs/`, `evidence/`, `state.json`, `ledger.jsonl`, `notepad.md`, and Wikify claims are not packaged.
 - Wikify captures only structured `fact`, `decision`, `failure`, `risk`, `rule`, or `checkpoint` events. New records are `review-needed`; only accepted records enter context. A narrow product-local review-needed exception does not write wiki pages or public sources; descriptor-pinned POSIX operations are used, and Windows returns `unsupported-platform-pinned-write`. Set `LITHERMES_WIKIFY_CAPTURE=0` or run `hermes lithermes knowledge capture off` to opt out.
 - Native `/goal` is user-managed and unobserved. Durable `goal_*` state is authoritative; there is no automatic update, clear, or resume of native `/goal`.
-- LitHermes looks for a newer release when you run `install`, `check` or `doctor` in a terminal, and again on the first message of an interactive Hermes CLI session. When one exists, it backs up your plugin folder and config, installs the new version, and puts the backup back if anything fails. Runs with `--offline`, `--json` or `--dry-run`, CI, and piped output skip the update. The [Updates section of the README](../README.md#updates) has the full sequence and the records it leaves.
+- LitHermes looks for a newer release when you run `install`, `check` or `doctor` in a terminal, and again on the first message of a classic terminal Hermes CLI session (never in `hermes --tui` or a gateway). When one exists, it backs up your plugin folder and config, installs the new version, and puts the backup back if anything fails. Runs with `--offline`, `--json` or `--dry-run`, CI, and piped output skip the update. The [Updates section of the install page](./install.md#updates) has the full sequence and the records it leaves.
 - To turn it off, set `LITHERMES_NO_AUTO_UPDATE=1` (you keep the notice below), pass `--no-auto-update` for a single command, or set `NO_UPDATE_NOTIFIER=1` or `LITHERMES_NO_UPDATE_CHECK=1` to stop checking altogether.
 - The update notice saves what it finds in `update-check.json` at most once every 24 hours. When a newer release is listed, later runs suggest `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud`, which you run yourself. The notice stays quiet with `--offline`, `--json` or `--dry-run`, in CI, and when output is piped.
 

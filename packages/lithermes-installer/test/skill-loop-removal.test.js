@@ -32,9 +32,10 @@ test("removed skill review has no installer route or shipped bridge", () => {
       encoding: "utf8",
       env: { ...process.env, HOME: hermesHome, HERMES_HOME: hermesHome, LITHERMES_NO_AUTO_UPDATE: "1" },
     });
-    assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /lithermes commands:/);
+    assert.equal(result.status, 2, result.stderr);
+    assert.match(result.stderr, /unknown command 'skill-loop'/);
     assert.doesNotMatch(result.stdout, /skill-loop/);
+    assert.deepEqual(fs.readdirSync(hermesHome), [], "a removed command writes nothing");
   } finally {
     fs.rmSync(hermesHome, { recursive: true, force: true });
   }

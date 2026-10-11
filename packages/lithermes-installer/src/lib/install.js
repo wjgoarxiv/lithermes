@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   applyModelConfigPlan,
+  assertConfigEdit,
   configHasLitHermes,
   disableLitHermesConfig,
   enableLitHermesConfig,
@@ -17,7 +18,7 @@ const {
 const { copyTree, removeEmptyDirs, sha256, writeFileAtomic } = require("./files");
 const { assertStateParent, assertPluginParent, defaultHermesHome, defaultHermesRepo, detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, inspectHermesHostCapabilities, LitHermesError } = require("./hermesDiscovery");
 const { NOT_PROBED_HOST_VERSION } = require("./modelConfigBoundary");
-const { patchInstalledHermes, rollbackPatches } = require("./patch");
+const { patchInstalledHermes, patchManifestPath, rollbackPatches } = require("./patch");
 const {
   ASTRA_MODEL,
   formatManagedRoute,
@@ -599,6 +600,9 @@ function installLitHermes(flags = {}) {
   if (!flags.yes) {
     throw new LitHermesError("Refusing to mutate Hermes config without --yes. Re-run with --dry-run to inspect changes.", 4);
   }
+  // Check the config edit before the payload is touched, so a refusal leaves no partial install.
+  const plannedEnable = enableLitHermesConfig(modelPlan.action === "write" ? modelPlan.text : beforeConfig);
+  if (plannedEnable !== beforeConfig) assertConfigEdit(hermesHome, beforeConfig, setTuiAgentsNudgeConfig(plannedEnable), "Add lithermes to plugins.enabled by hand.");
   onProgress("Preparing Hermes config");
   let retainedPythonCache = null;
   let retainedLegacySkill = null;
@@ -810,6 +814,39 @@ function uninstallLitHermes(flags = {}) {
   }, state);
 }
 
+// Dry run of `uninstall`: the same safety checks and manifest reads as a real run, no lock and no writes.
+function previewUninstall(flags = {}) {
+  const { hermesHome } = ensureHermesHome(flags);
+  assertStateParent(hermesHome);
+  assertPluginParent(hermesHome);
+  const lines = ["DRY RUN: would uninstall LitHermes"];
+  if (flags["rollback-patches"]) {
+    const patches = patchManifestPath(hermesHome);
+    const records = fs.existsSync(patches) ? JSON.parse(fs.readFileSync(patches, "utf8")).records || [] : [];
+    lines.push(records.length ? `patches: would roll back ${records.map((record) => record.relative).join(", ")}` : "patches: none to roll back");
+  }
+  const manifest = loadManifest(hermesHome);
+  if (!manifest) {
+    lines.push("LitHermes is not installed by this installer, so there is nothing to remove.");
+  } else {
+    if (!validManifestFiles(manifest)) throw new LitHermesError("Invalid LitHermes install manifest; refusing to remove files.", 5);
+    const dest = pluginDest(hermesHome);
+    let remove = 0;
+    let keep = 0;
+    for (const entry of manifest.files) {
+      if (isInstalledRegularFile(dest, entry.path) && sha256(path.join(dest, entry.path)) === entry.sha256) remove += 1;
+      else if (fs.existsSync(path.join(dest, entry.path))) keep += 1;
+    }
+    lines.push(`plugin: ${dest} (would remove ${remove} plugin file${remove === 1 ? "" : "s"}${keep ? `, keep ${keep} changed file${keep === 1 ? "" : "s"}` : ""})`);
+    const config = readConfig(hermesHome);
+    lines.push(`config: ${disableLitHermesConfig(config) === config ? "no change" : `would disable the plugin in ${path.join(hermesHome, "config.yaml")}`}`);
+    lines.push(`manifest: would remove ${manifestPath(hermesHome)}`);
+  }
+  if (!flags.yes) lines.push("A real uninstall also needs --yes.");
+  lines.push("Nothing was changed.");
+  return { message: lines.join("\n") };
+}
+
 module.exports = {
   assetRoot,
   installLitHermes,
@@ -818,5 +855,6 @@ module.exports = {
   manifestPath,
   pluginDest,
   previewModelRoute,
+  previewUninstall,
   uninstallLitHermes,
 };

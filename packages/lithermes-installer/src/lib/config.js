@@ -14,16 +14,8 @@ function readConfig(hermesHome) {
 }
 
 function findPluginsBlock(lines) {
-  const start = lines.findIndex((line) => /^plugins:\s*$/.test(line));
-  if (start === -1) return null;
-  let end = lines.length;
-  for (let i = start + 1; i < lines.length; i += 1) {
-    if (/^\S/.test(lines[i]) && !/^---\s*$/.test(lines[i])) {
-      end = i;
-      break;
-    }
-  }
-  return { start, end, lines: lines.slice(start, end) };
+  const block = findTopBlock(lines, "plugins");
+  return block && { ...block, lines: lines.slice(block.start, block.end) };
 }
 
 function configHasLitHermes(text) {
@@ -31,7 +23,7 @@ function configHasLitHermes(text) {
   if (!block) return false;
   return block.lines.some((line, index) => {
     if (/^\s*enabled:\s*\[[^\]]*lithermes[^\]]*\]/.test(line)) return true;
-    if (!/^\s*enabled:\s*$/.test(line)) return false;
+    if (!/^\s*enabled:(\s+#.*)?\s*$/.test(line)) return false;
     for (let i = index + 1; i < block.lines.length; i += 1) {
       const child = block.lines[i];
       if (/^\s{2}\S/.test(child) && !/^\s{2,}-/.test(child)) return false;
@@ -46,11 +38,13 @@ function enableLitHermesConfig(text) {
   if (!text.trim()) {
     return "plugins:\n  enabled:\n    - lithermes\n";
   }
+  const eol = eolOf(text);
   const trailingNewline = text.endsWith("\n");
   const lines = text.split(/\r?\n/);
-  if (!trailingNewline && lines[lines.length - 1] === "") lines.pop();
+  if (trailingNewline) lines.pop();
   const block = findPluginsBlock(lines);
   if (block) {
+    openBlock(lines, block);
     for (let i = block.start + 1; i < block.end; i += 1) {
       const line = lines[i];
       if (/^\s{2}enabled:\s*\[[^\]]*\]/.test(line)) {
@@ -59,43 +53,53 @@ function enableLitHermesConfig(text) {
           values.push("lithermes");
           return `[${values.join(", ")}]`;
         });
-        return `${lines.join("\n")}${trailingNewline ? "\n" : ""}`;
+        return `${lines.join(eol)}${trailingNewline ? eol : ""}`;
       }
-      if (/^\s{2}enabled:\s*$/.test(line)) {
-        lines.splice(i + 1, 0, "    - lithermes");
-        return `${lines.join("\n")}${trailingNewline ? "\n" : ""}`;
+      if (/^\s{2}enabled:(\s+#.*)?\s*$/.test(line)) {
+        // Match the list's own indentation; Hermes writes indentless sequences.
+        const next = lines.slice(i + 1, block.end).find((item) => item.trim() && !/^\s*#/.test(item));
+        const indent = /^(\s*)-(\s|$)/.exec(next || "")?.[1] ?? "    ";
+        lines.splice(i + 1, 0, `${indent}- lithermes`);
+        return `${lines.join(eol)}${trailingNewline ? eol : ""}`;
       }
     }
     lines.splice(block.start + 1, 0, "  enabled:", "    - lithermes");
-    return `${lines.join("\n")}${trailingNewline ? "\n" : ""}`;
+    return `${lines.join(eol)}${trailingNewline ? eol : ""}`;
   }
-  const suffix = text.endsWith("\n") ? "" : "\n";
-  return `${text}${suffix}plugins:\n  enabled:\n    - lithermes\n`;
+  const suffix = trailingNewline ? "" : eol;
+  return `${text}${suffix}${["plugins:", "  enabled:", "    - lithermes", ""].join(eol)}`;
 }
 
 function disableLitHermesConfig(text) {
+  const eol = eolOf(text);
   const trailingNewline = text.endsWith("\n");
   const lines = text.split(/\r?\n/);
+  if (trailingNewline) lines.pop();
   const block = findPluginsBlock(lines);
   if (!block) return text;
+  let inEnabled = false;
   for (let i = block.start + 1; i < block.end; i += 1) {
     const line = lines[i];
+    // Only plugins.enabled items are removed; a `disabled:` entry belongs to the user.
+    if (/^\s+[^\s#-]/.test(line)) inEnabled = /^\s+enabled:(\s+#.*)?\s*$/.test(line);
     if (/^\s{2}enabled:\s*\[[^\]]*lithermes[^\]]*\]/.test(line)) {
       const inner = line.match(/\[([^\]]*)\]/)?.[1] || "";
       const values = inner.split(",").map((item) => item.trim()).filter((item) => item && item !== "lithermes");
       lines[i] = `  enabled: [${values.join(", ")}]`;
     }
-    if (/^\s*-\s*lithermes\s*$/.test(line)) {
+    if (inEnabled && /^\s*-\s*lithermes\s*$/.test(line)) {
       lines.splice(i, 1);
       i -= 1;
       block.end -= 1;
     }
   }
-  return `${lines.join("\n")}${trailingNewline ? "\n" : ""}`;
+  return `${lines.join(eol)}${trailingNewline ? eol : ""}`;
 }
 
+// A top-level `key:` opens a block even with a trailing comment or an empty
+// flow map `{}`; openBlock() drops the `{}` only when a child is being added.
 function findTopBlock(lines, key) {
-  const re = new RegExp(`^${key}:\\s*$`);
+  const re = new RegExp(`^${key}:(\\s*\\{\\s*\\})?(\\s+#.*)?\\s*$`);
   const start = lines.findIndex((line) => re.test(line));
   if (start === -1) return null;
   let end = lines.length;
@@ -106,6 +110,18 @@ function findTopBlock(lines, key) {
     }
   }
   return { start, end };
+}
+
+const eolOf = (text) => (String(text || "").includes("\r\n") ? "\r\n" : "\n");
+
+// Rejoin in the file's own line ending; trailing blank lines collapse to one ending.
+function joinLines(lines, eol, extra = []) {
+  while (lines.length && lines[lines.length - 1] === "") lines.pop();
+  return [...lines, ...extra, ""].join(eol);
+}
+
+function openBlock(lines, block) {
+  lines[block.start] = lines[block.start].replace(/\s*\{\s*\}/, "");
 }
 
 function readDisplaySkinConfig(text) {
@@ -122,23 +138,21 @@ function readDisplaySkinConfig(text) {
 function setDisplaySkinConfig(text, skinName) {
   const value = String(skinName || "").trim();
   if (!value) return text;
-  const trailingNewline = !text || text.endsWith("\n");
+  const eol = eolOf(text);
   const lines = String(text || "").split(/\r?\n/);
-  if (!trailingNewline && lines[lines.length - 1] === "") lines.pop();
   const block = findTopBlock(lines, "display");
   if (block) {
     for (let i = block.start + 1; i < block.end; i += 1) {
       if (/^\s{2}skin:\s*/.test(lines[i])) {
         lines[i] = `  skin: ${value}`;
-        return `${lines.join("\n").replace(/\n*$/, "")}\n`;
+        return joinLines(lines, eol);
       }
     }
+    openBlock(lines, block);
     lines.splice(block.start + 1, 0, `  skin: ${value}`);
-    return `${lines.join("\n").replace(/\n*$/, "")}\n`;
+    return joinLines(lines, eol);
   }
-  const body = lines.join("\n").replace(/\n*$/, "");
-  const prefix = body ? `${body}\n` : "";
-  return `${prefix}display:\n  skin: ${value}\n`;
+  return joinLines(lines, eol, ["display:", `  skin: ${value}`]);
 }
 
 function readTuiAgentsNudgeConfig(text) {
@@ -156,17 +170,15 @@ function readTuiAgentsNudgeConfig(text) {
 // Set only when absent: an explicit user value, true or false, is preserved.
 function setTuiAgentsNudgeConfig(text) {
   if (readTuiAgentsNudgeConfig(text) !== null) return text;
-  const trailingNewline = !text || text.endsWith("\n");
+  const eol = eolOf(text);
   const lines = String(text || "").split(/\r?\n/);
-  if (!trailingNewline && lines[lines.length - 1] === "") lines.pop();
   const block = findTopBlock(lines, "display");
   if (block) {
+    openBlock(lines, block);
     lines.splice(block.start + 1, 0, "  tui_agents_nudge: true");
-    return `${lines.join("\n").replace(/\n*$/, "")}\n`;
+    return joinLines(lines, eol);
   }
-  const body = lines.join("\n").replace(/\n*$/, "");
-  const prefix = body ? `${body}\n` : "";
-  return `${prefix}display:\n  tui_agents_nudge: true\n`;
+  return joinLines(lines, eol, ["display:", "  tui_agents_nudge: true"]);
 }
 
 function clearDisplaySkinConfig(text) {
@@ -179,7 +191,7 @@ function clearDisplaySkinConfig(text) {
       break;
     }
   }
-  return `${lines.join("\n").replace(/\n*$/, "")}\n`;
+  return joinLines(lines, eolOf(text));
 }
 
 function readOutputStyleConfig(text) {
@@ -227,13 +239,56 @@ function readExternalSkillDirsConfig(text) {
   }
 }
 
+// Hermes `display.status_bar.fields` only chooses which built-in segments show
+// (the order is fixed). Empty means the host default, which leaves out the
+// opt-in git branch. Doctor suggests this set and never writes it.
+const RECOMMENDED_STATUS_BAR_FIELDS = Object.freeze([
+  "model", "context_pct", "goal", "bg_subagents", "git_branch", "prompt_elapsed", "yolo",
+]);
+
+// The configured field list ([] when unset); null when config.yaml does not parse.
+function readStatusBarFields(text) {
+  const str = String(text || "");
+  if (!str.trim()) return [];
+  try {
+    const document = parseDocument(str, { strict: true, uniqueKeys: true });
+    if (document.errors.length) return null;
+    const fields = document.toJS()?.display?.status_bar?.fields;
+    return Array.isArray(fields) ? fields : [];
+  } catch {
+    return null;
+  }
+}
+
+// null = the user already chose fields, or the YAML is malformed (no guessing).
+function suggestStatusBarFields(text) {
+  const fields = readStatusBarFields(text);
+  return fields && fields.length === 0 ? RECOMMENDED_STATUS_BAR_FIELDS : null;
+}
+
+function yamlError(text) {
+  if (!String(text || "").trim()) return null;
+  const document = parseDocument(text, { strict: true, uniqueKeys: true });
+  return document.errors.length ? document.errors[0].message.split("\n")[0].replace(/:$/, "") : null;
+}
+
+// Fail closed when an edit would break a config that parses under the installer's
+// strict check; an already-malformed file keeps the append-only fallback.
+function assertConfigEdit(hermesHome, before, after, hint = "Edit config.yaml by hand.") {
+  const error = yamlError(after);
+  if (!error || yamlError(before)) return;
+  throw new Error(`${configPath(hermesHome)} left unchanged: the LitHermes edit would not parse as YAML (${error}). ${hint}`);
+}
+
 function writeConfig(hermesHome, text) {
+  assertConfigEdit(hermesHome, readConfig(hermesHome), text);
   fs.mkdirSync(hermesHome, { recursive: true });
   writeFileAtomic(configPath(hermesHome), text, "utf8");
 }
 
 module.exports = {
   ...modelConfig,
+  assertConfigEdit,
   clearDisplaySkinConfig,
   clearOutputStyleConfig,
   configHasLitHermes,
@@ -243,6 +298,9 @@ module.exports = {
   readConfig,
   readDisplaySkinConfig,
   readExternalSkillDirsConfig,
+  readStatusBarFields,
+  RECOMMENDED_STATUS_BAR_FIELDS,
+  suggestStatusBarFields,
   readOutputStyleConfig,
   readTuiAgentsNudgeConfig,
   setDisplaySkinConfig,

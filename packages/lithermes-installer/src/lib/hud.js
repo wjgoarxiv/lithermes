@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline");
@@ -76,7 +77,7 @@ function listHud({ color = false, hermesHome = null } = {}) {
   return lines.join("\n");
 }
 
-function applyHud(token, flags = {}) {
+function accentOrThrow(token) {
   const entry = skins.findAccent(token);
   if (!entry) {
     const names = [
@@ -88,6 +89,11 @@ function applyHud(token, flags = {}) {
     err.exitCode = 4;
     throw err;
   }
+  return entry;
+}
+
+function applyHud(token, flags = {}) {
+  const entry = accentOrThrow(token);
   const home = resolveHome(flags);
   const written = skins.installSkins(home);
   const name = skins.skinName(entry.accent);
@@ -108,6 +114,31 @@ function clearHud(flags = {}) {
   const after = clearDisplaySkinConfig(before);
   if (after !== before) writeConfig(home, after);
   return "LitHermes HUD cleared (display.skin removed). Restart Hermes to revert to the default skin.";
+}
+
+// Dry runs of `hud <accent>` and `hud off`: read the config and skins folder, write nothing.
+function previewHud(token, flags = {}) {
+  const entry = accentOrThrow(token);
+  const home = resolveHome(flags);
+  const name = skins.skinName(entry.accent);
+  const dir = skins.skinsDir(home);
+  const missing = [...skins.HUD_ACCENTS, skins.IGNITION, ...skins.NAMED_THEMES]
+    .filter((item) => !fs.existsSync(path.join(dir, `${skins.skinName(item.accent)}.yaml`)));
+  const before = readConfig(home);
+  return [
+    `DRY RUN: would set display.skin: ${name} (${entry.label})`,
+    `skins: would add ${missing.length} skin files -> ${dir}`,
+    `config: ${setDisplaySkinConfig(before, name) === before ? "already set; no change" : `would update ${path.join(home, "config.yaml")}`}`,
+    "Nothing was changed.",
+  ].join("\n");
+}
+
+function previewClearHud(flags = {}) {
+  const home = resolveHome(flags);
+  const before = readConfig(home);
+  return clearDisplaySkinConfig(before) === before
+    ? "DRY RUN: display.skin is not set, so `hud off` would change nothing.\nNothing was changed."
+    : `DRY RUN: would remove display.skin from ${path.join(home, "config.yaml")}\nNothing was changed.`;
 }
 
 // Interactive accent picker used during `lithermes install` on a TTY.
@@ -132,4 +163,4 @@ function promptAccent({ input = process.stdin, output = process.stdout, color = 
   });
 }
 
-module.exports = { resolveHome, listHud, applyHud, clearHud, promptAccent };
+module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, promptAccent };
