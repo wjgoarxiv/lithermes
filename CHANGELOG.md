@@ -6,6 +6,15 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.19] - 2026-10-11
+
+- The GitHub README is shorter and written for someone meeting LitHermes for the first time: what it does, how to install it and what to type first. The detail moved into pages under `docs/` (install, tour, skills, automatic handoff, Jev) in English and Korean, and the npm page is shorter too.
+- The GitHub page now opens with a short film of a real Hermes session with LitHermes installed.
+- In every LIT skin, the spinner names the work while Hermes is busy (lit-looping, planning, verifying and more). The status bar also gives its four levels (good, warn, bad and critical) their own colours in the dark and light palettes.
+- `lithermes doctor` shows how `display.status_bar.fields` is set. When it is unset, doctor suggests a set of fields that adds the Git branch. LitHermes never writes that setting itself.
+- An automatic update started inside Hermes now has 90 seconds to finish. It used to be stopped after 30 seconds, so a slow first download could end halfway. The docs now say that inside Hermes the update runs only on the first message of the classic terminal CLI (`hermes` or `hermes chat`), and never in `hermes --tui` or a gateway.
+- The installer edits `config.yaml` without dropping or breaking keys. Indentless lists, `plugins: {}`, `plugins:` followed by a comment and `display: {}` stay valid YAML, turning the plugin off keeps your own `disabled` list, and files with CRLF line endings keep them. Every edit is parsed before it is written; if the result would not parse, the file stays as it was and the installer tells you what to add by hand.
+- A dot inside a file name no longer ends the request, so "lit notes.md 메모 파일로 … 슬라이드 10장 만들어줘" reaches the slide skill. A dot ends a sentence only before a space or at the end of the text.
 - `lithermes` now refuses an option a command does not take, a short option such as `-n`, or a stray word, and changes nothing. Before, `install --yes -n` or `uninstall --yes --bogus` ran for real, and `--home` was ignored while the default profile was used.
 - `--dry-run` (or `--dry-run=true`) now previews `uninstall`, `hud <accent>`, `hud off` and `motion-runtime install` as well as `install`: each prints what it would change and changes nothing. `--dry-run=false` runs the command normally. Before, `uninstall --yes --dry-run` really uninstalled.
 - `lithermes help` lists every option each command accepts, and `--help` after any command prints help instead of running it.
