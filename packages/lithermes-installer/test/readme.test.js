@@ -972,6 +972,45 @@ test("every README page explains the automatic handoff honestly: off by default,
   }
 });
 
+test("automatic handoff pictures ship on the GitHub READMEs only, in both themes, with alt text taken from what the plugin prints", () => {
+  const dir = path.join(repoRoot, "docs", "assets", "handoff");
+  const stems = ["auto-handoff-switch", "auto-handoff-turn", "auto-handoff-shell"];
+  const expected = stems.flatMap((stem) => [`${stem}-dark.webp`, `${stem}-light.webp`]).sort();
+  assert.deepEqual(fs.readdirSync(dir).sort(), expected, "docs/assets/handoff must hold exactly the three pictures in dark and light");
+  for (const name of expected) {
+    const bytes = fs.readFileSync(path.join(dir, name));
+    assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
+    assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
+    assert.ok(bytes.length <= 61_440, `${name} must stay near 60 KiB (${bytes.length} bytes)`);
+  }
+  // The strings in the pictures come from the plugin source, so a rewording there fails here.
+  const source = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_handoff.py"), "utf8");
+  const quoted = [
+    ["Automatic handoff is ON at {percent}%. Once a model call passes", "Automatic handoff is ON at 60%. Once a model call passes"],
+    ["Last reading in this session: ", "Last reading in this session: 41% (164,000 of 400,000 tokens)"],
+    ["own compaction point is about", "own compaction point is about 64% of the window, above yours."],
+    ["Automatic handoff is off.", "Automatic handoff is off. Your last percent, 60%, is remembered"],
+    ["Handoff saved. Run", "Handoff saved. Run /compact now."],
+    ["Automatic handoff: on at", "[OK] Automatic handoff: on at 60% (Hermes compacts at about 64% of the window)"],
+  ];
+  for (const [printed] of quoted) assert.ok(source.includes(printed), `auto_handoff.py no longer prints: ${printed}`);
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
+    const pictures = [...text.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/handoff\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/handoff\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+    assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the three pictures in order`);
+    for (const [, dark, light] of pictures) assert.equal(dark, light, `${name}: dark and light must be the same picture`);
+    const alts = pictures.map((match) => match[3].replace(/&quot;/g, '"')).join("\n");
+    for (const [, shown] of quoted) assert.ok(alts.includes(shown), `${name}: the alt text must quote ${shown}`);
+    for (const command of ["/lit-handoff auto on 60", "/lit-handoff auto status", "/lit-handoff auto off", "LITHERMES_AUTO_HANDOFF=1 LITHERMES_AUTO_HANDOFF_PERCENT=60"]) {
+      assert.ok(alts.includes(command), `${name}: the alt text must name ${command}`);
+    }
+  }
+  assert.ok(!fs.existsSync(path.join(packageRoot, "readme-assets", "handoff")), "the package must not carry copies of the handoff pictures");
+  for (const name of ["README.md", "README_Ko-KR.md"]) {
+    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /auto-handoff-[a-z]+-(?:dark|light)\.webp/, `${name} npm card must not embed the pictures`);
+  }
+});
+
 test("the motion promo ships on the GitHub pages only, inside its size caps, and the pages label it honestly", () => {
   const { createHash } = require("node:crypto");
   const dir = path.join(repoRoot, "docs", "assets", "promo");

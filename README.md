@@ -15,9 +15,7 @@ LitHermes is a plugin for [Hermes Agent](https://github.com/NousResearch/hermes-
 
 <p align="center"><a href="#install">Install</a> · <a href="#your-first-task">First task</a> · <a href="#what-you-get">What you get</a> · <a href="#learn-more">Learn more</a> · <a href="./README_Ko-KR.md">한국어</a> · <a href="https://www.npmjs.com/package/@litfamily/lithermes">npm</a></p>
 
-<p align="center"><img src="./docs/assets/demo.webp" width="960" alt="A short film of a real Hermes session in a small Node project, with the waiting shortened. Hermes starts with the LitHermes mark and &quot;LIT ready&quot;, and the prompt &quot;lit add a --shout flag that prints the greeting in capitals, with a test&quot; is typed and sent. The agent says it will add --shout and a test, adds the test, runs npm run test and sees it fail, patches greet.js and checks the output, then answers: Added --shout in greet.js, npm run test pass 2 fail 0, node greet.js Ada --shout prints HELLO, ADA!. The LIT mark and &quot;🔥 LIT IGNITED · litwork 🔥&quot; close the turn." /></p> <!-- demo-gif -->
-
-<p align="center"><sub>A real Hermes session with LitHermes installed, recorded in a terminal. Waiting time is shortened, and the project folder and the home folder are shown as ~/greet and ~; the rest is as Hermes printed it. More screens are in <a href="./docs/tour.md">the tour</a>.</sub></p>
+<p align="center"><img src="./docs/assets/demo.webp" width="960" alt="A short silent film of a real Hermes session with LitHermes, in seven numbered steps. It opens on the LitHermes mark and &quot;The lit workflow for Hermes Agent&quot;. 1, start with &quot;lit&quot;: the request &quot;lit add a --shout flag that prints the greeting in capitals, with a test&quot; is typed in. 2, it plans with its skills: the test-first and verification skills, test-driven-development and verification-before-completion, load before any code. 3, a failing test first: the new test runs and npm run test ends with &quot;[exit 1]&quot;. 4, then the fix: greet.js gains the toUpperCase line. 5, real tests: it runs npm run test and the CLI itself. 6, done, with evidence: the lit answer box reports npm run test with pass 2 and fail 0, and the output HELLO, ADA!. 7, signed by the workflow: the LIT mark with &quot;🔥 LIT IGNITED · litwork 🔥&quot;. It closes on the LitHermes mark and the install command." /></p> <!-- demo-gif -->
 
 ## Why LitHermes
 
@@ -41,6 +39,28 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 
 This puts the plugin into your Hermes home and updates the Hermes configuration so the plugin loads, without stopping to ask. `--no-style` skips the picker for how replies are worded. If you would like to try LitHermes before it touches your everyday setup, point `HERMES_HOME` at a new, empty directory first and start Hermes with the same value. The first install also downloads the film helpers, so it can take a minute. The report may list some model routes as unavailable when Hermes cannot be verified; `lithermes doctor --offline` is the check that matters. The [install page](./docs/install.md) explains each flag, the trial profile and installing from a reviewed `.tgz`.
 
+You can also hand the install to a coding agent. Paste the prompt below into it. The agent checks what you have, shows you its plan and waits for your yes, installs the official npm package, runs the offline check and tells you what it found. Restarting Hermes stays with you, because a running gateway only picks up a new plugin when it starts again.
+
+```text
+Install LitHermes, the lit workflow plugin for Hermes Agent, on this machine.
+
+1. Check first: Hermes Agent is installed (hermes --version), Node.js is 18 or later
+   (node --version), and I can write to my Hermes home (~/.hermes, or $HERMES_HOME if set).
+2. Show me your plan and the exact commands, and wait for my yes before you change
+   anything. You may preview the install first; it changes nothing:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
+3. Use only the official npm package @litfamily/lithermes. Do not clone a repository,
+   copy plugin files by hand or install any other package. Install with:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
+4. Verify with:
+   npx --package @litfamily/lithermes -- lithermes doctor --offline
+   Report the result to me, including every line that is not PASS. "loaded plugin:
+   PARTIAL" is expected offline, and model routes may show as unavailable.
+5. Do not restart Hermes or its gateway yourself. Remind me to restart the Hermes CLI
+   and any running Hermes gateway (Telegram, Discord and so on) so the plugin loads,
+   and then to start a task with lit in front.
+```
+
 ### Your first task
 
 Restart the Hermes CLI or gateway so it loads the plugin. Then give it a task with `lit` in front:
@@ -57,7 +77,23 @@ The reply opens with one line of its own, `🔥 **LIT IGNITED · <discipline>** 
 
 When it finishes, open the HTML file and try each action yourself. Ask Hermes to separate the checks it actually ran from anything still unverified. Then type `/lit-handoff`, and the result and the next step are written to `HANDOFF.md` in the project. Next time, open a new session in the same project and ask Hermes to read the handoff before it continues. When the session closes, the work stops, and the handoff file is what the next session reads to continue.
 
-Long sessions can do this for you. Automatic handoff is off by default. `/lit-handoff auto on 60` (any whole number from 1 to 99) asks the model for a handoff once a call passes that share of the context window, and then you run `/compact`. [Automatic handoff](./docs/automatic-handoff.md) explains who does each step.
+### Automatic handoff
+
+A long session fills the model's context window. When it is full, Hermes compacts the conversation and older detail is lost. Automatic handoff has the model write the handoff before that happens. Once it is saved, you run `/compact`, and the next stretch of the session starts from a written record. It is off by default, and the percent is yours to choose; LitHermes has no built-in value. Your choice is saved in your Hermes home at `~/.hermes/lithermes/auto-handoff.json`, so it follows you from project to project.
+
+Type `/lit-handoff auto on 60` inside a Hermes session, with any whole number from 1 to 99 in place of 60. The reply says what will happen and compares your percent with the point where Hermes would compact on its own. Later, `/lit-handoff auto status` shows the latest reading of the session, and `/lit-handoff auto off` turns it off while remembering your percent for next time.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-switch-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-switch-light.webp" width="690" alt="A terminal with a Hermes session. &quot;/lit-handoff auto on 60&quot; answers &quot;Automatic handoff is ON at 60%. Once a model call passes 60% of the context window, your next message carries a request to write a handoff, and you then run /compact. It starts with your next message.&quot; and &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;. Later in the session, &quot;/lit-handoff auto status&quot; answers &quot;Automatic handoff: ON at 60% (percent from your saved setting)&quot;, &quot;Last reading in this session: 41% (164,000 of 400,000 tokens)&quot; and &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;. Then &quot;/lit-handoff auto off&quot; answers &quot;Automatic handoff is off. Your last percent, 60%, is remembered for the next time you turn it on.&quot;." /></picture></p>
+
+Once a model call passes your percent, your next message carries a short request to write a handoff. The model saves `HANDOFF.md` with the lit-handoff procedure, tells you one line, `Handoff saved. Run /compact now.`, and then carries on with what you asked. Compacting stays your call, so run `/compact` when it suits you. After the compaction, your next message brings a short digest of that handoff back to the model, and the work picks up where it stopped.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-turn-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-turn-light.webp" width="690" alt="A terminal with a Hermes session, after the last model call used 61% of the window, past the chosen 60%. The message &quot;add the CSV export to the reports page&quot; gets the reply &quot;Handoff saved. Run /compact now.&quot;, and the work goes on. Then the user types &quot;/compact&quot;, and after the compaction the next message, &quot;carry on with the CSV export&quot;, brings the handoff back." /></picture></p>
+
+If you want it on in every session, set `LITHERMES_AUTO_HANDOFF=1` and `LITHERMES_AUTO_HANDOFF_PERCENT=60` in the environment Hermes runs in, for example in your shell profile. The environment wins over the slash command. `hermes lithermes status` and `hermes lithermes doctor` each print one line about it, and doctor warns you when your percent is at or above Hermes' own compaction point, because Hermes would then compact first and no handoff would be written.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-shell-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-shell-light.webp" width="690" alt="A terminal. &quot;export LITHERMES_AUTO_HANDOFF=1 LITHERMES_AUTO_HANDOFF_PERCENT=60&quot;, then &quot;hermes lithermes status | grep 'Automatic handoff'&quot; prints &quot;Automatic handoff: on at 60%&quot;, and &quot;hermes lithermes doctor | grep 'Automatic handoff'&quot; prints &quot;[OK] Automatic handoff: on at 60% (Hermes compacts at about 64% of the window)&quot;." /></picture></p>
+
+[Automatic handoff](./docs/automatic-handoff.md) goes through each step and says who does it.
 
 ## What you get
 

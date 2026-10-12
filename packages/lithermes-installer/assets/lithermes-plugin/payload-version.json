@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-11T16:30:33.404Z",
+  "syncedAt": "2026-10-12T17:13:07.196Z",
   "source": "bundled-payload",
-  "sourceHash": "a6d74805df18a0d984aa14028f3f54ee0fd2de171e2595d9e45cfb3fbf5abb14",
+  "sourceHash": "63d5a45be68c786856aed8ef591f5e5b90b990bd5c5250412baba481c151b446",
   "files": [
     {
       "path": "NOTICE.md",
@@ -3765,11 +3765,11 @@
     },
     {
       "path": "skills/lit-pptx/runtime/package-lock.json",
-      "sha256": "a9c2a5106059dacf9b32ff5f0535e90bbcef5ef3e5d15d6487aa867215f8bc55"
+      "sha256": "4dbbd02b53d3d3e5673bddc1bf6bbf2386c12ac8171ac95df79a2a7b1b715289"
     },
     {
       "path": "skills/lit-pptx/runtime/package.json",
-      "sha256": "f89b77fb48a28b458c5f4fcffbed43f3982564ea969c3a5d600bda84965e90ca"
+      "sha256": "ad9048eb440ea60454121142e42c4d2d62dafa5e5505581395e4f521a4401845"
     },
     {
       "path": "skills/lit-pptx/runtime/requirements.in",
@@ -4345,7 +4345,7 @@
     },
     {
       "path": "skills/readme-studio/templates/hyperframes/package-lock.json",
-      "sha256": "0e0e2b1826133e71eb031d33d8071638d27dc91a4d904c13a5527096b9512324"
+      "sha256": "4fb63ce8f829e8717edd32e370b60debca6ea24eba3e9716d2b0bef18118986e"
     },
     {
       "path": "skills/readme-studio/templates/hyperframes/package.json",
@@ -4353,7 +4353,7 @@
     },
     {
       "path": "skills/readme-studio/templates/remotion/package-lock.json",
-      "sha256": "2dd475a00975edccf6a6399f3fa728b4e69d8d7c8229416edf2c702fd9d47bba"
+      "sha256": "ee738084263482454b4c6e941a9583d58f091d8cb6c901522138a21b39381564"
     },
     {
       "path": "skills/readme-studio/templates/remotion/package.json",

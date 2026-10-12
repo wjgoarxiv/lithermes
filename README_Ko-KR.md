@@ -15,9 +15,7 @@ LitHermes는 [Hermes Agent](https://github.com/NousResearch/hermes-agent)용 플
 
 <p align="center"><a href="#설치">설치</a> · <a href="#첫-작업">첫 작업</a> · <a href="#할-수-있는-일">할 수 있는 일</a> · <a href="#더-알아보기">더 알아보기</a> · <a href="./README.md">English</a> · <a href="https://www.npmjs.com/package/@litfamily/lithermes">npm</a></p>
 
-<p align="center"><img src="./docs/assets/demo.webp" width="960" alt="작은 Node 프로젝트에서 실제로 진행한 Hermes 세션을 짧은 영상으로 만들었고, 기다리는 시간은 줄였습니다. Hermes가 LitHermes 마크와 &quot;LIT ready&quot;로 시작하고, &quot;lit add a --shout flag that prints the greeting in capitals, with a test&quot;를 입력해 보냅니다. 에이전트는 --shout와 테스트를 추가하겠다고 밝히고, 테스트를 추가한 뒤 npm run test가 실패하는 것을 확인하고, greet.js를 고치고 출력을 확인합니다. 답은 Added --shout in greet.js, npm run test pass 2 fail 0, node greet.js Ada --shout의 출력 HELLO, ADA!입니다. 마지막에 LIT 마크와 &quot;🔥 LIT IGNITED · litwork 🔥&quot;가 나옵니다." /></p> <!-- demo-gif -->
-
-<p align="center"><sub>LitHermes를 설치한 실제 Hermes 세션을 터미널에서 녹화했습니다. 기다리는 시간을 줄이고 프로젝트 폴더와 홈 폴더를 ~/greet와 ~로 표시했으며, 나머지 글자는 Hermes가 출력한 그대로입니다. 다른 화면은 <a href="./docs/tour.ko.md">둘러보기</a>에 있습니다.</sub></p>
+<p align="center"><img src="./docs/assets/demo.webp" width="960" alt="LitHermes를 설치한 실제 Hermes 세션을 일곱 단계로 보여 주는 짧은 무음 영상. LitHermes 마크와 &quot;The lit workflow for Hermes Agent&quot;로 시작합니다. 1, &quot;lit&quot;으로 시작: &quot;lit add a --shout flag that prints the greeting in capitals, with a test&quot;를 입력합니다. 2, 스킬로 계획: 코드보다 먼저 테스트 우선 스킬과 검증 스킬, test-driven-development와 verification-before-completion이 불러와집니다. 3, 실패하는 테스트부터: 새 테스트를 돌리면 npm run test가 &quot;[exit 1]&quot;로 끝납니다. 4, 그다음 수정: greet.js에 toUpperCase 줄이 들어갑니다. 5, 진짜 테스트: npm run test와 CLI를 직접 실행합니다. 6, 근거와 함께 완료: lit 답변 상자에 npm run test 결과 pass 2, fail 0과 출력 HELLO, ADA!가 나옵니다. 7, 워크플로의 서명: LIT 마크와 &quot;🔥 LIT IGNITED · litwork 🔥&quot;. 마지막은 LitHermes 마크와 설치 명령입니다." /></p> <!-- demo-gif -->
 
 ## 왜 LitHermes인가요
 
@@ -41,6 +39,28 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 
 이 명령은 플러그인을 Hermes 홈에 넣고, 플러그인이 불러와지도록 Hermes 설정을 고칩니다. 중간에 승인을 묻느라 멈추지 않습니다. `--no-style`은 답변 문체를 고르는 화면을 건너뜁니다. 평소 쓰는 환경을 건드리기 전에 먼저 써 보고 싶다면, 설치 전에 `HERMES_HOME`을 비어 있는 새 디렉터리로 지정하고 Hermes를 시작할 때도 같은 값을 쓰세요. 처음 설치할 때는 영상용 도구도 함께 받으므로 1분쯤 걸릴 수 있습니다. Hermes를 확인할 수 없으면 설치 보고서에 일부 모델 경로가 unavailable로 나올 수 있는데, 정말 봐야 할 것은 `lithermes doctor --offline` 결과입니다. 옵션 하나하나의 뜻, 시험용 프로필, 검토된 `.tgz`로 설치하는 방법은 [설치 문서](./docs/install.ko.md)에 있습니다.
 
+코딩 에이전트에게 설치를 맡길 수도 있습니다. 아래 프롬프트를 붙여 넣으면 에이전트가 환경을 확인하고, 계획을 보여 준 뒤 승인을 기다렸다가, 공식 npm 패키지를 설치하고 오프라인 점검 결과를 알려 줍니다. 실행 중인 gateway는 다시 시작해야 새 플러그인을 불러오므로, Hermes 재시작은 직접 하시면 됩니다.
+
+```text
+이 컴퓨터에 Hermes Agent용 lit 워크플로 플러그인 LitHermes를 설치해줘.
+
+1. 먼저 확인해줘: Hermes Agent가 설치되어 있는지(hermes --version), Node.js가 18 이상인지
+   (node --version), 내 Hermes 홈(~/.hermes, HERMES_HOME이 설정되어 있으면 그 경로)에 쓸 수 있는지.
+2. 무엇이든 바꾸기 전에 계획과 실행할 명령을 그대로 보여 주고 내 승인을 기다려줘.
+   아무것도 바꾸지 않는 미리보기는 먼저 실행해도 돼:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
+3. 공식 npm 패키지 @litfamily/lithermes만 써줘. 저장소를 clone하거나, 플러그인 파일을
+   손으로 복사하거나, 다른 패키지를 설치하지 마. 설치 명령:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
+4. 확인 명령:
+   npx --package @litfamily/lithermes -- lithermes doctor --offline
+   결과를 알려 주고, PASS가 아닌 줄은 빠짐없이 보여줘. 오프라인에서는 "loaded plugin:
+   PARTIAL"이 정상이고, 모델 경로가 unavailable로 나올 수 있어.
+5. Hermes나 gateway를 직접 다시 시작하지는 마. 플러그인이 불러와지도록 Hermes CLI와 실행 중인
+   Hermes gateway(Telegram, Discord 등)를 다시 시작하라고 알려 주고, 그다음 요청 앞에 lit을
+   붙여 작업을 시작하면 된다고 말해줘.
+```
+
 ### 첫 작업
 
 플러그인을 불러오도록 Hermes CLI 또는 gateway를 다시 시작하세요. 그다음 요청 앞에 `lit`을 붙여 작업을 맡깁니다.
@@ -57,7 +77,23 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 작업이 끝나면 HTML 파일을 열어 각 동작을 직접 눌러 보세요. Hermes에는 실제로 확인한 내용과 아직 확인하지 못한 내용을 나눠 달라고 하세요. 그다음 `/lit-handoff`를 입력하면 결과와 다음 할 일이 프로젝트의 `HANDOFF.md`에 남습니다. 다음번에는 같은 프로젝트에서 새 세션을 열고, 이어가기 전에 그 인계 기록부터 읽어 달라고 하면 됩니다. 세션을 닫으면 작업도 멈추고, 다음 세션은 인계 기록을 읽고 이어갑니다.
 
-긴 세션에서는 이 일을 자동으로 맡길 수도 있습니다. 자동 핸드오프는 기본값이 꺼짐입니다. `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면, 모델 호출이 컨텍스트 창의 그 비율을 넘었을 때 모델에게 인계 기록을 쓰라고 요청하고, 그다음 `/compact`는 직접 실행합니다. 단계마다 누가 무엇을 하는지는 [자동 핸드오프](./docs/automatic-handoff.ko.md)에 정리해 두었습니다.
+### 자동 핸드오프
+
+긴 세션은 모델의 컨텍스트 창을 채웁니다. 창이 차면 Hermes가 대화를 압축하고, 오래된 세부 내용은 사라집니다. 자동 핸드오프는 그 전에 모델이 핸드오프를 쓰게 합니다. 저장이 끝나면 `/compact`를 실행하고, 세션의 다음 구간은 글로 남은 기록에서 출발합니다. 기본값이 꺼짐이고, 퍼센트는 직접 정합니다. LitHermes에는 내장 기본값이 없습니다. 고른 값은 Hermes 홈의 `~/.hermes/lithermes/auto-handoff.json`에 저장되므로, 어느 프로젝트에서 작업하든 같은 설정이 적용됩니다.
+
+Hermes 세션 안에서 `/lit-handoff auto on 60`을 입력하세요. 60 자리에는 1에서 99 사이의 정수를 넣으면 됩니다. 답에는 앞으로 일어날 일과, 고른 퍼센트를 Hermes가 스스로 압축하는 시점과 비교한 결과가 나옵니다. 나중에 `/lit-handoff auto status`를 입력하면 이 세션의 최근 측정값이 나오고, `/lit-handoff auto off`는 기능을 끄면서 다음에 쓸 수 있게 퍼센트를 기억해 둡니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-switch-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-switch-light.webp" width="690" alt="Hermes 세션이 열린 터미널. &quot;/lit-handoff auto on 60&quot;에 &quot;Automatic handoff is ON at 60%. Once a model call passes 60% of the context window, your next message carries a request to write a handoff, and you then run /compact. It starts with your next message.&quot; 그리고 &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;라고 답합니다. 세션 후반에 &quot;/lit-handoff auto status&quot;를 입력하면 &quot;Automatic handoff: ON at 60% (percent from your saved setting)&quot;, &quot;Last reading in this session: 41% (164,000 of 400,000 tokens)&quot; 그리고 &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;가 나옵니다. 마지막으로 &quot;/lit-handoff auto off&quot;에는 &quot;Automatic handoff is off. Your last percent, 60%, is remembered for the next time you turn it on.&quot;라고 답합니다." /></picture></p>
+
+모델 호출이 정한 퍼센트를 넘기면, 다음 메시지에 핸드오프를 쓰라는 짧은 요청이 붙습니다. 모델은 lit-handoff 절차로 `HANDOFF.md`를 저장하고 `Handoff saved. Run /compact now.` 한 줄로 알린 뒤, 원래 요청한 일을 이어 갑니다. 압축할지는 사용자가 정하므로, 편한 때에 `/compact`를 실행하세요. 압축한 뒤 다음 메시지와 함께 그 핸드오프의 요약이 모델에게 다시 들어가고, 작업은 멈춘 곳에서 이어집니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-turn-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-turn-light.webp" width="690" alt="Hermes 세션이 열린 터미널. 직전 모델 호출이 창의 61%를 써서 정해 둔 60%를 넘긴 상태입니다. &quot;add the CSV export to the reports page&quot;라는 메시지에 &quot;Handoff saved. Run /compact now.&quot;라는 답이 오고 작업이 이어집니다. 사용자가 &quot;/compact&quot;를 입력하고, 압축 뒤 다음 메시지 &quot;carry on with the CSV export&quot;와 함께 핸드오프가 다시 들어옵니다." /></picture></p>
+
+모든 세션에서 켜 두고 싶다면 Hermes를 실행하는 환경에 `LITHERMES_AUTO_HANDOFF=1`과 `LITHERMES_AUTO_HANDOFF_PERCENT=60`을 설정하세요. 셸 프로필에 넣어 두면 편합니다. 환경 변수가 슬래시 명령보다 우선합니다. `hermes lithermes status`와 `hermes lithermes doctor`는 이 기능에 대해 한 줄씩 출력하고, 고른 퍼센트가 Hermes 자체 압축 시점과 같거나 높으면 doctor가 경고합니다. 그러면 Hermes가 먼저 압축해 버려서 핸드오프가 쓰이지 않기 때문입니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-shell-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-shell-light.webp" width="690" alt="터미널. &quot;export LITHERMES_AUTO_HANDOFF=1 LITHERMES_AUTO_HANDOFF_PERCENT=60&quot; 다음에 &quot;hermes lithermes status | grep 'Automatic handoff'&quot;는 &quot;Automatic handoff: on at 60%&quot;를, &quot;hermes lithermes doctor | grep 'Automatic handoff'&quot;는 &quot;[OK] Automatic handoff: on at 60% (Hermes compacts at about 64% of the window)&quot;를 출력합니다." /></picture></p>
+
+단계마다 누가 무엇을 하는지는 [자동 핸드오프](./docs/automatic-handoff.ko.md)에 정리해 두었습니다.
 
 ## 할 수 있는 일
 
