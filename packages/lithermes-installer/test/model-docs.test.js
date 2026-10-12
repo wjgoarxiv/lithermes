@@ -34,6 +34,9 @@ test("package and plugin docs describe exact Hermes model capability boundaries"
   }
   assert.doesNotMatch(docs, /global child Luna `xhigh` route conflicts with the lead SOL/i);
   assert.doesNotMatch(docs, /Luna `xhigh`는 lead SOL `xhigh`와 충돌/);
-  assert.match(docs, /gpt-5\.6-luna` `xhigh` route is forbidden/i);
-  assert.match(docs, /gpt-6-luna` accepts `xhigh`/i);
+  assert.doesNotMatch(docs, /`xhigh` route is forbidden/i);
+  assert.match(docs, /both\s+Luna generations accept `xhigh`/i);
+  assert.match(docs, /`gpt-5\.6-luna` takes\s+the same five as `gpt-6-luna`/i);
+  // Hermes clamps max and ultra to xhigh on these models, so no doc may promise they reach the model.
+  assert.match(docs, /`gpt-6\.1-sol`, `gpt-6-sol` and `gpt-6-luna` current\s+Hermes sends `max` and `ultra` as `xhigh`/);
 });

@@ -183,7 +183,7 @@ test("installer drift reports current model safety instead of stale planned capa
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-terra",
     "agent:",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: minimal",
     "",
   ].join("\n");
   fs.writeFileSync(file, before, { mode: 0o600 });
@@ -209,6 +209,6 @@ test("installer drift reports current model safety instead of stale planned capa
   }
   // Then: output describes the drifted route, not the discarded write plan
   assert.match(receipt.message, /model config: aborted/);
-  assert.match(receipt.message, /model route safety: blocked \(LITHERMES_UNSAFE_MODEL_ROUTE; parent TERRA effort is below high or missing\)/);
+  assert.match(receipt.message, /model route safety: blocked \(LITHERMES_UNSAFE_MODEL_ROUTE; parent gpt-5\.6-terra effort is unsupported or missing; choose one of: low, medium, high, xhigh, max, ultra\)/);
   assert.doesNotMatch(receipt.message, /model route safety: safe/);
 });

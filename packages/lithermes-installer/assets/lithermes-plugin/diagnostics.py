@@ -88,17 +88,15 @@ _LEGACY_LUNA_MODEL = "gpt-5.6-luna"
 _LUNA_MODELS = frozenset((_LUNA_MODEL, _LEGACY_LUNA_MODEL))
 _GPT6_LEAD_EFFORTS = frozenset(("low", "medium", "high", "xhigh", "max", "ultra"))
 _GPT6_LUNA_EFFORTS = frozenset(("low", "medium", "high", "xhigh", "max"))
-_LEGACY_LUNA_EFFORTS = frozenset(("high", "max"))
-_LEGACY_SOL_EFFORTS = frozenset(("high", "xhigh"))
-_TERRA_EFFORTS = frozenset(("high", "xhigh", "max"))
+_LEGACY_LUNA_EFFORTS = _GPT6_LUNA_EFFORTS
 _ASTRA_EFFORTS = _GPT6_LEAD_EFFORTS
 _OPENAI_CATALOG_EFFORTS = {
     _ASTRA_MODEL: _ASTRA_EFFORTS,
     _SOL_MODEL: _GPT6_LEAD_EFFORTS,
     _PREVIOUS_SOL_MODEL: _GPT6_LEAD_EFFORTS,
     _LUNA_MODEL: _GPT6_LUNA_EFFORTS,
-    _LEGACY_SOL_MODEL: _LEGACY_SOL_EFFORTS,
-    _TERRA_MODEL: _TERRA_EFFORTS,
+    _LEGACY_SOL_MODEL: _GPT6_LEAD_EFFORTS,
+    _TERRA_MODEL: _GPT6_LEAD_EFFORTS,
     _LEGACY_LUNA_MODEL: _LEGACY_LUNA_EFFORTS,
     "gpt-5.6": frozenset(("high",)),
 }
@@ -383,12 +381,6 @@ def _parse_capabilities(host_version: str) -> CapabilityResult:
             and _effort_is(child_effort, _LEGACY_LUNA_EFFORTS)
         )
     )
-    if (
-        child_provider == _OPENAI_PROVIDER
-        and child_model == _LEGACY_LUNA_MODEL
-        and child_effort == "xhigh"
-    ):
-        return UnavailableCapabilities("global child Luna xhigh is forbidden for legacy Luna; it runs at high or max")
     if (
         child_provider == _OPENAI_PROVIDER
         and child_model in _LUNA_MODELS

@@ -61,15 +61,73 @@ test("Astra is the fresh parent and supports every fact-sheet lead/child effort"
   }
 });
 
-test("route selection follows GPT-6 effort sets and preserves legacy 5.6 bounds", () => {
+// Every reasoning effort the host route accepts, per model, checked 2026-10-12. OpenAI rows come from
+// the live model catalog that Hermes' OpenAI OAuth route serves (supported_reasoning_levels per slug);
+// Hermes accepts each of these in config, though it may send a lower level. xAI rows come from Hermes
+// agent/reasoning_effort.py, where Grok before 4.6 takes XAI_LEGACY_EFFORTS (low, medium, high).
+const HOST_EFFORTS = {
+  [GPT]: new Map([
+    ["gpt-6-astra", GPT6_LEAD_EFFORTS],
+    ["gpt-6.1-sol", GPT6_LEAD_EFFORTS],
+    ["gpt-6-sol", GPT6_LEAD_EFFORTS],
+    ["gpt-6-luna", GPT6_LUNA_EFFORTS],
+    ["gpt-5.6-sol", GPT6_LEAD_EFFORTS],
+    ["gpt-5.6-terra", GPT6_LEAD_EFFORTS],
+    ["gpt-5.6-luna", GPT6_LUNA_EFFORTS],
+  ]),
+  xai: new Map([
+    ["grok-build-0.1", ["low", "medium", "high"]],
+    ["grok-4.5", ["low", "medium", "high"]],
+    ["grok-4.3", ["low", "medium", "high"]],
+    ["grok-4.20-0309-reasoning", ["low", "medium", "high"]],
+  ]),
+};
+// The live catalog does not list gpt-5.6, so its single cataloged effort stays as it was.
+const UNLISTED_MODELS = new Set(["gpt-5.6"]);
+
+test("the installer offers every reasoning effort the host accepts for each model, and nothing else", () => {
+  const problems = [];
+  for (const [provider, expected] of Object.entries(HOST_EFFORTS)) {
+    const rows = ROUTE_CATALOG[provider].rows;
+    for (const model of new Set(rows.map((row) => row.model))) {
+      if (!expected.has(model) && !UNLISTED_MODELS.has(model)) problems.push(`${provider}/${model}: no host effort set recorded`);
+    }
+    for (const [model, efforts] of expected) {
+      const offered = rows.filter((row) => row.model === model).map((row) => row.effort);
+      const missing = efforts.filter((effort) => !offered.includes(effort));
+      const extra = offered.filter((effort) => !efforts.includes(effort));
+      if (missing.length) problems.push(`${model} is missing ${missing.join(", ")}`);
+      if (extra.length) problems.push(`${model} offers unsupported ${extra.join(", ")}`);
+      for (const effort of efforts) {
+        const helper = model.includes("luna") || model === "grok-4.3";
+        try {
+          const route = helper
+            ? managedRequest({ provider, childProvider: provider, childModel: model, childEffort: effort })
+            : managedRequest({ provider, childProvider: provider, model, effort });
+          if ((helper ? route.childEffort : route.effort) !== effort) problems.push(`${model}/${effort} resolves to another effort`);
+        } catch (error) {
+          problems.push(`${model}/${effort} is refused: ${error.message}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(problems, []);
+  // The recommended defaults stay where they were.
+  assert.deepEqual(ROUTE_CATALOG[GPT].lead, { effort: "xhigh", model: ASTRA_MODEL });
+  assert.deepEqual(ROUTE_CATALOG[GPT].helper, { effort: "max", model: "gpt-6-luna" });
+  assert.deepEqual(ROUTE_CATALOG.xai.lead, { effort: "high", model: "grok-build-0.1" });
+  assert.deepEqual(ROUTE_CATALOG.xai.helper, { effort: "high", model: "grok-4.3" });
+});
+
+test("route selection follows the GPT-6 and GPT-5.6 effort sets the host lists", () => {
   const expected = new Map([
     ["gpt-6-astra", GPT6_LEAD_EFFORTS],
     ["gpt-6.1-sol", GPT6_LEAD_EFFORTS],
     ["gpt-6-sol", GPT6_LEAD_EFFORTS],
     ["gpt-6-luna", GPT6_LUNA_EFFORTS],
-    ["gpt-5.6-sol", ["high", "xhigh"]],
-    ["gpt-5.6-terra", ["high", "xhigh", "max"]],
-    ["gpt-5.6-luna", ["max", "high"]],
+    ["gpt-5.6-sol", GPT6_LEAD_EFFORTS],
+    ["gpt-5.6-terra", GPT6_LEAD_EFFORTS],
+    ["gpt-5.6-luna", GPT6_LUNA_EFFORTS],
     ["gpt-5.6", ["high"]],
   ]);
   const rows = ROUTE_CATALOG[GPT].rows;
@@ -89,19 +147,19 @@ test("route selection follows GPT-6 effort sets and preserves legacy 5.6 bounds"
     ["gpt-6.1-sol", "none"],
     ["gpt-6-sol", "none"],
     ["gpt-6-luna", "ultra"],
-    ["gpt-5.6-sol", "low"],
-    ["gpt-5.6-terra", "low"],
-    ["gpt-5.6-luna", "low"],
-    ["gpt-5.6-luna", "xhigh"],
+    ["gpt-5.6-sol", "none"],
+    ["gpt-5.6-terra", "minimal"],
+    ["gpt-5.6-luna", "minimal"],
+    ["gpt-5.6-luna", "ultra"],
   ]) {
     const request = model === "gpt-6-luna" || model === "gpt-5.6-luna"
       ? () => managedRequest({ childModel: model, childEffort: effort })
       : () => managedRequest({ model, effort });
-    assert.throws(request, /not offered|forbidden/i, `${model}/${effort}`);
+    assert.throws(request, /not offered/i, `${model}/${effort}`);
   }
 });
 
-test("route safety accepts every GPT-6 effort and keeps legacy Luna limits", () => {
+test("route safety accepts every listed effort and blocks the rest", () => {
   const safetyFor = ({ model, effort, childModel, childEffort }) => inspectEffectiveRouteSafety(
     parseDocument([
       "model:",
@@ -134,13 +192,17 @@ test("route safety accepts every GPT-6 effort and keeps legacy Luna limits", () 
     ["gpt-5.6-terra", "high", "gpt-6-luna", "max"],
     ["gpt-5.6-terra", "xhigh", "gpt-6-luna", "max"],
     ["gpt-5.6-terra", "max", "gpt-6-luna", "max"],
+    ["gpt-5.6-sol", "low", "gpt-5.6-luna", "xhigh"],
+    ["gpt-5.6-sol", "ultra", "gpt-5.6-luna", "medium"],
+    ["gpt-5.6-terra", "low", "gpt-5.6-luna", "low"],
+    ["gpt-5.6-terra", "ultra", "gpt-6-luna", "max"],
   ]) {
     const request = managedRequest({ model, effort, childModel, childEffort });
     assert.equal(safetyFor(request).status, "safe", `${model}/${effort}; ${childModel}/${childEffort}`);
   }
-  assert.equal(safetyFor({ model: "gpt-5.6-sol", effort: "low", childModel: "gpt-5.6-luna", childEffort: "max" }).status, "blocked");
-  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "low" }).status, "blocked");
-  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "xhigh" }).status, "blocked");
+  assert.equal(safetyFor({ model: "gpt-5.6-sol", effort: "minimal", childModel: "gpt-5.6-luna", childEffort: "max" }).status, "blocked");
+  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "minimal" }).status, "blocked");
+  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "ultra" }).status, "blocked");
 });
 
 test("managedRequest defaults to today's shipped route: OpenAI Astra xhigh lead, Luna max child", () => {
@@ -174,15 +236,21 @@ test("managedRequest lets the child use a different provider than the lead", () 
 });
 
 test("managedRequest fills the row effort when only a model is given", () => {
+  // Listing every effort a model accepts must not move these model-only defaults.
   assert.equal(managedRequest({ model: "gpt-5.6-luna" }).effort, "max");
+  assert.equal(managedRequest({ childModel: "gpt-5.6-luna" }).childEffort, "max");
+  assert.equal(managedRequest({ model: "gpt-5.6-sol" }).effort, "xhigh");
+  assert.equal(managedRequest({ childModel: "gpt-5.6-sol" }).childEffort, "high");
+  assert.equal(managedRequest({ model: "gpt-5.6-terra" }).effort, "xhigh");
+  assert.equal(managedRequest({ childModel: "gpt-5.6-terra" }).childEffort, "max");
   assert.equal(managedRequest({ model: ASTRA_MODEL }).effort, "xhigh");
   assert.equal(managedRequest({ childModel: "gpt-5.6" }).childEffort, "high");
 });
 
-test("managedRequest allows GPT-6 Luna xhigh and rejects legacy Luna xhigh and unknown routes", () => {
+test("managedRequest allows Luna xhigh on both generations and rejects unknown routes", () => {
   assert.equal(managedRequest({ childModel: "gpt-6-luna", childEffort: "xhigh" }).childEffort, "xhigh");
-  assert.throws(() => managedRequest({ model: "gpt-5.6-luna", effort: "xhigh" }), /luna.*xhigh/i);
-  assert.throws(() => managedRequest({ childModel: "gpt-5.6-luna", childEffort: "xhigh" }), /luna.*xhigh/i);
+  assert.equal(managedRequest({ model: "gpt-5.6-luna", effort: "xhigh" }).effort, "xhigh");
+  assert.equal(managedRequest({ childModel: "gpt-5.6-luna", childEffort: "xhigh" }).childEffort, "xhigh");
   assert.throws(() => managedRequest({ model: "gpt-4o" }), /unknown model/i);
   assert.throws(() => managedRequest({ provider: "anthropic" }), /unknown provider/i);
   assert.throws(() => managedRequest({ provider: "xai", model: "gpt-5.6-sol" }), /not offered for provider xai/i);
@@ -195,7 +263,6 @@ test("ROUTE_CATALOG lists xai reasoning models newest first with the Hermes effo
   for (const row of rows) {
     assert.ok(["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"].includes(row.effort));
   }
-  assert.ok(ROUTE_CATALOG[GPT].rows.every((row) => !(row.model === "gpt-5.6-luna" && row.effort === "xhigh")));
 });
 
 test("OpenAI menu names the Responses catalog and ranks Astra ultra deepest", () => {
@@ -259,7 +326,7 @@ test("planModelConfig preserves an existing xai route and rewrites it only with 
   assert.equal(keys(rewritten.text).model, ASTRA_MODEL);
 });
 
-test("planModelConfig still stops on a luna xhigh child route in an existing config", () => {
+test("planModelConfig still stops on a Luna child route at an unlisted effort in an existing config", () => {
   const text = [
     "_config_version: 30",
     "model:",
@@ -270,7 +337,7 @@ test("planModelConfig still stops on a luna xhigh child route in an existing con
     "delegation:",
     `  provider: ${GPT}`,
     "  model: gpt-5.6-luna",
-    "  reasoning_effort: xhigh",
+    "  reasoning_effort: minimal",
     "",
   ].join("\n");
   const plan = planModelConfig(text, HOST);
@@ -319,8 +386,8 @@ test("renderModelRouteCard prints one helper row without the provider when it ma
 
 test("renderInstallBanner uses the canonical banner and product lockup", () => {
   const mark = require("../src/lib/litMark");
-  const banner = renderInstallBanner({ version: "1.0.19", color: false, env: { LANG: "en_US.UTF-8" } });
-  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.19", mark.banner));
+  const banner = renderInstallBanner({ version: "1.0.20", color: false, env: { LANG: "en_US.UTF-8" } });
+  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.20", mark.banner));
   assert.equal(banner.split("\n").length, 20);
   assert.doesNotMatch(banner, /\x1b/);
 });
@@ -475,7 +542,7 @@ test("interactive install on an already-routed home shows the picker and preserv
   assert.equal(threw, null, String(threw));
   assert.match(text, /Model route: currently gpt-5\.6-sol · xhigh/);
   assert.match(text, /MODEL ROUTE/);
-  assert.match(text, /Select 0-30 \[24\]:/);
+  assert.match(text, /Select 0-40 \[26\]:/);
   const after = fs.readFileSync(path.join(home, "config.yaml"));
   assert.equal(crypto.createHash("sha256").update(after).digest("hex"), beforeHash);
   assert.equal(after.toString(), seeded);

@@ -350,27 +350,27 @@ test("managed Astra sampling stops the real installer and doctor before mutation
   assert.equal(fs.existsSync(`${file}.lithermes-model.bak`), false);
 });
 
-test("explicit lead SOL/medium route is rejected without mutation", () => {
+test("explicit lead SOL/minimal route is rejected without mutation", () => {
   // Given: a fresh isolated Hermes 0.17.0 home
   const home = makeTempHome();
-  // When: the exact Luna/medium selection is installed
+  // When: a Sol effort the host does not list is installed
   const result = run([
     "install", "--yes", "--offline", "--no-hud", "--hermes-home", home,
-    "--model", "gpt-5.6-sol", "--effort", "medium",
+    "--model", "gpt-5.6-sol", "--effort", "minimal",
   ]);
   // Then: no plugin or host config is created and no silent fallback occurs
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /effort medium is not offered for gpt-5\.6-sol/i);
+  assert.match(result.stderr, /effort minimal is not offered for gpt-5\.6-sol/i);
   assert.equal(fs.existsSync(path.join(home, "config.yaml")), false);
   assert.equal(fs.existsSync(path.join(home, "plugins", "lithermes")), false);
 });
 
 test("existing unsafe routes stop install before plugin or config mutation", () => {
-  // Given: exact existing Luna configs below the approved effort floor
+  // Given: exact existing Luna configs at efforts the host does not list
   const cases = [
-    { model: "gpt-5.6-luna", effort: "medium" },
-    { model: "gpt-5.6-luna", effort: "low" },
-    { model: "gpt-5.6-luna", effort: "xhigh" },
+    { model: "gpt-5.6-luna", effort: "minimal" },
+    { model: "gpt-5.6-luna", effort: "none" },
+    { model: "gpt-5.6-luna", effort: "ultra" },
     { model: "gpt-6-astra", effort: "none" },
     { model: "gpt-6-astra", effort: "garbage" },
   ];
@@ -473,7 +473,7 @@ test("doctor fails closed for existing unsafe routes without printing unrelated 
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-luna",
     "agent:",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: minimal",
     "metadata:",
     `  private_note: ${marker}`,
     "plugins:",
@@ -493,8 +493,8 @@ test("doctor fails closed for existing unsafe routes without printing unrelated 
 test("existing unsafe global-child routes stop install and fail doctor", () => {
   // Given: a safe legacy SOL/high parent and unsafe inherited-provider Luna child routes
   const cases = [
-    { model: "gpt-5.6-luna", effort: "medium" },
-    { model: "gpt-5.6-luna", effort: "low" },
+    { model: "gpt-5.6-luna", effort: "minimal" },
+    { model: "gpt-5.6-luna", effort: "ultra" },
   ];
   for (const entry of cases) {
     const home = makeTempHome();
@@ -608,7 +608,7 @@ test("credential-bearing unsafe route stops before plugin mutation without leaki
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-luna",
     "agent:",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: minimal",
     "providers:",
     "  openai:",
     `    api_key: ${secret}`,

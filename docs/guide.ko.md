@@ -202,9 +202,13 @@ lead로 선택할 때 기본 effort는 `xhigh`입니다. 이전 세대 `gpt-6-so
 effort로 계속 선택할 수 있어 기존 설정은 그대로 동작합니다. helper와 일반 작업자는 global
 child route의 기본 모델 `gpt-6-luna`와 `max`를 사용합니다. Luna는 `low`,
 `medium`, `high`, `xhigh`, `max`를 지원하며 `ultra`는 없습니다. 기존 GPT-5.6
-선택지도 모델별 범위 안에서 계속 선택할 수 있습니다: `gpt-5.6-sol`은
-`high`, `xhigh`, `gpt-5.6-terra`는 `high`, `xhigh`, `max`, `gpt-5.6-luna`는 `high`,
-`max`를 지원합니다. 일반 `gpt-5.6`의 선택 범위는 `high`입니다. 실시간 모델
+선택지도 실시간 모델 카탈로그가 나열하는 effort를 모두 고를 수 있습니다.
+`gpt-5.6-sol`과 `gpt-5.6-terra`는 Astra와 같은 여섯 가지, `gpt-5.6-luna`는
+`gpt-6-luna`와 같은 다섯 가지입니다. 실시간 카탈로그에 없는 일반 `gpt-5.6`의
+선택 범위는 `high`입니다. Hermes는 나열된 effort를 모두 설정으로 받아들이지만,
+실제 요청은 더 낮게 보낼 수 있습니다. Astra와 GPT-5.6 모델에서는 `ultra`를
+`max`로 보내고, `gpt-6.1-sol`, `gpt-6-sol`, `gpt-6-luna`에서는 현재 Hermes가
+`max`와 `ultra`를 `xhigh`로 보냅니다. 실시간 모델
 카탈로그에는 이 GPT-5.6 모델들의 지원 종료일이 표시되어 있지 않습니다.
 일반 설치와 업데이트는 기존 모델 및 effort 설정을 보존합니다. GPT-5.6 lead를
 명시적으로 다시 설정하면 기존 372,000 context length와 0.9 compression
@@ -227,9 +231,9 @@ unavailable입니다. TUI route visibility도 unavailable입니다. 설치 recei
 지원하지 않는 route를 성공으로 표시하지 않습니다.
 
 receipt에 model과 effort가 표시되어야 route가 configured입니다. 실제 child
-route 실행은 `delegate_task` execution receipt로 확인해야 합니다. global child
-`gpt-5.6-luna`의 `xhigh`는 금지되며 설치를 중지합니다. `gpt-6-luna`는
-`xhigh`를 지원합니다. 기존 Astra route의 effort가 없거나 `none`, 임의
+route 실행은 `delegate_task` execution receipt로 확인해야 합니다. 모델이
+나열하지 않는 effort를 쓰는 route(예: `ultra`를 쓰는 `gpt-5.6-luna`)는 설치를
+중지합니다. 두 세대의 Luna 모두 `xhigh`를 지원합니다. 기존 Astra route의 effort가 없거나 `none`, 임의
 문자열이면 보존 전에 중지하고 원본 bytes와 권한을 그대로 둡니다. 알 수 없거나
 형식이 잘못된 model 데이터는
 inert data로 처리하고 fail closed합니다. 수동 복구에는 `hermes model`을

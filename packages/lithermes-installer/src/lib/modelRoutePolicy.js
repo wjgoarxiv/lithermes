@@ -10,30 +10,36 @@ const LEGACY_SOL_MODEL = "gpt-5.6-sol";
 const LEGACY_CHILD_MODEL = "gpt-5.6-luna";
 const CHILD_EFFORT = "max";
 const GPT6_LUNA_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
-const LEGACY_LUNA_EFFORTS = new Set(["high", "max"]);
+const LEGACY_LUNA_EFFORTS = GPT6_LUNA_EFFORTS;
 const LUNA_EFFORTS = LEGACY_LUNA_EFFORTS;
 const LUNA_MODELS = new Set([CHILD_MODEL, LEGACY_CHILD_MODEL]);
 const TERRA_MODEL = "gpt-5.6-terra";
-const TERRA_EFFORTS = new Set(["high", "xhigh", "max"]);
-const LEGACY_SOL_EFFORTS = new Set(["high", "xhigh"]);
 const MODEL_EFFORTS = new Map([
   [ASTRA_MODEL, GPT6_LEAD_EFFORTS],
   [SOL_MODEL, GPT6_LEAD_EFFORTS],
   [PREVIOUS_SOL_MODEL, GPT6_LEAD_EFFORTS],
   [CHILD_MODEL, GPT6_LUNA_EFFORTS],
-  [LEGACY_SOL_MODEL, LEGACY_SOL_EFFORTS],
+  [LEGACY_SOL_MODEL, GPT6_LEAD_EFFORTS],
   [LEGACY_CHILD_MODEL, LEGACY_LUNA_EFFORTS],
   ["gpt-5.6", new Set(["high"])],
-  [TERRA_MODEL, TERRA_EFFORTS],
+  [TERRA_MODEL, GPT6_LEAD_EFFORTS],
 ]);
+// When only a model is given, these keep the effort they resolved to before their
+// full effort sets were listed, so widening a menu never moves a default.
+const MODEL_ONLY_EFFORTS = {
+  lead: new Map([[LEGACY_CHILD_MODEL, CHILD_EFFORT]]),
+  child: new Map([[LEGACY_SOL_MODEL, "high"]]),
+};
 const CHILD_TRANSPORT_KEYS = ["provider", "base_url", "api_mode"];
 const { OPENAI_PROVIDER: OPENAI_PROVIDER_ID } = require("./modelConfigBoundary");
 const XAI_PROVIDER_ID = "xai";
 // Installer choice catalog (plans/references/installer-choice-contract.md, LitHermes row).
-// OpenAI rows follow each model's listed effort set, including selectable legacy
-// GPT-5.6 routes. xAI rows use the reasoning-capable models of the Hermes 0.19 catalog
-// (hermes_cli/models.py `_XAI_STATIC_FALLBACK`), newest first, with the Hermes
-// reasoning_effort vocabulary (hermes_cli/config.py delegation.reasoning_effort).
+// OpenAI rows offer every effort the live model catalog lists for each model
+// (supported_reasoning_levels), including the selectable legacy GPT-5.6 routes. Hermes
+// accepts each of them in config but may send a lower level (ultra as max; max and ultra
+// as xhigh on gpt-6.1-sol, gpt-6-sol and gpt-6-luna). xAI rows use the reasoning-capable models
+// of the Hermes 0.19 catalog (hermes_cli/models.py `_XAI_STATIC_FALLBACK`), newest first,
+// with the efforts Hermes sends to Grok before 4.6 (agent/reasoning_effort.py XAI_LEGACY_EFFORTS).
 const ROUTE_CATALOG = {
   [OPENAI_PROVIDER_ID]: {
     credentialEnv: null,
@@ -67,18 +73,25 @@ const ROUTE_CATALOG = {
             ? "balanced, lighter effort"
             : "Luna Responses effort",
       })),
-      ...["high", "xhigh"].map((effort) => ({
+      ...[...GPT6_LEAD_EFFORTS].map((effort) => ({
         effort,
         model: LEGACY_SOL_MODEL,
         note: "previous-generation Sol lead route",
       })),
-      ...["high", "xhigh", "max"].map((effort) => ({
+      ...[...GPT6_LEAD_EFFORTS].map((effort) => ({
         effort,
         model: TERRA_MODEL,
         note: "previous-generation Terra route",
       })),
-      { effort: CHILD_EFFORT, model: LEGACY_CHILD_MODEL, note: "previous-generation balanced helper" },
-      { effort: "high", model: LEGACY_CHILD_MODEL, note: "previous-generation lighter helper" },
+      ...[...GPT6_LUNA_EFFORTS].map((effort) => ({
+        effort,
+        model: LEGACY_CHILD_MODEL,
+        note: effort === CHILD_EFFORT
+          ? "previous-generation balanced helper"
+          : effort === "high"
+            ? "previous-generation lighter helper"
+            : "previous-generation Luna effort",
+      })),
       { effort: "high", model: "gpt-5.6", note: "general model" },
     ],
     lead: { effort: PARENT_EFFORT, model: PARENT_MODEL },
@@ -88,11 +101,15 @@ const ROUTE_CATALOG = {
     credentialEnv: "XAI_API_KEY",
     label: "xAI Grok",
     rows: [
-      { effort: "high", model: "grok-build-0.1", note: "newest coding model (recommended lead)" },
-      { effort: "high", model: "grok-4.5", note: "flagship reasoning" },
-      { effort: "high", model: "grok-4.3", note: "fast reasoning (recommended helper)" },
-      { effort: "high", model: "grok-4.20-0309-reasoning", note: "previous reasoning generation" },
-    ],
+      ["grok-build-0.1", "newest coding model (recommended lead)"],
+      ["grok-4.5", "flagship reasoning"],
+      ["grok-4.3", "fast reasoning (recommended helper)"],
+      ["grok-4.20-0309-reasoning", "previous reasoning generation"],
+    ].flatMap(([model, note]) => ["low", "medium", "high"].map((effort) => ({
+      effort,
+      model,
+      note: effort === "high" ? note : "Grok reasoning effort",
+    }))),
     lead: { effort: "high", model: "grok-build-0.1" },
     helper: { effort: "high", model: "grok-4.3" },
   },
@@ -137,28 +154,19 @@ function inspectEffectiveRouteSafety(document, expectedProvider) {
     if (modelEfforts && !modelEfforts.has(route.effort)) {
       const isAstra = route.model === ASTRA_MODEL;
       const isLuna = LUNA_MODELS.has(route.model);
-      const isLegacyLunaXhigh = route.model === LEGACY_CHILD_MODEL && route.effort === "xhigh";
       return {
         classificationClass: isAstra
           ? "astra_effort_unsupported"
-          : isLegacyLunaXhigh
-            ? "conflicting_luna_xhigh"
-            : isLuna
-              ? "luna_effort_below_high"
-              : route.model === TERRA_MODEL
-                ? "terra_effort_below_high"
-                : "model_effort_unsupported",
+          : isLuna
+            ? "luna_effort_unsupported"
+            : "model_effort_unsupported",
         code: UNSAFE_ROUTE_CODE,
         observedSource: `${route.route} model, effort, and provider config`,
         reason: isAstra
           ? `${route.route} Astra effort is unsupported or missing; choose one of: ${[...modelEfforts].join(", ")}`
-          : isLegacyLunaXhigh
-            ? `${route.route} Luna xhigh is a forbidden pair (legacy Luna runs at high or max)`
-            : isLuna
-              ? `${route.route} Luna effort is unsupported; choose one of: ${[...modelEfforts].join(", ")}`
-              : route.model === TERRA_MODEL
-                ? `${route.route} TERRA effort is below high or missing`
-                : `${route.route} ${route.model} effort is unsupported or missing; choose one of: ${[...modelEfforts].join(", ")}`,
+          : isLuna
+            ? `${route.route} Luna effort is unsupported; choose one of: ${[...modelEfforts].join(", ")}`
+            : `${route.route} ${route.model} effort is unsupported or missing; choose one of: ${[...modelEfforts].join(", ")}`,
         route: route.route,
         status: "blocked",
       };
@@ -202,9 +210,6 @@ function resolveRow(provider, role, model, effort) {
   const hasModel = model !== undefined;
   const hasEffort = effort !== undefined;
   const resolvedModel = hasModel ? String(model) : preset.model;
-  if (resolvedModel === LEGACY_CHILD_MODEL && hasEffort && effort === "xhigh") {
-    throw new Error(`${role} route ${resolvedModel} xhigh is a forbidden pair; legacy Luna runs at high or max`);
-  }
   const rowsForModel = catalog.rows.filter((row) => row.model === resolvedModel);
   if (!rowsForModel.length) {
     const known = PROVIDER_IDS.some((id) => ROUTE_CATALOG[id].rows.some((row) => row.model === resolvedModel));
@@ -215,7 +220,9 @@ function resolveRow(provider, role, model, effort) {
   // An explicitly selected model keeps that model's cataloged preset effort
   // when no effort flag is supplied. This matters for Astra: its recommended
   // lead row is xhigh, while its catalog is intentionally listed low-first.
-  const modelDefault = rowsForModel.find((row) => row.effort === preset.effort)?.effort ?? rowsForModel[0].effort;
+  const modelDefault = MODEL_ONLY_EFFORTS[role]?.get(resolvedModel)
+    ?? rowsForModel.find((row) => row.effort === preset.effort)?.effort
+    ?? rowsForModel[0].effort;
   const resolvedEffort = hasEffort ? String(effort) : (hasModel ? modelDefault : preset.effort);
   if (!rowsForModel.some((row) => row.effort === resolvedEffort)) {
     throw new Error(`${role} effort ${resolvedEffort} is not offered for ${resolvedModel}; choose one of: ${rowsForModel.map((row) => row.effort).join(", ")}`);

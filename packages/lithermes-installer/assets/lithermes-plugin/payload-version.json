@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-12T17:13:07.196Z",
+  "syncedAt": "2026-10-12T18:30:17.534Z",
   "source": "bundled-payload",
-  "sourceHash": "63d5a45be68c786856aed8ef591f5e5b90b990bd5c5250412baba481c151b446",
+  "sourceHash": "63bfd482afbfa008a20257f3a60fea961128806b79aa3d062ce47372c7436949",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "234ed5a80d74dec9953f5168b85f666de656b3511c23a74e26194748a4f3b766"
+      "sha256": "03256264acbaba328e51b82a527fe511db7f4ff907d0a74762bdaf0baadc8e20"
     },
     {
       "path": "__init__.py",
@@ -89,7 +89,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "bd797eadf291ec9cd6c02926595305532e235e21794e4467e157c03b0311fe54"
+      "sha256": "88d7b76438c82755fb9456882994ab4efd70c889705c04095e5a12d1759425fb"
     },
     {
       "path": "handoff.py",
@@ -181,7 +181,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "43396629a67520395c7527ab875bfefb3fac9f49fa5752b6a6913a8a8ada21cc"
+      "sha256": "418e6e7e80030cd09011d6ec0e9a8694ef414b625918b6dc83fa3b43ef901ba7"
     },
     {
       "path": "provider_metrics.py",
@@ -1285,7 +1285,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/complete-contract.md",
-      "sha256": "508470336b44ec48258db8f81164a66d970f837359c37bd0bcb6f3193ba188e7"
+      "sha256": "531edefbda0ad97eca0fd009b4d33b3e7e61a41ffedbdc5b7381a5993bc02962"
     },
     {
       "path": "skills/frontend-ui-ux/references/composition.md",
@@ -4405,7 +4405,7 @@
     },
     {
       "path": "skills/visual-qa/references/complete-contract.md",
-      "sha256": "5890f231bae99552c144e12d5dc8719225e2228ea9091304ab6a9a284d21ed5a"
+      "sha256": "43a05dc330c2d3794a3db67a007bb0e4ad1b230a80e7abd107696fcb393256a0"
     },
     {
       "path": "skills/visual-qa/schemas/evidence-manifest-v1alpha1.schema.json",

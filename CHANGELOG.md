@@ -6,6 +6,14 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.20] - 2026-10-12
+
+- The GitHub README now walks through automatic handoff: how to switch it on with your own percent, what Hermes shows when the handoff is written, when to run `/compact`, and how to set it from the environment. Three terminal pictures show each command and reply exactly as LitHermes prints them.
+- The install section has a prompt you can paste into a coding agent. The agent checks your setup, shows its plan and waits for your yes, installs only `@litfamily/lithermes`, runs `lithermes doctor --offline`, reports what it found and leaves the Hermes restart to you.
+- The demo at the top of the GitHub page is a new short film. Numbered steps name what LitHermes adds to a real session, from the `lit` word to the closing LIT mark, and the note about how it was recorded is gone.
+- The installer's model menu now offers every reasoning effort each model accepts. `gpt-5.6-sol` gains `low`, `medium`, `max` and `ultra`, `gpt-5.6-terra` gains `low`, `medium` and `ultra`, `gpt-5.6-luna` gains `low`, `medium` and `xhigh`, and each Grok model offers `low` and `medium` beside `high`. The OpenAI sets follow the live model catalog and the Grok sets follow what Hermes sends to Grok. `lithermes doctor` and `hermes lithermes status` accept the same sets, so a `gpt-5.6-luna` / `xhigh` helper is no longer refused. The recommended routes are unchanged, and a model chosen without an effort still gets the effort it got before. Hermes may still send a lower effort than the one you pick: `ultra` goes out as `max`, and on `gpt-6.1-sol`, `gpt-6-sol` and `gpt-6-luna` current Hermes sends `max` and `ultra` as `xhigh`.
+- The lit-pptx runtime and the README Studio templates pin `sharp` 0.35.5 and `source-map-js` 1.2.2. The Office tools download again the first time you make a Word or PowerPoint file after updating.
+
 ## [1.0.19] - 2026-10-11
 
 - The GitHub README is shorter and written for someone meeting LitHermes for the first time: what it does, how to install it and what to type first. The detail moved into pages under `docs/` (install, tour, skills, automatic handoff, Jev) in English and Korean, and the npm page is shorter too.

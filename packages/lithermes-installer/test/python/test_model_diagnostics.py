@@ -86,8 +86,36 @@ class ModelDiagnostics(unittest.TestCase):
                 self.assertIn(f"lead route: configured ({parent_model}, effort {parent_effort})", report)
                 self.assertIn(f"ordinary worker route: configured ({child_model}, effort {child_effort}", report)
 
+    def test_status_accepts_every_effort_the_live_catalog_lists_for_legacy_56_models(self) -> None:
+        # Given: the efforts the live model catalog lists for each GPT-5.6 model (checked 2026-10-12)
+        lead_efforts = ("low", "medium", "high", "xhigh", "max", "ultra")
+        luna_efforts = ("low", "medium", "high", "xhigh", "max")
+        diagnostics = sys.modules["lithermes_diagnostics_test_pkg.diagnostics"]
+        missing = {
+            model: sorted(set(expected) - set(diagnostics._OPENAI_CATALOG_EFFORTS.get(model, ())))
+            for model, expected in (
+                ("gpt-5.6-sol", lead_efforts),
+                ("gpt-5.6-terra", lead_efforts),
+                ("gpt-5.6-luna", luna_efforts),
+            )
+        }
+        # Then: diagnostics know every listed effort, so they agree with the installer menu
+        self.assertEqual({model: efforts for model, efforts in missing.items() if efforts}, {})
+        # When: a route uses an effort that was missing before
+        for parent_model, parent_effort, child_model, child_effort in (
+            ("gpt-5.6-sol", "low", "gpt-5.6-luna", "xhigh"),
+            ("gpt-5.6-sol", "ultra", "gpt-5.6-luna", "medium"),
+            ("gpt-5.6-terra", "medium", "gpt-5.6-luna", "low"),
+            ("gpt-5.6-terra", "ultra", "gpt-6-luna", "max"),
+        ):
+            with self.subTest(parent=(parent_model, parent_effort), child=(child_model, child_effort)):
+                report = self._status_for_routes(parent_model, parent_effort, child_model, child_effort)
+                # Then: both routes are recognized
+                self.assertIn(f"lead route: configured ({parent_model}, effort {parent_effort})", report)
+                self.assertIn(f"ordinary worker route: configured ({child_model}, effort {child_effort}", report)
+
     def test_status_keeps_legacy_56_effort_bounds(self) -> None:
-        # Given: legacy Sol, Terra, and Luna configurations at their listed effort bounds
+        # Given: legacy Sol, Terra, and Luna configurations at listed efforts
         for lead_effort in ("high", "xhigh"):
             for child_effort in ("high", "max"):
                 report = self._status_for_routes("gpt-5.6-sol", lead_effort, "gpt-5.6-luna", child_effort)
@@ -96,12 +124,12 @@ class ModelDiagnostics(unittest.TestCase):
         for effort in ("high", "xhigh", "max"):
             report = self._status_for_routes("gpt-5.6-terra", effort, "gpt-6-luna", "max")
             self.assertIn(f"lead route: configured (gpt-5.6-terra, effort {effort})", report)
-        # When: a legacy model is configured outside its listed effort range
+        # When: a legacy model is configured at an effort the host does not list
         for parent_model, parent_effort, child_model, child_effort in (
-            ("gpt-5.6-sol", "low", "gpt-5.6-luna", "max"),
-            ("gpt-5.6-terra", "low", "gpt-6-luna", "max"),
-            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "low"),
-            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "xhigh"),
+            ("gpt-5.6-sol", "minimal", "gpt-5.6-luna", "max"),
+            ("gpt-5.6-terra", "none", "gpt-6-luna", "max"),
+            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "minimal"),
+            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "ultra"),
         ):
             with self.subTest(parent=(parent_model, parent_effort), child=(child_model, child_effort)):
                 report = self._status_for_routes(parent_model, parent_effort, child_model, child_effort)
@@ -450,8 +478,8 @@ class ModelDiagnostics(unittest.TestCase):
                 self.assertIn(expected, report)
                 self.assertNotIn("lead route: configured", report)
 
-    def test_status_rejects_luna_xhigh_conflict_without_success_claim(self) -> None:
-        # Given: a conflicting global child route under either supported lead
+    def test_status_rejects_unlisted_legacy_luna_effort_without_success_claim(self) -> None:
+        # Given: a legacy Luna global child at an effort the host does not list, under either lead
         for parent_model, parent_effort in (
             ("gpt-5.6-sol", "xhigh"),
             ("gpt-6-astra", "xhigh"),
@@ -460,7 +488,7 @@ class ModelDiagnostics(unittest.TestCase):
                 "_config_version: 30\n"
                 f"model:\n  provider: {_OPENAI_PROVIDER}\n  default: {parent_model}\n"
                 f"agent:\n  reasoning_effort: {parent_effort}\n"
-                "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: xhigh\n"
+                "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: ultra\n"
             )
             with self.subTest(parent_model=parent_model), tempfile.TemporaryDirectory() as home:
                 Path(home, "config.yaml").write_text(config, encoding="utf-8")
@@ -468,9 +496,9 @@ class ModelDiagnostics(unittest.TestCase):
                     self.core, "hermes_host_version", return_value="0.17.0"
                 ):
                     report = self.core.status_report()
-            # Then: Luna xhigh is forbidden independently of the lead model
+            # Then: the unlisted Luna effort is refused independently of the lead model
             self.assertIn("model capability: unavailable", report)
-            self.assertIn("global child Luna xhigh is forbidden", report)
+            self.assertIn("global child Luna effort is unsupported", report)
             self.assertNotIn("global child route: configured", report)
 
     def test_status_rejects_empty_non_scalar_child_route_leaves_and_doctor_fails(self) -> None:

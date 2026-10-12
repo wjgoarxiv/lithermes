@@ -279,9 +279,14 @@ choice defaults to `xhigh`. The previous generation `gpt-6-sol` stays
 selectable with the same efforts, so existing configs keep working. Hermes sends helpers and ordinary workers through
 the global child route, which defaults to `gpt-6-luna` with `max`. Luna
 supports `low`, `medium`, `high`, `xhigh`, and `max`, with no `ultra` effort.
-Existing GPT-5.6 choices remain selectable within their listed bounds:
-`gpt-5.6-sol` at `high` or `xhigh`, `gpt-5.6-terra` at `high`, `xhigh`, or `max`, and
-`gpt-5.6-luna` at `high` or `max`. General `gpt-5.6` offers `high`. The live
+Existing GPT-5.6 choices stay selectable with every effort the live model
+catalog lists for them: `gpt-5.6-sol` and `gpt-5.6-terra` take the same six
+efforts as Astra, and `gpt-5.6-luna` takes the same five as `gpt-6-luna`.
+General `gpt-5.6`, which the live catalog does not list, offers `high`. Hermes
+accepts every listed effort in its config, but the request it sends can be
+lower: `ultra` goes out as `max` on Astra and the GPT-5.6 models, and on
+`gpt-6.1-sol`, `gpt-6-sol` and `gpt-6-luna` current Hermes sends `max` and
+`ultra` as `xhigh`. The live
 model catalog lists no retirement date for these GPT-5.6 values. Ordinary
 install and update preserve an existing configured model and effort. An
 explicit GPT-5.6 lead reset applies the existing 372,000 context length and
@@ -308,8 +313,9 @@ unavailable instead of claiming success.
 
 A route is configured only when the receipt shows its model and effort. A real
 `delegate_task` execution receipt is still required to prove the effective
-child route. A global child `gpt-5.6-luna` `xhigh` route is forbidden and stops
-before installation; `gpt-6-luna` accepts `xhigh`. An existing Astra route
+child route. A route whose effort the model does not list, such as
+`gpt-5.6-luna` at `ultra`, stops before installation; both Luna generations
+accept `xhigh`. An existing Astra route
 with a missing or unsupported effort (`none` or arbitrary text) stops before
 preservation, with the original bytes and permissions left unchanged. Unknown
 or malformed model data stays inert and fails closed. Use `hermes model` for

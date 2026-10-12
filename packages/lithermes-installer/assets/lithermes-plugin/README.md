@@ -259,10 +259,14 @@ CLI/plugin name, not the npm package name.
   `max`, and `ultra`; Sol defaults to `xhigh` when selected as lead. The previous
   generation `gpt-6-sol` stays selectable with the same efforts, so existing
   configs keep working. Luna supports `low`, `medium`, `high`, `xhigh`, and
-  `max`, with no `ultra`. Existing GPT-5.6
-  choices remain selectable within their listed bounds: `gpt-5.6-sol` at
-  `high` or `xhigh`, `gpt-5.6-terra` at `high`, `xhigh`, or `max`, and `gpt-5.6-luna`
-  at `high` or `max`; general `gpt-5.6` offers `high`. The live model catalog
+  `max`, with no `ultra`. Existing GPT-5.6 choices stay selectable with every
+  effort the live model catalog lists for them: `gpt-5.6-sol` and
+  `gpt-5.6-terra` take the same six efforts as Astra, and `gpt-5.6-luna` takes
+  the same five as `gpt-6-luna`; general `gpt-5.6`, which the live catalog does
+  not list, offers `high`. Hermes accepts every listed effort in its config, but
+  the request it sends can be lower: `ultra` goes out as `max` on Astra and the
+  GPT-5.6 models, and on `gpt-6.1-sol`, `gpt-6-sol` and `gpt-6-luna` current
+  Hermes sends `max` and `ultra` as `xhigh`. The live model catalog
   lists no retirement date for these GPT-5.6 values. Ordinary reinstall and
   update preserve existing configured model and effort settings, while
   `--reconfigure-model` is the explicit selection reset. An explicit GPT-5.6
@@ -271,9 +275,9 @@ CLI/plugin name, not the npm package name.
   Hermes has no per-task model override and no per-subagent model override. The
   named reviewer and `litwork-reviewer` routes are unavailable. Hermes also
   exposes no TUI route visibility surface. A configured route is not execution
-  proof; an execution receipt is required. A global child `gpt-5.6-luna`
-  `xhigh` route is forbidden and stops before installation; `gpt-6-luna`
-  accepts `xhigh`. Existing Astra routes with a missing or unsupported effort
+  proof; an execution receipt is required. A route whose effort the model does
+  not list, such as `gpt-5.6-luna` at `ultra`, stops before installation; both
+  Luna generations accept `xhigh`. Existing Astra routes with a missing or unsupported effort
   (`none` or arbitrary text) stop before preservation, with bytes and
   permissions unchanged. On
   Hermes 0.17.0 and 0.19.0, `delegation.max_concurrent_children: 20` is a hard per-batch

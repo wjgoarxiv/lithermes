@@ -174,7 +174,7 @@ function modelRouteSafety() {
     detail: `doctor exit=${terraDoctor.status}; ${routeSafetyLine(terraDoctor.stdout)}`,
   });
 
-  const terraInherited = installedRouteHome("route-terra-inherited-under-effort", env);
+  const terraInherited = installedRouteHome("route-terra-inherited-unlisted-effort", env);
   writeConfig(terraInherited, [
     "_config_version: 30",
     "model:",
@@ -183,7 +183,7 @@ function modelRouteSafety() {
     "agent:",
     "  reasoning_effort: max",
     "delegation:",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: minimal",
     "plugins:",
     "  enabled:",
     "    - lithermes",
@@ -191,23 +191,23 @@ function modelRouteSafety() {
   ].join("\n"));
   const terraInheritedDoctor = installer(["doctor", "--offline", "--hermes-home", terraInherited], { env });
   cases.push({
-    name: "inherited TERRA child route below high effort is blocked",
+    name: "inherited TERRA child route at an unlisted effort is blocked",
     expected: "blocked+exit1",
     observed: terraInheritedDoctor.status === 1
-      && /global_child TERRA effort is below high or missing/.test(terraInheritedDoctor.stdout)
+      && /global_child gpt-5\.6-terra effort is unsupported or missing/.test(terraInheritedDoctor.stdout)
       ? "blocked+exit1"
       : `exit=${terraInheritedDoctor.status} ${routeSafetyLine(terraInheritedDoctor.stdout)}`,
     detail: `doctor exit=${terraInheritedDoctor.status}; ${routeSafetyLine(terraInheritedDoctor.stdout)}`,
   });
 
-  const luna = installedRouteHome("route-luna-under-effort", env);
+  const luna = installedRouteHome("route-luna-unlisted-effort", env);
   writeConfig(luna, [
     "_config_version: 30",
     "model:",
     `  provider: ${managedProvider}`,
     "  default: gpt-5.6-luna",
     "agent:",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: minimal",
     "delegation:",
     "  model: gpt-5.6-luna",
     "  reasoning_effort: max",
@@ -215,7 +215,7 @@ function modelRouteSafety() {
   ].join("\n"));
   const lunaDoctor = installer(["doctor", "--offline", "--hermes-home", luna], { env });
   cases.push({
-    name: "Luna parent below the approved effort floor is blocked and exits nonzero",
+    name: "Luna parent at an effort the host does not list is blocked and exits nonzero",
     expected: "blocked+exit1",
     observed: lunaDoctor.status === 1 && /model route safety: blocked \(LITHERMES_UNSAFE_MODEL_ROUTE/.test(lunaDoctor.stdout)
       ? "blocked+exit1"
@@ -233,12 +233,12 @@ function modelRouteSafety() {
     "  reasoning_effort: high",
     "delegation:",
     "  model: gpt-5.6-luna",
-    "  reasoning_effort: medium",
+    "  reasoning_effort: ultra",
     "",
   ].join("\n"));
   const effortDoctor = installer(["doctor", "--offline", "--hermes-home", underEffort], { env });
   cases.push({
-    name: "global child Luna below high effort is blocked and exits nonzero",
+    name: "global child Luna at an effort the host does not list is blocked and exits nonzero",
     expected: "blocked+exit1",
     observed: effortDoctor.status === 1 && /model route safety: blocked \(LITHERMES_UNSAFE_MODEL_ROUTE/.test(effortDoctor.stdout)
       ? "blocked+exit1"

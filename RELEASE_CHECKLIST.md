@@ -38,13 +38,15 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.19 factual release scope
+### 1.0.20 factual release scope
 
-This checklist covers the 1.0.19 release.
+This checklist covers the 1.0.20 release.
 
-- [ ] `lithermes` refuses unknown options before touching a file, and `--dry-run` previews `install`, `uninstall`, `hud` and `motion-runtime install` without changing anything.
-- [ ] `config.yaml` edits keep every key and line ending, and an edit that would not parse leaves the file unchanged.
-- [ ] The Hermes-side automatic update has 90 seconds to finish and runs only on the first message of the classic terminal CLI.
+- [ ] The README walks through automatic handoff with three terminal pictures whose alt texts quote what `auto_handoff.py` prints, and the pictures stay out of the package.
+- [ ] The README install prompt for coding agents names only `@litfamily/lithermes`, asks before changing anything, runs `doctor --offline` and leaves the Hermes restart to the user.
+- [ ] The README demo shows the numbered film without a method caption.
+- [ ] The installer menu, `--effort` / `--child-effort` and the diagnostics accept exactly the efforts each model lists (OpenAI from the live model catalog, Grok from Hermes' Grok effort set), and the recommended routes stay Astra `xhigh` / Luna `max` and Grok build `high` / Grok 4.3 `high`.
+- [ ] `sharp` 0.35.5 and `source-map-js` 1.2.2 are pinned in the lit-pptx runtime and both README Studio templates, and `payload-version.json` matches the payload.
 - [ ] The install and update-notice pictures show this version, and their alt texts quote the pictures exactly.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass; the packed tarball stays under the 12 MiB cap.
 
@@ -348,7 +350,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.19 version`.
+  from `npm view @litfamily/lithermes@1.0.20 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -370,10 +372,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.19 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.20 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.19 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.19.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.19.tgz"
+  npm pack @litfamily/lithermes@1.0.20 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.20.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.20.tgz"
 rm -rf "$VERIFY_DIR"
 ```
