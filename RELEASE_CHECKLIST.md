@@ -38,15 +38,13 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.20 factual release scope
+### 1.0.21 factual release scope
 
-This checklist covers the 1.0.20 release.
+This checklist covers the 1.0.21 release.
 
-- [ ] The README walks through automatic handoff with three terminal pictures whose alt texts quote what `auto_handoff.py` prints, and the pictures stay out of the package.
-- [ ] The README install prompt for coding agents names only `@litfamily/lithermes`, asks before changing anything, runs `doctor --offline` and leaves the Hermes restart to the user.
-- [ ] The README demo shows the numbered film without a method caption.
-- [ ] The installer menu, `--effort` / `--child-effort` and the diagnostics accept exactly the efforts each model lists (OpenAI from the live model catalog, Grok from Hermes' Grok effort set), and the recommended routes stay Astra `xhigh` / Luna `max` and Grok build `high` / Grok 4.3 `high`.
-- [ ] `sharp` 0.35.5 and `source-map-js` 1.2.2 are pinned in the lit-pptx runtime and both README Studio templates, and `payload-version.json` matches the payload.
+- [ ] A LIT reply ends with the workflow map row only when the project has a saved plan, run, bounded-work state or litgoal criteria for the plan, work and review chain; the row carries no path, plan name or command, and a terminal that cannot draw the LIT mark gets no row.
+- [ ] Installing skins replaces only a spinner block that matches an earlier release byte for byte, keeps edited spinners and the rest of each skin file, and a second install rewrites nothing.
+- [ ] `display.bell_on_complete` is set only on `--bell` or a yes to the interactive question; `--no-bell`, `--dry-run`, a non-interactive run and an existing value leave `config.yaml` untouched, and a file that does not parse or would change elsewhere is left unchanged.
 - [ ] The install and update-notice pictures show this version, and their alt texts quote the pictures exactly.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, and isolated real-surface QA gates pass; the packed tarball stays under the 12 MiB cap.
 
@@ -350,7 +348,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.20 version`.
+  from `npm view @litfamily/lithermes@1.0.21 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -372,10 +370,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.20 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.21 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.20 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.20.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.20.tgz"
+  npm pack @litfamily/lithermes@1.0.21 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.21.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.21.tgz"
 rm -rf "$VERIFY_DIR"
 ```

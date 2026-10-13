@@ -6,6 +6,12 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.21] - 2026-10-13
+
+- While a plan is being worked through, a LIT reply now ends with one line that shows where the work stands, for example `🔥 LIT · lit-loop — 📝 plan ✓ › 🔨 WORK ▰▰▰▱▱▱▱ 3/7 › 🔍 · › 🏁 ·`. LitHermes reads it from the plan, the run and the litgoal criteria saved in the project, leaves out a step that has nothing saved for it, and never puts a file name or a command in it. A terminal that cannot draw the LIT mark does not get the line either.
+- The LitHermes skins now turn their spinner in flame faces, such as `(🔥 lit)`, while Hermes works. Installing again upgrades a skin only when its spinner is still exactly what an earlier release wrote; a spinner you edited, and the rest of every skin file, stay as they are.
+- Hermes can ring the terminal bell when a turn finishes, and the installer now offers it. It stays off unless you add `--bell` or answer yes when an interactive install asks; `--no-bell` skips the question, and a `display.bell_on_complete` value you already set is kept. When `config.yaml` does not parse, or the edit would touch anything else, the file is left unchanged and the installer tells you how to set it by hand.
+
 ## [1.0.20] - 2026-10-12
 
 - The GitHub README now walks through automatic handoff: how to switch it on with your own percent, what Hermes shows when the handoff is written, when to run `/compact`, and how to set it from the environment. Three terminal pictures show each command and reply exactly as LitHermes prints them.
