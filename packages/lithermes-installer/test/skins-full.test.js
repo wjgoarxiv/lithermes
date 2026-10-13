@@ -74,12 +74,13 @@ test("banner_logo is the canonical standard mark in native Rich markup", () => {
   }
 });
 
-test("spinner ships LIT faces, work verbs, and wings as [left, right] pairs", () => {
+test("spinner ships flame faces, work verbs, and wings as [left, right] pairs", () => {
   const { spinner } = parsedSkin(HUD_ACCENTS[3]);
-  assert.deepEqual(spinner.waiting_faces, ["(lit)", "(◜)", "(◝)", "(◞)", "(◟)"]);
-  assert.deepEqual(spinner.thinking_faces, ["(lit)", "(✦)", "(◇)", "(⌁)"]);
+  const flames = ["(🔥 lit)", "( 🔥lit)", "(lit🔥 )", "(lit 🔥)"];
+  assert.deepEqual(spinner.waiting_faces, flames);
+  assert.deepEqual(spinner.thinking_faces, flames);
   assert.deepEqual(spinner.thinking_verbs, [
-    "lit-looping", "planning", "verifying", "gathering evidence", "checking criteria", "reviewing",
+    "igniting", "lit-looping", "planning", "verifying", "gathering evidence", "checking criteria", "reviewing",
   ]);
   assert.ok(Array.isArray(spinner.wings) && spinner.wings.length >= 1);
   for (const pair of spinner.wings) {

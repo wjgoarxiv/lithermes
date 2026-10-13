@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { colorMode, skinLogo, microLogo } = require("./litMark");
+const { writeFileAtomic } = require("./files");
 
 // LitHermes HUD accents — 10 presets that drive Hermes' native skin engine.
 // Each becomes ~/.hermes/skins/lithermes-<accent>.yaml; activated via
@@ -179,7 +180,31 @@ function recolorMarkup(rows, palette) {
 // get_color path, dark_colors/light_colors are the TUI polarity pair, and
 // spinner wings must be [left, right] pairs (get_spinner_wings drops single
 // glyphs, so the brief's flat wing list is shipped as two pairs).
-function renderSkinYaml(entry) {
+// Hermes picks one face at random for each thinking step and each tool call,
+// so the four frames read as a flame moving through "lit" across a turn.
+const FLAME_FACES = '["(🔥 lit)", "( 🔥lit)", "(lit🔥 )", "(lit 🔥)"]';
+const SPINNER_LINES = Object.freeze([
+  `  waiting_faces: ${FLAME_FACES}`,
+  `  thinking_faces: ${FLAME_FACES}`,
+  "  thinking_verbs: [igniting, lit-looping, planning, verifying, gathering evidence, checking criteria, reviewing]",
+]);
+// Spinner blocks earlier releases wrote, newest first. A preset whose spinner
+// block still matches one of them byte for byte gets the flame faces on the
+// next install; everything else in the file, and any edited spinner, stays.
+const SHIPPED_SPINNERS = Object.freeze([
+  Object.freeze([
+    '  waiting_faces: ["(lit)", "(◜)", "(◝)", "(◞)", "(◟)"]',
+    '  thinking_faces: ["(lit)", "(✦)", "(◇)", "(⌁)"]',
+    "  thinking_verbs: [lit-looping, planning, verifying, gathering evidence, checking criteria, reviewing]",
+  ]),
+  Object.freeze([
+    '  waiting_faces: ["🔥", "🔥", "🔥", "🔥"]',
+    "  thinking_verbs: [igniting, forging, burning, tempering]",
+  ]),
+]);
+const spinnerBlock = (lines) => ["spinner:", ...lines, "  wings:"].join("\n");
+
+function renderSkinYaml(entry, { spinner = SPINNER_LINES } = {}) {
   const h = entry.hex;
   const theme = entry.palette;
   const colorBlocks = theme
@@ -200,9 +225,7 @@ function renderSkinYaml(entry) {
     `description: LitHermes ${entry.label} accent HUD`,
     ...colorBlocks,
     "spinner:",
-    '  waiting_faces: ["(lit)", "(◜)", "(◝)", "(◞)", "(◟)"]',
-    '  thinking_faces: ["(lit)", "(✦)", "(◇)", "(⌁)"]',
-    "  thinking_verbs: [lit-looping, planning, verifying, gathering evidence, checking criteria, reviewing]",
+    ...spinner,
     "  wings:",
     '    - ["◜", "◝"]',
     '    - ["◞", "◟"]',
@@ -249,9 +272,20 @@ function installSkins(hermesHome) {
       written.push(file);
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
+      if (upgradeShippedSpinner(file)) written.push(file);
     }
   }
   return written;
+}
+
+function upgradeShippedSpinner(file) {
+  const stat = fs.lstatSync(file, { throwIfNoEntry: false });
+  if (!stat || !stat.isFile() || stat.size > 64 * 1024) return false;
+  const text = fs.readFileSync(file, "utf8");
+  const shipped = SHIPPED_SPINNERS.map(spinnerBlock).find((block) => text.split(block).length === 2);
+  if (!shipped) return false;
+  writeFileAtomic(file, text.replace(shipped, spinnerBlock(SPINNER_LINES)), "utf8");
+  return true;
 }
 
 function hexToRgb(hex) {
@@ -286,6 +320,7 @@ module.exports = {
   skinName,
   skinsDir,
   renderSkinYaml,
+  SHIPPED_SPINNERS,
   findAccent,
   installSkins,
   hexToRgb,

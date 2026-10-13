@@ -9,6 +9,8 @@ const { listHud, applyHud, clearHud, previewClearHud, previewHud, promptAccent, 
 const { supportsColor, findAccent, skinName } = require("./lib/skins");
 const {
   readConfig,
+  readBellOnCompleteConfig,
+  setBellOnCompleteConfig,
   clearDisplaySkinConfig,
   readDisplaySkinConfig,
   readOutputStyleConfig,
@@ -37,7 +39,7 @@ const COMMAND_SPECS = {
     flags: {
       yes: "", "dry-run": "", offline: "", json: "", force: "", "reconfigure-model": "",
       provider: "ID", model: "ID", effort: "LEVEL", "child-provider": "ID", "child-model": "ID", "child-effort": "LEVEL",
-      spinner: "", "no-spinner": "", hud: "<accent>", "no-hud": "", style: "ID", "no-style": "",
+      spinner: "", "no-spinner": "", hud: "<accent>", "no-hud": "", style: "ID", "no-style": "", bell: "", "no-bell": "",
       "patch-installed-hermes": "", "no-patch-installed-hermes": "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH",
     },
   },
@@ -405,6 +407,57 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
   if (entry) console.log(applyHud(entry.accent, flags));
 }
 
+// Hermes rings the terminal bell (plus a desktop notice) at the end of a turn
+// when display.bell_on_complete is true; its default is off. The installer sets
+// it only on --bell or a "y" to the interactive question, never changes a value
+// the user already chose, and leaves config.yaml alone when the edit is not
+// clean or the file changed while the question was open.
+async function maybeOfferBell(flags, runtime = {}, { prompt = false } = {}) {
+  if (flags["dry-run"] || flags["no-bell"]) return;
+  const say = flags.json ? console.error : console.log;
+  const home = resolveHome(flags);
+  const before = readConfig(home);
+  const current = readBellOnCompleteConfig(before);
+  const byHand = "set display.bell_on_complete: true by hand in config.yaml to hear a bell when a turn finishes.";
+  if (current === undefined) {
+    if (flags.bell) console.error(`Finish bell: config.yaml does not parse; left unchanged. ${byHand}`);
+    return;
+  }
+  if (current !== null) {
+    if (flags.bell) say(`Finish bell: kept your display.bell_on_complete: ${current}.`);
+    return;
+  }
+  let wanted = Boolean(flags.bell);
+  if (!wanted && prompt) {
+    const env = runtime.env || process.env;
+    const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
+    const input = streams.stdin || process.stdin;
+    const output = streams.stdout || process.stdout;
+    const interactive = runtime.isInteractive ?? Boolean(input.isTTY && output.isTTY);
+    if (!interactive || "CI" in env) return;
+    wanted = await new Promise((resolve) => {
+      const rl = readline.createInterface({ input, output, terminal: false });
+      rl.on("close", () => resolve(false));
+      rl.question("Ring the terminal bell when a Hermes turn finishes? [y/N] ", (answer) => {
+        resolve(/^\s*y(es)?\s*$/i.test(answer));
+        rl.close();
+      });
+    });
+  }
+  if (!wanted) return;
+  const after = setBellOnCompleteConfig(before);
+  if (after === null) {
+    console.error(`Finish bell: config.yaml has a shape the installer will not edit; left unchanged. ${byHand}`);
+    return;
+  }
+  if (readConfig(home) !== before) {
+    console.error(`Finish bell: config.yaml changed while asking; left unchanged. ${byHand}`);
+    return;
+  }
+  writeConfig(home, after);
+  say("Finish bell on: Hermes rings the terminal when a turn finishes (display.bell_on_complete).");
+}
+
 async function main(argv, runtime = {}) {
   const parsed = parseArgs(argv);
   const { command, flags, positionals } = parsed;
@@ -496,6 +549,7 @@ async function main(argv, runtime = {}) {
     }
     await maybePickHudAccent(flags, runtime, { promptForAccent: prompted === "chosen" });
     await maybePickOutputStyle(flags);
+    await maybeOfferBell(flags, runtime, { prompt: prompted === "chosen" });
     scheduleUpdateSafely(command, flags, runtime);
     return;
   }
@@ -552,4 +606,4 @@ async function main(argv, runtime = {}) {
   console.log(helpText());
 }
 
-module.exports = { COMMAND_SPECS, helpText, main, parseArgs, validateArgs };
+module.exports = { COMMAND_SPECS, helpText, main, maybeOfferBell, parseArgs, validateArgs };

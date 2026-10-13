@@ -485,11 +485,18 @@ function fakeHermesSourceRepo() {
   return repo;
 }
 
-async function runInteractiveMain(argv, lines) {
+// `answers` maps prompt text to a reply typed only once that prompt is shown,
+// as a person would; lines are all buffered up front.
+async function runInteractiveMain(argv, lines, answers = {}) {
   const stdin = new PassThrough();
   const stdout = new PassThrough();
   let text = "";
-  stdout.on("data", (chunk) => { text += String(chunk); });
+  stdout.on("data", (chunk) => {
+    text += String(chunk);
+    for (const [prompt, reply] of Object.entries(answers)) {
+      if (String(chunk).includes(prompt)) setImmediate(() => stdin.write(`${reply}\n`));
+    }
+  });
   const previousPath = process.env.PATH;
   process.env.PATH = fakeHermesHostPath("0.19.0");
   // This helper simulates a real interactive terminal, so it must also drop CI:
@@ -536,7 +543,7 @@ test("interactive install on an already-routed home shows the picker and preserv
   fs.writeFileSync(path.join(home, "config.yaml"), seeded);
   const beforeHash = crypto.createHash("sha256").update(seeded).digest("hex");
   const { text, threw } = await runInteractiveMain([
-    "install", "--offline", "--no-hud", "--no-style", "--no-auto-update", "--no-spinner",
+    "install", "--offline", "--no-hud", "--no-style", "--no-bell", "--no-auto-update", "--no-spinner",
     "--hermes-home", home, "--hermes-repo", repo,
   ], ["", "", "", "", ""]);
   assert.equal(threw, null, String(threw));
@@ -568,7 +575,7 @@ test("interactive existing-route selection still writes the chosen managed route
     "",
   ].join("\n"));
   const { text, threw } = await runInteractiveMain([
-    "install", "--offline", "--no-hud", "--no-style", "--no-auto-update", "--no-spinner",
+    "install", "--offline", "--no-hud", "--no-style", "--no-bell", "--no-auto-update", "--no-spinner",
     "--hermes-home", home, "--hermes-repo", repo,
   ], ["1", "", "", "", ""]);
   assert.equal(threw, null, String(threw));
@@ -585,11 +592,13 @@ test("interactive fresh install writes only after the summary-card Enter", async
   const { text, threw } = await runInteractiveMain([
     "install", "--offline", "--no-hud", "--no-style", "--no-auto-update", "--no-spinner",
     "--hermes-home", home, "--hermes-repo", repo,
-  ], ["1", "", "", "", ""]);
+  ], ["1", "", "", "", ""], { "[y/N]": "y" });
   assert.equal(threw, null, String(threw));
   assert.match(text, /╭─ MODEL ROUTE/);
   assert.match(text, /│ Provider   xai/);
+  assert.match(text, /Ring the terminal bell when a Hermes turn finishes\? \[y\/N\]/);
   const config = fs.readFileSync(path.join(home, "config.yaml"), "utf8");
   assert.match(config, /provider: xai/);
   assert.match(config, /default: grok-build-0\.1/);
+  assert.match(config, /^  bell_on_complete: true$/m);
 });

@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { isDeepStrictEqual } = require("node:util");
 const { parseDocument } = require("yaml");
 const { writeFileAtomic } = require("./files");
 const modelConfig = require("./modelConfig");
@@ -181,6 +182,56 @@ function setTuiAgentsNudgeConfig(text) {
   return joinLines(lines, eol, ["display:", "  tui_agents_nudge: true"]);
 }
 
+// Hermes display.bell_on_complete (default false): BEL + desktop notice when a
+// turn ends. null = unset, undefined = config.yaml does not parse.
+function readBellOnCompleteConfig(text) {
+  const str = String(text || "");
+  if (!str.trim()) return null;
+  try {
+    const document = parseDocument(str, { strict: true, uniqueKeys: true });
+    if (document.errors.length) return undefined;
+    const value = document.toJS()?.display?.bell_on_complete;
+    return value === undefined || value === null ? null : value;
+  } catch {
+    return undefined;
+  }
+}
+
+// Add `bell_on_complete: true` only when unset. Returns null, and edits
+// nothing, when the result would differ from the input by anything but that
+// one key (an odd indent, a flow map, or YAML that does not parse).
+function setBellOnCompleteConfig(text) {
+  const str = String(text || "");
+  const current = readBellOnCompleteConfig(str);
+  if (current === undefined) return null;
+  if (current !== null) return str;
+  const eol = eolOf(str);
+  const lines = str.split(/\r?\n/);
+  const block = findTopBlock(lines, "display");
+  let after;
+  if (block) {
+    openBlock(lines, block);
+    lines.splice(block.start + 1, 0, "  bell_on_complete: true");
+    after = joinLines(lines, eol);
+  } else {
+    after = joinLines(lines, eol, ["display:", "  bell_on_complete: true"]);
+  }
+  const parse = (value) => {
+    const document = parseDocument(value, { strict: true, uniqueKeys: true });
+    return document.errors.length ? undefined : document.toJS() || {};
+  };
+  const was = parse(str);
+  const now = parse(after);
+  if (!was || !now || now.display?.bell_on_complete !== true) return null;
+  delete now.display.bell_on_complete;
+  // An absent or empty (null) display block had nothing else in it.
+  if (!Object.keys(now.display).length && was.display == null) {
+    if (was.display === undefined) delete now.display;
+    else now.display = null;
+  }
+  return isDeepStrictEqual(was, now) ? after : null;
+}
+
 function clearDisplaySkinConfig(text) {
   const lines = String(text || "").split(/\r?\n/);
   const block = findTopBlock(lines, "display");
@@ -296,6 +347,7 @@ module.exports = {
   disableLitHermesConfig,
   enableLitHermesConfig,
   readConfig,
+  readBellOnCompleteConfig,
   readDisplaySkinConfig,
   readExternalSkillDirsConfig,
   readStatusBarFields,
@@ -303,6 +355,7 @@ module.exports = {
   suggestStatusBarFields,
   readOutputStyleConfig,
   readTuiAgentsNudgeConfig,
+  setBellOnCompleteConfig,
   setDisplaySkinConfig,
   setOutputStyleConfig,
   setTuiAgentsNudgeConfig,

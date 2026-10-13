@@ -4,7 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
 const yaml = require("yaml");
-const { HUD_ACCENTS, findAccent, renderSkinYaml, installSkins } = require("../src/lib/skins");
+const { HUD_ACCENTS, SHIPPED_SPINNERS, findAccent, renderSkinYaml, installSkins } = require("../src/lib/skins");
 const { micro, skinLogo } = require("../src/lib/litMark");
 const { listHud, applyHud, clearHud } = require("../src/lib/hud");
 const { readDisplaySkinConfig } = require("../src/lib/config");
@@ -180,6 +180,62 @@ test("installing native skins retains custom files including edited preset names
   for (const name of preserved) {
     assert.equal(fs.readFileSync(path.join(home, "skins", name), "utf8"), `# user ${name}\n`);
   }
+});
+
+test("installing native skins moves only a shipped spinner block to the flame faces", (t) => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-skin-upgrade-"));
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const dir = path.join(home, "skins");
+  fs.mkdirSync(dir);
+  const ignition = findAccent("ignition");
+  const [previous, oldest] = SHIPPED_SPINNERS;
+  const recent = path.join(dir, "lithermes-ignition.yaml");
+  fs.writeFileSync(recent, renderSkinYaml(ignition, { spinner: previous }), { mode: 0o644 });
+  const recolored = path.join(dir, "lithermes-cyan.yaml");
+  const oldCyan = `${renderSkinYaml(HUD_ACCENTS[0], { spinner: oldest }).replace(/#00F5FF/g, "#123456")}# mine\n`;
+  fs.writeFileSync(recolored, oldCyan);
+  const tuned = path.join(dir, "lithermes-rose.yaml");
+  const ownSpinner = renderSkinYaml(HUD_ACCENTS[5], { spinner: ['  thinking_faces: ["(me)"]'] });
+  fs.writeFileSync(tuned, ownSpinner);
+
+  const written = installSkins(home);
+  assert.ok(written.includes(recent) && written.includes(recolored));
+  assert.equal(fs.readFileSync(recent, "utf8"), renderSkinYaml(ignition));
+  assert.equal(fs.statSync(recent).mode & 0o777, 0o600);
+  const upgraded = fs.readFileSync(recolored, "utf8");
+  const flameBlock = renderSkinYaml(HUD_ACCENTS[0]).match(/spinner:\n(?: {2}\w+_\w+: .*\n)+/)[0];
+  const oldBlock = `${["spinner:", ...oldest].join("\n")}\n`;
+  assert.equal(upgraded.replace(flameBlock, oldBlock), oldCyan, "only the spinner lines change");
+  assert.deepEqual(yaml.parse(upgraded).spinner, yaml.parse(renderSkinYaml(HUD_ACCENTS[0])).spinner);
+  assert.equal(written.includes(tuned), false);
+  assert.equal(fs.readFileSync(tuned, "utf8"), ownSpinner);
+});
+
+test("installing native skins keeps a shipped spinner the user edited and leaves upgraded skins alone", (t) => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-skin-edited-"));
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const dir = path.join(home, "skins");
+  fs.mkdirSync(dir);
+  const [previous, oldest] = SHIPPED_SPINNERS;
+  const oneVerb = path.join(dir, "lithermes-ignition.yaml");
+  const oneVerbText = renderSkinYaml(findAccent("ignition"), { spinner: previous }).replace("[lit-looping, ", "[musing, lit-looping, ");
+  fs.writeFileSync(oneVerb, oneVerbText);
+  const addedFaces = path.join(dir, "lithermes-cyan.yaml");
+  const addedFacesText = renderSkinYaml(HUD_ACCENTS[0], { spinner: [oldest[0], '  thinking_faces: ["(me)"]', oldest[1]] });
+  fs.writeFileSync(addedFaces, addedFacesText);
+  const pristine = path.join(dir, "lithermes-rose.yaml");
+  fs.writeFileSync(pristine, renderSkinYaml(HUD_ACCENTS[5], { spinner: oldest }));
+
+  const written = installSkins(home);
+  assert.equal(fs.readFileSync(oneVerb, "utf8"), oneVerbText, "an edited line inside the shipped block keeps the file");
+  assert.equal(fs.readFileSync(addedFaces, "utf8"), addedFacesText, "a line added inside the shipped block keeps the file");
+  assert.equal(written.includes(oneVerb) || written.includes(addedFaces), false);
+  assert.ok(written.includes(pristine));
+  assert.equal(fs.readFileSync(pristine, "utf8"), renderSkinYaml(HUD_ACCENTS[5]));
+
+  const again = installSkins(home);
+  assert.equal(again.includes(pristine), false, "an upgraded skin is not rewritten on the next install");
+  assert.equal(fs.readFileSync(pristine, "utf8"), renderSkinYaml(HUD_ACCENTS[5]));
 });
 
 test("installing native skins leaves an existing symlinked skin untouched", (t) => {

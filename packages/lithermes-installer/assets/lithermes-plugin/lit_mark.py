@@ -152,11 +152,16 @@ def acknowledgement(route: str, *, color=False, mode=None, **options) -> str:
     return "\n".join(rows)
 
 
-def acknowledge_reply(route: str, response: str) -> str:
+def acknowledge_reply(route: str, response: str, *, workflow: str | None = None) -> str:
     # The host keeps only the suffix when a transformed response starts with
     # the streamed body. Indented plain lines preserve MICRO rows in Markdown
-    # without replaying the model response or adding a fence.
-    suffix = "\n".join(f"    {row}" for row in acknowledgement(route).splitlines())
+    # without replaying the model response or adding a fence. The optional
+    # workflow map row joins the same block; it is emoji, so a terminal that
+    # cannot draw the mark does not get it either.
+    rows = acknowledgement(route).splitlines()
+    if workflow and utf8_terminal():
+        rows.append(workflow)
+    suffix = "\n".join(f"    {row}" for row in rows)
     return f"{response}\n\n{suffix}" if response else suffix
 
 

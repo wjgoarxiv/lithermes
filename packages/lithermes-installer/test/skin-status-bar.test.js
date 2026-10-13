@@ -61,7 +61,7 @@ test("every LIT skin keeps good, warn, bad and critical apart and readable", () 
   }
 });
 
-test("every LIT skin ships the LIT spinner: short work verbs and simple faces", () => {
+test("every LIT skin ships the LIT spinner: short work verbs and flame faces", () => {
   for (const { name, skin } of allSkins()) {
     const { spinner } = skin;
     for (const verb of ["lit-looping", "planning", "verifying"]) {
@@ -71,10 +71,14 @@ test("every LIT skin ships the LIT spinner: short work verbs and simple faces", 
     for (const key of ["waiting_faces", "thinking_faces"]) {
       assert.ok(Array.isArray(spinner[key]) && spinner[key].length >= 3, `${name}.${key}`);
       for (const face of spinner[key]) {
-        assert.ok([...face].every((ch) => ch.codePointAt(0) < 0x2800), `${name}.${key}: ${face} is not simple`);
+        // One flame plus plain text: Hermes measures the face by code points, so
+        // other emoji or wide glyphs would misalign the spinner line.
+        assert.match(face, /^\([ lit]*🔥[ lit]*\)$/u, `${name}.${key}: ${face} is not a flame face`);
+        assert.ok([...face.replace("🔥", "")].every((ch) => ch.codePointAt(0) < 0x2800), `${name}.${key}: ${face}`);
       }
     }
-    assert.ok(spinner.waiting_faces.includes("(lit)") && spinner.thinking_faces.includes("(lit)"));
+    assert.ok(spinner.waiting_faces.includes("(🔥 lit)") && spinner.thinking_faces.includes("(🔥 lit)"));
+    assert.ok(spinner.thinking_verbs.includes("igniting"));
     for (const pair of spinner.wings) assert.equal(pair.length, 2);
   }
 });

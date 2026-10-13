@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-12T18:30:17.534Z",
+  "syncedAt": "2026-10-13T08:36:40.267Z",
   "source": "bundled-payload",
-  "sourceHash": "63bfd482afbfa008a20257f3a60fea961128806b79aa3d062ce47372c7436949",
+  "sourceHash": "b03f54da68a132cdabe4b30ec6c0bd2708dbb23693e52c223227b9921434e292",
   "files": [
     {
       "path": "NOTICE.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "32b7ef2c93e3f208e39e26a6eca4a03f48804b7ddf6b7a16eaf4cf038fbf4e21"
+      "sha256": "b431f7341d6e82badd752fe1ac56fd39d309f06159f13cbbfc5124728d5fa8f5"
     },
     {
       "path": "core_commands.py",
@@ -121,7 +121,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "2f6896c67938da5ab3ecfedef01b1387b97a476d252f731b2229b61f65b53c12"
+      "sha256": "598c83b80adac46b8e7b5d063b9736471990de521f77a4d880bbd5156cc1cbc4"
     },
     {
       "path": "lit_mark_rows.json",
@@ -4614,6 +4614,10 @@
     {
       "path": "vendor/scientific-visualization/tests/test_style_presets.py",
       "sha256": "ff0e190196480848f1fea2398220038771f386ee7967a0ef122b0dfbca3aed46"
+    },
+    {
+      "path": "workflow_map.py",
+      "sha256": "8da12ac65ee0f9c9d8d07611df41dda8b07fd75eca821bf0e8b5c3dc376cd930"
     }
   ]
 }

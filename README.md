@@ -75,6 +75,8 @@ lit Build a to-do list in one HTML file without external dependencies. Implement
 
 The reply opens with one line of its own, `🔥 **LIT IGNITED · <discipline>** 🔥`. The name after the dot is the route that took the request: `litwork` for a plain `lit`, `lit-plan` for a plan. That line only tells you the work has started; whether it went well is for you to judge from the result.
 
+Once a plan is being worked through, the reply also ends with one line that shows where the work stands, for example `🔥 LIT · lit-loop — 📝 plan ✓ › 🔨 WORK ▰▰▰▱▱▱▱ 3/7 › 🔍 · › 🏁 ·`. LitHermes reads it from the plan, the run and the litgoal criteria saved in the project, leaves out a step that has nothing saved for it, and never puts a file name or a command in it. With a LitHermes skin active, the spinner turns in flame faces such as `(🔥 lit)` while Hermes works. A bell when a turn finishes stays off until you add `--bell` to the install or answer yes when the installer asks; a `display.bell_on_complete` value you already chose is kept.
+
 When it finishes, open the HTML file and try each action yourself. Ask Hermes to separate the checks it actually ran from anything still unverified. Then type `/lit-handoff`, and the result and the next step are written to `HANDOFF.md` in the project. Next time, open a new session in the same project and ask Hermes to read the handoff before it continues. When the session closes, the work stops, and the handoff file is what the next session reads to continue.
 
 ### Automatic handoff

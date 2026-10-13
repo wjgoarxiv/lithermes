@@ -97,6 +97,11 @@ except (ImportError, ModuleNotFoundError):
     import motion_receipts as _motion_receipts
 
 try:
+    from .workflow_map import workflow_row
+except (ImportError, ModuleNotFoundError):
+    from workflow_map import workflow_row
+
+try:
     from . import deliverable_hedge_guard as _deliverable_hedges
 except (ImportError, ModuleNotFoundError):
     import deliverable_hedge_guard as _deliverable_hedges
@@ -1789,8 +1794,10 @@ def transform_llm_output(**kwargs: Any) -> str | None:
     _PENDING_IGNITE.discard(session_id)
     if not pending and not block:
         return None
-    response = block or str(kwargs.get("response_text") or "")
-    return acknowledge_reply(route, response)
+    if block:
+        return acknowledge_reply(route, block)
+    response = str(kwargs.get("response_text") or "")
+    return acknowledge_reply(route, response, workflow=workflow_row(route, Path.cwd(), session_id))
 
 
 def subagent_stop(**kwargs: Any) -> None:
