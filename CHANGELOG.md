@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.22] - 2026-10-13
+
+- The README demo film is new. It follows one real Hermes session: `lit plan` writes the plan and the reply ends with the workflow map at PLAN, `/start-work` loads the test-first and verification skills, runs the new tests red, fixes the code and runs them green, and `lit recap` closes with the map showing plan, work, review and done all checked.
+
 ## [1.0.21] - 2026-10-13
 
 - While a plan is being worked through, a LIT reply now ends with one line that shows where the work stands, for example `🔥 LIT · lit-loop — 📝 plan ✓ › 🔨 WORK ▰▰▰▱▱▱▱ 3/7 › 🔍 · › 🏁 ·`. LitHermes reads it from the plan, the run and the litgoal criteria saved in the project, leaves out a step that has nothing saved for it, and never puts a file name or a command in it. A terminal that cannot draw the LIT mark does not get the line either.
