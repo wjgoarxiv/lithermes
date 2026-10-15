@@ -38,7 +38,7 @@ Pick by job, not by the previous slide. Blocks are named `family@<id>`.
 | `image-split`: picture beside explanation — image, bullets | signal, atlas, chalk, studio |
 | `photo-grid`: two or three pictures — image lines, one text line | atlas, studio |
 | `figure-pair`: before/after — two images, one text line | atlas, paper |
-| `figure-academic`: numbered figure — sourced caption; observation, limitation, implication | paper |
+| `figure-academic`: numbered figure — sourced caption; observation, data condition, implication | paper |
 | `asymmetric-feature`: large element, narrow text — image or one-cell figure, bullets | signal, atlas, studio |
 | `references-appendix`: sources and glossary — `- [1] …` entries with real links | ledger, paper, gazette |
 

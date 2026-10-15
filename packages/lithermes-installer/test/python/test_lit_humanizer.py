@@ -62,8 +62,8 @@ class HumanizerDetectorParity(unittest.TestCase):
         self.cases = json.loads((FIXTURES / "rule-cases.json").read_text(encoding="utf-8"))
 
     def test_rule_inventory_preserves_phase_a_ids_tiers_and_context(self):
-        self.assertEqual(len(self.rules), 51)
-        self.assertEqual(sum(rule["severity"] == "block" for rule in self.rules), 24)
+        self.assertEqual(len(self.rules), 54)
+        self.assertEqual(sum(rule["severity"] == "block" for rule in self.rules), 27)
         self.assertEqual(sum(rule["severity"] == "warn" for rule in self.rules), 27)
         self.assertEqual(
             {rule["id"] for rule in self.rules},

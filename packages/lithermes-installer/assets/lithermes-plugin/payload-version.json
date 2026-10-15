@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-13T23:44:36.048Z",
+  "syncedAt": "2026-10-15T08:35:50.763Z",
   "source": "bundled-payload",
-  "sourceHash": "5b89e512692f79a48c4a5b4ef89304ad7a3c20812b1c84abbcdc1122a933e418",
+  "sourceHash": "8bd0026beae447433ba179eec81dc25af74c2f058d689167ade043ddd4487b77",
   "files": [
     {
       "path": "NOTICE.md",
@@ -41,7 +41,7 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "5831929f9b2eb855263fcc29fe9df3be7a0a56c4b265fb22d0bd208d5810500a"
+      "sha256": "5c31f1c73cd4c3757883f5fc9945ccac26856a98cc1f989853db1f29441711fc"
     },
     {
       "path": "core_contract.py",
@@ -3033,7 +3033,7 @@
     },
     {
       "path": "skills/lit-docx/SKILL.md",
-      "sha256": "6855f71f74ac5a973a33313f0aebb257b7804dd8ce9b67c0d02100c3cea4edb6"
+      "sha256": "635719a7eb8af4d26a228e68ebb65486553380ac23202c48d391d29d29c26f19"
     },
     {
       "path": "skills/lit-docx/references/components.md",
@@ -3109,7 +3109,7 @@
     },
     {
       "path": "skills/lit-docx/references/tonalities/journal.md",
-      "sha256": "90b926aa28bc3de8712d14153a6c8293edc0f3d3007616c06bb91e722be31bd4"
+      "sha256": "e31493533023045398529c1ac9a4b6e093549697f58f38748fd4ed7a36aaad08"
     },
     {
       "path": "skills/lit-docx/references/tonalities/manual.md",
@@ -3345,7 +3345,7 @@
     },
     {
       "path": "skills/lit-humanizer/examples/detector-validation/rule-cases.json",
-      "sha256": "309e65f6de8ebacd98651d55f1cc946f6c2be9f81187d721de25ef522e6be9f9"
+      "sha256": "498dae0a7aa89ec1b8b6b5bcd929a099c2fc988fbf4d18598f638cee16eeace4"
     },
     {
       "path": "skills/lit-humanizer/examples/english-essay/after.md",
@@ -3513,11 +3513,11 @@
     },
     {
       "path": "skills/lit-humanizer/references/taxonomy.md",
-      "sha256": "840c00554bdf7d4dc2223b1ec454fee260b0dce303cc94796ac0f8f86b1366a0"
+      "sha256": "d0958c702eb531f82612ff48d16134afbfd6c65b40bc80ebc4bce778a02b4238"
     },
     {
       "path": "skills/lit-humanizer/rules.json",
-      "sha256": "0f366a0d930cc5df6fd7ef4addda646bf3a934f4a0fc533bf70607b6008ac989"
+      "sha256": "806e8caaeea25b34fa7a2caf8957a4af6fe95e557d5db71fa6d6e90fcea7091c"
     },
     {
       "path": "skills/lit-humanizer/scripts/detect.py",
@@ -3549,7 +3549,7 @@
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
-      "sha256": "2d07bcb558bc7eb63fff31bcb0ee16a88c8b823a726713755a105e6f201381bc"
+      "sha256": "f779a8e65dcb7e1c6df3765f660f536fca97ce8c473a524f7cd8017e5d374b67"
     },
     {
       "path": "skills/lit-pptx/agents/analyst.md",
@@ -3653,7 +3653,7 @@
     },
     {
       "path": "skills/lit-pptx/references/authoring-guide.md",
-      "sha256": "7292b5f702f56ac756392df1cdae873d707568a923a0ff6554ad7b064db7154a"
+      "sha256": "fb487aa76642112079a3a7ac16e9dec688e67582fa7a766888b518d59c2b9367"
     },
     {
       "path": "skills/lit-pptx/references/consensus-protocol.md",
@@ -3661,7 +3661,7 @@
     },
     {
       "path": "skills/lit-pptx/references/data-display-cookbook.md",
-      "sha256": "c73e7d480bf26c2e512b1f1ac69b378e949e7615d135dcbd5e8458c5705fbd4b"
+      "sha256": "b43aaa1d6dbd6f592fd7af9c88e2acc6d265619e6456dcf8d5ae96b45f3a7272"
     },
     {
       "path": "skills/lit-pptx/references/density-and-fill.md",
@@ -3725,7 +3725,7 @@
     },
     {
       "path": "skills/lit-pptx/references/layout-families.md",
-      "sha256": "206fc5a68cabe2b5e47d5f078d6b7ba277d3bfe53d1558973d763c20067a0252"
+      "sha256": "093fec298eed55be3538ce1c38b803764ce4918dbdbf21094c36978870e0f874"
     },
     {
       "path": "skills/lit-pptx/references/title-treatments.md",
@@ -3873,7 +3873,7 @@
     },
     {
       "path": "skills/lit-pptx/slide-formats/markdown-slide-spec-v1.md",
-      "sha256": "eb9b04d070d9f2774746e65a34e5e6833fefd097ea7e01fc32327934ca8ee42b"
+      "sha256": "c633f5fc6aa376a625fa3515beb8998d03c6a0adfa6f8a5057a9bd4db4075d52"
     },
     {
       "path": "skills/lit-pptx/slide-formats/markdown-slide-spec-v2.md",

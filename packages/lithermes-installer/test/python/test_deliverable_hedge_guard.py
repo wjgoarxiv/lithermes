@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import importlib
 import json
 import os
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -17,6 +19,11 @@ from plugin_register_test_support import _ASSET_DIR, _load_plugin_package
 SKILL_DIR = Path(_ASSET_DIR) / "skills" / "lit-humanizer"
 FIXTURES = SKILL_DIR / "examples" / "detector-validation"
 BLOCK_TEXT = "Source: unpublished draft\n"
+PLEDGE_CASES = json.loads(
+    (Path(__file__).resolve().parent.parent / "fixtures" / "lit-humanizer-pledge-cases.json").read_text(encoding="utf-8")
+)
+NEW_PLEDGE_RULES = frozenset(PLEDGE_CASES["new_rule_ids"])
+USER_PLEDGE = "동일 조건의 독립 성능 비교로 쓰지 않음."
 
 
 class HumanizerPreWriteHook(unittest.TestCase):
@@ -153,6 +160,163 @@ class HumanizerPreWriteHook(unittest.TestCase):
         self.assertIsInstance(delivered, dict)
         self.assertIn("LIT_HUMANIZER_POSTWRITE_ADVISORY", delivered["context"])
         self.assertIn("Edit the source and rebuild", delivered["context"])
+
+
+class NegativePledgeGuard(unittest.TestCase):
+    """A sentence that says what the document is not for is refused at the write hook."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.detector = importlib.import_module("humanizer_detector")
+        cls.rules = cls.detector.load_rules()
+
+    def setUp(self):
+        self.pkg = _load_plugin_package()
+        self.guard = self.pkg.deliverable_hedge_guard
+        self.guard.reset_state()
+        self.temp = tempfile.TemporaryDirectory()
+        self.previous_cwd = os.getcwd()
+        os.chdir(self.temp.name)
+
+    def tearDown(self):
+        os.chdir(self.previous_cwd)
+        self.temp.cleanup()
+
+    def _write(self, content, path="report.md"):
+        return self.pkg._pre_tool_call(
+            tool_name="write_file",
+            args={"path": path, "content": content},
+            session_id="pledge-test",
+            workspace=Path.cwd(),
+        )
+
+    def _scan(self, text, file="pledge.md"):
+        return self.detector.scan_text(text, self.rules, file)
+
+    def test_write_file_with_the_user_sentence_is_refused_and_names_the_rule(self):
+        denied = self._write(f"## 방법\n\n{USER_PLEDGE}\n")
+        self.assertIsNotNone(denied, "the user's sentence was written")
+        self.assertEqual(denied.get("action"), "block")
+        self.assertIn("ko-negative-pledge", denied["message"])
+        self.assertFalse(Path("report.md").exists())
+
+    def _assert_padded_pledge_is_refused_in_time(self, padded_line):
+        started = time.perf_counter()
+        denied = self._write(f"{USER_PLEDGE}\n{padded_line}\n")
+        elapsed = time.perf_counter() - started
+        self.assertIsNotNone(denied, f"fail-open after {elapsed:.2f}s: the pledge was written")
+        self.assertEqual(denied.get("action"), "block")
+        self.assertIn("ko-negative-pledge", denied["message"])
+        self.assertLess(elapsed, 2.0, "the detector ran close to its 3 s limit")
+        self.assertFalse(Path("report.md").exists())
+
+    def test_whitespace_padded_line_cannot_push_the_pledge_past_the_detector_limit(self):
+        self._assert_padded_pledge_is_refused_in_time("검증된" + " " * 4096 + "x")
+
+    def test_very_long_whitespace_run_after_a_verb_stem_cannot_force_a_fail_open(self):
+        self._assert_padded_pledge_is_refused_in_time("해석하지" + " " * 65536 + "x")
+
+    def test_english_and_repeated_pledges_are_refused_at_the_write_hook(self):
+        english = self._write("This is not intended as a head-to-head benchmark.\n")
+        self.assertIsNotNone(english)
+        self.assertIn("en-negative-pledge", english["message"])
+        repeated = self._write("측정값은 인과관계를 주장하지 않음.\n두 공정의 차이는 최종 결론이 아님.\n")
+        self.assertIsNotNone(repeated)
+        self.assertIn("ko-negative-pledge-repeat", repeated["message"])
+
+    def _patch(self, existing, **args):
+        Path("report.md").write_text(existing, encoding="utf-8")
+        return self.pkg._pre_tool_call(
+            tool_name="patch",
+            args={"path": "report.md", **args},
+            session_id="pledge-test",
+            workspace=Path.cwd(),
+        )
+
+    def test_edit_that_adds_a_second_pledge_to_a_file_holding_one_is_refused(self):
+        # The file already carries a pledge from before; the guard judges the lines an edit touches.
+        existing = f"## 방법\n\n{USER_PLEDGE}\n\n표 1은 수율을 보인다.\n"
+        added = "이 자료는 비교로 해석하지 않음."
+        denied = self._patch(
+            existing,
+            mode="replace",
+            old_string="표 1은 수율을 보인다.",
+            new_string=f"표 1은 수율을 보인다.\n\n{added}",
+        )
+        self.assertIsNotNone(denied, "the added pledge was accepted")
+        self.assertEqual(denied.get("action"), "block")
+        self.assertIn("ko-negative-pledge:7", denied["message"])
+        self.assertNotIn(":3", denied["message"], "the old pledge was blamed on the edit")
+        self.assertEqual(Path("report.md").read_text(encoding="utf-8"), existing)
+
+    def test_patch_hunk_that_adds_a_pledge_is_refused_and_a_clean_edit_to_the_same_file_passes(self):
+        existing = f"## 방법\n\n{USER_PLEDGE}\n\n표 1은 수율을 보인다.\n"
+        hunk = f"*** Begin Patch\n*** Update File: report.md\n@@\n+{USER_PLEDGE}\n*** End Patch\n"
+        denied = self._patch(existing, mode="patch", patch=hunk)
+        self.assertIsNotNone(denied)
+        self.assertIn("ko-negative-pledge", denied["message"])
+        clean = self._patch(existing, mode="replace", old_string="표 1은 수율을 보인다.", new_string="표 1은 수율이 41%이다.")
+        self.assertIsNone(clean, "an edit that leaves the old pledge alone was refused")
+
+    def test_replace_edit_that_completes_a_repeated_pledge_pair_is_refused(self):
+        # Replace mode scans the whole proposed text, so the document-scope rule sees the old and the new sentence.
+        existing = "## 방법\n\n측정값은 인과관계를 주장하지 않음.\n\n표 1은 수율을 보인다.\n"
+        denied = self._patch(
+            existing,
+            mode="replace",
+            old_string="표 1은 수율을 보인다.",
+            new_string="표 1은 수율을 보인다.\n\n두 공정의 차이는 최종 결론이 아님.",
+        )
+        self.assertIsNotNone(denied)
+        self.assertIn("ko-negative-pledge-repeat", denied["message"])
+
+    def test_plain_facts_notices_and_operating_rules_still_write(self):
+        clean = (
+            "이 장비는 방폭 구역에서 사용하지 않습니다. 냉각수로 쓰지 않음. 한 번에 0.1 이상 바꾸지 않음.\n"
+            "본 자료는 투자 권유가 아닙니다.\n"
+            "첨가제 B는 수율을 개선하지 않았다.\n"
+            "This is not intended as a substitute for professional advice.\n"
+        )
+        self.assertIsNone(self._write(clean))
+
+    def test_every_pledge_hits_its_rule_at_its_tier(self):
+        rank = {"warn": 1, "block": 2}
+        for pledge in PLEDGE_CASES["pledges"]:
+            with self.subTest(n=pledge["n"], text=pledge["text"]):
+                hits = self._scan(pledge["text"])
+                if pledge["severity"] == "none":
+                    self.assertEqual(hits, [])
+                    continue
+                top = max((rank[hit["severity"]] for hit in hits), default=0)
+                self.assertEqual(top, rank[pledge["severity"]], hits)
+                self.assertTrue(
+                    any(hit["rule"] == pledge["rule"] and hit["severity"] == pledge["severity"] for hit in hits),
+                    hits,
+                )
+
+    def test_near_misses_never_hit_a_pledge_rule(self):
+        for group in ("near_misses", "near_misses_review"):
+            for near in PLEDGE_CASES[group]:
+                with self.subTest(group=group, text=near["text"]):
+                    hits = [hit for hit in self._scan(near["text"], "near-miss.md") if hit["rule"] in NEW_PLEDGE_RULES]
+                    self.assertEqual(hits, [])
+
+    def test_whole_documents_block_or_stay_clean_per_rule(self):
+        for case in PLEDGE_CASES["document_cases"]:
+            with self.subTest(rule=case["rule"], text=case["text"]):
+                blocked = any(
+                    hit["rule"] == case["rule"] and hit["severity"] == "block"
+                    for hit in self._scan(case["text"], "document.md")
+                )
+                self.assertEqual(blocked, case["expect"] == "block")
+
+    def test_pledge_rules_are_block_tier_and_keep_their_scopes(self):
+        by_id = {rule["id"]: rule for rule in self.rules}
+        self.assertEqual({by_id[rule_id]["severity"] for rule_id in NEW_PLEDGE_RULES}, {"block"})
+        self.assertEqual(by_id["ko-negative-pledge"]["scope"], "line")
+        self.assertEqual(by_id["ko-negative-pledge-repeat"]["scope"], "document")
+        self.assertEqual(by_id["en-negative-pledge"]["scope"], "sentence")
+        self.assertEqual(by_id["ko-status-negation"]["severity"], "warn")
 
 
 class StableArtifactReaderSecurity(unittest.TestCase):

@@ -39,7 +39,7 @@ End every data slide with a line starting `출처:` or `Source:` (optionally a `
 
 ## Evidence display patterns
 
-- **figure plus interpretation:** one figure, numbered caption, source locator, limitation, and a concise interpretation placed as one visual group.
+- **figure plus interpretation:** one figure, numbered caption, source locator, the data condition that affects the reading, and a concise interpretation placed as one visual group.
 - **table plus decision takeaway:** one bounded table, caption/source, and one decision sentence. Do not duplicate the table in prose.
 - **source capture:** crop to the relevant region while retaining enough interface/document context to verify the locator.
 - **two-record appendix evidence:** at most two records per slide. Each record includes summary, source/locator, and DOI/canonical link when available.

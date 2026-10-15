@@ -23,7 +23,7 @@ Otherwise:
   paragraph says what the piece argues and for whom.
 - **Numbering.** h1 `1`, h2 `1.1`, plain ink. References or further reading close the piece as a
   numbered list under an unnumbered heading.
-- **Components:** `callout` only (definition, caveat, method note), a 1 pt ink rule on the left, no
+- **Components:** `callout` only (definition, method note, data fact), a 1 pt ink rule on the left, no
   fill; other directives print as text.
 - **Wide material.** A table of four or more columns spans both columns with its caption; up to three
   columns stays in the column. Figures take the column width.
@@ -75,7 +75,7 @@ tonality: journal
 Board minutes and metered output were collected for 2021-2025 (sample). Section 2.2 explains how
 shared rooftops were counted.
 
-::: callout kind=note title="Metering caveat"
+::: callout kind=note title="Metering change"
 Two districts replaced their meters in 2023, so output before that year is estimated.
 :::
 ```

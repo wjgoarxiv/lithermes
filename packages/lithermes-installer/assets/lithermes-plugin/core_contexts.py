@@ -124,7 +124,7 @@ _SKILL_ROUTE_CONTRACTS = {
     "lit-pptx": (
         "Office document task",
         "Mode Contract: create a PowerPoint deck and keep its Markdown source. If the request also asks for a report or document, load lithermes:lit-docx and create the DOCX too.",
-        "Read the installed lit-pptx skill. Before building, pick one of its eight tonalities from the deck type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; an explicit template, tonality or font wins. Titles are noun-phrase labels, figures carry a basis and stay at title size, Pretendard by default, slides dense. When ordinary facts are missing, finish a realistic example and mark assumptions on each affected slide and in the reply. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
+        "Read the installed lit-pptx skill. Before building, pick one of its eight tonalities from the deck type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; an explicit template, tonality or font wins. Titles are noun-phrase labels, figures carry a basis and stay at title size, Pretendard by default, slides dense. When ordinary facts are missing, finish a realistic example and mark the invented values once, in the caption that labels the sample data, and say in the reply that the deck rests on assumptions. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
     ),
     "lit-typographic-motion": (
         "Film request",
