@@ -6,6 +6,11 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.23] - 2026-10-15
+
+- A report or deck no longer fills up with lines that tell the reader what the document is not for. When the model writes a sentence such as `동일 조건의 독립 성능 비교로 쓰지 않음.` into a Word, PowerPoint or other deliverable file, LitHermes refuses the write and the model rewrites the line. Three new rules cover Korean sentences that pledge about the document itself, the same disclaimer repeated, and the English forms. Legal and financial notices, safety warnings and real negative findings are left alone, and the rules still finish in milliseconds on a very long run of spaces.
+- The lit-docx and lit-pptx skills now ask for a real limit once, written as a fact about the data beside the number it affects, such as `샘플은 한 공정 조건만 포함한다`. Anything about what the document is not for belongs in the reply, not in the file.
+
 ## [1.0.22] - 2026-10-13
 
 - The README demo film is new. It follows one real Hermes session: `lit plan` writes the plan and the reply ends with the workflow map at PLAN, `/start-work` loads the test-first and verification skills, runs the new tests red, fixes the code and runs them green, and `lit recap` closes with the map showing plan, work, review and done all checked.
