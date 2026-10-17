@@ -6,6 +6,11 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.24] - 2026-10-17
+
+- The pledge rules catch more of the lines that tell a reader what a document is not for, such as `This table is not a ranking.` or `이 문서는 제품을 비교하려는 것이 아닙니다.` These forms came from real sessions. Bold-label callouts such as `> **주의:** ...` are now read too; ordinary quoted text is still skipped, and lines from manuals and lab reports that only look similar stay allowed.
+- A report that a script writes from a terminal or `execute_code` call is now checked after the call. Hermes cannot block at that point, so the model gets a warning naming the rule and the line, and is asked to rewrite it.
+
 ## [1.0.23] - 2026-10-15
 
 - A report or deck no longer fills up with lines that tell the reader what the document is not for. When the model writes a sentence such as `동일 조건의 독립 성능 비교로 쓰지 않음.` into a Word, PowerPoint or other deliverable file, LitHermes refuses the write and the model rewrites the line. Three new rules cover Korean sentences that pledge about the document itself, the same disclaimer repeated, and the English forms. Legal and financial notices, safety warnings and real negative findings are left alone, and the rules still finish in milliseconds on a very long run of spaces.
