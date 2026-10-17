@@ -21,7 +21,7 @@ identity:
   invocation: "lithermes:<frontmatter.name>"
 surfaces:
   manifest: plugin.yaml
-  python_entrypoints: ["__init__.py:register", "core.py:pre_llm_call", "deliverable_hedge_guard.py:pre_tool_call"]
+  python_entrypoints: ["__init__.py:register", "core.py:pre_llm_call", "deliverable_hedge_guard.py:pre_tool_call", "deliverable_hedge_guard.py:transform_tool_result"]
   bundled_rule: rules/bundled-rules/lit-humanizer.md
   detector: skills/lit-humanizer/scripts/detect.py
 state:
@@ -60,7 +60,7 @@ after_payload_edit: "npm --prefix packages/lithermes-installer run sync-plugin -
 
 For a file edit, the Hermes `pre_tool_call` guard blocks block-tier findings in added text passed to `write_file` or `patch` for Markdown, HTML, text, TeX, CSV, SVG, reStructuredText, and AsciiDoc files. Warn-tier findings arrive as advisory context. Fenced code, inline code, exact quoted user spans, and internal `plans/`, `evidence/`, `HANDOFF*`, ledger, `.lit*/`, and `.hermes/` paths are excluded. The guard never scans unchanged file text. Use `write_file` or `patch` for prose edits when pre-save checking is required.
 
-DOCX/PPTX/PDF checks happen after a supported file-write event or when a script-like tool reports an explicit output path in its result. Hermes' `post_tool_call` is observer-only, so a finding cannot undo a completed export: revise the source and rebuild the file. DOCX/PPTX extraction uses Python's standard-library ZIP/XML support. PDF extraction uses host `pdftotext` when present; if it is unavailable or fails, the scan fails open and reports that boundary. Script-created files without a reported output path are outside automatic post-write inspection; run the detector explicitly after such a write.
+DOCX/PPTX/PDF checks happen after a supported file-write event or when a script-like tool reports an explicit output path in its result. Hermes' `post_tool_call` is observer-only, so a finding cannot undo a completed export: revise the source and rebuild the file. DOCX/PPTX extraction uses Python's standard-library ZIP/XML support. PDF extraction uses host `pdftotext` when present; if it is unavailable or fails, the scan fails open and reports that boundary. A DOCX, PPTX or Markdown file that a `terminal` or `execute_code` call builds is checked when that call returns: Hermes' `transform_tool_result` hook finds files modified while the call ran (the reported or session working directory, `workdir`, and folders of paths named in the command, code or output; bounded depth, file count and size, internal paths skipped) and, on a block-tier finding, puts `LIT_HUMANIZER_SCRIPT_DELIVERABLE_BLOCK` with the rule ids in that tool result's `error` field. The command's exit code stays as it ran, and the file stays on disk: edit the build source and rebuild before presenting it. A file written outside those folders, deeper than the scan, or by a background process after the call returned is not seen; run the detector on it explicitly.
 
 ## #contract.language_and_scope
 

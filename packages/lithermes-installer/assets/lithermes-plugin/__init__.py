@@ -434,7 +434,7 @@ def _setup_lithermes_cli(parser) -> None:
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
         "hooks: on_session_start, pre_llm_call, pre_tool_call, pre_command, post_tool_call, "
-        "post_api_request, subagent_stop, transform_llm_output, on_session_finalize, on_session_reset\n"
+        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, on_session_finalize, on_session_reset\n"
         "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress\n"
         "wikify knowledge: hermes lithermes knowledge status|query|capture|save|review\n"
         "run `hermes lithermes status` for versions + full surface, or `doctor` for health checks"
@@ -604,6 +604,10 @@ def _post_tool_call(**kwargs: Any) -> None:
     return core.post_tool_call(**kwargs)
 
 
+def _transform_tool_result(**kwargs: Any) -> str | None:
+    return deliverable_hedge_guard.transform_tool_result(**kwargs)
+
+
 def _on_session_start(**kwargs: Any) -> None:
     return core.on_session_start(**kwargs)
 
@@ -643,6 +647,10 @@ def register(ctx) -> None:
     # it only buffers the mutated paths; pre_llm_call renders them into the
     # event-shaped skill route on the next turn.
     ctx.register_hook("post_tool_call", _post_tool_call)
+    # The one post-execution hook whose return Hermes keeps: a deliverable built by
+    # a terminal/execute_code script is checked and, on a block-tier finding, the
+    # tool result the model reads next carries the rebuild instruction.
+    ctx.register_hook("transform_tool_result", _transform_tool_result)
     # Hermes exposes normalized provider usage here. The callback records only
     # bounded numeric cache counters and hashed labels; raw request/response
     # compatibility fields are intentionally ignored.

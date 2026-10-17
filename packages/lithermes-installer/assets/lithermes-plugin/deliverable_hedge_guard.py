@@ -3,6 +3,13 @@
 ``pre_tool_call`` can deny ``write_file`` and ``patch`` before persistence. The
 ``post_tool_call`` observer cannot undo a completed Office/PDF export, so those
 checks are advisory and ask for a source edit and rebuild.
+
+A deliverable built by a script never passes through ``write_file``. For
+``terminal`` and ``execute_code`` calls, ``transform_tool_result`` (the one
+post-execution hook whose return value Hermes keeps) looks for DOCX, PPTX and
+Markdown files modified while the call ran and, on a block-tier finding,
+rewrites the tool result the model reads next. The file is already on disk, so
+this instructs a rebuild; it cannot refuse the write.
 """
 
 from __future__ import annotations
@@ -14,6 +21,8 @@ import re
 import stat
 import subprocess
 import sys
+import time
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -32,6 +41,18 @@ DETECT_TIMEOUT_SECONDS = 3
 TEXT_SUFFIXES = frozenset({".adoc", ".csv", ".htm", ".html", ".md", ".mdx", ".rst", ".svg", ".tex", ".txt"})
 OFFICE_SUFFIXES = frozenset({".docx", ".pptx", ".pdf"})
 READER_FACING_SUFFIXES = TEXT_SUFFIXES | OFFICE_SUFFIXES
+SCRIPT_TOOLS = frozenset({"terminal", "execute_code"})
+SCRIPT_DELIVERABLE_SUFFIXES = frozenset({".docx", ".md", ".pptx"})
+MAX_SCAN_ROOTS = 6
+MAX_SCAN_DEPTH = 4
+MAX_SCAN_ENTRIES_PER_ROOT = 4000
+MAX_SCAN_FILES = 6
+MAX_SCRIPT_OFFICE_BYTES = 16 * 1024 * 1024
+MAX_SCRIPT_AGGREGATE_BYTES = 32 * 1024 * 1024
+MAX_SCRIPT_TEXT_CHARS = 65_536
+MTIME_SLACK_SECONDS = 2.0
+_SKIP_SCAN_DIRS = frozenset({"node_modules", "__pycache__", "site-packages", "venv"})
+_PATH_TOKEN = re.compile(r"[^\s'\"`=<>|;&(),]+\.(?:docx|pptx|md|py|mjs|js|sh)\b", re.I)
 
 _QUOTED_SPAN = re.compile(
     r'"([^"\n]{1,2000})"|“([^”\n]{1,2000})”|'
@@ -58,12 +79,16 @@ _READ_BUDGET_EXCEEDED = _ReadBudgetExceeded()
 _ROOT_TURNS: dict[str, str] = {}
 _USER_QUOTES: dict[str, tuple[str, ...]] = {}
 _PENDING_ADVISORIES: dict[str, list[str]] = {}
+# File versions (device, inode, mtime, size) a script check already judged, per
+# session, so a later quick command does not repeat the same verdict.
+_SCRIPT_CHECKED: dict[str, list[tuple[int, int, int, int]]] = {}
 
 
 def reset_state() -> None:
     _ROOT_TURNS.clear()
     _USER_QUOTES.clear()
     _PENDING_ADVISORIES.clear()
+    _SCRIPT_CHECKED.clear()
 
 
 def release_session(session_id: object) -> None:
@@ -72,6 +97,7 @@ def release_session(session_id: object) -> None:
         _ROOT_TURNS.pop(key, None)
         _USER_QUOTES.pop(key, None)
         _PENDING_ADVISORIES.pop(key, None)
+        _SCRIPT_CHECKED.pop(key, None)
 
 
 def _bounded_set(mapping: dict[str, object], key: str, value: object) -> None:
@@ -167,12 +193,13 @@ def _read_stable_file_result(
     path_text: str,
     workspace: Path,
     byte_limit: int,
+    max_file_bytes: int = MAX_FILE_BYTES,
 ) -> _StableFile | _ReadBudgetExceeded | None:
     relative = _relative_artifact_path(path_text, workspace)
     directory_flags = _directory_flags()
     if relative is None or directory_flags is None or byte_limit < 0:
         return None
-    read_limit = min(MAX_FILE_BYTES, byte_limit)
+    read_limit = min(max_file_bytes, byte_limit)
     root_parts = tuple(part for part in workspace.parts if part != os.path.sep)
     directory_fds: list[int] = []
     edges: list[tuple[int, str, tuple[int, int], bool]] = []
@@ -211,7 +238,7 @@ def _read_stable_file_result(
             dir_fd=parent_fd,
         )
         initial = os.fstat(artifact_fd)
-        if not stat.S_ISREG(initial.st_mode) or initial.st_size > MAX_FILE_BYTES:
+        if not stat.S_ISREG(initial.st_mode) or initial.st_size > max_file_bytes:
             return None
         if initial.st_size > read_limit:
             return _READ_BUDGET_EXCEEDED
@@ -581,3 +608,163 @@ def observe_completed_paths(
                 "LIT_HUMANIZER_POSTWRITE_ADVISORY: the completed Office/PDF export has "
                 f"{blocks} block-tier and {warnings} warning-tier finding(s). Edit the source and rebuild; Hermes cannot undo a completed export.",
             )
+
+
+def _script_scan_roots(payload: dict, parsed: object, task_id: str, text: str) -> list[Path]:
+    """Directories a script call could have written into, most specific first."""
+    named: list[object] = [parsed.get("cwd") if isinstance(parsed, dict) else None, payload.get("workdir")]
+    terminal = sys.modules.get("tools.terminal_tool")
+    session_cwd = getattr(terminal, "get_session_cwd", None)
+    if callable(session_cwd) and task_id:
+        try:
+            named.append(session_cwd(task_id))
+        except Exception:  # noqa: BLE001 - a host helper failure only drops one candidate
+            pass
+    named.append(os.getcwd())
+    base = next((Path(str(item)).expanduser() for item in named if isinstance(item, str) and item and os.path.isdir(item)), Path.cwd())
+    for token in _PATH_TOKEN.findall(text)[:32]:
+        candidate = Path(token).expanduser()
+        named.insert(len(named) - 1, os.fspath((candidate if candidate.is_absolute() else base / candidate).parent))
+    roots: list[Path] = []
+    for item in named:
+        if not isinstance(item, str) or not item:
+            continue
+        try:
+            root = Path(item).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError):
+            continue
+        if root.is_dir() and root not in roots:
+            roots.append(root)
+        if len(roots) >= MAX_SCAN_ROOTS:
+            break
+    return roots
+
+
+def _recent_deliverables(
+    roots: list[Path], since: float, checked: list[tuple[int, int, int, int]]
+) -> list[tuple[Path, Path, tuple[int, int, int, int]]]:
+    """Bounded breadth-first walk for deliverables modified at or after ``since``."""
+    found: list[tuple[Path, Path, tuple[int, int, int, int]]] = []
+    seen: set[tuple[int, int]] = set()
+    for root in roots:
+        queue: deque[tuple[Path, int]] = deque([(root, 0)])
+        entries = 0
+        while queue and entries < MAX_SCAN_ENTRIES_PER_ROOT:
+            directory, depth = queue.popleft()
+            try:
+                with os.scandir(directory) as iterator:
+                    for entry in iterator:
+                        entries += 1
+                        if entries > MAX_SCAN_ENTRIES_PER_ROOT:
+                            break
+                        name = entry.name
+                        if entry.is_dir(follow_symlinks=False):
+                            if (
+                                depth < MAX_SCAN_DEPTH
+                                and not name.startswith(".")
+                                and name not in _SKIP_SCAN_DIRS
+                                and not _INTERNAL_FILE.search(name)
+                            ):
+                                queue.append((Path(entry.path), depth + 1))
+                            continue
+                        if os.path.splitext(name)[1].lower() not in SCRIPT_DELIVERABLE_SUFFIXES:
+                            continue
+                        info = entry.stat(follow_symlinks=False)
+                        identity = (info.st_dev, info.st_ino)
+                        version = (info.st_dev, info.st_ino, info.st_mtime_ns, info.st_size)
+                        if (
+                            not stat.S_ISREG(info.st_mode)
+                            or info.st_mtime < since
+                            or identity in seen
+                            or version in checked
+                        ):
+                            continue
+                        relative = Path(entry.path).relative_to(root)
+                        if _relative_artifact_path(relative.as_posix(), root) is None:
+                            continue
+                        seen.add(identity)
+                        found.append((root, relative, version))
+                        if len(found) >= MAX_SCAN_FILES:
+                            return found
+            except OSError:
+                continue
+    return found
+
+
+def _script_block_message(hits: list[tuple[str, list[dict]]]) -> str:
+    parts = []
+    for name, blocks in hits:
+        refs = ", ".join(
+            f"{item['rule']}:{item['line']} \"{' '.join(item['match'].split())[:60]}\"" for item in blocks[:5]
+        )
+        extra = f" (+{len(blocks) - 5})" if len(blocks) > 5 else ""
+        parts.append(f"{name} ({refs}{extra})")
+    return (
+        "LIT_HUMANIZER_SCRIPT_DELIVERABLE_BLOCK: this call wrote reader-facing file(s) with block-tier "
+        f"LitHumanizer findings: {'; '.join(parts)}. The file is already on disk and is not ready to present. "
+        "Rewrite those sentences in the build source, then rebuild: state a real limit once as a fact beside "
+        "the number it affects, and say what the document is not for in your chat reply, not in the file."
+    )
+
+
+def transform_tool_result(
+    tool_name: object = None,
+    args: object = None,
+    result: object = None,
+    session_id: object = None,
+    task_id: object = None,
+    duration_ms: object = 0,
+    **_: object,
+) -> str | None:
+    """Check deliverables a terminal/execute_code call just built; rewrite its result on a block hit."""
+    if str(tool_name or "") not in SCRIPT_TOOLS or not isinstance(result, str):
+        return None
+    key = str(session_id or "") or str(task_id or "")
+    payload = args if isinstance(args, dict) else {}
+    try:
+        parsed = json.loads(result)
+    except (TypeError, ValueError):
+        parsed = None
+    elapsed = duration_ms / 1000 if isinstance(duration_ms, (int, float)) and duration_ms > 0 else 0.0
+    since = time.time() - elapsed - MTIME_SLACK_SECONDS
+    output = parsed.get("output") if isinstance(parsed, dict) else result
+    text = "\n".join(
+        str(value)[:MAX_SCRIPT_TEXT_CHARS]
+        for value in (payload.get("command"), payload.get("code"), output)
+        if isinstance(value, str)
+    )
+    roots = _script_scan_roots(payload, parsed, str(task_id or ""), text)
+    hits: list[tuple[str, list[dict]]] = []
+    remaining = MAX_SCRIPT_AGGREGATE_BYTES
+    checked = _SCRIPT_CHECKED.get(key, [])
+    for root, relative, version in _recent_deliverables(roots, since, checked):
+        suffix = relative.suffix.lower()
+        cap = MAX_SCRIPT_OFFICE_BYTES if suffix in OFFICE_SUFFIXES else MAX_FILE_BYTES
+        read = _read_stable_file_result(relative.as_posix(), root, remaining, max_file_bytes=cap)
+        if not isinstance(read, _StableFile):
+            _fail_open(key)
+            continue
+        remaining -= read.byte_count
+        try:
+            content = read.data.decode("utf-8") if suffix == ".md" else _extract_office(read.data, suffix)
+        except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired, ImportError):
+            _fail_open(key)
+            continue
+        findings = _run_detector(_mask_exact_user_quotes(content, key), relative.as_posix())
+        if findings is None:
+            _fail_open(key)
+            continue
+        checked = [*checked, version][-64:]
+        if key:
+            _bounded_set(_SCRIPT_CHECKED, key, checked)
+        blocks = [item for item in findings if item["severity"] == "block"]
+        if blocks:
+            hits.append((relative.as_posix(), blocks))
+    if not hits:
+        return None
+    message = _script_block_message(hits)
+    if isinstance(parsed, dict):
+        previous = parsed.get("error")
+        parsed["error"] = f"{previous}\n{message}" if previous else message
+        return json.dumps(parsed, ensure_ascii=False)
+    return f"{result}\n\n{message}"

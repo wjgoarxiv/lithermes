@@ -6,6 +6,7 @@ import importlib
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -13,7 +14,7 @@ from pathlib import Path
 from unittest import mock
 
 from lit_humanizer_test_support import minimal_office_package
-from plugin_register_test_support import _ASSET_DIR, _load_plugin_package
+from plugin_register_test_support import _ASSET_DIR, _FakeCtx, _load_plugin_package
 
 
 SKILL_DIR = Path(_ASSET_DIR) / "skills" / "lit-humanizer"
@@ -270,6 +271,42 @@ class NegativePledgeGuard(unittest.TestCase):
         self.assertIsNotNone(denied)
         self.assertIn("ko-negative-pledge-repeat", denied["message"])
 
+    def test_widened_pledges_are_refused_at_the_write_hook(self):
+        for text, rule in (
+            ("This table is not a ranking.\n", "en-negative-pledge"),
+            ("이 문서는 제품을 비교하려는 것이 아닙니다.\n", "ko-negative-pledge"),
+        ):
+            with self.subTest(text=text):
+                denied = self._write(text)
+                self.assertIsNotNone(denied, "the widened pledge was written")
+                self.assertEqual(denied.get("action"), "block")
+                self.assertIn(rule, denied["message"])
+                self.assertFalse(Path("report.md").exists())
+
+    def test_bold_label_callout_pledge_is_refused_and_a_plain_quote_is_not(self):
+        denied = self._write("| 공정 | 수율 |\n|---|---|\n| A | 91 |\n\n> **주의:** 이 표는 순위가 아닙니다.\n")
+        self.assertIsNotNone(denied, "the callout pledge was written")
+        self.assertEqual(denied.get("action"), "block")
+        self.assertIn("ko-negative-pledge", denied["message"])
+        self.assertFalse(Path("report.md").exists())
+        self.assertIsNone(self._write("> 이 표는 순위가 아닙니다.\n"), "a plain quote was refused")
+
+    def test_incomparability_facts_and_operating_rules_still_write(self):
+        for text in (
+            "숫자와 문자열은 서로 비교할 수 없습니다.\n",
+            "Do not compare these values directly; convert to SI first.\n",
+        ):
+            with self.subTest(text=text):
+                self.assertIsNone(self._write(text), "a rule or a data fact was refused")
+
+    def test_every_observed_pledge_is_blocked_by_its_rule(self):
+        for pledge in PLEDGE_CASES["pledges_observed"]:
+            with self.subTest(text=pledge["text"]):
+                self.assertTrue(
+                    any(hit["rule"] == pledge["rule"] and hit["severity"] == "block" for hit in self._scan(pledge["text"], "observed.md")),
+                    pledge["text"],
+                )
+
     def test_plain_facts_notices_and_operating_rules_still_write(self):
         clean = (
             "이 장비는 방폭 구역에서 사용하지 않습니다. 냉각수로 쓰지 않음. 한 번에 0.1 이상 바꾸지 않음.\n"
@@ -317,6 +354,157 @@ class NegativePledgeGuard(unittest.TestCase):
         self.assertEqual(by_id["ko-negative-pledge-repeat"]["scope"], "document")
         self.assertEqual(by_id["en-negative-pledge"]["scope"], "sentence")
         self.assertEqual(by_id["ko-status-negation"]["severity"], "warn")
+
+
+class _CallbackCtx(_FakeCtx):
+    """A registration context that keeps each hook callback, as Hermes' plugin manager does."""
+
+    def __init__(self):
+        super().__init__()
+        self.callbacks = {}
+
+    def register_hook(self, name, cb):
+        super().register_hook(name, cb)
+        self.callbacks.setdefault(name, []).append(cb)
+
+
+class ScriptBuiltDeliverableGuard(unittest.TestCase):
+    """A terminal command that builds a deliverable is checked before its result reaches the model."""
+
+    def setUp(self):
+        self.pkg = _load_plugin_package()
+        self.guard = self.pkg.deliverable_hedge_guard
+        self.guard.reset_state()
+        self.ctx = _CallbackCtx()
+        self.pkg.register(self.ctx)
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name).resolve()
+        self.previous_cwd = os.getcwd()
+        os.chdir(self.root)
+
+    def tearDown(self):
+        os.chdir(self.previous_cwd)
+        self.temp.cleanup()
+
+    def _terminal(self, script, *, workdir=None, tool_name="terminal", args=None):
+        """Run a real shell command, then hand Hermes' transform_tool_result kwargs to the plugin."""
+        builder = self.root / "build_deliverable.py"
+        builder.write_text(script, encoding="utf-8")
+        command = f"{sys.executable} -B {builder.name}"
+        started = time.monotonic()
+        completed = subprocess.run(command, shell=True, cwd=workdir or self.root, capture_output=True, text=True, check=False)
+        duration_ms = int((time.monotonic() - started) * 1000)
+        result = json.dumps({"output": completed.stdout.strip(), "exit_code": completed.returncode, "error": None})
+        callbacks = self.ctx.callbacks.get("transform_tool_result", [])
+        if not callbacks:
+            return None, result
+        replaced = callbacks[0](
+            tool_name=tool_name,
+            args=args if args is not None else {"command": command},
+            result=result,
+            task_id="script-task",
+            session_id="script-session",
+            tool_call_id="call-1",
+            turn_id="turn-1",
+            api_request_id="req-1",
+            duration_ms=duration_ms,
+            status="ok" if completed.returncode == 0 else "error",
+            error_type=None,
+            error_message=None,
+        )
+        return replaced, result
+
+    def _docx_script(self, text, name="report.docx"):
+        payload = minimal_office_package(".docx", text).hex()
+        return f"from pathlib import Path\nPath({name!r}).write_bytes(bytes.fromhex({payload!r}))\nprint('saved')\n"
+
+    def test_terminal_built_docx_with_the_user_pledge_returns_feedback_naming_the_rule(self):
+        replaced, original = self._terminal(self._docx_script(f"표 1은 수율을 보인다. {USER_PLEDGE}"))
+        self.assertIsNotNone(replaced, "no feedback: the terminal-built docx was never inspected")
+        self.assertIn("ko-negative-pledge", replaced)
+        self.assertIn("report.docx", replaced)
+        parsed = json.loads(replaced)
+        self.assertEqual(parsed["exit_code"], 0, "the command's real exit status must not be rewritten")
+        self.assertEqual(parsed["output"], json.loads(original)["output"])
+        self.assertIn("LIT_HUMANIZER_SCRIPT_DELIVERABLE_BLOCK", parsed["error"])
+        self.assertIn("rebuild", parsed["error"].lower())
+
+    def test_a_rebuild_that_keeps_the_pledge_is_reported_again_and_a_fixed_rebuild_is_not(self):
+        first, _ = self._terminal(self._docx_script(USER_PLEDGE))
+        self.assertIsNotNone(first)
+        time.sleep(0.01)
+        again, _ = self._terminal(self._docx_script(USER_PLEDGE + " 표 1은 수율을 보인다."))
+        self.assertIsNotNone(again, "a rebuilt file that still holds the pledge was not checked")
+        fixed, _ = self._terminal(self._docx_script("표 1은 수율이 41%이다."))
+        self.assertIsNone(fixed, fixed)
+
+    def test_terminal_built_pptx_and_markdown_pledges_are_reported(self):
+        payload = minimal_office_package(".pptx", USER_PLEDGE).hex()
+        script = (
+            "from pathlib import Path\n"
+            f"Path('deck.pptx').write_bytes(bytes.fromhex({payload!r}))\n"
+            f"Path('notes').mkdir()\nPath('notes/summary.md').write_text({('## 요약' + chr(10) + chr(10) + USER_PLEDGE + chr(10))!r}, encoding='utf-8')\n"
+        )
+        replaced, _ = self._terminal(script)
+        self.assertIsNotNone(replaced)
+        self.assertIn("deck.pptx", replaced)
+        self.assertIn("notes/summary.md", replaced)
+
+    def test_terminal_built_markdown_callout_pledge_is_reported_and_a_plain_quote_is_not(self):
+        callout = "> **주의:** 이 표는 순위가 아닙니다.\n"
+        script = f"from pathlib import Path\nPath('callout.md').write_text({callout!r}, encoding='utf-8')\n"
+        replaced, _ = self._terminal(script)
+        self.assertIsNotNone(replaced, "the callout pledge in a terminal-built file was never inspected")
+        self.assertIn("ko-negative-pledge", replaced)
+        self.assertIn("callout.md", replaced)
+        plain = "> 이 표는 순위가 아닙니다.\n"
+        quiet, _ = self._terminal(f"from pathlib import Path\nPath('quote.md').write_text({plain!r}, encoding='utf-8')\n")
+        self.assertIsNone(quiet, quiet)
+
+    def test_clean_docx_and_untouched_old_pledges_produce_no_feedback(self):
+        old = self.root / "old-report.docx"
+        old.write_bytes(minimal_office_package(".docx", USER_PLEDGE))
+        stale = time.time() - 3600
+        os.utime(old, (stale, stale))
+        replaced, _ = self._terminal(self._docx_script("표 1은 수율이 41%이다. 샘플은 한 공정 조건만 포함한다."))
+        self.assertIsNone(replaced, replaced)
+
+    def test_internal_paths_and_non_script_tools_are_ignored(self):
+        script = self._docx_script(USER_PLEDGE, name="plans/report.docx")
+        (self.root / "plans").mkdir()
+        replaced, _ = self._terminal(script)
+        self.assertIsNone(replaced)
+        replaced, _ = self._terminal(self._docx_script(USER_PLEDGE), tool_name="read_file", args={"path": "x"})
+        self.assertIsNone(replaced)
+
+    def test_execute_code_and_an_absolute_output_outside_the_cwd_are_covered(self):
+        elsewhere = self.root / "elsewhere" / "deep" / "a" / "b" / "c" / "d"
+        elsewhere.mkdir(parents=True)
+        target = elsewhere / "brief.docx"
+        code = self._docx_script(USER_PLEDGE, name=str(target))
+        replaced, _ = self._terminal(code, tool_name="execute_code", args={"code": code})
+        self.assertIsNotNone(replaced, "a deliverable saved at a path named in the code was missed")
+        self.assertIn("brief.docx", replaced)
+
+    def test_large_workspace_scan_stays_bounded(self):
+        for index in range(60):
+            folder = self.root / "src" / f"pkg{index}"
+            folder.mkdir(parents=True)
+            for leaf in range(150):
+                (folder / f"module{leaf}.txt").write_bytes(b"")
+        (self.root / "node_modules" / "dep").mkdir(parents=True)
+        started = time.perf_counter()
+        replaced, _ = self._terminal(self._docx_script(USER_PLEDGE))
+        elapsed = time.perf_counter() - started
+        self.assertIsNotNone(replaced, "a top-level deliverable was missed in a 9,000-file workspace")
+        self.assertIn("ko-negative-pledge", replaced)
+        self.assertLess(elapsed, 3.0, f"hook plus build took {elapsed:.2f}s")
+        clean_started = time.perf_counter()
+        callback = self.ctx.callbacks["transform_tool_result"][0]
+        none = callback(tool_name="terminal", args={"command": "ls"}, result=json.dumps({"output": "", "exit_code": 0, "error": None}),
+                        session_id="script-session", task_id="script-task", duration_ms=5)
+        self.assertIsNone(none)
+        self.assertLess(time.perf_counter() - clean_started, 0.5, "a no-deliverable command paid for a slow scan")
 
 
 class StableArtifactReaderSecurity(unittest.TestCase):

@@ -43,6 +43,7 @@ HOOKS = (
     "pre_tool_call",
     "pre_command",
     "post_tool_call",
+    "transform_tool_result",
     "post_api_request",
     "subagent_stop",
     "transform_llm_output",

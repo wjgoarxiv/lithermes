@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-15T09:46:03.900Z",
+  "syncedAt": "2026-10-17T02:51:37.441Z",
   "source": "bundled-payload",
-  "sourceHash": "164f684b1b783534bf9b71f657f9e9d86b321e018c4a1ac02e7abe3cf604edd6",
+  "sourceHash": "084d0530ba2fab5686b151025b8d3d0411089ea52e13a7916a45305f36cc1b96",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "03256264acbaba328e51b82a527fe511db7f4ff907d0a74762bdaf0baadc8e20"
+      "sha256": "2749b24d24a2af75fc54f48d59916549fb876ea823a22a2881817cdb6542cbcf"
     },
     {
       "path": "__init__.py",
-      "sha256": "76cf72655600b82544e9047fab1f5f4030927803c0cfbc08fca311204f37d32c"
+      "sha256": "4793a2c3b1384528d59c725d7f33a6fd81995c6120906311888a5f17b5eec941"
     },
     {
       "path": "auto_handoff.py",
@@ -85,11 +85,11 @@
     },
     {
       "path": "deliverable_hedge_guard.py",
-      "sha256": "804cf1253064e94ac19db45df03a5eb2ed68ef968fe1658c720d56159bf29048"
+      "sha256": "084eb4381d8be3055eada034bf0c3c31339b9c766cbf3b19fd85042e2e254039"
     },
     {
       "path": "diagnostics.py",
-      "sha256": "88d7b76438c82755fb9456882994ab4efd70c889705c04095e5a12d1759425fb"
+      "sha256": "51200cd2a2d9782c16b09aaca32773ebbd46b501739094af185c8ea87009f696"
     },
     {
       "path": "handoff.py",
@@ -97,7 +97,7 @@
     },
     {
       "path": "humanizer_detector.py",
-      "sha256": "bca68ebaad84ab2fec5a41a91f293abe9e194011669ef03386611c8412561e97"
+      "sha256": "48e4f3a02326521769ac193b858eecbb90773cb765aa8d5794ffaa3c1dee2d62"
     },
     {
       "path": "humanizer_ko_metrics.py",
@@ -181,7 +181,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "92d263e3abf96c4533db6814cfb6a104f3a8822e3de205106eaa4edff1c76338"
+      "sha256": "a3408dde1b7a094c82f1061b2b429f04fc070fc48618480ddabed1b1ee9b2a4b"
     },
     {
       "path": "provider_metrics.py",
@@ -3277,7 +3277,7 @@
     },
     {
       "path": "skills/lit-humanizer/SKILL.md",
-      "sha256": "1df63514da5f9295578c3fc7ff475ae911da2310ed43ca3e794759dc4414b66a"
+      "sha256": "47c562a344c89d16be5271f86874af556991dd5c9a26f45e0800eda5a08f5381"
     },
     {
       "path": "skills/lit-humanizer/assets/report-skeleton.md",
@@ -3513,11 +3513,11 @@
     },
     {
       "path": "skills/lit-humanizer/references/taxonomy.md",
-      "sha256": "d0958c702eb531f82612ff48d16134afbfd6c65b40bc80ebc4bce778a02b4238"
+      "sha256": "7bdda99ad8f2e1358b70f96e017d5a70b879251b4681f8752babaf7598030239"
     },
     {
       "path": "skills/lit-humanizer/rules.json",
-      "sha256": "806e8caaeea25b34fa7a2caf8957a4af6fe95e557d5db71fa6d6e90fcea7091c"
+      "sha256": "61f494bbbd9dee707b96b50308bf9c045d6b268218a442b3022b1c29194bb95c"
     },
     {
       "path": "skills/lit-humanizer/scripts/detect.py",

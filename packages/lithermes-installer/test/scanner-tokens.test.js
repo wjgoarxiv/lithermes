@@ -1149,6 +1149,19 @@ test("scanner feeds descriptor-captured protected buffers through its byte scann
   assert.doesNotMatch(source, /payloadProtection\.paths\.has\([^)]*\)\s*\)\s*continue/);
 });
 
+// Repack at npm's gzip level 9. The default level 6 of `tar -czf` adds about 1% to an
+// archive that npm already packs close to the 12 MiB cap, so the size check would fire
+// before the content check this test exercises.
+function repackAtNpmCompression(archive, extracted) {
+  const rawTar = `${archive}.tar`;
+  const result = spawnSync("tar", ["-cf", rawTar, "-C", extracted, "package"], { encoding: "utf8" });
+  if (result.status === 0) {
+    fs.writeFileSync(archive, gzipSync(fs.readFileSync(rawTar), { level: 9 }));
+    fs.rmSync(rawTar, { force: true });
+  }
+  return result;
+}
+
 test("actual npm tar validation compares produced canonical bytes", (t) => {
   assert.equal(typeof scanPackArchive, "function");
   const destination = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-canonical-tar."));
@@ -1169,7 +1182,7 @@ test("actual npm tar validation compares produced canonical bytes", (t) => {
   const originalReadme = fs.readFileSync(packedReadme);
   fs.appendFileSync(packedReadme, `\n${VENDOR_TOKENS.otherHarness}\n`);
   const ordinaryTamper = path.join(destination, "ordinary-tampered.tgz");
-  const repackOrdinary = spawnSync("tar", ["-czf", ordinaryTamper, "-C", extracted, "package"], { encoding: "utf8" });
+  const repackOrdinary = repackAtNpmCompression(ordinaryTamper, extracted);
   assert.equal(repackOrdinary.status, 0, repackOrdinary.stderr);
   const ordinaryHits = scanPackArchive(ordinaryTamper, path.resolve(packageRoot, "..", ".."));
   assert.ok(ordinaryHits.some((hit) => hit.where.startsWith("pack-content:")), JSON.stringify(ordinaryHits));
@@ -1189,7 +1202,7 @@ test("actual npm tar validation compares produced canonical bytes", (t) => {
   );
   fs.appendFileSync(packedCanonical, "\ntampered produced bytes\n");
   const tampered = path.join(destination, "tampered.tgz");
-  const repack = spawnSync("tar", ["-czf", tampered, "-C", extracted, "package"], { encoding: "utf8" });
+  const repack = repackAtNpmCompression(tampered, extracted);
   assert.equal(repack.status, 0, repack.stderr);
   const hits = scanPackArchive(tampered, path.resolve(packageRoot, "..", ".."));
   assert.ok(hits.some((hit) => hit.where === "canonical-pack-byte-mismatch"), JSON.stringify(hits));

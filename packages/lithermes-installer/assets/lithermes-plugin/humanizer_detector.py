@@ -125,6 +125,17 @@ def _inline_code_as_spaces(line: str) -> str:
     return re.sub(r"(`+)[^`]*?\1", lambda match: " " * len(match.group(0)), line)
 
 
+_QUOTE_PREFIX = re.compile(r"^\s{0,3}>\s?")
+_BOLD_LABEL_QUOTE = re.compile(r"^\s{0,3}>\s?(?:\*\*|__)[^*_\n]{1,24}(?:\*\*|__)")
+
+
+def _callout_text(line: str) -> str:
+    """A quote opening with a bold label is the author's own callout; blank the marker and read it."""
+    if not _BOLD_LABEL_QUOTE.match(line):
+        return ""
+    return _inline_code_as_spaces(_QUOTE_PREFIX.sub(lambda prefix: " " * len(prefix.group(0)), line, count=1))
+
+
 def _source_rows(text: str) -> list[dict]:
     fence: tuple[str, int] | None = None
     caption_pending = 0
@@ -148,7 +159,10 @@ def _source_rows(text: str) -> list[dict]:
         if re.match(r"^\s{0,3}>", line):
             caption_pending = 0
             figure_active = False
-            rows.append({"line": line, "number": number, "candidate": "", "skipped": True, "caption": False, "caption_attribution": False})
+            rows.append({
+                "line": line, "number": number, "candidate": "", "callout": _callout_text(line),
+                "skipped": True, "caption": False, "caption_attribution": False,
+            })
             continue
         candidate = _inline_code_as_spaces(line)
         caption = _is_caption(line)
@@ -228,11 +242,13 @@ def _split_sentences(span: dict) -> list[dict]:
 
 def _rule_segments(rows: list[dict], rule: dict) -> list[dict]:
     skip_captions = "table_figure_caption" in rule["context"]
+    read_callouts = "blockquote_callout" in rule["context"]
     if rule["scope"] == "line":
         return [
-            {"text": row["candidate"], "line": row["number"]}
+            {"text": row["callout"] if row.get("callout") and read_callouts else row["candidate"], "line": row["number"]}
             for row in rows
-            if not row["skipped"] and not (skip_captions and (row["caption"] or row["caption_attribution"]))
+            if (read_callouts and row.get("callout"))
+            or (not row["skipped"] and not (skip_captions and (row["caption"] or row["caption_attribution"])))
         ]
     segments: list[dict] = []
     group: list[dict] = []
@@ -246,6 +262,10 @@ def _rule_segments(rows: list[dict], rule: dict) -> list[dict]:
 
     for row in rows:
         exempt = skip_captions and (row["caption"] or row["caption_attribution"])
+        if read_callouts and row.get("callout"):
+            flush()
+            segments.append({"text": row["callout"], "line": row["number"]})
+            continue
         if row["skipped"] or exempt or (rule["scope"] == "sentence" and not row["candidate"].strip()):
             flush()
         else:
@@ -269,9 +289,9 @@ def scan_text(text: str, rules: Iterable[dict] | None = None, file: str = "<stdi
     selected = list(rules) if rules is not None else load_rules()
     rows = _source_rows(str(text or ""))
     findings = []
-    cache: dict[tuple[str, bool], list[dict]] = {}
+    cache: dict[tuple[str, bool, bool], list[dict]] = {}
     for rule in selected:
-        key = (rule["scope"], "table_figure_caption" in rule["context"])
+        key = (rule["scope"], "table_figure_caption" in rule["context"], "blockquote_callout" in rule["context"])
         if key not in cache:
             # Scope is the only rule-specific segmentation property. A shallow
             # rule copy shares its context only when caption handling differs.

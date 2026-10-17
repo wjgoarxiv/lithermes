@@ -174,6 +174,18 @@ CLI/plugin name, not the npm package name.
   Native `/goal` is user-managed and unobserved; users may manage it themselves.
   LitHermes has no cache-coherent host controller/post-judge API and performs no automatic update, clear, or resume. Durable `goal_*` state is authoritative for
   criteria, evidence, and completion.
+- The `transform_tool_result` hook is the one post-execution hook whose return
+  value Hermes keeps. After a `terminal` or `execute_code` call it looks for DOCX,
+  PPTX and Markdown files modified while the call ran, in a bounded walk of the
+  call's working directories and the folders of paths named in the command, code
+  or output (depth 4, 4,000 entries per folder, 6 files, 16 MiB per Office file;
+  hidden, dependency and internal `plans/` / `evidence/` / `.hermes/` paths are
+  skipped). Office text goes through the bundled extractor and the LitHumanizer
+  detector. A block-tier finding adds `LIT_HUMANIZER_SCRIPT_DELIVERABLE_BLOCK`
+  with the file, rule ids and matched words to that result's `error` field, so the
+  model reads it before its next step. It instructs a rebuild and cannot refuse
+  the write: the file already exists, and the command's exit code is left as it
+  ran. Each file version is judged once per session.
 - The `post_api_request` observer consumes Hermes' normalized numeric `usage`
   receipt only (`input_tokens`, `output_tokens`, `prompt_tokens`,
   `total_tokens`, `reasoning_tokens`, `cache_read_tokens`, and
