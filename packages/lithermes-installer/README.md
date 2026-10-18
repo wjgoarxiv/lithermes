@@ -69,7 +69,6 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 - [README on GitHub](https://github.com/wjgoarxiv/lithermes#readme) and [a tour with screenshots](https://github.com/wjgoarxiv/lithermes/blob/main/docs/tour.md)
 - [Operating guide](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md): commands, natural routing, models, skins and safety
-- [Optional Jev skill hint](https://github.com/wjgoarxiv/lithermes/blob/main/docs/jev.md): off by default; sends eligible prompts to a third-party service when on
 - [Changelog](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [Privacy](https://github.com/wjgoarxiv/lithermes/blob/main/docs/privacy.md) · [Contributing](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [Security](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [Support](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
 
 MIT License. Part of [LitFamily](https://github.com/wjgoarxiv/litfamily).

@@ -605,13 +605,24 @@ class DesignSkillChatRoute(unittest.TestCase):
 class ProgrammingAndScopeDoctrine(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.core = _load_plugin_package().core
+        cls.pkg = _load_plugin_package()
+        cls.core = cls.pkg.core
 
-    def test_lit_code_body_is_inlined_alongside_litwork(self):
+    def test_litwork_names_lit_code_for_every_code_file_type(self):
+        # The 42 KB lit-code body never reached the model on a lit route (cut on
+        # turn 1, spilled later). One visible line now names the skill and the
+        # file types its contract claims; the post-edit route still fires after a
+        # code edit.
         context = self.core.LIT_CONTEXT
-        self.assertIn('<lithermes-skill-body name="litwork">', context)
-        self.assertIn('<lithermes-skill-body name="lit-code">', context)
-        self.assertIn(_skill_body("lit-code"), context)
+        self.assertIn('skill_view("lithermes:lit-code")', context)
+        self.assertIn('skill_view("lithermes:litwork")', context)
+        self.assertNotIn("<lithermes-skill-body", context)
+        for extension in (".py", ".pyi", ".rs", ".ts", ".tsx", ".mts", ".cts", ".go"):
+            self.assertIn(extension, context)
+            self.assertIn(extension, _skill_body("lit-code").split("---")[1])
+        registered = {name for name, _ in self.pkg.PORTED_SKILLS}
+        self.assertIn("lit-code", registered)
+        self.assertIn("litwork", registered)
 
     def test_lit_plan_makes_full_scope_the_default(self):
         text = (Path(_ASSET_DIR) / "skills" / "lit-plan" / "SKILL.md").read_text(encoding="utf-8")

@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILL = Path(os.environ.get("LITHERMES_TEST_SKILLS", ROOT / "assets/lithermes-plugin/skills")) / "lit-pptx"
 OFFICE = SKILL / "bin/office.mjs"
 sys.path.insert(0, str(SKILL / "scripts"))
-ENV = {k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"}
+ENV = dict(os.environ)
 NOTICE = "notice: 예시 데이터 — 실제 수치로 바꿔 주세요"
 
 

@@ -294,7 +294,7 @@ layout: closing-ask
         source.write_text(self.SOURCE, encoding="utf-8")
         out = Path(tmp) / f"deck{len(flags)}{abs(hash(flags))}.pptx"
         run = subprocess.run(["node", str(OFFICE), "pptx", str(source), *flags, "--pptx", str(out)],
-                             capture_output=True, text=True, env={k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"})
+                             capture_output=True, text=True)
         self.assertEqual(run.returncode, 0, run.stderr[-2000:])
         return out
 
@@ -363,7 +363,7 @@ layout: closing-contact-split
             path.write_text(source, encoding="utf-8")
             out = Path(tmp) / "closing.pptx"
             run = subprocess.run(["node", str(OFFICE), "pptx", str(path), "--pptx", str(out)],
-                                 capture_output=True, text=True, env={k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"})
+                                 capture_output=True, text=True)
             self.assertEqual(run.returncode, 0, run.stderr[-2000:])
             slide = Presentation(str(out)).slides[1]
         boxes = {}
@@ -428,7 +428,7 @@ layout: content
             path.write_text(source, encoding="utf-8")
             out = Path(tmp) / "charts.pptx"
             run = subprocess.run(["node", str(OFFICE), "pptx", str(path), "--pptx", str(out)],
-                                 capture_output=True, text=True, env={k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"})
+                                 capture_output=True, text=True)
             self.assertEqual(run.returncode, 0, run.stderr[-2000:])
             with zipfile.ZipFile(out) as package:
                 charts = [package.read(n).decode() for n in package.namelist() if re.fullmatch(r"ppt/charts/chart\d+\.xml", n)]
@@ -448,7 +448,7 @@ layout: content
             path.write_text(source, encoding="utf-8")
             out = Path(tmp) / "charts.pptx"
             run = subprocess.run(["node", str(OFFICE), "pptx", str(path), "--pptx", str(out)],
-                                 capture_output=True, text=True, env={k: v for k, v in os.environ.items() if k != "TYPESAFE_API_KEY"})
+                                 capture_output=True, text=True)
             self.assertEqual(run.returncode, 0, run.stderr[-2000:])
             with zipfile.ZipFile(out) as package:
                 return [package.read(n).decode() for n in sorted(package.namelist()) if re.fullmatch(r"ppt/charts/chart\d+\.xml", n)]

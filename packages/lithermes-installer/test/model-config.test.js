@@ -195,7 +195,7 @@ test("conflicting route effort fields stop before installation", () => {
   // Given: the lead route paired with a Luna child at an effort the host does not list
   const conflicting = verifiedConfig("gpt-5.6-sol")
     .replace("reasoning_effort: medium", "reasoning_effort: xhigh")
-    .replace("delegation:\n  reasoning_effort: xhigh", "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: minimal");
+    .replace("delegation:\n  reasoning_effort: xhigh", "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: none");
   // When: the existing effective route is inspected
   const plan = planModelConfig(conflicting, VERIFIED);
   // Then: no preservation path can hide the conflict
@@ -223,7 +223,7 @@ test("a blocked route preserves config bytes and permissions", () => {
   const file = path.join(home, "config.yaml");
   const conflicting = verifiedConfig("gpt-5.6-sol")
     .replace("reasoning_effort: medium", "reasoning_effort: xhigh")
-    .replace("delegation:\n  reasoning_effort: xhigh", "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: minimal");
+    .replace("delegation:\n  reasoning_effort: xhigh", "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: none");
   fs.writeFileSync(file, conflicting, { mode: 0o640 });
   const beforeMode = fs.statSync(file).mode & 0o777;
   // When: the blocked plan reaches the write boundary
@@ -253,7 +253,7 @@ test("classifier distinguishes managed, current, other GPT-5.6, and false positi
     return classifyModelConfig(model === "gpt-5.6-sol"
       ? text.replace("reasoning_effort: medium", "reasoning_effort: xhigh")
       : model === "gpt-5.6-terra" || model === "gpt-5.6-luna"
-        ? text.replace("reasoning_effort: medium", "reasoning_effort: minimal")
+        ? text.replace("reasoning_effort: medium", "reasoning_effort: none")
         : text, VERIFIED);
   });
   // Then: only exact package-managed ids receive managed classes and bytes stay identifiable
@@ -264,13 +264,13 @@ test("classifier distinguishes managed, current, other GPT-5.6, and false positi
 test("existing Luna parent and child routes at an unlisted effort produce a typed safety stop", () => {
   // Given: existing OpenAI routes whose Luna effort the host does not list
   const inputs = [
-    verifiedConfig("gpt-5.6-luna").replace("reasoning_effort: medium", "reasoning_effort: minimal"),
+    verifiedConfig("gpt-5.6-luna").replace("reasoning_effort: medium", "reasoning_effort: none"),
     verifiedConfig("gpt-5.6-sol")
       .replace("reasoning_effort: medium", "reasoning_effort: xhigh")
       .replace("delegation:\n", "delegation:\n  model: gpt-5.6-luna\n")
       .replace(
         "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: xhigh",
-        "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: minimal",
+        "delegation:\n  model: gpt-5.6-luna\n  reasoning_effort: none",
       ),
   ];
   // When: ordinary non-reconfigure plans inspect the effective routes
@@ -289,7 +289,7 @@ test("existing Luna parent and child routes at an unlisted effort produce a type
 test("existing Luna routes at an unlisted effort are rejected before preservation", () => {
   // Given: a managed-provider Luna route using an effort the host does not list
   const before = verifiedConfig("gpt-5.6-luna")
-    .replace("reasoning_effort: medium", "reasoning_effort: minimal");
+    .replace("reasoning_effort: medium", "reasoning_effort: none");
   // When: ordinary install planning inspects the existing route
   const plan = planModelConfig(before, VERIFIED);
   // Then: the unlisted route cannot be preserved as safe
@@ -302,7 +302,7 @@ test("existing Luna routes at an unlisted effort are rejected before preservatio
 test("custom child transport does not hide a managed Luna parent stop", () => {
   // Given: a managed OpenAI Luna parent at an unlisted effort with a custom child transport
   const before = verifiedConfig("gpt-5.6-luna")
-    .replace("reasoning_effort: medium", "reasoning_effort: minimal")
+    .replace("reasoning_effort: medium", "reasoning_effort: none")
     .replace("delegation:\n", "delegation:\n  base_url: https://example.invalid/v1\n");
   // When: direct installer planning inspects the existing route
   const plan = planModelConfig(before, VERIFIED);
@@ -330,10 +330,10 @@ test("inherited global child routes use the parent model for safety checks", () 
   const inputs = [
     verifiedConfig("gpt-5.6-terra")
       .replace("reasoning_effort: medium", "reasoning_effort: max")
-      .replace("reasoning_effort: xhigh", "reasoning_effort: minimal"),
+      .replace("reasoning_effort: xhigh", "reasoning_effort: none"),
     verifiedConfig("gpt-5.6-luna")
       .replace("reasoning_effort: medium", "reasoning_effort: max")
-      .replace("reasoning_effort: xhigh", "reasoning_effort: minimal"),
+      .replace("reasoning_effort: xhigh", "reasoning_effort: none"),
   ];
   // When: the installer inspects the effective global child routes
   const plans = inputs.map((text) => planModelConfig(text, VERIFIED));
@@ -495,7 +495,7 @@ test("real api key still blocks and reports only its key name", () => {
 test("credential-bearing unsafe route still returns a redacted typed stop", () => {
   // Given: a known-schema Luna route in a config that also contains a credential
   const secret = "unsafe-route-secret-must-not-escape";
-  const before = `${verifiedConfig("gpt-5.6-luna").replace("reasoning_effort: medium", "reasoning_effort: minimal")}providers:\n  openai:\n    api_key: ${secret}\n`;
+  const before = `${verifiedConfig("gpt-5.6-luna").replace("reasoning_effort: medium", "reasoning_effort: none")}providers:\n  openai:\n    api_key: ${secret}\n`;
   // When: ordinary planning inspects the effective route
   const plan = planModelConfig(before, VERIFIED);
   // Then: model safety wins, while the returned receipt retains no secret-bearing text

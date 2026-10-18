@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-17T05:27:18.436Z",
+  "syncedAt": "2026-10-18T05:38:18.092Z",
   "source": "bundled-payload",
-  "sourceHash": "8c064731aa1b50d96ed0bd56d63fdf9f6035e990123543583024446fd0627c08",
+  "sourceHash": "067d564a30645d7b4fd35f1a8ac2f2dad9b63c50bb597c978c8b9590248b8d33",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "2749b24d24a2af75fc54f48d59916549fb876ea823a22a2881817cdb6542cbcf"
+      "sha256": "882eb72644fe3bab11a110196dd6692d74ee51525f75e64a7cfa04e3c658de60"
     },
     {
       "path": "__init__.py",
-      "sha256": "4793a2c3b1384528d59c725d7f33a6fd81995c6120906311888a5f17b5eec941"
+      "sha256": "057f8d630323ac427a48749c05cbd23076810fb66fa78821c6ab16076574127c"
     },
     {
       "path": "auto_handoff.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "auto_update.py",
-      "sha256": "ff05a5c11ecdfb397e57c49b71aff24d6e3455e5be298c4c9c2de301dcc64333"
+      "sha256": "ba2beba07210ccd934ddc5902a5054a8fbe0f5bb9dcd9e9019196551bf4ea92b"
     },
     {
       "path": "bounded_work.py",
@@ -33,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "b431f7341d6e82badd752fe1ac56fd39d309f06159f13cbbfc5124728d5fa8f5"
+      "sha256": "44ea3860657ebe8dc335ccefb613ad21700b725ba0f4cb60a1cf81da18f61ff5"
     },
     {
       "path": "core_commands.py",
@@ -41,11 +41,11 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "5c31f1c73cd4c3757883f5fc9945ccac26856a98cc1f989853db1f29441711fc"
+      "sha256": "4923e1e9f72e52c6c83e19adaab835b6bccd1de6a3943f3275483c5b42eea7d8"
     },
     {
       "path": "core_contract.py",
-      "sha256": "f4ad205e6da5788520ed46d3aacf805bda4a95d930fad2a6b0633a749e777732"
+      "sha256": "532d73146aaff3e5e2553195b0d08a941bd1c90b4ec29539dd00f5904075cb02"
     },
     {
       "path": "core_plans.py",
@@ -73,7 +73,7 @@
     },
     {
       "path": "core_runs.py",
-      "sha256": "24e484ceebad1726834535949e89667f4dee1ec78bc0a977d03ec438cc9e0037"
+      "sha256": "066d605fef75c8f2959f7ab7586f144bbd5e43916075ccba6a9608e5ece7d986"
     },
     {
       "path": "core_runtime.py",
@@ -89,7 +89,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "51200cd2a2d9782c16b09aaca32773ebbd46b501739094af185c8ea87009f696"
+      "sha256": "1fd173995dd1abc1d58cc719ecd351f91bd1c65c9056fdffa064fda684f18318"
     },
     {
       "path": "handoff.py",
@@ -106,10 +106,6 @@
     {
       "path": "humanizer_office.py",
       "sha256": "97ea96c5eb688e298d57ba7991bbd4bd8d92f969a2ad608add877aefa5de7128"
-    },
-    {
-      "path": "jev_hint.py",
-      "sha256": "77238cf88d875f3c1945ad26bf9699c81933711ff675dc19df48215d58884c33"
     },
     {
       "path": "knowledge.py",

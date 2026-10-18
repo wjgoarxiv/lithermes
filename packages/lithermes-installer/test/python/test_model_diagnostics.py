@@ -86,6 +86,14 @@ class ModelDiagnostics(unittest.TestCase):
                 self.assertIn(f"lead route: configured ({parent_model}, effort {parent_effort})", report)
                 self.assertIn(f"ordinary worker route: configured ({child_model}, effort {child_effort}", report)
 
+    def test_status_accepts_minimal_effort_that_hermes_sends_as_low(self) -> None:
+        # Given: `minimal` saved from Hermes's own effort menu on the lead and the helper
+        report = self._status_for_routes("gpt-6-astra", "minimal", "gpt-6-luna", "minimal")
+        # Then: the route is not reported unsafe and both roles stay recognized
+        self.assertNotIn("effort is unsupported", report)
+        self.assertIn("lead route: configured (gpt-6-astra, effort minimal)", report)
+        self.assertIn("ordinary worker route: configured (gpt-6-luna, effort minimal", report)
+
     def test_status_accepts_every_effort_the_live_catalog_lists_for_legacy_56_models(self) -> None:
         # Given: the efforts the live model catalog lists for each GPT-5.6 model (checked 2026-10-12)
         lead_efforts = ("low", "medium", "high", "xhigh", "max", "ultra")
@@ -126,9 +134,9 @@ class ModelDiagnostics(unittest.TestCase):
             self.assertIn(f"lead route: configured (gpt-5.6-terra, effort {effort})", report)
         # When: a legacy model is configured at an effort the host does not list
         for parent_model, parent_effort, child_model, child_effort in (
-            ("gpt-5.6-sol", "minimal", "gpt-5.6-luna", "max"),
+            ("gpt-5.6-sol", "none", "gpt-5.6-luna", "max"),
             ("gpt-5.6-terra", "none", "gpt-6-luna", "max"),
-            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "minimal"),
+            ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "none"),
             ("gpt-6-astra", "xhigh", "gpt-5.6-luna", "ultra"),
         ):
             with self.subTest(parent=(parent_model, parent_effort), child=(child_model, child_effort)):

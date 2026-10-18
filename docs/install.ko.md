@@ -59,6 +59,10 @@ LitHermes는 스스로 업데이트하는데, 조심스럽게 합니다. 실제�
 
 실행할 때마다 `<Hermes 홈>/lithermes/`에 기록이 두 개 남습니다. `auto-update-journal.json`은 진행 단계를, `auto-update-receipt.json`은 성공 여부와 목표 버전, 복원 여부를 담습니다. 복원마저 실패하면 LitHermes가 명령을 멈추고 Hermes 홈이 알 수 없는 상태라고 알려 줍니다. 백업은 지우지 말고, 계속하기 전에 `lithermes doctor --offline --hermes-home PATH`를 실행하세요.
 
+Hermes 안에서 첫 메시지를 보낼 때마다 `auto-update-attempt.json`도 남습니다. 언제 확인했는지, 무엇을 찾았는지, 어디서 멈췄는지가 들어 있습니다. 거기서 설치가 실패하면(npm이 패키지를 받지 못했거나, 90초를 넘겼거나, 깔끔하게 끝나지 않은 경우) 이후 세션은 같은 릴리스를 24시간 동안 건너뜁니다. 매번 첫 응답이 다시 기다리지 않게 하려는 것입니다. 더 새 릴리스가 나오면 바로 다시 시도하고, 직접 설치는 언제든 할 수 있습니다.
+
+**새 버전이 실제로 돌고 있을까요?** `lithermes doctor`의 `update:` 줄이 답합니다. 어떤 버전이 언제 설치됐는지, 자동 업데이트로 들어왔는지를 알려 주고, Hermes 안에서 한 마지막 확인 결과도 보여 줍니다. 실패했다면 해결 방법을 하나 덧붙입니다. `<Hermes 홈>/gateway.pid`에 적힌 gateway가 설치보다 먼저 시작됐다면 그렇다고 말하고 `hermes gateway restart`를 안내합니다. 이미 실행 중인 Hermes CLI, TUI, gateway가 어느 버전을 불러왔는지는 doctor가 알 수 없습니다. 설치 시각보다 먼저 시작한 것은 다시 시작할 때까지 이전 플러그인을 씁니다.
+
 **업데이트가 일어나지 않는 경우.** 업데이트는 사람이 터미널 앞에 있을 때만 합니다. 입력, 출력, 오류 출력이 모두 대화형 터미널이어야 하므로 출력을 파이프로 넘기거나 `CI` 변수가 설정된 실행에서는 건너뜁니다. `--offline`, `--json`, `--dry-run`을 붙인 명령과 `bunx`로 실행한 명령도 마찬가지입니다. Hermes 안에서는 기본 터미널 CLI(`hermes` 또는 `hermes chat`)의 첫 메시지에서만, 세션마다 최대 한 번, 최상위 세션에서만 시도하고 위임받은 보조 세션에서는 시도하지 않습니다. 전체 화면 `hermes --tui`와 Telegram, Discord 같은 gateway는 터미널이 아니라 파이프로 Hermes와 통신하므로 업데이트하지 않습니다. 이때는 터미널에서 `lithermes install`, `check`, `doctor`를 실행하세요. 대상은 npm 설치 프로그램이 넣어 준 LitHermes뿐입니다. Hermes 카탈로그로 들어왔거나 직접 복사해 넣은 사본은 사용자가 관리합니다. 예전 설치 프로그램으로 설치했다면 설치 프로그램을 한 번 다시 실행한 뒤부터 대상이 됩니다.
 
 **업데이트 안내.** 이와는 따로, LitHermes는 설치하지 않고 새 릴리스 소식만 알려 줄 수도 있습니다. `install`, `check`, `doctor`를 실행한 뒤 백그라운드에서 24시간에 한 번까지만 확인하고, 결과를 `update-check.json`에 저장합니다. 다음에 실행할 때 이 파일을 읽어 더 새로운 릴리스가 적혀 있으면 `npx --yes --package @litfamily/lithermes@<version> -- lithermes install --yes --no-hud` 같은 명령을 안내합니다. 이 명령은 직접 실행하는 것이라서, 자동 업데이트를 꺼 두었을 때 새 릴리스 소식을 듣는 방법이 됩니다. `--offline`, `--json`, `--dry-run`을 붙였거나 CI에서 돌거나 출력을 파이프로 넘길 때는 이 확인도 하지 않습니다.

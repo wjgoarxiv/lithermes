@@ -6,7 +6,7 @@ Pictures of LitHermes at work, the short film, the Ignition skin for the Hermes 
 
 ## What you will see on your first run
 
-Here is what LitHermes puts on your screen, from the install to your first task. The text in the pictures is what the product prints. Each caption says whether the picture was captured from a real command or built from the exact strings the plugin produces. The Jev pictures live in [their own section](./jev.md).
+Here is what LitHermes puts on your screen, from the install to your first task. The text in the pictures is what the product prints. Each caption says whether the picture was captured from a real command or built from the exact strings the plugin produces.
 
 **The install.** The installer copies the plugin into your Hermes home, writes the default model routes for a fresh home and saves a backup of your configuration first, so you can see where the backup file sits. It ends with the reminder to restart any running gateway, and one line about whether the film tools were fetched.
 

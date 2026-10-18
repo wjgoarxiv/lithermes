@@ -22,11 +22,6 @@ except (ImportError, ModuleNotFoundError):
     import provider_metrics as _provider_metrics  # type: ignore
 
 try:
-    from . import jev_hint as _jev_hint
-except (ImportError, ModuleNotFoundError):
-    import jev_hint as _jev_hint  # type: ignore
-
-try:
     from . import auto_handoff as _auto_handoff
 except (ImportError, ModuleNotFoundError):
     import auto_handoff as _auto_handoff  # type: ignore
@@ -190,6 +185,22 @@ def _host_config_path() -> Path:
     return home / "config.yaml"
 
 
+def _retired_hint_data_line() -> str | None:
+    # The Jev skill hint is gone. Files it wrote under Hermes home are left for the
+    # user to delete; doctor only says where they are.
+    state = _host_config_path().parent / "lithermes"
+    try:
+        found = any(
+            entry.name == "jev-trace.jsonl" or entry.name.startswith("jev-last-")
+            for entry in state.iterdir()
+        )
+    except OSError:
+        return None
+    if not found:
+        return None
+    return f"old Jev data can be deleted at {state}/jev-*"
+
+
 def _is_secret_looking_scalar(value: object) -> bool:
     if not isinstance(value, str):
         return False
@@ -251,8 +262,12 @@ def _managed_astra_sampling_issue(
     return None
 
 
+# Hermes offers `minimal` in its effort menu and sends it as `low` on every OpenAI route.
+_HOST_SENT_EFFORTS = {"minimal": "low"}
+
+
 def _effort_is(value: object, allowed: frozenset[str]) -> bool:
-    return isinstance(value, str) and value in allowed
+    return isinstance(value, str) and _HOST_SENT_EFFORTS.get(value, value) in allowed
 
 
 def _cataloged_route(model: object, effort: object) -> bool:
@@ -482,7 +497,6 @@ def status_report(host_version: str | None = None) -> str:
         "litgoal state: .hermes/lithermes/litgoal/   (drive via: hermes lithermes goal status)",
         _knowledge.status_line(Path.cwd()),
         _provider_metrics.capability_line(),
-        _jev_hint.status_line(),
         _auto_handoff.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
         f"scientific visualization: {_science.dependency_summary()}",
@@ -569,9 +583,9 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     )
     healthy = healthy and knowledge_ok
     lines.append(f"[NOTE] {_provider_metrics.capability_line()}")
-    jev_state = _jev_hint.status()
-    jev_tag = {"on": "OK", "off": "NOTE"}.get(jev_state, "WARN")
-    lines.append(f"[{jev_tag}] {_jev_hint.status_line()}")
+    retired_hint = _retired_hint_data_line()
+    if retired_hint:
+        lines.append(f"[NOTE] {retired_hint}")
     handoff_tag, handoff_text = _auto_handoff.doctor_line()
     lines.append(f"[{handoff_tag}] {handoff_text}")
     if version != "unknown":

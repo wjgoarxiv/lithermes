@@ -18,12 +18,14 @@ Hermes turn: the old payload remains usable and the receipt records the reason.
 
 from __future__ import annotations
 
+import calendar
 import json
 import os
 import re
 import stat
 import subprocess
 import sys
+import time
 import urllib.request
 from urllib.parse import quote
 from pathlib import Path
@@ -39,6 +41,19 @@ INSTALL_TIMEOUT_SECONDS = 90.0
 MAX_RESPONSE_BYTES = 64 * 1024
 AUTO_UPDATE_GUARD_ENV = "LITHERMES_AUTO_UPDATE_RUNNING"
 INSTALLER_DISTRIBUTION = "npm"
+ATTEMPT_RECORD_NAME = "auto-update-attempt.json"
+# A broken npm fetch blocked each new session's first reply for about 70 s, so
+# after a failed install the bridge waits a day before it tries the same
+# release again.  The registry check still runs, and a newer release ends the
+# wait at once.
+FAILURE_BACKOFF_SECONDS = 24 * 60 * 60
+_INSTALL_FAILURES = frozenset({
+    "automatic-install-timeout",
+    "automatic-install-error",
+    "automatic-install-failed",
+    "automatic-install-no-truthful-receipt",
+    "automatic-install-version-mismatch",
+})
 _STABLE_SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 _ATTEMPTED_SESSIONS: set[str] = set()
 
@@ -231,6 +246,50 @@ def _is_npm_channel(home: Path) -> bool:
     return isinstance(manifest, dict) and manifest.get("distribution") == INSTALLER_DISTRIBUTION
 
 
+def _utc_stamp(seconds: float | None = None) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() if seconds is None else seconds))
+
+
+def _stamp_seconds(value: Any) -> float | None:
+    try:
+        return float(calendar.timegm(time.strptime(str(value), "%Y-%m-%dT%H:%M:%SZ")))
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _write_attempt(home: Path, expected: tuple[int, int] | None, record: dict[str, Any]) -> None:
+    """Best-effort record for ``lithermes doctor``; never follows a planted link."""
+
+    if expected is None or not _state_matches(home, expected):
+        return
+    state = home / "lithermes"
+    temporary = state / f".{ATTEMPT_RECORD_NAME}.{os.getpid()}.tmp"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(temporary, flags, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump({"schemaVersion": 1, **record}, stream)
+        if _state_matches(home, expected):
+            os.replace(temporary, state / ATTEMPT_RECORD_NAME)
+    except OSError:
+        pass
+    finally:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+
+
+def _recent_failure(home: Path, latest: str) -> dict[str, Any] | None:
+    record = _read_state_json(home, ATTEMPT_RECORD_NAME)
+    if not record or record.get("latestVersion") != latest or record.get("failedReason") not in _INSTALL_FAILURES:
+        return None
+    failed_at = _stamp_seconds(record.get("failedAt"))
+    if failed_at is None or not 0 <= time.time() - failed_at < FAILURE_BACKOFF_SECONDS:
+        return None
+    return record
+
+
 def _validated_install_receipt(receipt: dict[str, Any] | None, latest: str) -> dict[str, Any] | None:
     if not isinstance(receipt, dict):
         return None
@@ -278,11 +337,26 @@ def run_auto_update(*, kwargs: dict[str, Any] | None = None, env: dict[str, str]
     except Exception:
         if not _state_matches(home, state_identity):
             return unsafe_state
+        _write_attempt(home, state_identity, {"at": _utc_stamp(), "status": "failed", "reason": "update-check-failed", "currentVersion": current})
         return {"status": "failed", "reason": "update-check-failed"}
     if not _state_matches(home, state_identity):
         return unsafe_state
+
+    def outcome(result: dict[str, Any], failure: dict[str, Any] | None = None) -> dict[str, Any]:
+        record = {"at": _utc_stamp(), "status": result["status"], "reason": result.get("reason", result["status"]),
+                  "currentVersion": current, "latestVersion": latest}
+        if result.get("reason") in _INSTALL_FAILURES:
+            failure = {"failedAt": record["at"], "failedReason": result["reason"]}
+        if failure:
+            record.update(failedAt=failure["failedAt"], failedReason=failure["failedReason"])
+        _write_attempt(home, state_identity, record)
+        return result
+
     if parse_stable_semver(latest) <= parse_stable_semver(current):  # type: ignore[operator]
-        return {"status": "current", "currentVersion": current, "latestVersion": latest}
+        return outcome({"status": "current", "currentVersion": current, "latestVersion": latest})
+    previous_failure = _recent_failure(home, latest)
+    if previous_failure is not None:
+        return outcome({"status": "skipped", "reason": "backoff-after-failure", "latestVersion": latest}, previous_failure)
     command = [
         "npx",
         "--yes",
@@ -321,7 +395,7 @@ def run_auto_update(*, kwargs: dict[str, Any] | None = None, env: dict[str, str]
         return {**unsafe_state, "state": "unknown"}
     state_identity = completed_state
     if install_failure:
-        return {"status": "failed", "reason": install_failure}
+        return outcome({"status": "failed", "reason": install_failure})
     receipt = _read_install_receipt(home)
     if not _state_matches(home, state_identity):
         return {**unsafe_state, "state": "unknown"}
@@ -331,15 +405,15 @@ def run_auto_update(*, kwargs: dict[str, Any] | None = None, env: dict[str, str]
     ):
         return {"status": "failed", "reason": "automatic-update-unknown-state", "state": "unknown"}
     if getattr(result, "returncode", 1) != 0:
-        return {"status": "failed", "reason": "automatic-install-failed"}
+        return outcome({"status": "failed", "reason": "automatic-install-failed"})
     if _validated_install_receipt(receipt, latest) is None:
-        return {"status": "failed", "reason": "automatic-install-no-truthful-receipt"}
+        return outcome({"status": "failed", "reason": "automatic-install-no-truthful-receipt"})
     actual = installed_version(home)
     if not _state_matches(home, state_identity):
         return {**unsafe_state, "state": "unknown"}
     if actual != latest:
-        return {"status": "failed", "reason": "automatic-install-version-mismatch"}
-    return {"status": "updated", "currentVersion": current, "latestVersion": latest}
+        return outcome({"status": "failed", "reason": "automatic-install-version-mismatch"})
+    return outcome({"status": "updated", "currentVersion": current, "latestVersion": latest})
 
 
 def pre_llm_call(**kwargs: Any) -> None:

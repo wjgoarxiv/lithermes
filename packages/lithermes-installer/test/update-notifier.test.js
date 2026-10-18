@@ -869,6 +869,39 @@ test("automatic update rolls back the plugin and records a failure receipt on ti
   }
 });
 
+test("a failed post-install doctor puts back the files the new install wrote", async () => {
+  const runAutomaticUpdate = requireFunction("runAutomaticUpdate");
+  const home = makeTempDir("lithermes-auto-update-doctor-restore-");
+  const plugin = path.join(home, "plugins", "lithermes");
+  const config = path.join(home, "config.yaml");
+  const manifest = path.join(home, "lithermes", "install-manifest.json");
+  fs.mkdirSync(plugin, { recursive: true });
+  fs.mkdirSync(path.dirname(manifest), { recursive: true });
+  fs.writeFileSync(path.join(plugin, "plugin.yaml"), "version: 0.8.41\n");
+  fs.writeFileSync(config, "old-config\n");
+  fs.writeFileSync(manifest, JSON.stringify({ version: "0.8.41" }));
+  const result = await runAutomaticUpdate({
+    currentVersion: "0.8.41",
+    latestVersion: "0.8.42",
+    hermesHome: home,
+    spawnSync: () => {
+      fs.writeFileSync(path.join(plugin, "plugin.yaml"), "version: 0.8.42\n");
+      fs.writeFileSync(path.join(plugin, "added.py"), "broken = True\n");
+      fs.writeFileSync(config, "new-config\n");
+      fs.writeFileSync(manifest, JSON.stringify({ version: "0.8.42" }));
+      return { status: 0, signal: null, stdout: "", stderr: "" };
+    },
+    doctor: () => ({ ok: false }),
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(result.doctor, "failed");
+  assert.equal(fs.readFileSync(path.join(plugin, "plugin.yaml"), "utf8"), "version: 0.8.41\n");
+  assert.equal(fs.existsSync(path.join(plugin, "added.py")), false);
+  assert.equal(fs.readFileSync(config, "utf8"), "old-config\n");
+  assert.deepEqual(JSON.parse(fs.readFileSync(manifest, "utf8")), { version: "0.8.41" });
+  assert.equal(JSON.parse(fs.readFileSync(result.receiptPath, "utf8")).rollback.status, "restored");
+});
+
 test("automatic update fails closed when rollback itself cannot restore the payload", async () => {
   const runAutomaticUpdate = requireFunction("runAutomaticUpdate");
   const home = makeTempDir("lithermes-auto-update-rollback-failure-");

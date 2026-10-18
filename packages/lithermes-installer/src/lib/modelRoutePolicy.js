@@ -30,6 +30,9 @@ const MODEL_ONLY_EFFORTS = {
   lead: new Map([[LEGACY_CHILD_MODEL, CHILD_EFFORT]]),
   child: new Map([[LEGACY_SOL_MODEL, "high"]]),
 };
+// Hermes's effort menu also offers `minimal`, which no OpenAI Responses model accepts;
+// Hermes sends it as `low` on every managed OpenAI route, so a saved `minimal` is judged as `low`.
+const HOST_SENT_EFFORTS = new Map([["minimal", "low"]]);
 const CHILD_TRANSPORT_KEYS = ["provider", "base_url", "api_mode"];
 const { OPENAI_PROVIDER: OPENAI_PROVIDER_ID } = require("./modelConfigBoundary");
 const XAI_PROVIDER_ID = "xai";
@@ -151,7 +154,7 @@ function inspectEffectiveRouteSafety(document, expectedProvider) {
   for (const route of managedRoutes) {
     if (transportReason && route.route === "global_child") continue;
     const modelEfforts = MODEL_EFFORTS.get(route.model);
-    if (modelEfforts && !modelEfforts.has(route.effort)) {
+    if (modelEfforts && !modelEfforts.has(HOST_SENT_EFFORTS.get(route.effort) ?? route.effort)) {
       const isAstra = route.model === ASTRA_MODEL;
       const isLuna = LUNA_MODELS.has(route.model);
       return {

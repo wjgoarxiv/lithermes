@@ -200,8 +200,12 @@ test("route safety accepts every listed effort and blocks the rest", () => {
     const request = managedRequest({ model, effort, childModel, childEffort });
     assert.equal(safetyFor(request).status, "safe", `${model}/${effort}; ${childModel}/${childEffort}`);
   }
-  assert.equal(safetyFor({ model: "gpt-5.6-sol", effort: "minimal", childModel: "gpt-5.6-luna", childEffort: "max" }).status, "blocked");
-  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "minimal" }).status, "blocked");
+  assert.equal(safetyFor({ model: "gpt-5.6-sol", effort: "none", childModel: "gpt-5.6-luna", childEffort: "max" }).status, "blocked");
+  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "none" }).status, "blocked");
+  // Hermes's menu also saves `minimal`, which it sends as `low`, so it is judged as low.
+  assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "minimal", childModel: "gpt-6-luna", childEffort: "minimal" }).status, "safe");
+  assert.equal(safetyFor({ model: "gpt-5.6-sol", effort: "minimal", childModel: "gpt-5.6-luna", childEffort: "minimal" }).status, "safe");
+  assert.equal(safetyFor({ model: "gpt-5.6", effort: "minimal", childModel: "gpt-6-luna", childEffort: "max" }).status, "blocked");
   assert.equal(safetyFor({ model: ASTRA_MODEL, effort: "xhigh", childModel: "gpt-5.6-luna", childEffort: "ultra" }).status, "blocked");
 });
 
@@ -337,7 +341,7 @@ test("planModelConfig still stops on a Luna child route at an unlisted effort in
     "delegation:",
     `  provider: ${GPT}`,
     "  model: gpt-5.6-luna",
-    "  reasoning_effort: minimal",
+    "  reasoning_effort: none",
     "",
   ].join("\n");
   const plan = planModelConfig(text, HOST);

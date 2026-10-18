@@ -6,6 +6,7 @@ const { detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, expandHo
 const { formatManagedRoute } = require("./modelRoutePolicy");
 const { inspectPythonCache } = require("./files");
 const { assetRoot, pluginDest } = require("./install");
+const { autoUpdateDoctorLines } = require("./updateDoctor");
 const {
   formatSkillPayload,
   inspectSkillPayload,
@@ -311,6 +312,7 @@ function doctorLitHermes(flags = {}) {
     `cli payload dispatch: ${cli.ok ? formatDispatchStatus(cli) : "PATCH_AVAILABLE"}`,
     `tui payload dispatch: ${tui.ok ? formatDispatchStatus(tui) : "PATCH_AVAILABLE"}`,
     `gateway underscore dispatch: ${gateway.ok ? formatDispatchStatus(gateway) : "PATCH_AVAILABLE"}`,
+    ...autoUpdateDoctorLines(hermesHome),
     ...motionProbeLines(pluginPath, hermesHome),
   ];
 	return {

@@ -6,6 +6,9 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- The model can now pick a LitHermes skill for a plain request. Hermes leaves plugin skills out of its own skill list, so a plain request such as "find out why the save hangs and fix it" never loaded `lithermes:debugging`. Each new session now carries a short list of every LitHermes skill in its system prompt, with the `skill_view` call that loads one. The `debugging`, `review-work`, `litwork` and `litresearch` entries now say when to use them. Hermes releases without plugin prompt sections still load each skill by name, as before.
+- The optional Jev skill hint is removed. In testing it did not change which skill the model used, so it no longer sends prompts to TypeSafe, adds a hint line or prints a banner, and status no longer reports it. `LITHERMES_JEV`, the other `LITHERMES_JEV_*` settings and `TYPESAFE_API_KEY` are now ignored, and you can delete them. Files an earlier release wrote under Hermes home `lithermes/jev-*` are not used any more; `hermes lithermes doctor` mentions them once as safe to delete and leaves them in place.
+
 ## [1.0.24] - 2026-10-17
 
 - The pledge rules catch more of the lines that tell a reader what a document is not for, such as `This table is not a ranking.` or `이 문서는 제품을 비교하려는 것이 아닙니다.` These forms came from real sessions. Bold-label callouts such as `> **주의:** ...` are now read too; ordinary quoted text is still skipped, and lines from manuals and lab reports that only look similar stay allowed.

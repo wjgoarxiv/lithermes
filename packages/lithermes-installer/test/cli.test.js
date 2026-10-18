@@ -594,6 +594,15 @@ process.stdout.write("Hermes Agent v0.17.0\\n");
   assert.deepEqual(fs.readdirSync(home), [], "dry-run must not execute a Hermes binary that can mutate its profile");
 });
 
+test("install receipt names the npm channel, the one marker that lets the plugin update itself", (t) => {
+  const home = makeTempHome();
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const result = run(["install", "--yes", "--offline", "--hermes-home", home]);
+  assert.equal(result.status, 0, result.stderr);
+  const receipt = JSON.parse(fs.readFileSync(path.join(home, "lithermes", "install-manifest.json"), "utf8"));
+  assert.equal(receipt.distribution, "npm");
+});
+
 test("install is idempotent and check sees lithermes commands", () => {
   const home = makeTempHome();
   const first = run(["install", "--yes", "--offline", "--hermes-home", home]);

@@ -368,7 +368,6 @@ test("explicit lead SOL/minimal route is rejected without mutation", () => {
 test("existing unsafe routes stop install before plugin or config mutation", () => {
   // Given: exact existing Luna configs at efforts the host does not list
   const cases = [
-    { model: "gpt-5.6-luna", effort: "minimal" },
     { model: "gpt-5.6-luna", effort: "none" },
     { model: "gpt-5.6-luna", effort: "ultra" },
     { model: "gpt-6-astra", effort: "none" },
@@ -473,7 +472,7 @@ test("doctor fails closed for existing unsafe routes without printing unrelated 
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-luna",
     "agent:",
-    "  reasoning_effort: minimal",
+    "  reasoning_effort: none",
     "metadata:",
     `  private_note: ${marker}`,
     "plugins:",
@@ -493,7 +492,7 @@ test("doctor fails closed for existing unsafe routes without printing unrelated 
 test("existing unsafe global-child routes stop install and fail doctor", () => {
   // Given: a safe legacy SOL/high parent and unsafe inherited-provider Luna child routes
   const cases = [
-    { model: "gpt-5.6-luna", effort: "minimal" },
+    { model: "gpt-5.6-luna", effort: "none" },
     { model: "gpt-5.6-luna", effort: "ultra" },
   ];
   for (const entry of cases) {
@@ -608,7 +607,7 @@ test("credential-bearing unsafe route stops before plugin mutation without leaki
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-luna",
     "agent:",
-    "  reasoning_effort: minimal",
+    "  reasoning_effort: none",
     "providers:",
     "  openai:",
     `    api_key: ${secret}`,
@@ -781,4 +780,60 @@ test("host capability cannot be spoofed by a version flag", () => {
     "the detected host version must drive the plan, not the --hermes-version argument");
   assert.doesNotMatch(manifest.modelConfigReason, /0\.17\.0/u,
     "the spoofed version must not appear anywhere in the recorded reason");
+});
+
+test("automatic update installs over an existing route whose effort is minimal", async () => {
+  // Given: Hermes's own effort menu saved `minimal` for an Astra lead and a Luna child.
+  // Hermes sends that level as `low` on these routes, so it is not an unsafe route.
+  const { runAutomaticUpdate } = require("../src/lib/updateNotifier");
+  const home = makeTempHome();
+  const repo = fakeHermesRepo();
+  const hostPath = fakeHermesPath("0.17.0");
+  const file = path.join(home, "config.yaml");
+  const before = [
+    "_config_version: 30",
+    "model:",
+    `  provider: ${openaiProvider}`,
+    "  default: gpt-6-astra",
+    "agent:",
+    "  reasoning_effort: minimal",
+    "delegation:",
+    "  model: gpt-6-luna",
+    "  reasoning_effort: minimal",
+    "plugins:",
+    "  enabled:",
+    "    - existing-plugin",
+    "",
+  ].join("\n");
+  fs.writeFileSync(file, before, { mode: 0o600 });
+  const target = require("../package.json").version;
+  const localCli = (args, env) => spawnSync(process.execPath, [bin, ...args, "--hermes-repo", repo], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...env, PATH: hostPath, ...(process.env.NODE_TEST_CONTEXT ? { NODE_TEST_CONTEXT: process.env.NODE_TEST_CONTEXT } : {}) },
+  });
+  let installRun;
+  // When: the first-turn update transaction runs this checkout's installer in place of npx
+  const result = await runAutomaticUpdate({
+    currentVersion: "1.0.0",
+    latestVersion: target,
+    hermesHome: home,
+    env: { PATH: hostPath, HOME: home },
+    spawnSync: (command, argv, options) => {
+      assert.equal(command, "npx");
+      installRun = localCli([...argv.slice(argv.indexOf("lithermes") + 1), "--offline"], options.env);
+      return installRun;
+    },
+    doctor: (flags) => {
+      const doctorRun = localCli(["doctor", "--offline", "--hermes-home", flags["hermes-home"]], { HOME: home });
+      return { ok: doctorRun.status === 0 };
+    },
+  });
+  // Then: the installer accepts the route, the update commits, and the route bytes stay as the user set them
+  assert.equal(installRun.status, 0, installRun.stderr);
+  assert.doesNotMatch(installRun.stderr, /LITHERMES_UNSAFE_MODEL_ROUTE/);
+  assert.equal(result.status, "updated", result.reason);
+  const manifest = JSON.parse(fs.readFileSync(path.join(home, "lithermes", "install-manifest.json"), "utf8"));
+  assert.equal(manifest.version, target);
+  assert.match(fs.readFileSync(file, "utf8"), /reasoning_effort: minimal\n[\s\S]*reasoning_effort: minimal\n/);
 });

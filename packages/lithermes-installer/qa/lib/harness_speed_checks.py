@@ -6,6 +6,10 @@ from pathlib import Path
 
 from harness_speed_support import EXACT_BANNER, HostAdapter, bounded_fixture, cwd, hook
 
+# A lit turn carries its own run binding inside the litwork block, so the route
+# is recognised by its block marker rather than by the bare-activation text.
+LITWORK_ROUTE = "<lithermes-litwork>"
+
 
 def correctness_suite(plugin, adapter: HostAdapter, root: Path, rows) -> dict[str, object]:
     pre_llm = hook(adapter, "pre_llm_call")
@@ -47,12 +51,12 @@ def correctness_suite(plugin, adapter: HostAdapter, root: Path, rows) -> dict[st
                 "transform_llm_output", "on_session_finalize",
             )
         ),
-        "b0_no_route": plugin.core.LIT_CONTEXT not in b0_context,
+        "b0_no_route": LITWORK_ROUTE not in b0_context,
         "b0_sentinel_exact": b0_output == rows["B0"]["sentinel"],
-        "s1_route": plugin.core.LIT_CONTEXT in s1_context,
+        "s1_route": LITWORK_ROUTE in s1_context,
         "s1_banner_exact": s1_output == expected_s1,
         "s1_sentinel_exact": s1_output.startswith(model_reply),
-        "s2_no_route": plugin.core.LIT_CONTEXT not in s2_context,
+        "s2_no_route": LITWORK_ROUTE not in s2_context,
         "s2_sentinel_exact": s2_output == rows["S2"]["sentinel"],
         "bounded_activation": bounded_correctness(plugin, adapter, root),
     }
@@ -118,7 +122,7 @@ def adversarial_suite(plugin, adapter: HostAdapter, root: Path, rows) -> dict[st
     dirty_context = str(dirty_result.get("context", "")) if isinstance(dirty_result, dict) else ""
     dirty_ok = (
         marker.read_bytes() == b"preserve-this-byte\n"
-        and plugin.core.LIT_CONTEXT in dirty_context
+        and LITWORK_ROUTE in dirty_context
     )
     return {
         "malformed_input": malformed_ok,

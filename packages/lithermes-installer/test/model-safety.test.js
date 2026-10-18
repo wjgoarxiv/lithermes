@@ -183,7 +183,7 @@ test("installer drift reports current model safety instead of stale planned capa
     `  provider: ${openaiProvider}`,
     "  default: gpt-5.6-terra",
     "agent:",
-    "  reasoning_effort: minimal",
+    "  reasoning_effort: none",
     "",
   ].join("\n");
   fs.writeFileSync(file, before, { mode: 0o600 });

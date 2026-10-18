@@ -178,7 +178,6 @@ If the installer made compatibility edits to your Hermes installation, add `--ro
 - [A tour of LitHermes](./docs/tour.md): screens from a first run, the short film, the Ignition skin and the LIT marks
 - [Skills and commands](./docs/skills.md): all 36 skills with pictures, the command list, and what the document, film and prose skills make
 - [Automatic handoff](./docs/automatic-handoff.md): handing work across a compaction, step by step
-- [Optional Jev skill hint](./docs/jev.md): an opt-in feature that sends eligible prompts to a third-party service
 - <a href="./docs/guide.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> Operating guide</a>: commands, natural routing, models, skins and safety in full
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition film</a> (MP4)
 - [Python plugin contract](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm package page](./packages/lithermes-installer/README.md) · [Changelog](./CHANGELOG.md) · [Privacy](./docs/privacy.md) · [Migration](./docs/migration.md)

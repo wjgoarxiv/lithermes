@@ -1754,7 +1754,7 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         )
 
     direct = DIRECT_LIT_PATTERN.match(route.visible_message)
-    run_context = ""
+    run_binding = ""
     if direct or route.objective:
         task = route.objective or _clamp_task(direct.group("task") if direct else "")
         if task:
@@ -1764,20 +1764,18 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
                 task=task,
                 command="lit",
             )
-            run_context = "\n\n" + build_run_agent_message(
-                load_run_state(run_dir), include_reader_contract=False
-            )
-    lit_context = LIT_CONTEXT + litwork_ui_handoff(route.objective)
+            run_binding = build_run_binding(load_run_state(run_dir))
+    ui_handoff = litwork_ui_handoff(route.objective)
     if requested_reader_mode is None:
-        if run_context:
+        if run_binding:
             return {
                 "context": (
-                    f"{lit_context}{run_context}\n\n"
-                    "#contract.parent_projection_final: reader disclosure still governs this parent reply; detailed run/evidence/DoneClaim clauses above remain internal unless requested or materially necessary."
+                    f"{build_litwork_context(run_binding)}{ui_handoff}\n\n"
+                    f"{reader_facing_contract_block(compact=True)}"
                 )
             }
-        return {"context": lit_context}
-    return with_reader_contract(LIT_CONTEXT_BASE + litwork_ui_handoff(route.objective) + run_context)
+        return {"context": LIT_CONTEXT + ui_handoff}
+    return with_reader_contract(build_litwork_context(run_binding) + ui_handoff)
 
 
 def transform_llm_output(**kwargs: Any) -> str | None:

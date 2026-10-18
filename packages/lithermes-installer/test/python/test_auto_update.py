@@ -399,6 +399,8 @@ class AutoUpdateTests(unittest.TestCase):
             self.assertEqual(no_receipt["reason"], "automatic-install-no-truthful-receipt")
 
             auto_update.reset_attempts()
+            # A second, unrelated scenario in the same home: clear the first one's backoff record.
+            (home / "lithermes" / "auto-update-attempt.json").unlink()
             (home / "lithermes" / "auto-update-receipt.json").write_text(
                 json.dumps({
                     "packageName": "@litfamily/lithermes",
@@ -416,6 +418,118 @@ class AutoUpdateTests(unittest.TestCase):
                 )
             self.assertEqual(stale_version["status"], "failed")
             self.assertEqual(stale_version["reason"], "automatic-install-version-mismatch")
+
+    def _npm_home(self, home: Path) -> Path:
+        state = home / "lithermes"
+        state.mkdir()
+        (state / "install-manifest.json").write_text(json.dumps({"version": "0.8.41", "distribution": "npm"}), encoding="utf-8")
+        return state
+
+    def test_failed_install_backs_off_for_the_same_target(self):
+        """A broken npm fetch cost about 70 s on every new session's first reply; it now costs it once a day."""
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = self._npm_home(home)
+            runner = mock.Mock(return_value=SimpleNamespace(returncode=1, stdout="", stderr=""))
+            with mock.patch.object(auto_update, "fetch_latest_version", return_value="0.8.42"):
+                first = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home), session_id="a"), runner=runner)
+                second = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home), session_id="b"), runner=runner)
+            self.assertEqual(first, {"status": "failed", "reason": "automatic-install-failed"})
+            self.assertEqual(second["status"], "skipped")
+            self.assertEqual(second["reason"], "backoff-after-failure")
+            self.assertEqual(runner.call_count, 1)
+            attempt = json.loads((state / "auto-update-attempt.json").read_text(encoding="utf-8"))
+            self.assertEqual(attempt["status"], "skipped")
+            self.assertEqual(attempt["reason"], "backoff-after-failure")
+            self.assertEqual(attempt["latestVersion"], "0.8.42")
+            self.assertEqual(attempt["failedReason"], "automatic-install-failed")
+            self.assertIn("failedAt", attempt)
+
+    def test_backoff_ends_after_a_day_or_for_a_newer_release(self):
+        for case, latest, age in (("expired", "0.8.42", auto_update.FAILURE_BACKOFF_SECONDS + 60), ("newer", "0.8.43", 60)):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                home = Path(tmp)
+                state = self._npm_home(home)
+                failed_at = auto_update._utc_stamp(auto_update.time.time() - age)
+                (state / "auto-update-attempt.json").write_text(json.dumps({
+                    "schemaVersion": 1, "status": "failed", "reason": "automatic-install-failed",
+                    "currentVersion": "0.8.41", "latestVersion": "0.8.42", "at": failed_at, "failedAt": failed_at,
+                }), encoding="utf-8")
+                runner = mock.Mock(return_value=SimpleNamespace(returncode=1, stdout="", stderr=""))
+                with mock.patch.object(auto_update, "fetch_latest_version", return_value=latest):
+                    result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home), session_id=case), runner=runner)
+                self.assertEqual(result, {"status": "failed", "reason": "automatic-install-failed"})
+                runner.assert_called_once()
+
+    def test_offline_check_is_recorded_without_backoff_or_child(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = self._npm_home(home)
+            runner = mock.Mock()
+            with mock.patch.object(auto_update, "fetch_latest_version", side_effect=OSError("offline")):
+                result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)
+            self.assertEqual(result, {"status": "failed", "reason": "update-check-failed"})
+            runner.assert_not_called()
+            attempt = json.loads((state / "auto-update-attempt.json").read_text(encoding="utf-8"))
+            self.assertEqual((attempt["status"], attempt["reason"], attempt["currentVersion"]), ("failed", "update-check-failed", "0.8.41"))
+            self.assertNotIn("failedAt", attempt)
+
+    def test_attempt_record_never_follows_a_planted_link(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = self._npm_home(home)
+            outside = home / "outside.txt"
+            outside.write_text("user file\n", encoding="utf-8")
+            (state / "auto-update-attempt.json").symlink_to(outside)
+            with mock.patch.object(auto_update, "fetch_latest_version", return_value="0.8.41"):
+                result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=mock.Mock())
+            self.assertEqual(result["status"], "current")
+            self.assertEqual(outside.read_text(encoding="utf-8"), "user file\n")
+            self.assertFalse((state / "auto-update-attempt.json").is_symlink())
+
+    def test_two_digit_patch_release_counts_as_newer(self):
+        """1.0.10 follows 1.0.9; a text comparison would call it older and never install it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = home / "lithermes"
+            state.mkdir()
+            (state / "install-manifest.json").write_text(json.dumps({"version": "1.0.9", "distribution": "npm"}), encoding="utf-8")
+            runner = mock.Mock(return_value=SimpleNamespace(returncode=1, stdout="", stderr=""))
+            with mock.patch.object(auto_update, "fetch_latest_version", return_value="1.0.10"):
+                result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)
+            self.assertEqual(result, {"status": "failed", "reason": "automatic-install-failed"})
+            runner.assert_called_once()
+            self.assertIn("@litfamily/lithermes@1.0.10", runner.call_args.args[0])
+
+    def test_one_session_attempts_the_bridge_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            self._npm_home(home)
+            runner = mock.Mock()
+            with mock.patch.object(auto_update, "fetch_latest_version", return_value="0.8.41") as fetch:
+                first = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)
+                second = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)
+            self.assertEqual(first["status"], "current")
+            self.assertEqual(second, {"status": "skipped", "reason": "session-already-attempted"})
+            fetch.assert_called_once()
+            runner.assert_not_called()
+
+    def test_receipt_without_a_passing_doctor_is_not_an_update(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = self._npm_home(home)
+
+            def runner(command, **options):
+                (state / "install-manifest.json").write_text(json.dumps({"version": "0.8.42", "distribution": "npm"}), encoding="utf-8")
+                (state / "auto-update-receipt.json").write_text(json.dumps({
+                    "packageName": "@litfamily/lithermes", "status": "updated", "targetVersion": "0.8.42",
+                    "doctor": "failed", "rollback": {"status": "not-needed"},
+                }), encoding="utf-8")
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with mock.patch.object(auto_update, "fetch_latest_version", return_value="0.8.42"):
+                result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)
+            self.assertEqual(result, {"status": "failed", "reason": "automatic-install-no-truthful-receipt"})
 
     def test_hook_is_silent_and_does_not_change_route(self):
         with mock.patch.object(auto_update, "should_auto_update", return_value=True), mock.patch.object(

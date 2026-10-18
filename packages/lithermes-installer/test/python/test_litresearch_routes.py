@@ -21,8 +21,13 @@ class LitResearchRoutes(NaturalRoutingCase):
         with open(registered["litresearch"], encoding="utf-8") as handle:
             self.assertEqual(handle.read().strip(), _skill_body("litresearch"))
 
-    def test_natural_routes_inject_the_complete_litresearch_body(self):
+    def test_natural_routes_point_at_the_complete_litresearch_skill(self):
+        # The 45 KB body made every later-turn route spill past the host's
+        # 10,000-character limit; the route now names the registered skill, and
+        # skill_view loads the same SKILL.md.
         body = _skill_body("litresearch")
+        self.assertIn("litresearch", {name for name, _ in self.pkg.PORTED_SKILLS})
+        self.assertTrue(body)
         for message in (
             "litresearch compare public evidence",
             "lit research compare public evidence",
@@ -33,7 +38,8 @@ class LitResearchRoutes(NaturalRoutingCase):
                 context = result["context"]
                 self.assertIn('mode="litresearch"', context)
                 self.assertIn('name="litresearch"', context)
-                self.assertIn(body, context)
+                self.assertIn('skill_view("lithermes:litresearch")', context)
+                self.assertNotIn("<lithermes-skill-body", context)
 
 
 if __name__ == "__main__":

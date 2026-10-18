@@ -178,7 +178,6 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 - [LitHermes 둘러보기](./docs/tour.ko.md): 처음 실행했을 때의 화면, 짧은 영상, Ignition 스킨, LIT 마크
 - [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 36개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
 - [자동 핸드오프](./docs/automatic-handoff.ko.md): 압축을 사이에 두고 작업을 넘기는 과정을 단계별로
-- [선택 기능: Jev 스킬 힌트](./docs/jev.ko.md): 켜면 해당하는 프롬프트를 외부 서비스로 보내는 선택 기능
 - <a href="./docs/guide.ko.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> 사용 안내</a>: 명령, 자연어 routing, 모델, 스킨, 안전 모델 전체
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> (MP4)
 - [Python 플러그인 계약](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm 패키지 안내](./packages/lithermes-installer/README_Ko-KR.md) · [변경 기록](./CHANGELOG.md) · [개인정보](./docs/privacy.md) · [이전 안내](./docs/migration.md)

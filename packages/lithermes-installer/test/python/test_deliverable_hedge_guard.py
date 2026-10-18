@@ -126,6 +126,23 @@ class HumanizerPreWriteHook(unittest.TestCase):
         self.assertEqual(notice.count("LitHumanizer check unavailable"), 1)
         self.assertEqual(len(notice.splitlines()), 1)
 
+    def test_write_too_large_to_scan_is_allowed_with_one_visible_line(self):
+        self._turn()
+        oversized = "The queue processed 41 jobs.\n" * (self.guard.MAX_DETECT_BYTES // 29 + 1)
+        self.assertIsNone(self._write(oversized))
+        notice = self.guard.consume_context("humanizer-test")
+        self.assertEqual(notice.count("LitHumanizer check unavailable"), 1)
+
+    def test_write_outside_the_workspace_is_not_judged_by_the_prewrite_hook(self):
+        # The pre-write hook judges only reader copies inside the workspace; a
+        # file elsewhere is never read or matched by its bare name.
+        Path("report.md").write_text("The queue processed 41 jobs.\n", encoding="utf-8")
+        with tempfile.TemporaryDirectory() as elsewhere:
+            outside = str(Path(elsewhere).resolve() / "report.md")
+            self._turn()
+            self.assertIsNone(self._write(BLOCK_TEXT, outside))
+        self.assertEqual(self.guard.consume_context("humanizer-test"), "")
+
     def test_docx_postwrite_is_advisory_and_requires_rebuild(self):
         target = Path("report.docx")
         target.write_bytes(minimal_office_package(".docx", "I hope this helps."))

@@ -233,7 +233,8 @@ unavailable입니다. TUI route visibility도 unavailable입니다. 설치 recei
 receipt에 model과 effort가 표시되어야 route가 configured입니다. 실제 child
 route 실행은 `delegate_task` execution receipt로 확인해야 합니다. 모델이
 나열하지 않는 effort를 쓰는 route(예: `ultra`를 쓰는 `gpt-5.6-luna`)는 설치를
-중지합니다. 두 세대의 Luna 모두 `xhigh`를 지원합니다. 기존 Astra route의 effort가 없거나 `none`, 임의
+중지합니다. 두 세대의 Luna 모두 `xhigh`를 지원합니다. Hermes 메뉴에서 고른
+`minimal`은 Hermes가 이 OpenAI route들에 `low`로 보내므로 `low`로 봅니다. 기존 Astra route의 effort가 없거나 `none`, 임의
 문자열이면 보존 전에 중지하고 원본 bytes와 권한을 그대로 둡니다. 알 수 없거나
 형식이 잘못된 model 데이터는
 inert data로 처리하고 fail closed합니다. 수동 복구에는 `hermes model`을
@@ -306,15 +307,6 @@ Hermes가 일하는 동안 스피너는 `lit-looping`, `planning`, `verifying` �
 `delegate_task`로 시작한 에이전트는 `/agents`(TUI 별칭 `/tasks`)에서 확인합니다.
 설치기는 `display.tui_agents_nudge: true`를 기존 값이 없을 때만 추가하고,
 대화형 세션 시작 시 `helper agents: type /agents`를 안내합니다.
-
-## 선택 기능: Jev 스킬 힌트
-
-Jev는 기본값이 꺼짐입니다. Hermes가 실행되는 환경에 `LITHERMES_JEV=1`과 본인의 `TYPESAFE_API_KEY`를 설정하면, LitHermes의 어느 경로도 맡지 않은 평범한 프롬프트가 (가리고 2,000자로 자른 뒤) TypeSafe로 전송되고, Jev의 답은 그 턴의 컨텍스트에 조언 한 줄로 붙습니다. 각 상태가 화면에서 어떻게 보이는지는 [Jev 문서](./jev.ko.md#화면에서-보이는-것)에 그림으로 있습니다. 눈에 보이는 것은 다음과 같습니다.
-
-- 세션의 첫 응답이 `✦ Jev skill hint ON` 한 줄로 시작합니다.
-- Jev가 도움을 주지 못하면 턴은 그대로 진행되고, 세션마다 한 번 배너 아래에 `LitHermes skill hint unavailable (<reason>); continuing normally.` 한 줄이 붙습니다. 이유는 `timeout`이나 `network error` 같은 짧은 말입니다.
-- `hermes lithermes status`는 `Jev skill hint: <상태>`를 출력하고, `hermes lithermes doctor`는 같은 문구 앞에 표시를 붙입니다. 켜져 있으면 `[OK]`, 꺼져 있으면 `[NOTE]`, 스위치는 켰는데 키가 없으면 `[WARN]`입니다.
-- 상태는 `off`, `flag on but TYPESAFE_API_KEY missing`, `on — no session`(Hermes 세션 밖), `on — no hint yet`, `on — last hint <skill> (<seconds>s)` 중 하나입니다.
 
 ## 유지보수 검증
 

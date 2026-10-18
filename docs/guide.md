@@ -260,15 +260,6 @@ The installer keeps that discoverable by setting `display.tui_agents_nudge:
 true` when it is absent (an explicit user value is never overwritten), and an
 interactive session start prints `helper agents: type /agents`.
 
-## Optional Jev skill hint
-
-Jev is off by default. With `LITHERMES_JEV=1` and your own `TYPESAFE_API_KEY` in the environment Hermes runs in, a plain prompt that no LitHermes route claimed is sent to TypeSafe (redacted and cut to 2,000 characters), and Jev's answer becomes one line of advice in that turn's context. The [Jev page](./jev.md#what-you-will-see) shows each of these on screen. Here is the list of what you can see:
-
-- The first reply of each session starts with the plain line `✦ Jev skill hint ON`.
-- When Jev cannot help, the turn carries on and one line follows the banner, once per session: `LitHermes skill hint unavailable (<reason>); continuing normally.` The reason is a short word such as `timeout` or `network error`.
-- `hermes lithermes status` prints `Jev skill hint: <state>`, and `hermes lithermes doctor` prints the same text behind a tag: `[OK]` when it is on, `[NOTE]` when it is off, `[WARN]` when the switch is on and the key is missing.
-- The state is `off`, `flag on but TYPESAFE_API_KEY missing`, `on — no session` (outside a Hermes session), `on — no hint yet`, or `on — last hint <skill> (<seconds>s)`.
-
 ## Model routing
 
 New installs default to `gpt-6-astra` with `xhigh` for planning, review, and
@@ -315,7 +306,8 @@ A route is configured only when the receipt shows its model and effort. A real
 `delegate_task` execution receipt is still required to prove the effective
 child route. A route whose effort the model does not list, such as
 `gpt-5.6-luna` at `ultra`, stops before installation; both Luna generations
-accept `xhigh`. An existing Astra route
+accept `xhigh`. A `minimal` effort saved from the Hermes menu counts as `low`,
+because Hermes sends it as `low` on these OpenAI routes. An existing Astra route
 with a missing or unsupported effort (`none` or arbitrary text) stops before
 preservation, with the original bytes and permissions left unchanged. Unknown
 or malformed model data stays inert and fails closed. Use `hermes model` for

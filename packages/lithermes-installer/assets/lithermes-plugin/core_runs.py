@@ -264,6 +264,19 @@ def build_run_agent_message(
     )
 
 
+def build_run_binding(state: dict[str, Any]) -> str:
+    """Bind one natural lit turn to its durable run: the paths no other surface names."""
+    return "\n".join(
+        [
+            "<lithermes-run-context>",
+            f"task: {state['task']}",
+            f"ledger: {Path(state['evidence_dir']).parent / 'ledger.jsonl'}",
+            "Execute now: evidence in evidence/ beside the ledger, progress appended to it.",
+            "</lithermes-run-context>",
+        ]
+    )
+
+
 def build_dispatch_result(
     run_dir: Path,
     *,

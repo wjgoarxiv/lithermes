@@ -110,31 +110,6 @@ CLI/plugin name, not the npm package name.
   path. Noninteractive, CI, JSON, dry-run, HUD/help/version/uninstall, and
   delegate sessions remain no-op. The update bridge never receives npm
   credentials and never uses the unsupported `--home` option.
-- Optional Jev skill hint (`jev_hint.py`), off by default. When
-  `LITHERMES_JEV=1` and `TYPESAFE_API_KEY` are both set in the environment,
-  `pre_llm_call` sends a top-level prompt that no LitHermes route claimed (not a
-  slash command, not a command envelope, at least 4 non-space characters) to
-  TypeSafe's Jev: one POST that refuses redirects, redacted over an
-  8,000-character window and then cut to 2,000, with the `PORTED_SKILLS`
-  catalog plus `none`, a 1.5 s deadline and no retry. A hook failure there
-  never costs the turn its other context. Only an exact catalog id
-  at confidence 0.35 or higher becomes one fixed advisory line naming
-  `lithermes:<id>`; response text never enters context. Failures leave the turn
-  unchanged, and `transform_llm_output` prefixes one short note per session.
-  While both switches are on, the same transform also opens the first reply of
-  each session with the plain line `✦ Jev skill hint ON` (banner first, note on
-  the next line when both are due); it is released with the session.
-  `LITHERMES_JEV_MODEL`, `_TIMEOUT_MS` (max 3000), `_MAX_CALLS` (default 200
-  per session) and `_MIN_CONFIDENCE` tune it; `LITHERMES_JEV_TRACE=1` appends
-  the redacted prompt's hash, ids and timings (no text, key or body) to Hermes home
-  `lithermes/jev-trace.jsonl`. Status and doctor print `Jev skill hint: ...`;
-  when on, they add the last hinted skill id and latency of the session named
-  by `HERMES_SESSION_ID` (`on — last hint lit-humanizer (0.43s)`) or `on — no
-  hint yet`, and `on — no session` outside any session. The CLI runs in its own
-  process, so an accepted hint also writes only that id, the latency and a
-  timestamp to Hermes home `lithermes/jev-last-<session hash>.json` (mode 0600,
-  atomic), one file per session, removed when the session ends. Neither file is
-  written through a symlink.
 - Optional automatic handoff (`auto_handoff.py`), off by default. The user
   switches it on with `/lit-handoff auto on <percent>` (plain text reply, no
   model call; `auto off` and `auto status` likewise) or with
@@ -289,7 +264,8 @@ CLI/plugin name, not the npm package name.
   exposes no TUI route visibility surface. A configured route is not execution
   proof; an execution receipt is required. A route whose effort the model does
   not list, such as `gpt-5.6-luna` at `ultra`, stops before installation; both
-  Luna generations accept `xhigh`. Existing Astra routes with a missing or unsupported effort
+  Luna generations accept `xhigh`. A `minimal` effort from the Hermes menu counts as `low`,
+  since Hermes sends it as `low` on these routes. Existing Astra routes with a missing or unsupported effort
   (`none` or arbitrary text) stop before preservation, with bytes and
   permissions unchanged. On
   Hermes 0.17.0 and 0.19.0, `delegation.max_concurrent_children: 20` is a hard per-batch
@@ -369,9 +345,14 @@ npm --prefix packages/lithermes-installer run sync-plugin -- --in-place
 ## Mode Contract
 
 - `lit` / `litwork`: Litwork execution discipline; direct `lit <task>` writes
-  `.hermes/lithermes/runs/<run>/` and forwards the task.
+  `.hermes/lithermes/runs/<run>/` and forwards the task. The route stays under
+  4,000 bytes so Hermes delivers it whole on every turn (it caps a turn that also
+  carries the static rules at 4,096 bytes and spills later hook results above
+  10,000 characters). It names the ledger, the mode rules and the loop, and loads
+  the `litwork` and `lit-code` skills through `skill_view` when they are needed.
 - `lit plan`: planning-only. Do not implement or start work; create/refine a
-  proportionate objective-achievable plan first.
+  proportionate objective-achievable plan first. The route keeps the planning
+  guard and plan path in view and loads `lithermes:lit-plan` through `skill_view`.
 - `lit review`: review-work audits a draft plan with `PASS` / `ITERATE` /
   `NEEDS-CONTEXT`, or verifies completed work through the existing 5-lane
   all-or-nothing gate. Review never implements the plan.
@@ -382,8 +363,9 @@ npm --prefix packages/lithermes-installer run sync-plugin -- --in-place
   refuses login/paywall/CAPTCHA routes, blocks no network traffic itself,
   instructs refusal of private/loopback routes, reports untried safe routes /
   `not_exhausted` when evidence is incomplete, reports actionable diagnostics,
-  uses A/B checks, and keeps a claim/source/confidence/uncertainty graph.
-- `lit-crucible`, `litresearch`, `lit-init`, `lit-recap`, `lit-handoff`,
+  uses A/B checks, and keeps a claim/source/confidence/uncertainty graph. The
+  acquisition procedure loads from `lithermes:litresearch` through `skill_view`.
+- `lit-crucible`, `lit-init`, `lit-recap`, `lit-handoff`,
   `lit-scientific-visualization`, and `lit-diagram-drawer`: bounded bare or exact natural routes load the bundled
   skill body for the matching explicit skill; they do not fall back to generic
   Litwork.

@@ -159,8 +159,8 @@ const NPM_SECTIONS = {
 };
 // Material that left the landing pages, by language: each page must exist and be linked from its README.
 const DOCS_PAGES = {
-  en: ["install.md", "tour.md", "skills.md", "automatic-handoff.md", "jev.md"],
-  ko: ["install.ko.md", "tour.ko.md", "skills.ko.md", "automatic-handoff.ko.md", "jev.ko.md"],
+  en: ["install.md", "tour.md", "skills.md", "automatic-handoff.md"],
+  ko: ["install.ko.md", "tour.ko.md", "skills.ko.md", "automatic-handoff.ko.md"],
 };
 
 test("the landing READMEs link every docs page that holds their moved material, and keep the demo slot", () => {
@@ -892,51 +892,6 @@ test("public and package docs describe native goals as user-managed and unobserv
   }
 });
 
-test("Jev screenshots ship on the GitHub pages only, in both themes, with alt text taken from what the plugin prints", () => {
-  const dir = path.join(repoRoot, "docs", "assets", "jev");
-  const stems = ["jev-first-reply", "jev-first-reply-note", "jev-status-before", "jev-status-on"];
-  const expected = stems.flatMap((stem) => [`${stem}-dark.webp`, `${stem}-light.webp`]).sort();
-  assert.deepEqual(fs.readdirSync(dir).sort(), expected, "docs/assets/jev must hold exactly the four pictures in dark and light");
-  for (const name of expected) {
-    const bytes = fs.readFileSync(path.join(dir, name));
-    assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
-    assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
-    assert.ok(bytes.length <= 100_000, `${name} must stay small (${bytes.length} bytes)`);
-  }
-  // The strings in the pictures come from the plugin source, so a rewording there fails here.
-  const source = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "jev_hint.py"), "utf8");
-  for (const printed of ["✦ Jev skill hint ON", "on — no hint yet", "flag on but TYPESAFE_API_KEY missing", "LitHermes skill hint unavailable (", "continuing normally.", "Jev skill hint: "]) {
-    assert.ok(source.includes(printed), `jev_hint.py no longer prints: ${printed}`);
-  }
-  for (const [name, lang] of [["jev.md", "en"], ["jev.ko.md", "ko"]]) {
-    const section = fs.readFileSync(path.join(repoRoot, "docs", name), "utf8");
-    assert.ok(section.startsWith(lang === "en" ? "# Optional: Jev skill hint\n" : "# 선택 기능: Jev 스킬 힌트\n"), `${name} is the Jev page`);
-    assert.ok(section.includes(lang === "en" ? "\n## What you will see\n" : "\n## 화면에서 보이는 것\n"), `${name} needs its what-you-will-see section`);
-    for (const required of ["typesafe.ai", "2,000", "LITHERMES_JEV=1", "TYPESAFE_API_KEY", "1.5"]) {
-      assert.ok(section.includes(required), `${name} must keep the data-egress facts: ${required}`);
-    }
-    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/jev\/([a-z-]+)-dark\.webp" \/><img src="\.\/assets\/jev\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
-    assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the four pictures in order`);
-    for (const [, dark, light, alt] of pictures) {
-      assert.equal(dark, light, `${name}: dark and light must be the same picture`);
-      assert.ok(alt.length > 60, `${name}: ${dark} alt text must state the exact text shown`);
-    }
-    assert.ok(pictures[0][3].includes("✦ Jev skill hint ON"), `${name}: the first-reply alt must quote the banner`);
-    assert.ok(pictures[3][3].includes("last hint lit-humanizer (0.42s)"), `${name}: the status alt must quote the status line`);
-    // Every caption says whether a picture is a capture or sample output.
-    const captions = [...section.matchAll(/^\*([^*\n]+)\*$/gm)].map((match) => match[1]);
-    assert.equal(captions.length, 4, `${name} needs one caption per picture`);
-    for (const caption of captions) assert.match(caption, lang === "en" ? /^(Sample output|Captured)/ : /(예시 출력|얻은 출력)/, `${name}: caption must label the picture honestly`);
-  }
-  // The npm card and the package stay free of the pictures.
-  const manifest = require("../package.json");
-  assert.ok(!manifest.files.some((entry) => entry.startsWith("docs")), "docs must not be enrolled in the package");
-  assert.ok(!fs.existsSync(path.join(packageRoot, "readme-assets", "jev")), "the package must not carry copies of the Jev pictures");
-  for (const name of ["README.md", "README_Ko-KR.md"]) {
-    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /assets\/jev|jev-[a-z-]+\.webp/, `${name} npm card must not embed the pictures`);
-  }
-});
-
 test("every README page explains the automatic handoff honestly: off by default, the user's own percent, who does each step", () => {
   const source = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_handoff.py"), "utf8");
   // The wording the pages quote comes from the plugin source, so a rewording there fails here.
@@ -1127,7 +1082,6 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     assert.equal(captions.length, 5, `${name} needs one caption per picture`);
     for (const caption of captions) assert.match(caption, labels[lang], `${name}: caption must label the picture honestly`);
     assert.equal(captions.filter((caption) => (lang === "en" ? /^Illustration/ : /예시 그림/).test(caption)).length, 1, `${name}: exactly the acknowledgement picture is an illustration`);
-    assert.ok(section.includes(lang === "en" ? "(./jev.md)" : "(./jev.ko.md)"), `${name}: link to the Jev pictures instead of repeating them`);
   }
   const manifest = require("../package.json");
   assert.ok(!manifest.files.some((entry) => entry.startsWith("docs")), "docs must not be enrolled in the package");

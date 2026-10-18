@@ -69,7 +69,6 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 - [GitHub의 README](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)와 [화면으로 보는 둘러보기](https://github.com/wjgoarxiv/lithermes/blob/main/docs/tour.ko.md)
 - [사용 안내](https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md): 명령, 자연어 routing, 모델, 스킨, 안전 모델
-- [선택 기능: Jev 스킬 힌트](https://github.com/wjgoarxiv/lithermes/blob/main/docs/jev.ko.md): 기본값은 꺼짐이고, 켜면 해당하는 프롬프트를 외부 서비스로 보냅니다
 - [변경 기록](https://github.com/wjgoarxiv/lithermes/blob/main/CHANGELOG.md) · [개인정보](https://github.com/wjgoarxiv/lithermes/blob/main/docs/privacy.md) · [기여](https://github.com/wjgoarxiv/lithermes/blob/main/CONTRIBUTING.md) · [보안](https://github.com/wjgoarxiv/lithermes/blob/main/SECURITY.md) · [지원](https://github.com/wjgoarxiv/lithermes/blob/main/SUPPORT.md)
 
 MIT License. [LitFamily](https://github.com/wjgoarxiv/litfamily)의 한 제품입니다.

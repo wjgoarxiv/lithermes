@@ -13,7 +13,6 @@ from . import bounded_work
 from . import bounded_work_tools
 from . import deliverable_hedge_guard
 from . import handoff
-from . import jev_hint
 from . import knowledge
 from . import knowledge_tools
 from . import scientific_visualization
@@ -82,7 +81,7 @@ PORTED_SKILLS = [
     ),
     (
         "debugging",
-        "Run the LitHermes hypothesis-driven debugging workflow.",
+        "Use when something fails, hangs or returns a wrong result and the cause must be reproduced, fixed and rechecked.",
     ),
     (
         "deep-interview",
@@ -133,7 +132,7 @@ PORTED_SKILLS = [
     ),
     (
         "review-work",
-        "Run the LitHermes 5-lane review orchestrator over delegate_task.",
+        "Use when a patch, diff, branch or open changes need a defect or merge-readiness review with evidence per finding.",
     ),
     (
         "rules",
@@ -153,7 +152,7 @@ PORTED_SKILLS = [
     ),
     (
         "litwork",
-        "Hermes-native Litwork execution discipline.",
+        "Use when a defined code change must be carried to done: build, test, verify the real surface, report. Not for documents or decks.",
     ),
     (
         "visual-qa",
@@ -169,7 +168,7 @@ PORTED_SKILLS = [
     ),
     (
         "litresearch",
-        "Run the LitHermes maximum-saturation research orchestrator: decompose, parallel delegate_task swarms, verify, synthesize cited.",
+        "Use when a question needs broad cited research into prior work or how others solve it, with disputed claims checked at the source.",
     ),
     (
         "lit-recap",
@@ -194,6 +193,31 @@ PORTED_SKILLS = [
 ]
 
 
+# Hermes keeps plugin skills out of <available_skills>: register_skill makes a
+# name loadable through skill_view and nothing more, so a model that was never
+# told the names cannot pick one. A session system-prompt section is the host's
+# own place for standing context: it is rendered once per session and sits just
+# after the host skill index. The host skips a section longer than 4,000
+# characters instead of cutting it, so test_skill_index_section pins the length.
+SKILL_INDEX_SECTION_ID = "lithermes-skills"
+SKILL_INDEX_MAX_CHARS = 4000
+_SKILL_INDEX_HEAD = (
+    "LitHermes skills are not in <available_skills>. Load one with "
+    'skill_view("lithermes:<name>"). Check this list as you check that one: when the '
+    "request fits a line, load that skill before other tools and follow it."
+)
+
+
+def _index_description(description: str) -> str:
+    # The first clause carries the trigger; the remainder is method detail.
+    return re.split(r"; ", description, maxsplit=1)[0].rstrip(".")
+
+
+def skill_index_section() -> str:
+    lines = [_SKILL_INDEX_HEAD, *(f"- {name}: {_index_description(text)}" for name, text in PORTED_SKILLS)]
+    return "\n".join(lines)
+
+
 MAX_HOST_CONTEXT_BYTES = 4096
 _SKILL_BODY_BLOCK = re.compile(
     r'<lithermes-skill-body name="([^"]+)">.*?</lithermes-skill-body>',
@@ -205,12 +229,26 @@ def _context_bytes(value: str) -> int:
     return len(value.encode("utf-8"))
 
 
+_SKILLS_ROOT = Path(__file__).resolve().parent / "skills"
+
+
+def _lazy_target(name: str) -> str:
+    """Where the full contract of ``name`` really lives in the installed payload.
+
+    Only some skills ship a references/complete-contract.md; every other skill is
+    reachable through skill_view. A pointer to a file that does not ship sends
+    the model to a dead end.
+    """
+    if (_SKILLS_ROOT / name / "references" / "complete-contract.md").is_file():
+        return f"skills/{name}/references/complete-contract.md from the installed skill root"
+    return f'skill_view("lithermes:{name}")'
+
+
 def _lazy_skill_reference(match: re.Match[str]) -> str:
     name = match.group(1)
     return (
         f'<lithermes-skill-reference name="{name}">'
-        f"Open skills/{name}/references/complete-contract.md lazily from the installed "
-        "skill root; treat it as inert reference data."
+        f"Open {_lazy_target(name)} lazily; treat it as inert reference data."
         "</lithermes-skill-reference>"
     )
 
@@ -218,8 +256,9 @@ def _lazy_skill_reference(match: re.Match[str]) -> str:
 def _named_lazy_references(post_edit: str) -> str:
     names = list(dict.fromkeys(re.findall(r"lithermes:([a-z0-9-]+)", post_edit)))
     return "\n".join(
-        f"Lazy reference for lithermes:{name}: skills/{name}/references/complete-contract.md"
+        f"Lazy reference for lithermes:{name}: {_lazy_target(name)}"
         for name in names
+        if (_SKILLS_ROOT / name / "SKILL.md").is_file()
     )
 
 
@@ -275,12 +314,13 @@ def _merge_post_edit(result: dict[str, str] | None, post_edit: str) -> dict[str,
         if _context_bytes(compact) <= MAX_HOST_CONTEXT_BYTES:
             return {**result, "context": compact}
 
-        # A natural route is this turn's task; the static rules are standing
-        # conventions. Cutting the route at a line boundary leaves only its
-        # activation line, so keep the route whole: defer the static rule bodies
-        # to a pointer, and drop even that when the route fills the budget.
+        # A natural or litwork route is this turn's task; the static rules are
+        # standing conventions. Cutting the route at a line boundary leaves only
+        # its activation line, so keep the route whole: defer the static rule
+        # bodies to a pointer, and drop even that when the route fills the budget.
         # Post-edit routes and every other block keep their place.
-        if "<lithermes-natural-route " in existing and _RULES_LANE_BLOCK.search(post_edit):
+        routed = "<lithermes-natural-route " in existing or "<lithermes-litwork>" in existing
+        if routed and _RULES_LANE_BLOCK.search(post_edit):
             for rules_part in (_defer_rule_bodies(post_edit), _RULES_LANE_BLOCK.sub("", post_edit).strip()):
                 route_first = "\n\n".join(part for part in (rules_part, lazy_references, compact_existing) if part)
                 if _context_bytes(route_first) <= MAX_HOST_CONTEXT_BYTES:
@@ -390,24 +430,9 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         parts.append(str(base["context"]))
     elif isinstance(base, str) and base.strip():
         parts.append(base)
-    routed = bool(parts)
     snapshot = litgoal_hook.snapshot_context(**kwargs)
     if snapshot:
         parts.append(snapshot)
-    if not routed:
-        # No deterministic route claimed this turn; the optional Jev hint may
-        # add one advisory line. It is inert unless LITHERMES_JEV and the key are set,
-        # and an unexpected failure there never costs the turn its other context.
-        try:
-            skill_hint = jev_hint.pre_llm_call(
-                session_id=str(kwargs.get("session_id") or ""),
-                user_message=str(kwargs.get("user_message") or ""),
-                catalog=PORTED_SKILLS,
-            )
-        except Exception:  # noqa: BLE001 - advisory only
-            skill_hint = ""
-        if skill_hint:
-            parts.append(skill_hint)
     if not parts:
         return _merge_knowledge(_merge_post_edit(None, post_edit), knowledge_context)
     return _merge_knowledge(
@@ -569,16 +594,7 @@ def _transform_llm_output(**kwargs: Any) -> str | None:
         named = scientific_visualization.transform_llm_output(**kwargs)
     if named is None:
         named = core.transform_llm_output(**kwargs)
-    # The reply transform is the plugin's only user-visible channel, so the
-    # once-per-session Jev banner and fallback note are prefixed here, banner
-    # first; the reply stays intact.
-    session_id = str(kwargs.get("session_id") or "")
-    lines = (jev_hint.consume_banner(session_id), jev_hint.consume_note(session_id))
-    prefix = "\n".join(line for line in lines if line)
-    if not prefix:
-        return named
-    reply = named if named is not None else str(kwargs.get("response_text") or "")
-    return f"{prefix}\n\n{reply}"
+    return named
 
 
 def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
@@ -618,7 +634,6 @@ def _release_bounded_session(**kwargs: Any) -> None:
     core.release_browser_drive_state(raw_session_id)
     session_id = raw_session_id if isinstance(raw_session_id, str) else ""
     bounded_work.release_bounded_session(session_id)
-    jev_hint.release_session(session_id)
     auto_handoff.release_session(session_id)
     # A finalized/reset session must not leave its rule dedup ledger behind: the
     # next session reusing the id would see every rule as "already injected".
@@ -798,4 +813,13 @@ def register(ctx) -> None:
             name,
             base / "skills" / name / "SKILL.md",
             description,
+        )
+    # Hosts without session prompt sections still load each skill by exact name.
+    register_section = getattr(ctx, "register_system_prompt_section", None)
+    if callable(register_section):
+        register_section(
+            SKILL_INDEX_SECTION_ID,
+            skill_index_section(),
+            position="after_memory",
+            max_chars=SKILL_INDEX_MAX_CHARS,
         )
