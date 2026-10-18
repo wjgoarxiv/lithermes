@@ -6,8 +6,15 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.25] - 2026-10-18
+
+- A failed automatic update no longer slows every new session. When npm could not fetch the new release, each new Hermes CLI session waited about 70 seconds on its first reply and tried again the next time. After a failed install the same release now waits 24 hours; a newer release ends the wait. Each first-turn check is recorded in `auto-update-attempt.json`.
+- A route saved with `minimal` reasoning effort no longer blocks automatic updates. Hermes sends `minimal` as `low`, but the installer refused it with status 10 on every update, so the user stayed on the old version. The installer and the plugin diagnostics now read `minimal` as `low`; `none` and unknown efforts still stop the install.
+- `hermes lithermes doctor` gains update lines: the installed version and how it arrived, a gateway that started before the install and needs a restart, the last check with one remedy per cause, and a note that it cannot see what a running Hermes has loaded.
+- Each lit route now fits in what Hermes shows the model. A lit turn used to send about 100 KB, so the model saw only the route's first line and the run's ledger path, goal gate and workspace rules never arrived. The litwork route is now one block under 4,000 bytes, ordered by importance, and lit-plan and litresearch load their skill through `skill_view` instead of inlining it. Slash commands are unchanged.
 - The model can now pick a LitHermes skill for a plain request. Hermes leaves plugin skills out of its own skill list, so a plain request such as "find out why the save hangs and fix it" never loaded `lithermes:debugging`. Each new session now carries a short list of every LitHermes skill in its system prompt, with the `skill_view` call that loads one. The `debugging`, `review-work`, `litwork` and `litresearch` entries now say when to use them. Hermes releases without plugin prompt sections still load each skill by name, as before.
 - The optional Jev skill hint is removed. In testing it did not change which skill the model used, so it no longer sends prompts to TypeSafe, adds a hint line or prints a banner, and status no longer reports it. `LITHERMES_JEV`, the other `LITHERMES_JEV_*` settings and `TYPESAFE_API_KEY` are now ignored, and you can delete them. Files an earlier release wrote under Hermes home `lithermes/jev-*` are not used any more; `hermes lithermes doctor` mentions them once as safe to delete and leaves them in place.
+- New tests cover update, install and write-hook paths that a deliberate break used to leave green.
 
 ## [1.0.24] - 2026-10-17
 

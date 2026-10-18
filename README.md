@@ -31,7 +31,7 @@ Plan → Make → Check → Leave the next step
 
 ### Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.24`.
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.25`.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
