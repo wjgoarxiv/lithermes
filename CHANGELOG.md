@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.26] - 2026-10-18
+
+- The English and Korean READMEs are rewritten around what a reader gets from `lit`: a quicker start, who LitHermes is for, and a sketch of a real session. The pictures are unchanged.
+- `hermes lithermes doctor` drops its leftover note about the retired skill hint and no longer looks for files it once wrote. The test that no external skill-hint service is called and no switch for one is read stays.
 - `lithermes doctor` no longer fails after you use Hermes. Hermes writes Python import caches (`__pycache__/*.pyc`) into the installed plugin, and doctor reported each one as an unexpected file until you deleted them. Caches for modules LitHermes ships are now expected; any other file in the plugin folder, including bytecode for a module LitHermes does not ship, still fails the check. Uninstall now removes those caches too, so a later install no longer finds a leftover plugin folder.
 
 ## [1.0.25] - 2026-10-18

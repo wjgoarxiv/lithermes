@@ -1,6 +1,6 @@
 {
   "name": "@litfamily/lithermes",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "Hermes Agent plugin that plans, builds, checks and hands off your work when you add one word, lit, to a request.",
   "keywords": [
     "hermes-agent",
