@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- `lithermes doctor` no longer fails after you use Hermes. Hermes writes Python import caches (`__pycache__/*.pyc`) into the installed plugin, and doctor reported each one as an unexpected file until you deleted them. Caches for modules LitHermes ships are now expected; any other file in the plugin folder, including bytecode for a module LitHermes does not ship, still fails the check. Uninstall now removes those caches too, so a later install no longer finds a leftover plugin folder.
+
 ## [1.0.25] - 2026-10-18
 
 - A failed automatic update no longer slows every new session. When npm could not fetch the new release, each new Hermes CLI session waited about 70 seconds on its first reply and tried again the next time. After a failed install the same release now waits 24 hours; a newer release ends the wait. Each first-turn check is recorded in `auto-update-attempt.json`.

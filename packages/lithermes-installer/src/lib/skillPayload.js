@@ -1,7 +1,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { sha256 } = require("./files");
+const { hostBytecodeSource, sha256 } = require("./files");
 const {
   captureRegularFile,
   parseJsonRejectingDuplicateKeys,
@@ -229,12 +229,31 @@ function inspectSkillPayload(pluginPath, manifest, verifySourceHash = false, opt
       allowedDirectories.add(`${segments.slice(0, index).join("/")}/`);
     }
   }
+  // Hermes imports the plugin with bytecode writing on, so CPython caches for
+  // shipped modules are expected host output; any other cache content is not.
+  const hostCacheDirectories = new Set();
+  for (const entryPath of inspected.entries.keys()) {
+    if (!entryPath.endsWith(".py")) continue;
+    const directory = path.posix.dirname(entryPath);
+    hostCacheDirectories.add(directory === "." ? "__pycache__/" : `${directory}/__pycache__/`);
+  }
+  const isHostBytecode = (entryPath) => {
+    const source = hostBytecodeSource(entryPath);
+    if (!source || !inspected.entries.has(source)) return false;
+    try {
+      return fs.lstatSync(path.join(pluginPath, ...entryPath.split("/"))).isFile();
+    } catch {
+      return false;
+    }
+  };
   const traversal = listPayloadEntries(pluginPath, options.readDirectory);
   for (const entryPath of traversal.entries) {
     if (
       inspected.entries.has(entryPath)
       || allowedUnlisted.has(entryPath)
       || allowedDirectories.has(entryPath)
+      || hostCacheDirectories.has(entryPath)
+      || isHostBytecode(entryPath)
     ) continue;
     failures.push({ ...entryLabel(entryPath), reason: "unexpected" });
   }

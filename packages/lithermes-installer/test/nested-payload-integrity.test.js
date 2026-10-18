@@ -194,3 +194,76 @@ for (const [label, mutate, expected] of [
     assert.match(doctor.stdout, expected);
   });
 }
+
+// Hermes imports the installed plugin with bytecode writing on, so every real
+// session leaves __pycache__ beside the plugin's own modules. That is host
+// output, not a foreign file, and doctor must stay green after it.
+function writeHostBytecode(plugin) {
+  const written = [
+    path.join(plugin, "__pycache__", "core.cpython-314.pyc"),
+    path.join(plugin, "__pycache__", "__init__.cpython-311.pyc"),
+    path.join(plugin, "litgoal", "__pycache__", "store.cpython-314.pyc"),
+    path.join(plugin, "rules", "__pycache__", "engine.cpython-314.opt-1.pyc"),
+  ];
+  for (const file of written) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, Buffer.from([0x0d, 0x0d, 0x0d, 0x0a, 0, 0, 0, 0]));
+  }
+  return written;
+}
+
+test("doctor stays clean after a Hermes session writes import caches into the installed plugin", (t) => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-host-bytecode."));
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const install = run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]);
+  assert.equal(install.status, 0, install.stdout + install.stderr);
+  writeHostBytecode(path.join(home, "plugins", "lithermes"));
+
+  const doctor = run(["doctor", "--offline", "--hermes-home", home]);
+  assert.match(doctor.stdout, /installed skill payload: PASS/i, doctor.stdout + doctor.stderr);
+  assert.doesNotMatch(doctor.stdout, /__pycache__|\.pyc/i);
+});
+
+test("upgrade and uninstall carry host import caches out of the plugin folder", (t) => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-host-bytecode-cycle."));
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const plugin = path.join(home, "plugins", "lithermes");
+  assert.equal(run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]).status, 0);
+  writeHostBytecode(plugin);
+  const upgrade = run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]);
+  assert.equal(upgrade.status, 0, upgrade.stdout + upgrade.stderr);
+  const after = run(["doctor", "--offline", "--hermes-home", home]);
+  assert.match(after.stdout, /installed skill payload: PASS/i, after.stdout);
+
+  writeHostBytecode(plugin);
+  const uninstall = run(["uninstall", "--yes", "--hermes-home", home]);
+  assert.equal(uninstall.status, 0, uninstall.stdout + uninstall.stderr);
+  assert.equal(fs.existsSync(plugin), false, "host bytecode for removed modules must not strand the plugin folder");
+  const reinstall = run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]);
+  assert.equal(reinstall.status, 0, reinstall.stdout + reinstall.stderr);
+});
+
+for (const [label, relative, expected] of [
+  ["bytecode for a module the payload does not ship", "__pycache__/x.cpython-314.pyc", /x\.cpython-314\.pyc unexpected/i],
+  ["a non-bytecode file inside a cache folder", "litgoal/__pycache__/notes.txt", /notes\.txt unexpected/i],
+  ["loose bytecode outside a cache folder", "core.pyc", /core\.pyc unexpected/i],
+  ["a legacy optimized bytecode file", "core.pyo", /core\.pyo unexpected/i],
+  ["a cache folder beside no shipped module", "skills/visual-qa/__pycache__/SKILL.cpython-314.pyc", /SKILL\.cpython-314\.pyc unexpected/i],
+]) {
+  test(`doctor still treats ${label} as foreign`, (t) => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-foreign-bytecode."));
+    t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+    assert.equal(run(["install", "--yes", "--offline", "--no-hud", "--hermes-home", home]).status, 0);
+    const plugin = path.join(home, "plugins", "lithermes");
+    writeHostBytecode(plugin);
+    const file = path.join(plugin, ...relative.split("/"));
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "planted\n");
+
+    const doctor = run(["doctor", "--offline", "--hermes-home", home]);
+    assert.equal(doctor.status, 1, doctor.stdout + doctor.stderr);
+    assert.match(doctor.stdout, /installed skill payload: FAIL/i);
+    assert.match(doctor.stdout, expected);
+    assert.doesNotMatch(doctor.stdout, /core\.cpython-314\.pyc/i);
+  });
+}

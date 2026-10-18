@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-18T09:42:50.174Z",
+  "syncedAt": "2026-10-18T12:10:03.849Z",
   "source": "bundled-payload",
-  "sourceHash": "91ef78ac52df745352ac069cd0872ee6a17253c4fa55b5577e52482b9b329971",
+  "sourceHash": "19cb0ae712249e545f614777ad33d0aa72ff1d99fddeb1e9093f78b7bf68a056",
   "files": [
     {
       "path": "NOTICE.md",
@@ -89,7 +89,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "1fd173995dd1abc1d58cc719ecd351f91bd1c65c9056fdffa064fda684f18318"
+      "sha256": "13fdef893d10cecdffdbb61daf64629e5ccbf4777964e75930ca34017472828e"
     },
     {
       "path": "handoff.py",

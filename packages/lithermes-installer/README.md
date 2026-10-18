@@ -15,7 +15,7 @@
 
 **Keep the work lit.**
 
-A plugin for **Hermes Agent**. Put `lit` in front of a request, and Hermes plans the task, does it, checks what it did and leaves a note that the next session can pick up.
+A plugin for **Hermes Agent**. Put `lit` in front of a request, and Hermes plans the task, does it, checks the result and writes down where things stand, so the next session can pick up where this one stopped.
 
 **[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.25/README_Ko-KR.md)
 
@@ -27,7 +27,7 @@ You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-It installs the plugin and updates your Hermes configuration without stopping to ask; `--no-style` skips the reply-style picker. To try it in a separate profile, set `HERMES_HOME` to an empty directory first. [More install options](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
+The command copies the plugin into your Hermes home and switches it on, without stopping to ask; `--no-style` skips the question about reply style. To try it in a separate profile first, point `HERMES_HOME` at an empty directory before you install. [More install options](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
 
 ## Your first task
 
@@ -37,7 +37,7 @@ Restart the Hermes CLI or gateway, then type:
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-Once the work has started, the reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line. When it finishes, check the file yourself, then run `/lit-handoff` so the next session in this project can continue. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
+The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the lit workflow has started. When the task is done, check the file yourself, then run `/lit-handoff` so the next session in this project can carry on from the note it writes. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
 
 ## What you get
 

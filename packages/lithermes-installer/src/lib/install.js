@@ -15,7 +15,7 @@ const {
   revalidateModelConfigPlan,
   writeConfig,
 } = require("./config");
-const { copyTree, removeEmptyDirs, sha256, writeFileAtomic } = require("./files");
+const { copyTree, removeEmptyDirs, removeHostBytecode, sha256, writeFileAtomic } = require("./files");
 const { assertStateParent, assertPluginParent, defaultHermesHome, defaultHermesRepo, detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, inspectHermesHostCapabilities, LitHermesError } = require("./hermesDiscovery");
 const { NOT_PROBED_HOST_VERSION } = require("./modelConfigBoundary");
 const { patchInstalledHermes, patchManifestPath, rollbackPatches } = require("./patch");
@@ -802,6 +802,7 @@ function uninstallLitHermes(flags = {}) {
       const file = path.join(dest, entry.path);
       if (isInstalledRegularFile(dest, entry.path) && sha256(file) === entry.sha256) {
         fs.unlinkSync(file);
+        if (entry.path.endsWith(".py")) removeHostBytecode(file);
         removeEmptyDirs(path.dirname(file), dest);
       }
     }

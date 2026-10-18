@@ -106,6 +106,29 @@ function writeFileAtomic(filePath, data, encoding) {
   }
 }
 
+// The payload-relative source a host-written bytecode path belongs to, or null.
+// Only CPython's own layout counts: <dir>/__pycache__/<module>.<tag>[.opt-N].pyc.
+function hostBytecodeSource(relative) {
+  const segments = relative.split("/");
+  if (segments.length < 2 || segments[segments.length - 2] !== "__pycache__") return null;
+  const match = /^([^.]+)\.[a-zA-Z][a-zA-Z0-9_-]*(?:\.opt-[0-9]+)?\.pyc$/.exec(segments[segments.length - 1]);
+  return match ? [...segments.slice(0, -2), `${match[1]}.py`].join("/") : null;
+}
+
+// Removes the host bytecode for one removed source module, then its cache
+// folder once empty. Anything else in that folder stays where it is.
+function removeHostBytecode(sourceFile) {
+  const cacheDir = path.join(path.dirname(sourceFile), "__pycache__");
+  if (!fs.lstatSync(cacheDir, { throwIfNoEntry: false })?.isDirectory()) return;
+  const stem = path.basename(sourceFile, ".py");
+  for (const entry of fs.readdirSync(cacheDir, { withFileTypes: true })) {
+    if (entry.isFile() && hostBytecodeSource(`__pycache__/${entry.name}`) === `${stem}.py`) {
+      fs.unlinkSync(path.join(cacheDir, entry.name));
+    }
+  }
+  if (fs.readdirSync(cacheDir).length === 0) fs.rmdirSync(cacheDir);
+}
+
 function removeEmptyDirs(dir, stopAt) {
   let current = dir;
   while (current && current !== stopAt && current.startsWith(stopAt) && fs.existsSync(current)) {
@@ -118,9 +141,11 @@ function removeEmptyDirs(dir, stopAt) {
 module.exports = {
   cleanPythonCache,
   copyTree,
+  hostBytecodeSource,
   inspectPythonCache,
   listFiles,
   removeEmptyDirs,
+  removeHostBytecode,
   sha256,
   writeFileAtomic,
 };

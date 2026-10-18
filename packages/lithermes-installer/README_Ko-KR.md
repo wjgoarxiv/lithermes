@@ -15,7 +15,7 @@
 
 **Keep the work lit.**
 
-**Hermes Agent**용 플러그인입니다. 요청 앞에 `lit`을 붙이면 Hermes가 작업을 계획하고, 해내고, 한 일을 확인한 뒤, 다음 세션이 이어받을 수 있는 기록을 남깁니다.
+**Hermes Agent**용 플러그인입니다. 요청 앞에 `lit`을 붙이면 Hermes가 작업을 계획하고, 해내고, 결과를 확인한 뒤 어디까지 왔는지 적어 둡니다. 그래서 다음 세션이 그 기록을 읽고 멈춘 자리에서 이어 갈 수 있습니다.
 
 **[GitHub의 README와 문서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.25/README.md)
 
@@ -27,7 +27,7 @@ Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 �
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-플러그인을 설치하고 Hermes 설정을 고치는 동안 승인을 묻느라 멈추지 않습니다. `--no-style`은 답변 문체 고르기를 건너뜁니다. 따로 떼어 둔 프로필에서 써 보려면 먼저 `HERMES_HOME`을 빈 디렉터리로 지정하세요. 다른 옵션은 [설치 문서](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.ko.md)에 있습니다.
+이 명령은 플러그인을 Hermes 홈에 복사하고 켜 두며, 중간에 승인을 묻지 않습니다. `--no-style`은 답변 문체를 묻는 단계를 건너뜁니다. 따로 떼어 둔 프로필에서 먼저 써 보려면 설치 전에 `HERMES_HOME`을 빈 디렉터리로 지정하세요. 다른 옵션은 [설치 문서](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.ko.md)에 있습니다.
 
 ## 첫 작업
 
@@ -37,7 +37,7 @@ Hermes CLI 또는 gateway를 다시 시작한 뒤 이렇게 입력하세요.
 lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘. 추가·완료·삭제를 구현하고 확인한 내용과 다음 행동을 남겨줘.
 ```
 
-응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 나오면 작업이 시작된 것입니다. 끝나면 파일을 직접 확인하고 `/lit-handoff`를 실행하세요. 같은 프로젝트의 다음 세션이 그 기록을 읽고 이어갑니다. [자동 핸드오프](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.ko.md)는 기본값이 꺼짐이고, `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면 `/compact` 전에 인계 기록을 먼저 요청합니다.
+응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 나오면 lit 작업이 시작된 것입니다. 끝나면 파일을 직접 확인하고 `/lit-handoff`를 실행하세요. 같은 프로젝트의 다음 세션이 그 기록을 읽고 이어 갑니다. [자동 핸드오프](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.ko.md)는 기본값이 꺼짐이고, `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면 `/compact` 전에 인계 기록을 먼저 요청합니다.
 
 ## 할 수 있는 일
 

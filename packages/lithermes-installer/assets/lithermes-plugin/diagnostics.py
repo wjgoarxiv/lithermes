@@ -185,22 +185,6 @@ def _host_config_path() -> Path:
     return home / "config.yaml"
 
 
-def _retired_hint_data_line() -> str | None:
-    # The Jev skill hint is gone. Files it wrote under Hermes home are left for the
-    # user to delete; doctor only says where they are.
-    state = _host_config_path().parent / "lithermes"
-    try:
-        found = any(
-            entry.name == "jev-trace.jsonl" or entry.name.startswith("jev-last-")
-            for entry in state.iterdir()
-        )
-    except OSError:
-        return None
-    if not found:
-        return None
-    return f"old Jev data can be deleted at {state}/jev-*"
-
-
 def _is_secret_looking_scalar(value: object) -> bool:
     if not isinstance(value, str):
         return False
@@ -583,9 +567,6 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     )
     healthy = healthy and knowledge_ok
     lines.append(f"[NOTE] {_provider_metrics.capability_line()}")
-    retired_hint = _retired_hint_data_line()
-    if retired_hint:
-        lines.append(f"[NOTE] {retired_hint}")
     handoff_tag, handoff_text = _auto_handoff.doctor_line()
     lines.append(f"[{handoff_tag}] {handoff_text}")
     if version != "unknown":
