@@ -6,6 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.27] - 2026-10-19
+
+- The humanizer now catches a paragraph that explains a number or a thing only by saying what it is not, such as `18,420회는 주민 수가 아님. 고유 방문자 수도 아님.` When one paragraph, list or table column holds two such Korean negations, or three in any language, `write_file` and `patch` refuse the write and say how to rewrite it: state what the thing is first, then give a needed caveat once. Rewordings such as `~로 읽을 수 없음` and `does not mean` count the same. Exactly two that are not both Korean only draw a `negation-cluster` warning, and the write goes through. Code, inline code and `>` quotes are skipped, so a bad example you need to show can sit there. A plain `~와 다른` no longer counts; only the contrastive `~와는 다릅니다` does.
+- A `patch` edit is now judged against the file as it will read after the patch, so an edit inside a code fence is allowed and two edited paragraphs are read as separate blocks. A long-standing pledge line elsewhere in the file no longer blocks an edit that does not touch it.
+- Reader files outside the working directory are checked when they sit inside the folder Hermes was launched from or its git repository, and relative paths follow the directory a terminal `cd` moved the session to. Host settings, memory and scratch notes outside that project are still left alone.
+- A flood of findings can no longer hide a refusal: the guard caps its warnings and its output size, and a write that would produce too many blocking findings is refused rather than let through.
+
 ## [1.0.26] - 2026-10-18
 
 - The English and Korean READMEs are rewritten around what a reader gets from `lit`: a quicker start, who LitHermes is for, and a sketch of a real session. The pictures are unchanged.
