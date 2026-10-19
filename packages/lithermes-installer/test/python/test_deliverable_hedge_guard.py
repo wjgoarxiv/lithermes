@@ -133,14 +133,16 @@ class HumanizerPreWriteHook(unittest.TestCase):
         notice = self.guard.consume_context("humanizer-test")
         self.assertEqual(notice.count("LitHumanizer check unavailable"), 1)
 
-    def test_write_outside_the_workspace_is_not_judged_by_the_prewrite_hook(self):
-        # The pre-write hook judges only reader copies inside the workspace; a
-        # file elsewhere is never read or matched by its bare name.
+    def test_write_outside_the_project_and_the_working_directory_is_not_judged(self):
+        # Host config, memory and scratch notes outside the launch project are not deliverables;
+        # a file there is never read or matched by its bare name.
         Path("report.md").write_text("The queue processed 41 jobs.\n", encoding="utf-8")
         with tempfile.TemporaryDirectory() as elsewhere:
-            outside = str(Path(elsewhere).resolve() / "report.md")
+            home = Path(elsewhere).resolve()
             self._turn()
-            self.assertIsNone(self._write(BLOCK_TEXT, outside))
+            for outside in (home / ".claude" / "projects" / "x" / "memory" / "m.md", home / "review-scratch.md"):
+                with self.subTest(path=outside.name):
+                    self.assertIsNone(self._write(BLOCK_TEXT, str(outside)))
         self.assertEqual(self.guard.consume_context("humanizer-test"), "")
 
     def test_docx_postwrite_is_advisory_and_requires_rebuild(self):
@@ -580,6 +582,333 @@ class StableArtifactReaderSecurity(unittest.TestCase):
         self.assertTrue(swapped)
         self.assertIsNone(result)
 
+
+NEGATION_CASES = json.loads(
+    (Path(__file__).resolve().parent.parent / "fixtures" / "lit-humanizer-negation-cases.json").read_text(encoding="utf-8")
+)
+
+
+class NegationClusterTiers(unittest.TestCase):
+    """Two Korean or three definitional negations in one block refuse the write; exactly two warn."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.detector = importlib.import_module("humanizer_detector")
+
+    def setUp(self):
+        self.pkg = _load_plugin_package()
+        self.guard = self.pkg.deliverable_hedge_guard
+        self.guard.reset_state()
+        self.temp = tempfile.TemporaryDirectory()
+        self.previous_cwd = os.getcwd()
+        os.chdir(self.temp.name)
+
+    def tearDown(self):
+        os.chdir(self.previous_cwd)
+        self.temp.cleanup()
+
+    def _clusters(self, text, file="report.md"):
+        return [item for item in self.detector.scan_text(text, file=file) if item["rule"] == "negation-cluster"]
+
+    def _case(self, prefix):
+        return next(case["text"] for group in ("positive", "negative") for case in NEGATION_CASES[group] if case["id"].startswith(prefix))
+
+    def _write(self, content, session="negation-test"):
+        return self.pkg._pre_tool_call(
+            tool_name="write_file",
+            args={"path": "report.md", "content": content},
+            session_id=session,
+            workspace=Path.cwd(),
+        )
+
+    def test_every_positive_fixture_reaches_its_expected_tier(self):
+        for case in NEGATION_CASES["positive"]:
+            with self.subTest(case=case["id"]):
+                clusters = self._clusters(case["text"])
+                self.assertTrue(clusters, "no negation-cluster finding")
+                severities = {item["severity"] for item in clusters}
+                self.assertEqual("block" if "block" in severities else "warn", case["expect"])
+
+    def test_no_negative_fixture_produces_a_cluster(self):
+        for case in NEGATION_CASES["negative"]:
+            with self.subTest(case=case["id"]):
+                self.assertEqual(self._clusters(case["text"]), [])
+
+    def test_internal_paths_stay_exempt(self):
+        self.assertEqual(self._clusters(self._case("p01"), "plans/notes.md"), [])
+
+    def test_unclosed_and_tilde_fences_stay_exempt(self):
+        for fence in ("~~~\n", "```\n"):
+            with self.subTest(fence=fence):
+                self.assertEqual(self._clusters(f"{fence}{self._case('p01')}\n{self._case('p11')}\n"), [])
+
+    def test_stacked_negations_are_refused_by_the_real_hook_with_advice(self):
+        for prefix in ("p01", "p11"):
+            with self.subTest(case=prefix):
+                content = f"# 이용 현황\n\n{self._case(prefix)}\n\n탑승 건수 436건은 승차 기준 집계입니다.\n"
+                denied = self._write(content)
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertIn("negation-cluster", denied["message"])
+                self.assertIn("Say what the thing is first", denied["message"])
+                self.assertIn("18,420", denied["message"])
+                self.assertFalse(Path("report.md").exists())
+
+    def test_two_mixed_negations_warn_and_the_write_is_allowed(self):
+        self.assertIsNone(self._write(self._case("p09") + "\n"))
+        notice = self.guard.consume_context("negation-test")
+        self.assertIn("negation-cluster", notice)
+        self.assertIn("Say what the thing is first", notice)
+
+    def test_negative_writes_through_the_real_hook_carry_no_cluster(self):
+        for prefix in ("n01", "n11"):
+            with self.subTest(case=prefix):
+                self.assertIsNone(self._write(self._case(prefix) + "\n"))
+                self.assertNotIn("negation-cluster", self.guard.consume_context("negation-test"))
+
+    def test_a_flood_of_cluster_warnings_cannot_push_a_block_past_the_check(self):
+        flood = "It is not a plan. It is not a list.\n\n" * 5000
+        for existing in ("", flood):
+            with self.subTest(existing_flood=bool(existing)):
+                Path("report.md").write_text(existing, encoding="utf-8")
+                denied = self._write(flood + BLOCK_TEXT, session="negation-flood")
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertNotIn("check unavailable", self.guard.consume_context("negation-flood"))
+
+    def test_a_flood_of_cluster_blocks_is_refused_not_failed_open(self):
+        flood = "주민 수가 아님. 방문자 수도 아님.\n\n" * 4500
+        denied = self._write(flood, session="negation-block-flood")
+        self.assertEqual((denied or {}).get("action"), "block")
+        self.assertNotIn("check unavailable", self.guard.consume_context("negation-block-flood"))
+
+    def test_a_block_flood_under_a_long_path_is_refused_not_failed_open(self):
+        # Every finding repeats the path; near 900 characters 1,024 capped blocks passed 2 MiB of output.
+        long_path = "/".join(["d" * 220] * 4 + ["report.md"])
+        flood = ("아닙니다 " * 36).strip() + "\n\n"
+        denied = self.pkg._pre_tool_call(
+            tool_name="write_file",
+            args={"path": long_path, "content": flood * 1113},
+            session_id="negation-long-path",
+            workspace=Path.cwd(),
+        )
+        self.assertEqual((denied or {}).get("action"), "block")
+        self.assertNotIn("check unavailable", self.guard.consume_context("negation-long-path"))
+
+    def _edit(self, existing, args, path="README.md", session="negation-edit"):
+        if existing is not None:
+            Path(path).write_text(existing, encoding="utf-8")
+        return self.pkg._pre_tool_call(
+            tool_name="patch",
+            args={"path": path, **args},
+            session_id=session,
+            workspace=Path.cwd(),
+        )
+
+    def _v4a(self, body, path="README.md"):
+        return {"mode": "patch", "patch": f"*** Begin Patch\n*** Update File: {path}\n{body}\n*** End Patch\n"}
+
+    def test_a_patch_edit_inside_a_code_fence_is_allowed(self):
+        existing = "# 예제\n\n```\n```\n"
+        patch = self._v4a("@@\n ```\n+x = 1  # 아님 아닙니다\n ```")
+        for label, before in (("file on disk", existing), ("file missing", None)):
+            with self.subTest(case=label):
+                if before is None and Path("README.md").exists():
+                    Path("README.md").unlink()
+                self.assertIsNone(self._edit(before, patch))
+                self.assertNotIn("negation-cluster", self.guard.consume_context("negation-edit"))
+
+    def test_a_replace_edit_inside_a_code_fence_is_allowed(self):
+        existing = "# 예제\n\n```\nold\n```\n"
+        allowed = self._edit(existing, {"mode": "replace", "old_string": "```\nold\n```", "new_string": "```\nassert x is not None  # 아님 아닙니다\n```"})
+        self.assertIsNone(allowed)
+        self.assertNotIn("negation-cluster", self.guard.consume_context("negation-edit"))
+
+    def test_two_edited_paragraphs_stay_separate_blocks(self):
+        existing = "# 현황\n\n방문 횟수입니다.\n\n탑승 건수입니다.\n"
+        edits = {
+            "replace": {"mode": "replace", "old_string": "방문 횟수입니다.\n\n탑승 건수입니다.", "new_string": self._case("n03")},
+            "patch with removals": self._v4a("@@\n-방문 횟수입니다.\n+방문 횟수는 주민 수가 아닙니다.\n \n-탑승 건수입니다.\n+탑승 건수는 승객 수가 아닙니다."),
+            "patch around a blank context line": self._v4a("@@\n+방문 횟수는 주민 수가 아닙니다.\n \n+탑승 건수는 승객 수가 아닙니다."),
+        }
+        for label, args in edits.items():
+            with self.subTest(case=label):
+                self.assertIsNone(self._edit(existing, args))
+                self.assertNotIn("negation-cluster", self.guard.consume_context("negation-edit"))
+
+    def test_an_edit_that_turns_a_plain_paragraph_into_stacked_negations_is_refused(self):
+        existing = "# 이용 현황\n\n방문 횟수입니다.\n\n탑승 건수 436건은 승차 기준 집계입니다.\n"
+        p01 = self._case("p01")
+        edits = {
+            "replace": {"mode": "replace", "old_string": "방문 횟수입니다.", "new_string": p01},
+            "patch": self._v4a(f"@@\n-방문 횟수입니다.\n+{p01}"),
+        }
+        for label, args in edits.items():
+            with self.subTest(case=label):
+                denied = self._edit(existing, args)
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertIn("negation-cluster", denied["message"])
+                self.assertEqual(Path("README.md").read_text(encoding="utf-8"), existing)
+
+    def test_an_edit_on_the_second_line_of_a_paragraph_counts_the_whole_paragraph(self):
+        existing = "# 보고\n\n주민 수가 아님.\n방문 횟수입니다.\n\n다른 문단입니다.\n"
+        refused = {
+            "replace": {"mode": "replace", "old_string": "방문 횟수입니다.", "new_string": "전망치도 아님."},
+            "patch": self._v4a("@@\n 주민 수가 아님.\n-방문 횟수입니다.\n+전망치도 아님."),
+        }
+        for label, args in refused.items():
+            with self.subTest(case=label):
+                denied = self._edit(existing, args)
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertIn("negation-cluster", denied["message"])
+        allowed = {
+            "replace": {"mode": "replace", "old_string": "다른 문단입니다.", "new_string": "다른 문단은 고쳤습니다."},
+            "patch": self._v4a("@@\n-다른 문단입니다.\n+다른 문단은 고쳤습니다."),
+        }
+        for label, args in allowed.items():
+            with self.subTest(case=f"other paragraph, {label}"):
+                self.assertIsNone(self._edit(existing, args))
+                self.assertNotIn("negation-cluster", self.guard.consume_context("negation-edit"))
+
+    def test_a_path_too_long_to_open_is_judged_on_the_edit_text(self):
+        # macOS refuses paths over 1,024 bytes with ENAMETOOLONG; the hook must neither raise nor wave the write through.
+        long_path = "/".join(["d" * 200] * 6 + ["report.md"])
+        content = f"# 이용 현황\n\n{self._case('p01')}\n"
+        edits = {
+            "write_file": ("write_file", {"path": long_path, "content": content}),
+            "replace": ("patch", {"mode": "replace", "path": long_path, "old_string": "방문 횟수입니다.", "new_string": self._case("p01")}),
+            "patch update": ("patch", self._v4a(f"@@\n-방문 횟수입니다.\n+{self._case('p01')}", long_path)),
+            "patch add": ("patch", {"mode": "patch", "patch": f"*** Begin Patch\n*** Add File: {long_path}\n+{self._case('p01')}\n*** End Patch\n"}),
+        }
+        for label, (tool, args) in edits.items():
+            with self.subTest(case=label):
+                denied = self.pkg._pre_tool_call(tool_name=tool, args=args, session_id="negation-long", workspace=Path.cwd())
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertIn("negation-cluster", denied["message"])
+        clean = self.pkg._pre_tool_call(
+            tool_name="write_file",
+            args={"path": long_path, "content": self._case("n01") + "\n"},
+            session_id="negation-long",
+            workspace=Path.cwd(),
+        )
+        self.assertIsNone(clean)
+
+    def _three_ways(self, existing, old, new, path="README.md"):
+        """The same edit as a replace, a V4A patch and a whole-file write_file, through the real hook."""
+        proposed = existing.replace(old, new, 1)
+        v4a_body = "@@\n" + "\n".join([f"-{line}" for line in old.split("\n")] + [f"+{line}" for line in new.split("\n")])
+        Path(path).write_text(existing, encoding="utf-8")
+        results = {
+            "replace": self._edit(existing, {"mode": "replace", "old_string": old, "new_string": new}, path),
+            "patch": self._edit(existing, self._v4a(v4a_body, path), path),
+        }
+        Path(path).write_text(existing, encoding="utf-8")
+        results["write_file"] = self.pkg._pre_tool_call(
+            tool_name="write_file", args={"path": path, "content": proposed}, session_id="negation-edit", workspace=Path.cwd()
+        )
+        return results
+
+    def test_an_edit_that_adds_two_pledges_to_a_file_holding_one_is_refused(self):
+        existing = "이 표는 일반화가 아닙니다.\n\n본문.\n"
+        for label, denied in self._three_ways(existing, "본문.", "결론이 아닙니다.\n\n순위가 아닙니다.").items():
+            with self.subTest(case=label):
+                self.assertEqual((denied or {}).get("action"), "block")
+                self.assertIn("ko-negative-pledge-repeat", denied["message"])
+
+    def test_an_edit_between_two_old_pledges_is_allowed(self):
+        existing = "결론이 아닙니다.\n\n중간 문단입니다.\n\n순위가 아닙니다.\n"
+        for label, denied in self._three_ways(existing, "중간 문단입니다.", "중간 문단은 고쳤습니다.").items():
+            with self.subTest(case=label):
+                self.assertIsNone(denied)
+
+    def test_a_deliverable_above_the_working_directory_is_judged_on_its_own_path(self):
+        # After `cd sources` the hook's base is the subfolder; the report one level up is still a deliverable.
+        project = Path.cwd().resolve()
+        (project / "sources").mkdir()
+        p01 = f"# 이용 현황\n\n{self._case('p01')}\n"
+        for label, path in (("absolute", str(project / "report.md")), ("parent-relative", "../report.md")):
+            for tool, args in (
+                ("write_file", {"path": path, "content": p01}),
+                ("patch", {"mode": "patch", "patch": f"*** Begin Patch\n*** Add File: {path}\n+{self._case('p01')}\n*** End Patch\n"}),
+            ):
+                with self.subTest(path=label, tool=tool):
+                    denied = self.pkg._pre_tool_call(tool_name=tool, args=args, session_id="negation-cwd", workspace=project / "sources")
+                    self.assertEqual((denied or {}).get("action"), "block")
+                    self.assertIn("negation-cluster", denied["message"])
+        for path in (str(project / "plans" / "notes.md"), "../plans/notes.md", "../HANDOFF.md", "../.hermes/notes.md"):
+            with self.subTest(internal=path):
+                self.assertIsNone(
+                    self.pkg._pre_tool_call(
+                        tool_name="write_file", args={"path": path, "content": p01}, session_id="negation-cwd", workspace=project / "sources"
+                    )
+                )
+
+    def test_a_relative_path_resolves_against_the_terminal_session_cwd(self):
+        # Hermes resolves file-tool paths against the session cwd a terminal `cd` recorded, not the process cwd.
+        project = Path.cwd().resolve()
+        (project / "sources").mkdir()
+        fake = type(sys)("tools.terminal_tool")
+        fake.get_session_cwd = lambda task_id: str(project / "sources") if task_id == "task-cwd" else None
+        p01 = f"# 이용 현황\n\n{self._case('p01')}\n"
+        with mock.patch.dict(sys.modules, {"tools.terminal_tool": fake}):
+            denied = self.pkg._pre_tool_call(
+                tool_name="write_file", args={"path": "../report.md", "content": p01}, session_id="negation-cwd", task_id="task-cwd"
+            )
+            self.assertEqual((denied or {}).get("action"), "block")
+            (project / "sources" / "notes.md").write_text(p01, encoding="utf-8")
+            unchanged_cluster = self.pkg._pre_tool_call(
+                tool_name="write_file", args={"path": "notes.md", "content": p01 + "\n표 1을 덧붙였습니다.\n"}, session_id="negation-cwd", task_id="task-cwd"
+            )
+            self.assertIsNone(unchanged_cluster, "the edit was diffed against the wrong base directory")
+
+
+    def test_host_state_and_scratch_files_outside_the_project_are_allowed(self):
+        # p01 written to ~/.<host>/... and /tmp/... stand-ins, outside both the launch project and the cwd.
+        project = Path.cwd().resolve()
+        (project / "sources").mkdir()
+        p01 = f"# 이용 현황\n\n{self._case('p01')}\n"
+        with tempfile.TemporaryDirectory() as elsewhere:
+            home = Path(elsewhere).resolve()
+            for label, path in (
+                ("host-config", home / ".agenthost" / "AGENTS.md"),
+                ("host-memory", home / ".claude" / "projects" / "x" / "memory" / "m.md"),
+                ("tmp-scratch", home / "scratchpad" / "notes.md"),
+            ):
+                for tool, args in (
+                    ("write_file", {"path": str(path), "content": p01}),
+                    ("patch", {"mode": "patch", "patch": f"*** Begin Patch\n*** Add File: {path}\n+{self._case('p01')}\n*** End Patch\n"}),
+                ):
+                    with self.subTest(path=label, tool=tool):
+                        self.assertIsNone(
+                            self.pkg._pre_tool_call(tool_name=tool, args=args, session_id="negation-root", workspace=project / "sources")
+                        )
+
+    def test_the_git_toplevel_above_the_launch_directory_bounds_the_project(self):
+        # Hermes launched in <repo>/app with the terminal in app/sources: <repo>/report.md is still the project's.
+        project = Path.cwd().resolve()
+        subprocess.run(["git", "init", "-q", str(project)], check=True)
+        (project / "app" / "sources").mkdir(parents=True)
+        os.chdir(project / "app")
+        p01 = f"# 이용 현황\n\n{self._case('p01')}\n"
+        denied = self.pkg._pre_tool_call(
+            tool_name="write_file", args={"path": "../../report.md", "content": p01}, session_id="negation-root", workspace=project / "app" / "sources"
+        )
+        self.assertEqual((denied or {}).get("action"), "block")
+        self.assertIn("negation-cluster", denied["message"])
+
+    def test_the_launch_project_holds_when_the_terminal_session_cwd_moves_out(self):
+        # The terminal session cwd can move under the launch directory; the project stays judged and so does the new cwd.
+        project = Path.cwd().resolve()
+        p01 = f"# 이용 현황\n\n{self._case('p01')}\n"
+        with tempfile.TemporaryDirectory() as elsewhere:
+            moved = Path(elsewhere).resolve()
+            fake = type(sys)("tools.terminal_tool")
+            fake.get_session_cwd = lambda task_id: str(moved)
+            with mock.patch.dict(sys.modules, {"tools.terminal_tool": fake}):
+                for label, path in (("project", str(project / "report.md")), ("session-cwd", "notes.md")):
+                    with self.subTest(path=label):
+                        denied = self.pkg._pre_tool_call(
+                            tool_name="write_file", args={"path": path, "content": p01}, session_id="negation-root", task_id="task-moved"
+                        )
+                        self.assertEqual((denied or {}).get("action"), "block")
 
 if __name__ == "__main__":
     unittest.main()

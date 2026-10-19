@@ -9,6 +9,8 @@ Apply to new chat prose and file content. Read only text you add or change. Pres
 
 Block only clear drafting residue such as label-only evidence/source lines, stacked generic caveats, model disclaimers, or chatbot sign-offs. Treat vocabulary, contrast, triads, and rhythm as warnings to inspect; keep accurate, natural language. Preserve facts, numbers, names, citations, modality, scope, register, and useful structure. Never infer authorship or optimize a detector score.
 
+Say what a number or thing is first, then add a needed caveat once: write "18,420회는 같은 사람의 반복 방문을 포함한 방문 횟수 합계입니다" in place of `18,420회는 주민 수가 아님`. The `write_file`/`patch` guard denies a paragraph, list or table column holding two Korean definitional negations or three in any language; rewordings such as `~로 읽을 수 없음` and `does not mean` count too. Two that are not both Korean draw a `negation-cluster` warning.
+
 Use citations in the requested format. State a material risk once, plainly, in the chat reply; keep a reader deliverable focused on its purpose. Keep internal plans, evidence, ledgers, status, and machine-readable records detailed.
 
 The `write_file`/`patch` pre-tool guard can deny block-tier text before save. Office and PDF extraction runs after a completed write, so a block means fix the source and rebuild. If asked to revise prose, return the requested content without an audit preamble; do not change files or fetch sources unless the user asked.

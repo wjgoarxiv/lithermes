@@ -282,8 +282,98 @@ def _matches_language(rule: dict, text: str) -> bool:
     return True
 
 
+NEGATION_CLUSTER_ID = "negation-cluster"
+NEGATION_BLOCK_KO = 2
+NEGATION_BLOCK_TOTAL = 3
+NEGATION_WARN_TOTAL = 2
+_NEGATION_KO = re.compile(r"아닙니다|아님|아니다|아니며|아니라|아닌")
+_NEGATION_KO_REWORD = re.compile(
+    r"(?:로|으로) (?:읽을|볼|해석할|간주할) 수 없|(?:로|으로) 보지 않|(?:을|를) (?:뜻하지|의미하지|나타내지|가리키지) 않"
+    r"|(?:와|과)는 다(?:릅니다|르다|름|르며|르고|르므로)|(?:로|으로) (?:읽으면|보면|해석하면) 안 "
+)
+_NEGATION_EN = re.compile(r"\b(?:is not|are not|isn't|aren't|not a|rather than)\b", re.IGNORECASE)
+_NEGATION_EN_REWORD = re.compile(
+    r"\b(?:should not|cannot|can't|must not) be (?:read|taken|interpreted|treated) as\b|\b(?:does|do) not (?:mean|represent|indicate)\b",
+    re.IGNORECASE,
+)
+_TABLE_RULE_ROW = re.compile(r"[\s|:-]+")
+_SHORT_TABLE_CELL = 12
+STDIN_WARNING_CAP = 256
+STDIN_BLOCK_CAP = 1024
+STDIN_OUTPUT_BYTES = 1024 * 1024
+
+
+def _negations(text: str) -> list[tuple[re.Match, bool]]:
+    """Definitional negations in ``text`` as (match, is_korean), plain and reworded forms alike."""
+    found = [(match, True) for pattern in (_NEGATION_KO, _NEGATION_KO_REWORD) for match in pattern.finditer(text)]
+    found += [(match, False) for pattern in (_NEGATION_EN, _NEGATION_EN_REWORD) for match in pattern.finditer(text)]
+    return sorted(found, key=lambda item: item[0].start())
+
+
+def _negation_finding(file: str, units: list[tuple[str, int]], excerpt: str) -> dict | None:
+    """Block on two Korean or three negations in total, warn on exactly two."""
+    hits = [(match, korean, line) for text, line in units for match, korean in _negations(text)]
+    korean = sum(1 for _match, is_korean, _line in hits if is_korean)
+    if korean >= NEGATION_BLOCK_KO or len(hits) >= NEGATION_BLOCK_TOTAL:
+        severity = "block"
+    elif len(hits) >= NEGATION_WARN_TOTAL:
+        severity = "warn"
+    else:
+        return None
+    return {
+        "file": str(file),
+        "rule": NEGATION_CLUSTER_ID,
+        "severity": severity,
+        "line": min(line for _match, _korean, line in hits),
+        "line_end": max(line for _match, _korean, line in hits),
+        "match": " … ".join(match.group(0) for match, _korean, _line in hits)[:240],
+        "excerpt": re.sub(r"\s+", " ", excerpt.strip())[:180],
+    }
+
+
+def negation_cluster_findings(rows: list[dict], file: str = "<stdin>") -> list[dict]:
+    """Count definitional negations per paragraph, list block or table column.
+
+    Fenced code and blockquote rows are already skipped and inline code is
+    blanked by ``_source_rows``; a skipped or blank row ends a block. The line
+    engine has no block scope, so this check sits beside it.
+    """
+    blocks: list[list[dict]] = []
+    current: list[dict] = []
+    for row in rows:
+        if row["skipped"] or not row["candidate"].strip():
+            if current:
+                blocks.append(current)
+            current = []
+        else:
+            current.append(row)
+    if current:
+        blocks.append(current)
+    findings = []
+    for block in blocks:
+        excerpt = " ".join(row["candidate"] for row in block)
+        if all(row["candidate"].lstrip().startswith("|") for row in block):
+            columns: dict[int, list[tuple[str, int]]] = {}
+            for row in block:
+                if _TABLE_RULE_ROW.fullmatch(row["candidate"]):
+                    continue
+                cells = [cell.strip() for cell in row["candidate"].strip().strip("|").split("|")]
+                for index, cell in enumerate(cells):
+                    if len(cell) > _SHORT_TABLE_CELL:
+                        columns.setdefault(index, []).append((cell, row["number"]))
+            candidates = [_negation_finding(file, cells, excerpt) for cells in columns.values()]
+        else:
+            candidates = [_negation_finding(file, [(row["candidate"], row["number"]) for row in block], excerpt)]
+        findings.extend(item for item in candidates if item is not None)
+    return findings
+
+
 def scan_text(text: str, rules: Iterable[dict] | None = None, file: str = "<stdin>") -> list[dict]:
-    """Return at most one finding per rule segment with canonical line mapping."""
+    """Return at most one finding per rule segment with canonical line mapping.
+
+    With the bundled rule set (``rules`` omitted) the block-scoped
+    ``negation-cluster`` check is added; an explicit rule list scans only those rules.
+    """
     if _is_internal_path(file):
         return []
     selected = list(rules) if rules is not None else load_rules()
@@ -303,15 +393,24 @@ def scan_text(text: str, rules: Iterable[dict] | None = None, file: str = "<stdi
             if match is None:
                 continue
             excerpt = re.sub(r"\s+", " ", segment["text"].strip())[:180]
-            findings.append({
+            line = _line_at_offset(segment, match.start())
+            line_end = _line_at_offset(segment, max(match.start(), match.end() - 1))
+            finding = {
                 "file": str(file),
                 "rule": rule["id"],
                 "severity": rule["severity"],
-                "line": _line_at_offset(segment, match.start()),
-                "line_end": _line_at_offset(segment, max(match.start(), match.end() - 1)),
+                "line": line,
+                "line_end": line_end,
                 "match": match.group(0)[:240],
                 "excerpt": excerpt,
-            })
+            }
+            if rule["scope"] == "document":
+                # A document-scope match runs from its first occurrence to its last; the
+                # lines between belong to neither, so only the two ends are occurrence lines.
+                finding["lines"] = sorted({line, line_end})
+            findings.append(finding)
+    if rules is None:
+        findings.extend(negation_cluster_findings(rows, file))
     return findings
 
 
@@ -354,6 +453,19 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, UnicodeError, ValueError, json.JSONDecodeError, RuntimeError) as error:
         print(f"LIT_HUMANIZER_SCAN_ERROR: {error}", file=sys.stderr)
         return 3
+    if args.stdin_json:
+        # The pre-write guard rejects oversized output; warnings must never crowd out a block,
+        # and a flood of blocks is trimmed so the guard still sees one instead of failing open.
+        # Each finding repeats the path, so the output is also capped by bytes, blocks first.
+        warnings = [finding for finding in findings if finding["severity"] != "block"]
+        blocks = [finding for finding in findings if finding["severity"] == "block"]
+        kept, size = [], 2
+        for finding in blocks[:STDIN_BLOCK_CAP] + warnings[:STDIN_WARNING_CAP]:
+            size += len(json.dumps(finding, ensure_ascii=False, separators=(",", ":")).encode("utf-8")) + 1
+            if size > STDIN_OUTPUT_BYTES and kept:
+                break
+            kept.append(finding)
+        findings = kept
     if args.stdin_json or args.json:
         print(json.dumps(findings, ensure_ascii=False, separators=(",", ":")))
     else:

@@ -15,6 +15,7 @@ this instructs a rebuild; it cannot refuse the write.
 from __future__ import annotations
 
 import difflib
+import errno
 import json
 import os
 import re
@@ -171,22 +172,50 @@ def _directory_flags() -> int | None:
     return os.O_RDONLY | directory | nofollow | getattr(os, "O_CLOEXEC", 0)
 
 
-def _relative_artifact_path(path_text: str, workspace: Path) -> Path | None:
+def _project_root() -> Path | None:
+    """The Hermes launch directory (this process's cwd), widened to the git toplevel above it."""
+    try:
+        launch = Path(os.getcwd()).resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    return next((folder for folder in (launch, *launch.parents) if (folder / ".git").exists()), launch)
+
+
+def _locate_artifact(path_text: str, workspace: Path) -> tuple[Path, Path] | None:
+    """(read root, path under it) for a reader copy, or None for internal and non-reader paths.
+
+    A path outside the working directory (absolute, or ``../`` after a terminal ``cd``) is
+    still a deliverable when it lies inside the launch project: it is judged by its path
+    under the project and read under its own parent. Anything outside both is skipped.
+    """
     candidate = Path(path_text).expanduser()
     target = candidate if candidate.is_absolute() else workspace / candidate
     absolute = Path(os.path.abspath(os.fspath(target)))
     try:
-        relative = absolute.relative_to(workspace)
+        root, relative = workspace, absolute.relative_to(workspace)
+        judged = relative
     except ValueError:
-        return None
+        project = _project_root()
+        root, relative = Path(os.path.realpath(absolute.parent)), Path(absolute.name)
+        try:
+            judged = (root / relative).relative_to(project) if project else None
+        except ValueError:
+            judged = None
+        if judged is None:
+            return None
     if (
         not relative.parts
         or any(part in {"", ".", ".."} for part in relative.parts)
         or relative.suffix.lower() not in READER_FACING_SUFFIXES
-        or _INTERNAL_FILE.search(relative.as_posix())
+        or _INTERNAL_FILE.search(judged.as_posix())
     ):
         return None
-    return relative
+    return root, relative
+
+
+def _relative_artifact_path(path_text: str, workspace: Path) -> Path | None:
+    located = _locate_artifact(path_text, workspace)
+    return located[1] if located else None
 
 
 def _read_stable_file_result(
@@ -195,10 +224,11 @@ def _read_stable_file_result(
     byte_limit: int,
     max_file_bytes: int = MAX_FILE_BYTES,
 ) -> _StableFile | _ReadBudgetExceeded | None:
-    relative = _relative_artifact_path(path_text, workspace)
+    located = _locate_artifact(path_text, workspace)
     directory_flags = _directory_flags()
-    if relative is None or directory_flags is None or byte_limit < 0:
+    if located is None or directory_flags is None or byte_limit < 0:
         return None
+    workspace, relative = located
     read_limit = min(max_file_bytes, byte_limit)
     root_parts = tuple(part for part in workspace.parts if part != os.path.sep)
     directory_fds: list[int] = []
@@ -387,20 +417,31 @@ def _run_detector(text: str, path_text: str) -> list[dict] | None:
             or finding["line"] < 1
             or finding["line_end"] < finding["line"]
             or not isinstance(finding.get("match"), str)
+            or not isinstance(finding.get("lines", []), list)
+            or not all(isinstance(line, int) for line in finding.get("lines", []))
         ):
             return None
     return findings
+
+
+def _touches_changed(finding: dict, changed: set[int]) -> bool:
+    """A document-scope finding lists its occurrence lines; any other finding counts its whole span."""
+    if "lines" in finding:
+        return any(line in changed for line in finding["lines"])
+    return any(finding["line"] <= line <= finding["line_end"] for line in changed)
 
 
 def _changed_findings(text: str, path_text: str, changed: set[int], session_id: str) -> list[dict] | None:
     findings = _run_detector(_mask_exact_user_quotes(text, session_id), path_text)
     if findings is None:
         return None
-    return [
-        finding
-        for finding in findings
-        if any(finding["line"] <= line <= finding["line_end"] for line in changed)
-    ]
+    return [finding for finding in findings if _touches_changed(finding, changed)]
+
+
+NEGATION_ADVICE = (
+    "negation-cluster: several negations sit in one place. Say what the thing is first, then add the caveat once. "
+    "Example: write \"18,420 visits in total, including repeat visits\" instead of \"18,420 is not the number of residents\"."
+)
 
 
 def _block_message(findings: list[dict]) -> dict[str, str] | None:
@@ -409,9 +450,10 @@ def _block_message(findings: list[dict]) -> dict[str, str] | None:
         return None
     refs = ", ".join(f"{item['rule']}:{item['line']}" for item in blocks[:5])
     extra = f" (+{len(blocks) - 5})" if len(blocks) > 5 else ""
+    advice = f" {NEGATION_ADVICE}" if any(item["rule"] == "negation-cluster" for item in blocks) else ""
     return {
         "action": "block",
-        "message": f"LitHumanizer blocked {len(blocks)} block-tier finding(s) in added prose ({refs}{extra}). Revise the added wording; warnings remain contextual review signals.",
+        "message": f"LitHumanizer blocked {len(blocks)} block-tier finding(s) in added prose ({refs}{extra}). Revise the added wording; warnings remain contextual review signals.{advice}",
     }
 
 
@@ -420,6 +462,8 @@ def _warn_if_needed(session_id: str, findings: list[dict]) -> None:
     if warnings:
         refs = ", ".join(f"{item['rule']}:{item['line']}" for item in warnings[:5])
         _queue_advisory(session_id, f"LitHumanizer warning-tier review signal(s) in added prose: {refs}. Consider them in context; they are not a ban or authorship judgment.")
+        if any(item["rule"] == "negation-cluster" for item in warnings):
+            _queue_advisory(session_id, NEGATION_ADVICE)
 
 
 def _fail_open(session_id: str) -> None:
@@ -435,8 +479,12 @@ def _read_previous(path_text: str, workspace: Path) -> str | None:
             return None
     target = Path(path_text).expanduser()
     target = target if target.is_absolute() else workspace / target
-    if result is None and not target.exists() and not target.is_symlink():
-        return ""
+    try:
+        if result is None and not target.exists() and not target.is_symlink():
+            return ""
+    except OSError as error:
+        # No file can sit at a path the system refuses to name, so the whole edit is new text.
+        return "" if error.errno == errno.ENAMETOOLONG else None
     return None
 
 
@@ -450,7 +498,11 @@ def _check_text_change(session_id: str, path_text: str, proposed: str, workspace
     if previous is None:
         _fail_open(session_id)
         return None
-    if len(previous.encode("utf-8")) > MAX_DETECT_BYTES:
+    return _check_proposed(session_id, path_text, previous, proposed)
+
+
+def _check_proposed(session_id: str, path_text: str, previous: str, proposed: str) -> dict[str, str] | None:
+    if len(proposed.encode("utf-8")) > MAX_DETECT_BYTES or len(previous.encode("utf-8")) > MAX_DETECT_BYTES:
         _fail_open(session_id)
         return None
     changed = _changed_lines(previous, proposed)
@@ -464,33 +516,106 @@ def _check_text_change(session_id: str, path_text: str, proposed: str, workspace
     return _block_message(findings)
 
 
-def _patch_added_chunks(patch_text: str) -> list[tuple[str, str]]:
-    chunks: list[tuple[str, str]] = []
-    path = ""
-    kind = ""
-    added: list[str] = []
-
-    def flush() -> None:
-        nonlocal added
-        if path and kind in {"Add", "Update"} and added:
-            chunks.append((path, "\n".join(added)))
-        added = []
-
-    for line in patch_text.splitlines():
+def _patch_operations(patch_text: str) -> list[tuple[str, str, list[tuple[str, list[tuple[str, str]]]]]]:
+    """V4A Add/Update operations as (kind, path, hunks); a hunk is (context hint, [(prefix, line)])."""
+    operations: list[tuple[str, str, list[tuple[str, list[tuple[str, str]]]]]] = []
+    hunks: list[tuple[str, list[tuple[str, str]]]] | None = None
+    for raw in patch_text.split("\n"):
+        line = raw[:-1] if raw.endswith("\r") else raw
         header = _V4A_FILE.match(line)
         if header:
-            flush()
-            kind, path = header.group(1), header.group(2).strip()
-        elif _V4A_MOVE.match(line):
-            flush()
-        elif line.startswith("+++") or line.startswith("---"):
-            flush()
-        elif line.startswith("+"):
-            added.append(line[1:])
+            hunks = [] if header.group(1) in {"Add", "Update"} else None
+            if hunks is not None:
+                operations.append((header.group(1), header.group(2).strip(), hunks))
+        elif _V4A_MOVE.match(line) or line.startswith("*** "):
+            continue
+        elif hunks is None or not line or line.startswith(("+++", "---", "\\")):
+            continue
+        elif line.startswith("@@"):
+            hint = re.match(r"@@\s*(.+?)\s*@@", line)
+            hunks.append((hint.group(1) if hint else "", []))
         else:
-            flush()
-    flush()
-    return chunks
+            if not hunks:
+                hunks.append(("", []))
+            hunks[-1][1].append((line[0], line[1:]) if line[0] in "+- " else (" ", line))
+    return [(kind, path, [hunk for hunk in found if hunk[1]]) for kind, path, found in operations]
+
+
+def _apply_hunks(previous: str, hunks: list[tuple[str, list[tuple[str, str]]]]) -> str | None:
+    """Apply V4A hunks the way Hermes places them; None when a hunk does not match exactly once."""
+    text = previous
+    for hint, lines in hunks:
+        search = [content for prefix, content in lines if prefix != "+"]
+        replace = "\n".join(content for prefix, content in lines if prefix != "-")
+        if not search:
+            if hint and text.count(hint) > 1:
+                return None
+            if hint and hint in text:
+                eol = text.find("\n", text.find(hint))
+                text = text + "\n" + replace if eol == -1 else text[: eol + 1] + replace + "\n" + text[eol + 1 :]
+            else:
+                text = text.rstrip("\n") + "\n" + replace + "\n"
+            continue
+        pattern = "\n".join(search)
+        if not pattern.strip() or text.count(pattern) != 1:
+            return None
+        text = text.replace(pattern, replace, 1)
+    return text
+
+
+def _hunk_text(hunks: list[tuple[str, list[tuple[str, str]]]]) -> tuple[str, set[int]]:
+    """Context and added lines with a blank line at every hunk break; the added lines count as changed."""
+    lines: list[str] = []
+    changed: set[int] = set()
+    for _hint, hunk in hunks:
+        if lines:
+            lines.append("")
+        for prefix, content in hunk:
+            if prefix == "-":
+                continue
+            lines.append(content)
+            if prefix == "+":
+                changed.add(len(lines))
+    return "\n".join(lines) + "\n", changed
+
+
+def _check_patch_operation(
+    session_id: str, kind: str, path_text: str, hunks: list[tuple[str, list[tuple[str, str]]]], workspace: Path
+) -> dict[str, str] | None:
+    previous = _read_previous(path_text, workspace)
+    if previous is not None:
+        proposed = "\n".join(c for _h, hunk in hunks for p, c in hunk if p == "+") + "\n" if kind == "Add" else _apply_hunks(previous, hunks)
+        if proposed is not None:
+            return _check_proposed(session_id, path_text, previous, proposed)
+    text, changed = _hunk_text(hunks)
+    if not changed:
+        return None
+    if len(text.encode("utf-8")) > MAX_DETECT_BYTES:
+        _fail_open(session_id)
+        return None
+    findings = _changed_findings(text, path_text, changed, session_id)
+    if findings is None:
+        _fail_open(session_id)
+        return None
+    _warn_if_needed(session_id, findings)
+    return _block_message(findings)
+
+
+def _file_tool_base(task_id: object) -> str:
+    """The directory Hermes resolves a relative file-tool path against: the session cwd a terminal ``cd`` recorded."""
+    terminal = sys.modules.get("tools.terminal_tool")
+    session_cwd = getattr(terminal, "get_session_cwd", None)
+    if callable(session_cwd):
+        try:
+            recorded = session_cwd(str(task_id or "") or None)
+        except Exception:  # noqa: BLE001 - a host helper failure falls back to the next anchor
+            recorded = None
+        if isinstance(recorded, str) and os.path.isabs(recorded) and os.path.isdir(recorded):
+            return recorded
+    configured = os.environ.get("TERMINAL_CWD", "")
+    if os.path.isabs(configured) and os.path.isdir(configured):
+        return configured
+    return os.getcwd()
 
 
 def pre_tool_call(
@@ -499,6 +624,7 @@ def pre_tool_call(
     session_id: object,
     *,
     workspace: object = None,
+    task_id: object = None,
 ) -> dict[str, str] | None:
     """Block block-tier findings before Hermes persists a supported text edit."""
     name = str(tool_name or "")
@@ -507,7 +633,7 @@ def pre_tool_call(
     if not key or name not in {"write_file", "patch"}:
         return None
     try:
-        root = Path(workspace or Path.cwd()).expanduser().resolve(strict=True)
+        root = Path(workspace or _file_tool_base(task_id)).expanduser().resolve(strict=True)
     except (OSError, RuntimeError):
         _fail_open(key)
         return None
@@ -525,21 +651,18 @@ def pre_tool_call(
         if not isinstance(old_string, str) or not isinstance(new_string, str):
             return None
         previous = _read_previous(path_text, root)
+        if previous == "" and old_string:
+            return _check_text_change(key, path_text, new_string, root)
         if previous is None or old_string not in previous:
             _fail_open(key)
             return None
         proposed = previous.replace(old_string, new_string) if payload.get("replace_all") else previous.replace(old_string, new_string, 1)
         return _check_text_change(key, path_text, proposed, root)
     if mode == "patch" and isinstance(payload.get("patch"), str):
-        for path_text, added_text in _patch_added_chunks(payload["patch"]):
+        for kind, path_text, hunks in _patch_operations(payload["patch"]):
             if not _path_is_reader_copy(path_text, root):
                 continue
-            findings = _changed_findings(added_text, path_text, set(range(1, len(added_text.splitlines()) + 1)), key)
-            if findings is None:
-                _fail_open(key)
-                continue
-            _warn_if_needed(key, findings)
-            denial = _block_message(findings)
+            denial = _check_patch_operation(key, kind, path_text, hunks, root)
             if denial:
                 return denial
     return None

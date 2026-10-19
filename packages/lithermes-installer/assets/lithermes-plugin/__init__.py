@@ -608,6 +608,7 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
         args=kwargs.get("args"),
         session_id=kwargs.get("session_id"),
         workspace=kwargs.get("workspace"),
+        task_id=kwargs.get("task_id"),
     )
     if humanizer_denial is not None:
         return humanizer_denial
