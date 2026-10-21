@@ -106,6 +106,11 @@ try:
 except (ImportError, ModuleNotFoundError):
     import deliverable_hedge_guard as _deliverable_hedges
 
+try:
+    from . import lit_reentry as _lit_reentry
+except (ImportError, ModuleNotFoundError):
+    import lit_reentry as _lit_reentry
+
 # Current-turn state stays in the compatibility facade because tests and the
 # plugin register surface intentionally inspect it directly.
 _PENDING_IGNITE: set[str] = set()
@@ -204,6 +209,7 @@ def on_session_start(**kwargs: Any) -> None:
     """
     release_browser_drive_state(kwargs.get("session_id"))
     _deliverable_hedges.release_session(kwargs.get("session_id"))
+    _lit_reentry.forget(kwargs.get("session_id"))
     _rules.begin_session(str(kwargs.get("session_id") or ""))
     _auto_handoff.begin_session(kwargs.get("session_id"))
     _print_agents_nudge(str(kwargs.get("platform") or ""))
@@ -261,6 +267,7 @@ def consume_rules_context(**kwargs: Any) -> str:
 def release_rules_session(session_id: Any) -> None:
     _rules.end_session(str(session_id or ""))
     _deliverable_hedges.release_session(session_id)
+    _lit_reentry.forget(session_id)
 
 def ignite(result: str | dict[str, str], route: str = "litwork") -> str | dict[str, str]:
     """Draw a command acknowledgement and require a separate model probe."""
@@ -1700,6 +1707,11 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     route = detect_lit_mode(user_message)
     if route is None:
         return None
+    restart_rest = _lit_reentry.restart_rest(route.objective) if route.mode == "litwork" else None
+    if restart_rest is not None:
+        # `lit new ...` / `lit restart ...` drops the active mode and routes what follows it.
+        _lit_reentry.forget(session_id)
+        route = detect_lit_mode(f"lit {restart_rest}".strip()) or route
     _deliverable_hedges.activate_skill(session_id, route.mode)
 
     record_event(
@@ -1719,6 +1731,28 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
             _evict_pending_browser_state()
         return with_reader_contract(build_natural_mode_context(route), compact=True)
 
+    active = discipline(route.mode) if session_id else ""
+    compacted = _rules.compaction_stamp(kwargs.get("conversation_history"))
+    step = _lit_reentry.decide(
+        session_id,
+        active,
+        route.objective,
+        workspace=Path.cwd().resolve(),
+        compacted=compacted,
+        review_required=detect_review_modifier(user_message),
+    )
+    if step.kind != "first":
+        if step.discipline and session_id:
+            _PENDING_DISCIPLINE[session_id] = step.discipline
+        # The activation is already in this conversation; only a requested reader
+        # mode is request-scoped and has to ride along.
+        contract = (
+            reader_facing_contract_block(requested_reader_mode, authority="current_user_request", compact=True)
+            if requested_reader_mode is not None
+            else ""
+        )
+        return {"context": "\n\n".join(part for part in (step.note, contract) if part)}
+
     browser_report = None
     if route.mode == "browser-drive":
         # Measure once. The same structured report goes to the context and the guard.
@@ -1727,12 +1761,14 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
             arm_browser_drive_guard(session_id, browser_report)
     if route.mode == "lit-plan" and route.objective:
         planned = command_lit_plan(shlex.quote(route.objective))
+        _lit_reentry.remember(session_id, active, plan=planned["plan"], compacted=compacted)
         return with_reader_contract(
                 f"{build_natural_mode_context(route)}\n\n"
                 f"Durable plan: {planned['plan']}",
                 compact=True,
         )
     if route.mode != "litwork":
+        _lit_reentry.remember(session_id, active, compacted=compacted)
         if route.mode in _SKILL_ROUTE_CONTRACTS:
             compact_contract = reader_facing_contract_block(
                 requested_reader_mode,
@@ -1765,7 +1801,10 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
                 command="lit",
             )
             run_binding = build_run_binding(load_run_state(run_dir))
+            _lit_reentry.remember(session_id, active, run=str(run_dir), compacted=compacted)
     ui_handoff = litwork_ui_handoff(route.objective)
+    # A bare `lit` with nothing active asks what to start; every other activation is unchanged.
+    idle_note = f"\n\n{_lit_reentry.IDLE_NOTE}" if not run_binding and step.idle else ""
     if requested_reader_mode is None:
         if run_binding:
             return {
@@ -1774,8 +1813,8 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
                     f"{reader_facing_contract_block(compact=True)}"
                 )
             }
-        return {"context": LIT_CONTEXT + ui_handoff}
-    return with_reader_contract(build_litwork_context(run_binding) + ui_handoff)
+        return {"context": LIT_CONTEXT + ui_handoff + idle_note}
+    return with_reader_contract(build_litwork_context(run_binding) + ui_handoff + idle_note)
 
 
 def transform_llm_output(**kwargs: Any) -> str | None:

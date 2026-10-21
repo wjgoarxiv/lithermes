@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Cover recipe: orbit loop (a system). Copy to DIR/cover/index.html and replace WORD and the
+     motto. Dots ride three rings at 3, 2 and 1 laps per loop (whole numbers close the loop) in
+     alternating directions. A gate at twelve o'clock flashes on every crossing; the crossing times
+     are computed, not detected, and each one lights the next cell of a ledger under the word.
+     There are as many crossings per loop as cells, so the ledger loops too. The word is still. -->
+<link rel="stylesheet" href="/lit/fonts.css">
+<script src="/lit/loop-kit.js"></script>
+<style>
+  html, body { margin: 0; width: 1200px; height: 600px; overflow: hidden; background: #080d14; }
+  canvas { display: block; width: 1200px; height: 600px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="2400" height="1200"></canvas>
+<script>
+const WORD = 'LITHERMES';
+const { TAU, clamp, fract, mix, ease, cubicPulse, swell } = LitLoop;
+const INK = { ground: '#080d14', ring: '#1f2a37', dash: '#2c3a4b', word: '#f2efdf', accent: '#ff6337', quiet: '#8b8f8f' };
+const ctx = document.getElementById('c').getContext('2d');
+ctx.scale(2, 2);
+const CX = 870, CY = 300, GATE = -Math.PI / 2;
+const RINGS = [{ r: 104, laps: 3, dots: 3, dir: 1, size: 5.5 }, { r: 170, laps: 2, dots: 2, dir: -1, size: 6.5 }, { r: 238, laps: 1, dots: 3, dir: 1, size: 7.5 }];
+// Dot k on a ring sits at GATE + dir * TAU * (laps * t + k / dots); it crosses the gate whenever
+// laps * t + k / dots is a whole number. Sorted, those times are the ledger's cells.
+const crossings = RINGS.flatMap((g) => Array.from({ length: g.dots * g.laps }, (_, n) => fract((Math.floor(n / g.dots) + 1 - (n % g.dots) / g.dots) / g.laps))).sort((a, b) => a - b);
+const angle = (g, k, t) => GATE + g.dir * TAU * (g.laps * t + k / g.dots);
+
+function hexagon(x, y, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) { const a = (i * TAU) / 6 + Math.PI / 6; ctx[i ? 'lineTo' : 'moveTo'](x + r * Math.cos(a), y + r * Math.sin(a)); }
+  ctx.closePath();
+}
+
+function word(mask) {
+  ctx.fillStyle = mask ? '#fff' : INK.word;
+  ctx.font = '800 92px "JetBrains Mono"';
+  ctx.fillText(WORD, 70, 292);
+}
+
+window.renderFrame = (t, options = {}) => {
+  ctx.fillStyle = options.mask ? '#000' : INK.ground;
+  ctx.fillRect(0, 0, 1200, 600);
+  if (options.mask) { word(true); return; }
+  // Slow: each ring's dashed shadow turns a quarter lap per loop, alternate rings the other way.
+  RINGS.forEach((g, i) => {
+    ctx.lineWidth = 1.5; ctx.strokeStyle = INK.ring;
+    ctx.beginPath(); ctx.arc(CX, CY, g.r, 0, TAU); ctx.stroke();
+    ctx.save();
+    ctx.setLineDash([2, 10]); ctx.lineDashOffset = (i % 2 ? 1 : -1) * 0.25 * t * TAU * g.r;
+    ctx.strokeStyle = INK.dash; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(CX, CY, g.r + 7, 0, TAU); ctx.stroke();
+    ctx.restore();
+  });
+  // Mid and beat: the core breathes once per loop and rings on each of four bars.
+  const breath = swell(fract(t + 0.15)), bar = fract(4 * t);
+  const glow = ctx.createRadialGradient(CX, CY, 0, CX, CY, 90);
+  glow.addColorStop(0, `rgba(255,99,55,${0.18 + 0.14 * breath})`); glow.addColorStop(1, 'rgba(255,99,55,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(CX, CY, 90, 0, TAU); ctx.fill();
+  ctx.strokeStyle = `rgba(255,99,55,${0.55 * (1 - ease.outCubic(bar))})`; ctx.lineWidth = 2;
+  hexagon(CX, CY, mix(34, 98, ease.outExpo(bar))); ctx.stroke();
+  hexagon(CX, CY, 34); ctx.fillStyle = '#0d141d'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK.accent; ctx.stroke();
+  hexagon(CX, CY, 17 + 3 * breath); ctx.fillStyle = `rgba(255,140,90,${0.55 + 0.35 * breath})`; ctx.fill();
+  // Gates flash with a symmetric pulse around each crossing (an exponential tail would be a slow
+  // fade the encoder drops).
+  RINGS.forEach((g) => {
+    let hit = 0;
+    for (let k = 0; k < g.dots; k++) { const p = fract(g.laps * t + k / g.dots); hit = Math.max(hit, cubicPulse(0, 0.06, Math.min(p, 1 - p))); }
+    ctx.globalAlpha = 0.45 + 0.55 * hit; ctx.strokeStyle = INK.accent; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(CX, CY - g.r - 12 - 10 * hit); ctx.lineTo(CX, CY - g.r - 4); ctx.stroke();
+    ctx.globalAlpha = 1;
+  });
+  RINGS.forEach((g) => {
+    for (let k = 0; k < g.dots; k++) {
+      const a = angle(g, k, t), p = fract(g.laps * t + k / g.dots), pulse = cubicPulse(0, 0.035, Math.min(p, 1 - p));
+      const trail = 0.55 / g.laps + 0.25;
+      for (let s = 0; s < 14; s++) {
+        const a0 = a - g.dir * trail * (s / 14), a1 = a - g.dir * trail * ((s + 1) / 14);
+        ctx.strokeStyle = `rgba(242,239,223,${0.32 * (1 - s / 14) ** 1.6})`; ctx.lineWidth = g.size * 0.9 * (1 - s / 16);
+        ctx.beginPath(); ctx.arc(CX, CY, g.r, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke();
+      }
+      const x = CX + g.r * Math.cos(a), y = CY + g.r * Math.sin(a);
+      if (pulse > 0.01) {
+        const h = ctx.createRadialGradient(x, y, 0, x, y, 28);
+        h.addColorStop(0, `rgba(255,140,90,${0.7 * pulse})`); h.addColorStop(1, 'rgba(255,99,55,0)');
+        ctx.fillStyle = h; ctx.beginPath(); ctx.arc(x, y, 28, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = pulse > 0.5 ? INK.accent : INK.word;
+      ctx.beginPath(); ctx.arc(x, y, g.size * (1 + 0.6 * pulse), 0, TAU); ctx.fill();
+    }
+  });
+  word(false);
+  ctx.font = '500 18px "JetBrains Mono"'; ctx.fillStyle = INK.quiet;
+  let mx = 74;
+  for (const ch of 'KEEP THE WORK ') { ctx.fillText(ch, mx, 338); mx += 19.6; }
+  ctx.font = '700 18px "JetBrains Mono"'; ctx.fillStyle = INK.accent;
+  for (const ch of 'LIT.') { ctx.fillText(ch, mx, 338); mx += 19.6; }
+  // The ledger: cell i lights at crossing i and steps down in flat levels until the loop returns.
+  crossings.forEach((c, i) => {
+    const since = fract(t - c), level = since < 0.03 ? 1 : since < 0.35 ? 0.6 : since < 0.7 ? 0.3 : 0.12;
+    ctx.fillStyle = INK.ring; ctx.fillRect(74 + 29 * i, 378, 22, 8);
+    ctx.fillStyle = `rgba(255,99,55,${clamp(level)})`; ctx.fillRect(74 + 29 * i, 378, 22, 8);
+  });
+};
+Promise.all(['800 92px "JetBrains Mono"', '500 18px "JetBrains Mono"', '700 18px "JetBrains Mono"'].map((f) => document.fonts.load(f)))
+  .then(() => { window.renderFrame(0); window.ready = true; });
+</script>
+</body>
+</html>

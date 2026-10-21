@@ -27,13 +27,13 @@ These are all the skills you can call in LitHermes, with the words that start ea
 </tr>
 <tr>
 <td><img src="./assets/skills/review-work.webp" width="240" alt="Five reviewers read the same change on their own, and each leads with what it found." /></td>
-<td><code>review-work</code><br /><sub><code>lit review &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
-<td>Five reviewers read the same change on their own, and each leads with what it found.</td>
+<td><code>review-work</code><br /><sub><code>lit review [plan|work] &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
+<td>A plan review checks a plan before <code>start-work</code>. A work review has five reviewers read the finished change on their own, and each leads with what it found. It picks the mode from what exists and says which on its first line.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/litgoal.webp" width="240" alt="One objective with checkable criteria, kept on disk so the next session can pick it up." /></td>
 <td><code>litgoal</code><br /><sub><code>lit goal &lt;outcome&gt;</code> · <code>/litgoal</code></sub></td>
-<td>One objective with checkable criteria, kept on disk so the next session can pick it up.</td>
+<td>Sets and keeps the finish line: one objective with checkable criteria, kept on disk so the next session can pick it up. <code>lit-loop</code> and <code>start-work</code> run toward it.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/lit-recap.webp" width="240" alt="A read-only summary: done, in progress, blocked, where the evidence is, what comes next." /></td>
@@ -44,6 +44,11 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td><img src="./assets/skills/lit-handoff.webp" width="240" alt="Type handoff to get a continuation file the next session can read and resume from." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td>Type <code>handoff</code> to get a continuation file the next session can read and resume from.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-brainstorm</code><br /><sub><code>lit brainstorm &lt;ask&gt;</code> · <code>lit ideation &lt;ask&gt;</code> · <code>lit idea &lt;ask&gt;</code></sub></td>
+<td>For an open ask like a name or a direction. Many different options first, then a short list with trade-offs. You pick, and it hands the pick to <code>deep-interview</code> or <code>lit-plan</code>. It never builds.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/deep-interview.webp" width="240" alt="One question at a time until the idea is clear enough to build. A meter shows how much is still vague." /></td>
@@ -200,11 +205,12 @@ These are all the skills you can call in LitHermes, with the words that start ea
 | `handoff` or `/lit-handoff` | Carry the current work and next step into another session. |
 | `lit-plan` or `/lit-plan` | Write a plan before anything is executed. |
 | `/start-work <approved-plan>` | Execute an approved plan. |
-| `/review-work` | Review a plan or result and record findings. |
-| `lit review <target>` | Review a plan or result. |
+| `/review-work [plan\|work]` | Review a plan or finished work and record findings. |
+| `lit review [plan\|work] <target>` | Review a plan before `start-work`, or finished work after it. |
+| `lit brainstorm <ask>`, `lit ideation <ask>`, `lit idea <ask>` | Open an idea session: many options, a short list, your pick. |
 | `litresearch` or `lit research <question>` | Run the research workflow, with source notes. |
 | `/lit-loop` | Start, inspect, resume or close an explicit loop. |
-| `/litgoal` | Track criteria, evidence, checkpoints and blockers. |
+| `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints and blockers. |
 | `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases include `/lit-korean`, `/text-naturalization`, `/text-neutralization` and `/korean-ai-slop-remover`. |
 | `/lit-diagram-drawer <brief>` | Create an accessible, Korean-ready diagram and check its content and geometry with the installed Python tools. |
 | `/lit-pptx <brief>` | Create and check a PowerPoint deck with the bundled AZURE-PRO engine. |
@@ -240,6 +246,8 @@ For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists 
 A film needs Chrome and ffmpeg on your machine, plus a few pinned helper packages and fonts. Rendering never downloads anything by itself, so those helpers wait in a local cache until a film needs them. `lithermes install` tries to fill that cache for you. If that step was skipped (with `--offline`, say) or did not finish, the installer prints one line saying so, and you can fill the cache later with `lithermes motion-runtime install`, run outside the render session.
 
 To see where things stand, run `lithermes motion-runtime status`. It reports Chrome, ffmpeg, WebGL2, whether rendering has fallen back to software, and the pinned fonts. When the film passes its final check, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
+
+A README cover is a different job, and the skill treats it as one. Ask for a README, hero or banner loop and it skips the film's beats, sound and end card. It builds one picture that keeps moving and never shows where it starts: a painting relit by a travelling light by default, or moving type, or a small system of orbits. The renderer encodes it as an animated WebP of at most 2 MiB, decodes that file again, and checks the decoded frames, because a lossy encoder quietly drops slow fades that look fine before encoding. Before it hands the loop over, it confirms that something moves in every half second, the seam is invisible, the title stays readable at README width, and a painted base still shows in the first frame. Covers need img2webp and dwebp from libwebp (gifski as a fallback), and `lithermes motion-runtime status` now reports them too.
 
 ### Interfaces and READMEs
 

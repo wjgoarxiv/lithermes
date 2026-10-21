@@ -17,6 +17,7 @@ from .constants import (
 from .discovery import find_candidates, find_project_root, path_bases
 from .engine import (
     begin_session,
+    compaction_stamp,
     consume_compaction_budget,
     dynamic_rules_block,
     end_session,
@@ -39,6 +40,7 @@ __all__ = [
     "POST_COMPACT_MAX_RULE_CHARS",
     "SOURCE_PRIORITY",
     "begin_session",
+    "compaction_stamp",
     "consume_compaction_budget",
     "dynamic_rules_block",
     "end_session",

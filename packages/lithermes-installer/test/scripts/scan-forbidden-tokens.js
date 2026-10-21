@@ -39,7 +39,8 @@ const DEFAULT_PACK_LIMITS = Object.freeze({
   deadlineMs: 120000,
   perMemberMs: 250,
   spawnTimeoutMs: 60000,
-  maxArchiveBytes: 12 * 1024 * 1024,
+  // Skills keep growing; the worst-case repack had only a 2.4 KB margin at 12 MiB.
+  maxArchiveBytes: 13 * 1024 * 1024,
   maxFileBytes: MAX_PACK_FILE_BYTES,
   maxMembers: 2048,
   maxTotalBytes: 24 * 1024 * 1024,
@@ -54,8 +55,8 @@ const KNOWN_PACK_BINARY_SHA256 = Object.freeze({
   "cover.png": "245c14ebc4fd93a088928bc8d8effe8a45c6c0de47dad60b749722746fef5bfe",
   // The published landing set is binary by design. Each exact path is pinned
   // to its reviewed bytes; no wildcard or extension-wide exemption is allowed.
-  "readme-assets/cover-motion.webp": "83f0361043b21e5aba1fdbc34737efc55f329eb36f76db6cddc6d40ad87301c7",
-  "readme-assets/cover-motion-still.webp": "8f9165e78ae6789242b4f49f47dc741ffaad23195d528260536e04ad14fe981b",
+  "readme-assets/cover-motion.webp": "6c06f2952d621bb5357f7156fb25b9bf0117688905c0b7dde19e9820bcac9254",
+  "readme-assets/cover-motion-still.webp": "7000a8cac2ecbb0415e0f29d828e4daa3e9d43ac8b0c9512709715406e2a9cce",
   "readme-assets/ignition-film.mp4": "b1579c89a677ab453765f77ae6361bd9730fabc4291a85071de7f373fc5ebfad",
   "readme-assets/lithermes-clay-icon.png": "8e665c88d29b597fd317cb8c8ec77d6f2205601f473a0d5f50374df224b3e98d",
   // Skill-table snapshots are exact, reviewed package bytes.

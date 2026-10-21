@@ -106,10 +106,17 @@ def short_author_list(frontmatter: dict) -> str:
     return f"{first_name} et al."
 
 
+def latex_fonts(publisher: dict) -> tuple[str, str]:
+    """The Latin and CJK faces the LaTeX template asks fontspec for."""
+
+    cjk_cfg = publisher["latex"].get("cjk") or {}
+    body_font = ((publisher.get("docx") or {}).get("font") or {}).get("body") or {}
+    return str(body_font.get("family") or "Times New Roman"), str(cjk_cfg.get("main_font") or "Pretendard")
+
+
 def template_variables(frontmatter: dict, publisher_name: str, publisher: dict, detected_locale: str, mode: str) -> dict[str, str]:
     latex_cfg = publisher["latex"]
-    cjk_cfg = latex_cfg.get("cjk") or {}
-    body_font = ((publisher.get("docx") or {}).get("font") or {}).get("body") or {}
+    mainfont, cjk_main_font = latex_fonts(publisher)
     title = str(frontmatter.get("title") or "")
     return {
         "title": title,
@@ -122,8 +129,8 @@ def template_variables(frontmatter: dict, publisher_name: str, publisher: dict, 
         "author-list-short": short_author_list(frontmatter),
         "documentclass": str(latex_cfg.get("documentclass") or "article"),
         "classoptions": ",".join(str(item) for item in latex_cfg.get("classoptions") or []),
-        "mainfont": str(body_font.get("family") or "Times New Roman"),
-        "cjk-main-font": str(cjk_cfg.get("main_font") or "Pretendard"),
+        "mainfont": mainfont,
+        "cjk-main-font": cjk_main_font,
         "publisher-name": publisher_name,
         "detected-locale": detected_locale,
         "mode": mode,
@@ -183,6 +190,26 @@ def kpsewhich_has(target: str) -> bool:
     return result.returncode == 0 and bool(result.stdout.strip())
 
 
+def installed_font_families() -> set[str] | None:
+    """Lower-cased family names fontconfig knows, or None when there is no fc-list to ask."""
+
+    fc_list = command_path("fc-list")
+    if not fc_list:
+        return None
+    result = run_checked([fc_list, ":", "family"])
+    if result.returncode != 0:
+        return None
+    return {name.strip().lower() for line in result.stdout.splitlines() for name in line.split(",") if name.strip()}
+
+
+def missing_pdf_fonts(publisher: dict, detected_locale: str, families: set[str] | None) -> list[str]:
+    if families is None:
+        return []
+    mainfont, cjk_main_font = latex_fonts(publisher)
+    wanted = [mainfont] + ([cjk_main_font] if detected_locale in {"ko", "mixed"} else [])
+    return [name for name in dict.fromkeys(wanted) if name.lower() not in families]
+
+
 def preflight_pdf_compile(publisher_name: str, publisher: dict, detected_locale: str) -> None:
     ensure_pandoc()
     if not command_path("xelatex"):
@@ -203,6 +230,13 @@ def preflight_pdf_compile(publisher_name: str, publisher: dict, detected_locale:
     if detected_locale in {"ko", "mixed"} and not kpsewhich_has("xeCJK.sty"):
         raise SystemExit(
             "Error: xeCJK.sty not found. Korean/CJK PDF output requires xeCJK from TeX Live."
+        )
+    missing = missing_pdf_fonts(publisher, detected_locale, installed_font_families())
+    if missing:
+        raise SystemExit(
+            f"BLOCKED: PDF font not installed: {', '.join(missing)} (publisher '{publisher_name}', fontspec would stop XeLaTeX). "
+            "Install the font system-wide (Pretendard ships in skills/lit-pptx/pretendard-font/public/static) "
+            "or change latex.cjk.main_font / the docx body font in templates/registry.yaml to one you have."
         )
 
 

@@ -22,6 +22,7 @@ import calendar
 import json
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -215,7 +216,11 @@ def sanitized_environment(home: Path | None = None, source: dict[str, str] | Non
     home = (home or resolve_hermes_home()).resolve()
     source = source if source is not None else dict(os.environ)
     safe: dict[str, str] = {}
-    for key in ("PATH", "HOME", "USERPROFILE", "TMPDIR", "TEMP", "TMP", "LANG", "LC_ALL", "LC_CTYPE", "TERM"):
+    # The Windows keys carry no secrets and npx cannot start without them.
+    for key in (
+        "PATH", "HOME", "USERPROFILE", "TMPDIR", "TEMP", "TMP", "LANG", "LC_ALL", "LC_CTYPE", "TERM",
+        "SYSTEMROOT", "WINDIR", "PATHEXT", "COMSPEC", "APPDATA", "LOCALAPPDATA",
+    ):
         value = source.get(key)
         if isinstance(value, str) and value:
             safe[key] = value
@@ -225,6 +230,14 @@ def sanitized_environment(home: Path | None = None, source: dict[str, str] | Non
     safe["HERMES_HOME"] = str(home)
     safe[AUTO_UPDATE_GUARD_ENV] = "1"
     return safe
+
+
+def resolve_command(name: str, env: dict[str, str] | None = None, *, platform: str | None = None, which: Any = shutil.which) -> str:
+    """Return the launchable path of a PATH command; on Windows npx is npx.cmd and a bare name is not found."""
+
+    if (platform or sys.platform) != "win32":
+        return name
+    return which(name, path=(env or {}).get("PATH")) or name
 
 
 def _read_install_receipt(home: Path) -> dict[str, Any] | None:
@@ -357,8 +370,9 @@ def run_auto_update(*, kwargs: dict[str, Any] | None = None, env: dict[str, str]
     previous_failure = _recent_failure(home, latest)
     if previous_failure is not None:
         return outcome({"status": "skipped", "reason": "backoff-after-failure", "latestVersion": latest}, previous_failure)
+    install_env = sanitized_environment(home, environment)
     command = [
-        "npx",
+        resolve_command("npx", install_env),
         "--yes",
         "--package",
         f"{PACKAGE_NAME}@{latest}",
@@ -375,7 +389,7 @@ def run_auto_update(*, kwargs: dict[str, Any] | None = None, env: dict[str, str]
         result = runner(
             command,
             cwd=str(Path.cwd()),
-            env=sanitized_environment(home, environment),
+            env=install_env,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

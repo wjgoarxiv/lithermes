@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 일곱 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
 
 <p align="center">
 <a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/badge-version.svg" alt="1.0.27" /></a>
@@ -46,7 +46,8 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `lit <요청>` 또는 `/lit` | `litwork` | 범위를 정한 작업을 확인 결과까지 |
 | `lit-plan` 또는 `/lit-plan` | `lit-plan` | 아무것도 고치기 전에 계획부터 |
 | `/start-work <승인된 계획>` | `start-work` | 승인한 계획 실행 |
-| `lit review <대상>` 또는 `/review-work` | `review-work` | 계획이나 결과 검토 |
+| `lit review [plan\|work] <대상>` 또는 `/review-work` | `review-work` | `start-work` 전의 계획 검토, 또는 끝난 작업 검토 |
+| `lit brainstorm <요청>` | `lit-brainstorm` | 열린 요청에 대한 여러 선택지와, 고를 수 있는 짧은 목록 |
 | `lit research <질문>` | `litresearch` | 출처 메모가 있는 조사 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | 검사를 거친, 편집 가능한 다이어그램 |
@@ -54,7 +55,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 36개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 37개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
 
 ## 확인, 업데이트, 삭제
 

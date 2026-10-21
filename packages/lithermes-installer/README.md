@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
 <p align="center">
 <a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.27/readme-assets/badge-version.svg" alt="1.0.27" /></a>
@@ -46,7 +46,8 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `lit <request>` or `/lit` | `litwork` | A task that ends with checked results |
 | `lit-plan` or `/lit-plan` | `lit-plan` | A plan, before anything is edited |
 | `/start-work <approved-plan>` | `start-work` | Running a plan you approved |
-| `lit review <target>` or `/review-work` | `review-work` | Reviewing a plan or a result |
+| `lit review [plan\|work] <target>` or `/review-work` | `review-work` | Reviewing a plan before `start-work`, or finished work after it |
+| `lit brainstorm <ask>` | `lit-brainstorm` | Many options for an open ask, then a short list to pick from |
 | `lit research <question>` | `litresearch` | Research with source notes |
 | `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose, meaning kept |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A checked, editable diagram |
@@ -54,7 +55,7 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `/lit-docx <brief>` | `lit-docx` | A restrained Word document in one of six named shapes, with its Markdown source |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 36 with pictures.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 37 with pictures.
 
 ## Check, update, remove
 

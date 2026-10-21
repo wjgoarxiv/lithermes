@@ -56,6 +56,7 @@
     "qa:negative-control": "node qa/negative-gate-matrix.js --self-check",
     "qa:behaviors": "node qa/behavior-replacement-probe.js",
     "qa:real-surface": "npm run qa:negative-matrix && npm run qa:behaviors && npm run qa:negative-control",
+    "qa:cover-recipes": "node qa/cover-recipes.js",
     "sync-plugin": "node scripts/sync-plugin.js",
     "pack:dry": "npm run clean:payload && npm pack --dry-run --ignore-scripts --json",
     "clean:payload": "find assets -name __pycache__ -type d -prune -exec rm -rf {} + && find assets -name '*.py[co]' -delete",

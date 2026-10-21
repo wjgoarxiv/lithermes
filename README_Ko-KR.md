@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 일곱 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
 
 # LitHermes
 
@@ -109,7 +109,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 ## 할 수 있는 일
 
-LitHermes는 스킬 36개를 설치합니다. 처음에는 아래 여섯 가지부터 써 보세요.
+LitHermes는 스킬 37개를 설치합니다. 처음에는 아래 여섯 가지부터 써 보세요.
 
 ### 확인까지 끝나는 작업
 
@@ -129,7 +129,7 @@ lit plan 보고서 페이지에 CSV 내보내기 추가
 
 ### 다섯 명이 따로 읽는 리뷰
 
-`lit review`에서는 같은 변경을 리뷰어 다섯이 각자 읽고, 리뷰어마다 찾은 문제부터 알려 줍니다.
+`lit review`에는 두 가지 방식이 있습니다. 계획 검토는 `lit plan` 뒤, `start-work` 앞에서 계획을 점검합니다. 작업 검토는 끝난 변경을 리뷰어 다섯이 각자 읽고, 리뷰어마다 찾은 문제부터 알려 줍니다. 프로젝트에 무엇이 있는지 보고 방식을 고르며, 첫 줄에 어느 쪽을 골랐는지 밝힙니다. `lit review plan`이나 `lit review work`로 직접 정할 수도 있습니다.
 
 ```text
 lit review 이 브랜치의 변경 사항
@@ -198,13 +198,13 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 - [설치, 업데이트, 삭제](./docs/install.ko.md): 설치 옵션 전부, 업데이트가 움직이는 방식, 문제 해결과 한계
 - [LitHermes 둘러보기](./docs/tour.ko.md): 처음 실행했을 때의 화면, 짧은 영상, Ignition 스킨, LIT 마크
-- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 36개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
+- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 37개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
 - [자동 핸드오프](./docs/automatic-handoff.ko.md): 압축을 사이에 두고 작업을 넘기는 과정을 단계별로
 - <a href="./docs/guide.ko.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> 사용 안내</a>: 명령, 자연어 routing, 모델, 스킨, 안전 모델 전체
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> (MP4)
 - [Python 플러그인 계약](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm 패키지 안내](./packages/lithermes-installer/README_Ko-KR.md) · [변경 기록](./CHANGELOG.md) · [개인정보](./docs/privacy.md) · [이전 안내](./docs/migration.md)
 
-LitHermes는 같은 `lit` 작업 방식을 코딩 에이전트 다섯 곳에 옮긴 [LitFamily](https://github.com/wjgoarxiv/litfamily)의 하나이고, 제품마다 따로 설치합니다.
+LitHermes는 같은 `lit` 작업 방식을 코딩 에이전트 일곱 곳에 옮긴 [LitFamily](https://github.com/wjgoarxiv/litfamily)의 하나이고, 제품마다 따로 설치합니다.
 
 ## 기여
 

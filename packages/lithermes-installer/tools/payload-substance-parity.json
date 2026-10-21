@@ -86,8 +86,8 @@
         "wikify"
       ],
       "inventory": {
-        "count": 36,
-        "sha256": "e2e40ebc807c69c42bc3f8ece9a91c95b280d5065086725193ceb5cee25e0ec3"
+        "count": 37,
+        "sha256": "174cfdf442f61b00912ecf20f589ab013e49b629d52217dc5bea7b654add4ce5"
       }
     },
     "p31": {
@@ -291,7 +291,7 @@
       "median": 209,
       "closures": {
         "p27": 209,
-        "p28": 214,
+        "p28": 215,
         "p31": 198,
         "p32": 209,
         "p33": 211
@@ -358,10 +358,10 @@
       }
     },
     "lit-diagram-drawer": {
-      "median": 318,
+      "median": 319,
       "closures": {
         "p27": 309,
-        "p28": 318
+        "p28": 319
       }
     },
     "lit-fetch": {

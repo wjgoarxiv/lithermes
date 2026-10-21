@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<script src="/lit/loop-kit.js"></script>
+<style>
+  html, body { margin: 0; width: 1200px; height: 600px; overflow: hidden; background: #0b1016; }
+  #word { position: absolute; left: 80px; top: 230px; padding: 0 20px; background: #0b1016; font: 800 110px "JetBrains Mono"; color: #f2efdf; }
+  canvas { position: absolute; inset: 0; width: 1200px; height: 600px; }
+  body.mask, body.mask * { background: #000 !important; color: #000 !important; }
+  body.mask #word { color: #fff !important; }
+  body.mask canvas { visibility: hidden; }
+</style>
+<body>
+<canvas id="c" width="2400" height="1200"></canvas>
+<div id="word">TIDEWAY</div>
+<script>
+// A test cover with all three layers and nothing else: stripes drift one period per loop (slow),
+// a disc laps a ring twice (mid) and swells as it passes the top (beat). The word never moves.
+const { TAU, fract, cubicPulse } = LitLoop;
+const ctx = document.getElementById('c').getContext('2d');
+ctx.scale(2, 2);
+window.renderFrame = (t, options = {}) => {
+  document.body.className = options.mask ? 'mask' : '';
+  ctx.fillStyle = '#0b1016';
+  ctx.fillRect(0, 0, 1200, 600);
+  if (options.mask) return;
+  ctx.fillStyle = '#1d2a38';
+  for (let k = -1; k < 13; k++) ctx.fillRect(100 * k + 100 * t, 0, 40, 600);
+  const lap = fract(2 * t), a = TAU * lap - Math.PI / 2;
+  ctx.fillStyle = '#ff6337';
+  ctx.beginPath(); ctx.arc(900 + 150 * Math.cos(a), 300 + 150 * Math.sin(a), 14 + 10 * cubicPulse(0, 0.06, Math.min(lap, 1 - lap)), 0, TAU); ctx.fill();
+};
+document.fonts.load('800 110px "JetBrains Mono"').then(() => { window.renderFrame(0); window.ready = true; });
+</script>
+</body>

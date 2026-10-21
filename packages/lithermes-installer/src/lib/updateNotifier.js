@@ -5,6 +5,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { spawn, spawnSync } = require("node:child_process");
 const { writeFileAtomic } = require("./files");
+const { describeSpawnFailure, prepareSpawn } = require("./hostExec");
 const { defaultHermesHome } = require("./hermesDiscovery");
 
 const PACKAGE_NAME = "@litfamily/lithermes";
@@ -650,7 +651,9 @@ function sanitizeNpmEnvironment(source = process.env, { hermesHome } = {}) {
   // Keep only process plumbing needed to resolve npx and write temporary
   // files.  In particular, do not inherit npm config, proxies, NODE_OPTIONS,
   // or any token-bearing environment key into the child installer.
-  for (const key of ["PATH", "HOME", "USERPROFILE", "TMPDIR", "TEMP", "TMP", "LANG", "LC_ALL", "LC_CTYPE", "TERM"]) {
+  // The Windows keys (SystemRoot, PATHEXT, ComSpec, APPDATA, LOCALAPPDATA) carry no secrets and
+  // npx cannot start without them.
+  for (const key of ["PATH", "HOME", "USERPROFILE", "TMPDIR", "TEMP", "TMP", "LANG", "LC_ALL", "LC_CTYPE", "TERM", "SystemRoot", "windir", "PATHEXT", "ComSpec", "APPDATA", "LOCALAPPDATA"]) {
     if (typeof source?.[key] === "string" && source[key].length > 0) safe[key] = source[key];
   }
   if (typeof source?.NODE_EXTRA_CA_CERTS === "string" && source.NODE_EXTRA_CA_CERTS.length > 0) {
@@ -843,7 +846,9 @@ function rollbackFailure(reason, rollback) {
 function safeNpmFailure(result) {
   if (!result || result.signal) return result?.signal ? `npm installer interrupted (${result.signal})` : "npm installer returned no status";
   if (result.error?.code === "ETIMEDOUT") return "npm installer timed out";
-  return `npm installer exited with status ${result.status}`;
+  if (result.error) return describeSpawnFailure("npm installer", result);
+  const reason = describeSpawnFailure("npm installer", result);
+  return reason === `npm installer exited ${result.status}` ? `npm installer exited with status ${result.status}` : reason.replace("exited ", "exited with status ");
 }
 
 function runAutomaticUpdate({
@@ -854,6 +859,7 @@ function runAutomaticUpdate({
   now = Date.now,
   fetchLatestVersionFn = fetchLatestVersion,
   spawnSync: spawnSyncFn = spawnSync,
+  platform = process.platform,
   doctor,
   packageName = PACKAGE_NAME,
   timeoutMs = AUTO_UPDATE_TIMEOUT_MS,
@@ -894,6 +900,7 @@ function runAutomaticUpdate({
         now,
         fetchLatestVersionFn,
         spawnSyncFn,
+        platform,
         doctor,
         packageName,
         timeoutMs,
@@ -917,6 +924,7 @@ function runAutomaticUpdate({
     env,
     now,
     spawnSyncFn,
+    platform,
     doctor,
     packageName,
     timeoutMs,
@@ -949,6 +957,7 @@ function performAutomaticUpdateTransaction({
   env = process.env,
   now = Date.now,
   spawnSyncFn = spawnSync,
+  platform = process.platform,
   doctor,
   packageName = PACKAGE_NAME,
   timeoutMs = AUTO_UPDATE_TIMEOUT_MS,
@@ -1050,7 +1059,7 @@ function performAutomaticUpdateTransaction({
     writeJournal("installing");
     const argv = buildAutoUpdateArgv({ latestVersion, hermesHome, packageName });
     checkState();
-    const result = spawnSyncFn("npx", argv, {
+    const npx = prepareSpawn("npx", argv, {
       cwd,
       env: sanitizeNpmEnvironment(env, { hermesHome }),
       encoding: "utf8",
@@ -1058,7 +1067,8 @@ function performAutomaticUpdateTransaction({
       maxBuffer: MAX_RESPONSE_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
-    });
+    }, { platform });
+    const result = spawnSyncFn(npx.command, npx.args, npx.options);
     if (!result || result.status !== 0 || result.signal || result.error) {
       const reason = safeNpmFailure(result);
       const rollback = restoreSnapshot(snapshot, hermesHome, checkState);

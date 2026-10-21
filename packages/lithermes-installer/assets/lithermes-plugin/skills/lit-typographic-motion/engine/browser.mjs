@@ -5,7 +5,7 @@
 // pull of the same readback buffer (the sanctioned variant). Each MO-A-51 rung
 // counts only after a real getContext('webgl2') in the page.
 import { existsSync, lstatSync, mkdirSync, readdirSync, readlinkSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import { EXIT, UNKNOWN_RENDERER, chromeFlagLadder, isSoftwareRenderer } from './constants.mjs';
 
 export const blocked = (code, message) => Object.assign(new Error(message), { exitCode: code });
@@ -16,9 +16,16 @@ const CHROME_CANDIDATES = [
   '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser',
 ];
 
-export function chromeExecutable(env = process.env) {
-  if (env.CHROME_PATH) return existsSync(env.CHROME_PATH) ? env.CHROME_PATH : null;
-  return CHROME_CANDIDATES.find((candidate) => existsSync(candidate)) || null;
+const WINDOWS_CHROME = ['ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA']
+  .flatMap((key) => [['Google', 'Chrome', 'Application', 'chrome.exe'], ['Chromium', 'Application', 'chrome.exe']].map((tail) => [key, tail]));
+
+export function chromeExecutable(env = process.env, { platform = process.platform, exists = existsSync } = {}) {
+  if (env.CHROME_PATH) return exists(env.CHROME_PATH) ? env.CHROME_PATH : null;
+  if (platform === 'win32') {
+    const found = WINDOWS_CHROME.map(([key, tail]) => (env[key] ? win32.join(env[key], ...tail) : null)).find((file) => file && exists(file));
+    return found || null;
+  }
+  return CHROME_CANDIDATES.find((candidate) => exists(candidate)) || null;
 }
 
 // The launcher's first line that names a cause. Crashpad's own complaints are

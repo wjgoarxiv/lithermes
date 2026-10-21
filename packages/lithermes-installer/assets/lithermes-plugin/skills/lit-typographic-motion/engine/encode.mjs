@@ -177,7 +177,7 @@ export function encodePreview({ PNG, sourceFrames, masterFps, durationSec, workD
       }
       const ok = result.status === 0 && existsSync(output);
       const bytes = ok ? statSync(output).size : null;
-      attempts.push({ width, fps, encoder, ok, bytes, error: ok ? null : (result.stderr || result.error?.message || '').split('\n')[0] });
+      attempts.push({ width, fps, encoder, ok, bytes, error: ok ? null : (result.stderr || result.error?.message || '').split(/\r?\n/)[0] });
       if (!ok) continue;
       rmSync(dir, { recursive: true, force: true });
       if (bytes <= OUTPUT.previewMaxBytes || long === OUTPUT.previewLadder.at(-1)[0]) {

@@ -1,6 +1,6 @@
 ---
 name: review-work
-description: Hermes-native draft-plan and post-implementation review: objective-achievability audit for plans, or five delegate_task completion lanes with DoneClaim skepticism.
+description: Hermes-native plan review (after lit-plan, before start-work) and work review (after lit-loop or start-work), auto-picked from what exists or forced with lit review plan|work: an objective-achievability audit for plans, or five delegate_task lanes with DoneClaim skepticism for work.
 ---
 
 ## #contract.activation
@@ -117,28 +117,48 @@ limitations_channel: methodology_paragraph
 
 # Review Work
 
-`review-work` has two read-only modes. **Plan-review mode** audits a draft before
-execution. Completion-review mode is the existing five-lane gate used after
-meaningful implementation work and before claiming done, preparing a release, or
-asking for a commit. Select from the evidence supplied; do not force a draft plan
-through implementation lanes or treat a completed diff as a plan.
+`review-work` has two read-only modes, named for what is under review.
+
+- **Plan review** runs after `lit-plan` and before `start-work`: is the plan
+  complete, ordered, and verifiable, so that execution never has to invent scope,
+  evidence, or a success path?
+- **Work review** runs after `lit-loop` or `start-work`: do the diff, the tests, and
+  the evidence back the claim that the work is done?
 
 In both modes, reviewers **never implement** production work. A parent may revise
 only plan text after an `ITERATE` verdict; it must **revise only when needed**, keep
-the approved objective unchanged, and re-run the affected plan-review lanes.
+the approved objective unchanged, and re-run the affected plan review lanes.
 
 ## Mode Selection
 
-| Mode | Select when | Output |
+The mode is forced by the user or auto-picked from what exists. Say which mode was
+picked on the first line of the report, before any finding:
+
+```text
+Review mode: plan (forced by the user)
+Review mode: work (auto-picked: changed files outside plans/)
+```
+
+**Forcing a mode.** `lit review plan <target>` and `/review-work plan <target>` run
+plan review; `lit review work <target>` and `/review-work work <target>` run work
+review. A forced mode is never overridden by what exists.
+
+**Auto-pick.** When no mode is forced, decide in this order and stop at the first
+rule that matches:
+
+| Evidence present | Mode | Output |
 |---|---|---|
-| `plan-review` | A draft plan or checklist is the object under review and implementation evidence is not claimed. | `PASS`, `ITERATE`, or `NEEDS-CONTEXT`; findings and, only for `ITERATE`, bounded replacement plan text. |
-| `completion-review` | A diff, tests, real-surface evidence, or DoneClaim is under review. | Existing five-lane `REVIEW PASSED|FAILED|BLOCKED` receipt. |
+| a named PR, branch or diff; changed files outside `plans/`; or a plan with ticked rows (work signals) | work | five-lane `REVIEW PASSED|FAILED|BLOCKED` receipt |
+| a plan with no ticked rows and no changed files outside `plans/` | plan | `PLAN REVIEW PASS|ITERATE|NEEDS-CONTEXT`; findings and, only for `ITERATE`, bounded replacement plan text |
+| neither a plan nor a diff | ask | ask the user one short question: review a plan (which one) or work (which diff, branch or PR)? Do not guess a target and do not dispatch a lane |
 
-If both a plan and completed work are supplied, audit the implementation against
-the approved plan in completion-review mode. If the mode cannot be determined,
-return `NEEDS-CONTEXT` with the one missing input instead of guessing.
+If both a plan and finished work are supplied, audit the implementation against
+the approved plan in work review. The `/review-work` command applies this same
+rule over the real worktree; the natural `lit review` route states it in its
+wrapper and the model applies it. Never force a draft plan through the
+implementation lanes, and never treat a finished diff as a plan.
 
-## Plan-Review Mode
+## Plan Review Mode
 
 Plan review asks whether execution can begin and end without the implementer
 inventing scope, evidence, or a success path. It does not reward checklist length.
@@ -186,6 +206,7 @@ aggregate. Otherwise any `ITERATE` controls it; all lanes must pass for `PASS`.
 ### Plan Verdict Contract
 
 ```text
+Review mode: plan (<forced by the user | auto-picked: reason>)
 PLAN REVIEW PASS|ITERATE|NEEDS-CONTEXT
 Objective achievable: yes|no|unknown
 Lane verdicts: scope-objective=<...>; dependencies-gates=<...>; atomic-checklist=<...>; acceptance-evidence=<...>; failure-decision-cleanup=<...>
@@ -200,9 +221,9 @@ the objective is sound but one or more bounded plan defects need correction.
 Never mutate production files, run execution tasks, publish, bump a version,
 commit, push, tag, or start a gateway while reviewing a plan.
 
-## Completion-Review Mode
+## Work Review Mode
 
-This remains the LitHermes completion gate. It is intentionally skeptical: a
+Work review is the LitHermes completion gate, used after `lit-loop` or `start-work`. It is intentionally skeptical: a
 green test suite is useful evidence, not a delivery claim.
 
 ## Contract
@@ -375,6 +396,7 @@ Before saying work is done, try to falsify the DoneClaim:
 Required final review wording:
 
 ```text
+Review mode: work (<forced by the user | auto-picked: reason>)
 REVIEW PASSED|FAILED|BLOCKED
 DoneClaim: <one sentence>
 Lane verdicts: scope-diff=<...>; tests-evidence=<...>; package-payload=<...>; security-provenance=<...>; real-surface-docs=<...>

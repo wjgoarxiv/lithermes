@@ -20,19 +20,24 @@ lime. Their geometry comes from the pinned upstream revision:
 The complete upstream [Lucide and Feather license notices](./Lucide-LICENSE.txt)
 accompany the icons. These documentation assets are outside the installer package.
 
-The current landing pages open with one motion cover: the five armory robot panels power
+The current landing pages open with one motion cover: the seven armory robot panels power
 on in turn, the LitHermes robot wakes, then LITFAMILY and KEEP THE WORK LIT. light up.
-`../cover-motion.webp` is the 960×640 looping animated WebP (1,787,274 bytes, SHA-256
-`83f0361043b21e5aba1fdbc34737efc55f329eb36f76db6cddc6d40ad87301c7`), and
+`../cover-motion.webp` is the 960×640 looping animated WebP (1,795,568 bytes, SHA-256
+`6c06f2952d621bb5357f7156fb25b9bf0117688905c0b7dde19e9820bcac9254`), and
 `../cover-motion-still.webp` is its fully lit hold frame, served when reduced motion is
-preferred (116,970 bytes, SHA-256
-`8f9165e78ae6789242b4f49f47dc741ffaad23195d528260536e04ad14fe981b`). The package copies
+preferred (130,038 bytes, SHA-256
+`7000a8cac2ecbb0415e0f29d828e4daa3e9d43ac8b0c9512709715406e2a9cce`). The package copies
 under `readme-assets/` are byte-identical.
 
-The earlier static v5 armory WebP stays at `../cover.webp` (SHA-256
-`c125a3ff2ebe1a62535bd159b9a8b277f72002a6bb95ea22015a4f8849a4e3ea`), but the landing pages
+The static seven-machine armory WebP stays at `../cover.webp` (SHA-256
+`eaa94fe07f86deca1bafe7a5b89b64e93c775cc9989e31ea4853d5e1281c05f2`), but the landing pages
 no longer show it and the npm package no longer ships a copy. The retained `cover.svg` remains the editable, low-bandwidth vector
 fallback. These WebPs are local candidate assets, not proof of npm or GitHub availability.
+
+`../recipes/painted-light-base.png` is the earlier five-robot painting (SHA-256
+`955ccd875bd0da509ba850b76a83ac7aa76f2ecc5c019bcb2d04043e8d46179e`). The `painted-light` cover recipe measures
+its `PAINTING` numbers on that painting, and `npm run qa:cover-recipes` renders the recipe from it, so it stays
+unchanged while the landing art shows seven machines.
 
 ## Motion promo
 

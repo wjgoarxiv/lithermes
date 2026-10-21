@@ -1,0 +1,49 @@
+{
+  "schema": "lithermes.cover-negative/v1",
+  "note": "Never a recipe. qa/cover-recipes.js and the test suite capture it, encode it and gate the decoded file; it counts as caught only when every gate in mustFail fails and no undeclared FLOOR gate among G1-G4 fails. Never change a threshold so it passes.",
+  "mustFail": [
+    "G2.floor"
+  ],
+  "observed": {
+    "medianD": 0,
+    "movingFrac": 0.3203125,
+    "longestStillSec": 1.449,
+    "spike": 22.180186084476993,
+    "seamLocal": 0.30624810170866057,
+    "bytes": 180632,
+    "failed": [
+      "G2"
+    ]
+  },
+  "treatment": {
+    "mode": "cover",
+    "request": "A negative check page for the cover gate.",
+    "idea": "Four card scenes that fade in, hold and fade out: the old stage path as a cover.",
+    "recipe": "own",
+    "recipeReason": "A shipped negative that must keep failing its named gates.",
+    "brandWord": "LITHERMES",
+    "aspect": "2:1",
+    "loopSec": 8,
+    "fps": 16,
+    "layers": {
+      "slow": "None.",
+      "mid": "None.",
+      "beat": "None."
+    },
+    "system": {
+      "rule": "None.",
+      "copies": "None.",
+      "offset": "None."
+    },
+    "title": {
+      "box": [
+        0.1,
+        0.25,
+        0.8,
+        0.25
+      ],
+      "kind": "live"
+    },
+    "ambition": "It fails the gates it is named for, every time."
+  }
+}

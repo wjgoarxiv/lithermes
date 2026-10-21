@@ -9,6 +9,9 @@ import { join, resolve } from 'node:path';
 import { checkCompletion } from './completion.mjs';
 import { writeJson } from './director.mjs';
 import { validateTreatment } from './treatment.mjs';
+import { COVER } from './constants.mjs';
+import { generatedLabels } from './cover-assets.mjs';
+import { isCoverTreatment, validateCoverTreatment } from './cover-treatment.mjs';
 
 const sha = (data) => createHash('sha256').update(data).digest('hex');
 const usage = (message) => Object.assign(new Error(message), { exitCode: 2 });
@@ -26,6 +29,21 @@ export const QUESTIONS = Object.freeze({
 });
 const NEED_YES = new Set([1, 2, 3, 5, 6]);
 const NEED_NO = new Set([4, 8, 9]);
+// Cover mode asks its own eight (references/cover.md): motion in every half second, the seam,
+// motion that survives the encoder, the brand word, the three layers, slide-likeness, damage,
+// and what a skilled motion designer would change.
+export const COVER_QUESTIONS = Object.freeze({
+  1: 'Is something moving in every half-second window (the plot never lies flat on the red dashes)?',
+  2: 'Does the seam disappear in the decoded file (seam.png, the right end of the plot)?',
+  3: 'Does it still move after encoding, with no region that freezes and then pops?',
+  4: 'Is the brand word present, legible and in place in every frame, never faded or swapped?',
+  5: 'Are all three speed layers visible: a slow perpetual layer, a mid swell and beat events?',
+  6: 'Does anything read as a slide, a card swap, a title fade or an end card, or does light wash in place instead of travelling as an edge?',
+  7: 'Is any glyph, glint or glow damaged: a colour block, a dark disc, a visible box?',
+  8: 'Name one thing a skilled motion designer would add or remove, or none.',
+});
+const COVER_NEED_YES = new Set([1, 2, 3, 4, 5]);
+const COVER_NEED_NO = new Set([6, 7]);
 const BARE = /^(?:yes|no|y|n|ok|okay|none|n\/a|네|예|아니오|아니요|아니|응|없음|있음)[.!]?$/iu;
 
 export function verdictOf(value) {
@@ -78,6 +96,8 @@ export function recordLook(out, round, answers) {
   }
 
   const files = new Map(set.files.map((f) => [f.file, f]));
+  const cover = set.mode === 'cover';
+  if (!cover && answers.defects !== undefined) throw usage('defects are a cover-mode record; a film round names its weakest beat in "change"');
   const viewed = [...new Set(answers.viewed || [])];
   if (!viewed.length) throw usage('list every stills file you viewed in "viewed"');
   const answerList = Array.isArray(answers.answers) ? answers.answers : [];
@@ -88,16 +108,23 @@ export function recordLook(out, round, answers) {
     if (onDisk !== files.get(file).sha256) throw usage(`${file} changed after the stills set was written; render again`);
     if (viewed.includes(file)) frames.push({ file, sha256: onDisk });
   }
-  for (const q of Object.keys(QUESTIONS).map(Number)) {
-    if (!answerList.some((a) => Number(a.q) === q)) throw usage(`question ${q} is unanswered: ${QUESTIONS[q]}`);
+  const questions = cover ? COVER_QUESTIONS : QUESTIONS;
+  for (const q of Object.keys(questions).map(Number)) {
+    if (!answerList.some((a) => Number(a.q) === q)) throw usage(`question ${q} is unanswered: ${questions[q]}`);
   }
   const reasons = [];
   for (const a of answerList) {
     const q = Number(a.q);
-    if (!QUESTIONS[q]) throw usage(`unknown question ${a.q}`);
+    if (!questions[q]) throw usage(`unknown question ${a.q}`);
     if (!a.frame) throw usage(`question ${q} names no frame`);
     if (!concrete(a.observed)) throw usage(`question ${q}: "observed" must be at least one sentence naming a concrete visible detail in ${a.frame}, not a bare yes or no`);
     const verdict = verdictOf(a.verdict);
+    if (cover) {
+      if (COVER_NEED_YES.has(q) && verdict === 'no') reasons.push(`Q${q}: no`);
+      if (COVER_NEED_NO.has(q) && verdict === 'yes') reasons.push(`Q${q}: yes`);
+      if (q === 8 && verdict !== 'none') reasons.push('Q8: a motion designer would change something');
+      continue;
+    }
     if (q === 1) {
       if (!['blind', 'self'].includes(a.by)) throw usage('question 1 needs "by": "blind" (a fresh delegate_task subagent) or "self"');
       if (a.by === 'blind' && !concrete(a.stranger)) throw usage('question 1 answered blind needs the subagent\'s sentence, verbatim, in "stranger"');
@@ -107,12 +134,36 @@ export function recordLook(out, round, answers) {
     if (q === 7 && verdict !== 'none') reasons.push('Q7: a designer would have shown something this film does not');
   }
   if (round === 1) {
-    if (!stillsOnlyMode(set.mode)) throw usage('round 1 is a stills round: render with --stills-only --round 1 before the first full render');
-    if (!concrete(answers.change)) throw usage('round 1 must name the weakest beat and the change you made in "change"');
+    if (!cover && !stillsOnlyMode(set.mode)) throw usage('round 1 is a stills round: render with --stills-only --round 1 before the first full render');
+    if (!concrete(answers.change)) throw usage(cover ? 'round 1 must name the change you make before round 2 in "change"' : 'round 1 must name the weakest beat and the change you made in "change"');
   }
-  look.rounds.push({ ...base, frames, answers: answerList, change: answers.change || null, aids: answers.aids || [], another: reasons.length > 0, reasons });
+  const defects = cover ? checkDefects(answers.defects, set, files) : undefined;
+  look.rounds.push({ ...base, frames, answers: answerList, change: answers.change || null, aids: answers.aids || [], ...(cover ? { defects } : {}), another: reasons.length > 0, reasons });
   writeJson(join(out, 'look.json'), look);
   return look.rounds.at(-1);
+}
+
+// Cover defects: at most three per round, worst first, each { t, region, frame, observed, cause,
+// fix }: the loop time in seconds where it shows, the [x, y, w, h] it covers in cover pixels, and a
+// file of the current stills set that shows it. `cover --window` checks the fix before the next
+// full render.
+function checkDefects(list, set, files) {
+  if (list === undefined) return [];
+  if (!Array.isArray(list)) throw usage('defects must be an array');
+  if (list.length > COVER.maxDefects) throw usage(`at most ${COVER.maxDefects} defects per round; fix the worst first`);
+  const [W, H] = set.size || [0, 0];
+  const loop = set.durationSec;
+  return list.map((d, i) => {
+    const at = `defect ${i + 1}`;
+    if (!d || typeof d !== 'object') throw usage(`${at} must be an object`);
+    if (typeof d.t !== 'number' || !(d.t >= 0) || (loop && d.t >= loop)) throw usage(`${at}: t must be the loop time in seconds where it shows (0 to ${loop})`);
+    const r = d.region;
+    if (!Array.isArray(r) || r.length !== 4 || !r.every(Number.isInteger) || r[0] < 0 || r[1] < 0 || r[2] <= 0 || r[3] <= 0 || r[0] + r[2] > W || r[1] + r[3] > H) throw usage(`${at}: region must be [x, y, w, h] inside the ${W}x${H} cover`);
+    if (!files.has(d.frame)) throw usage(`${at}: frame ${JSON.stringify(d.frame)} is not in the latest stills set`);
+    if (!concrete(d.observed)) throw usage(`${at}: observed must be at least one sentence naming what is visible there`);
+    if (![d.cause, d.fix].every((x) => typeof x === 'string' && x.trim().length >= 8 && !/<[^<>\n]{1,80}>/u.test(x))) throw usage(`${at}: cause and fix must each say something concrete`);
+    return { t: d.t, region: r, frame: d.frame, observed: d.observed.trim(), cause: d.cause.trim(), fix: d.fix.trim() };
+  });
 }
 
 export async function lookCommand(flags) {
@@ -130,7 +181,7 @@ export async function lookCommand(flags) {
     }
     console.log(`look round ${round.round} recorded: ${round.frames.length} frames viewed (manifest ${round.manifestSha256.slice(0, 12)})`);
     if (round.another) console.log(`another round is due (${round.reasons.join('; ')})${round.round >= 3 ? '; this was round 3 of 3: deliver with these open items stated plainly' : `; revise and render --round ${round.round + 1}`}`);
-    else if (round.round === 1) console.log('round 1 done: make the change you named, then render the film with --round 2');
+    else if (round.round === 1) console.log(round.stillsMode === 'cover' ? 'round 1 done: make the change you named (check a defect fix with `cover --window t0,t1`), then render the cover with --round 2' : 'round 1 done: make the change you named, then render the film with --round 2');
     return 0;
   } catch (error) {
     console.error(error.exitCode ? error.message : `motion internal error: ${error.stack || error.message}`);
@@ -171,6 +222,7 @@ export function checkDone(out) {
   if (!existsSync(statePath)) return no('no run-state.json: no render finished in this directory');
   const state = readJson(statePath);
   if (!state.finished || state.exitCode === null || state.exitCode === undefined) return no('the render command started but did not finish');
+  if (state.path === 'cover' || state.mode === 'cover') return checkCoverDone(out, state, no);
   if (stillsOnlyMode(state.mode)) return no('the last render was a stills round; render the film');
   if (state.exitCode !== 0) return no(`the last render exited ${state.exitCode}${state.failed?.length ? ` (${state.failed.join(', ')})` : ''}; done needs a passing gate`);
   if (state.path !== 'stage') {
@@ -213,11 +265,55 @@ export function checkDone(out) {
   return { done: true, status: 'COMPLETE', reason: `gate passed; ${rounds.length} look rounds; the last viewed all ${set.files.length} stills of the final render${receipts ? ' (vision_analyze receipts matched)' : ''}`, openItems, ...extra };
 }
 
+// Cover done (references/cover.md): a valid cover treatment unchanged since the last render, that
+// render's decoded cover at every TARGET gate (exit 0), at least two look rounds (round 1 naming its
+// change) and a last round on the final render that viewed the sheet, the poster and the seam pair,
+// with vision_analyze receipts when the Hermes tool hook recorded them.
+function checkCoverDone(out, state, no) {
+  const labels = generatedLabels(out);
+  const extra = { downgraded: [], labels };
+  const file = join(out, 'treatment.json');
+  if (!existsSync(file)) return no('treatment.json is missing', extra);
+  let treatment;
+  try { treatment = readJson(file); } catch { return no('treatment.json is not valid JSON', extra); }
+  if (!isCoverTreatment(treatment)) return no('the last render was a cover but treatment.json is now a film; render again', extra);
+  const valid = validateCoverTreatment(treatment);
+  if (!valid.ok) return no(`treatment.json no longer validates (field ${valid.field})`, extra);
+  if (!existsSync(join(out, 'manifest.json')) || !existsSync(join(out, 'gate-report.txt'))) return no('no cover render has finished (manifest.json or gate-report.txt is missing)', extra);
+  const manifest = readJson(join(out, 'manifest.json'));
+  if (manifest.treatment?.sha256 !== sha(readFileSync(file))) return no('treatment.json changed after the last cover render; render again', extra);
+  if (state.exitCode !== 0 || !/^COVER gate --strict: PASS\+TARGET$/mu.test(readFileSync(join(out, 'gate-report.txt'), 'utf8'))) {
+    return no(`the decoded cover did not reach every TARGET gate on the last render (exit ${state.exitCode}${state.failed?.length ? `; ${state.failed.join(', ')}` : ''})`, extra);
+  }
+  const set = readStillsSet(out);
+  if (set.mode !== 'cover') return no('the stills set is not a cover set; render the cover again', extra);
+  const rounds = readLook(out).rounds;
+  if (!rounds.length) return no('no look round is recorded; view stills/sheet.png, stills/poster.png and stills/seam.png and record them with `look`', extra);
+  const last = rounds.at(-1);
+  const manifestSha256 = sha(readFileSync(join(out, 'manifest.json')));
+  if (last.manifestSha256 !== manifestSha256) return no('the last look round was recorded before the final cover render; look again and record it', extra);
+  if (last.blocked === 'no-vision-tool') return { done: true, status: 'DONE_UNVIEWED', reason: 'the cover reached TARGET but no image tool could view it; say plainly that nobody viewed the frames', ...extra };
+  if (rounds.length < 2) return no('done needs two look rounds: round 1 with the change it named, then a round on the final render', extra);
+  if (!rounds[0].change) return no('round 1 must name the change made after it', extra);
+  const seen = new Map(last.frames.map((f) => [f.file, f.sha256]));
+  const required = set.files.filter((f) => set.required.includes(f.file));
+  const missing = required.filter((f) => seen.get(f.file) !== f.sha256).map((f) => f.file);
+  if (missing.length) return no(`the last round did not view ${missing.join(', ')}`, extra);
+  const receipts = hostReceipts(out);
+  if (receipts) {
+    const unviewed = required.filter((f) => !receipts.viewed.has(`${f.file}|${f.sha256}`)).map((f) => f.file);
+    if (unviewed.length) return no(`the tool hook saw no vision_analyze call on ${unviewed.join(', ')}`, extra);
+  }
+  if (last.another && last.round < 3) return no(`the last look round asks for another round (${last.reasons.join('; ')})`, extra);
+  return { done: true, status: 'COMPLETE', reason: `cover reached TARGET; ${rounds.length} look rounds; the last viewed the sheet, the poster and the seam pair${receipts ? ' (vision_analyze receipts matched)' : ''}`, openItems: last.another ? last.reasons : [], ...extra };
+}
+
 export function completeCommand(out) {
   const result = checkDone(out);
   if (existsSync(out)) writeJson(join(out, 'done.json'), { ...result, at: new Date().toISOString() });
   console.log(`${result.status}: ${result.reason}`);
   for (const item of result.downgraded || []) console.log(`downgraded: ${item}`);
   for (const item of result.openItems || []) console.log(`open item: ${item}`);
+  for (const item of result.labels || []) console.log(`label: ${item}`);
   return result.done ? 0 : 1;
 }

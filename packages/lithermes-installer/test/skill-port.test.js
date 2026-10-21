@@ -24,6 +24,7 @@ const workflowSkills = [
   "frontend-ui-ux",
   "readme-studio",
   "lit-commit",
+  "lit-brainstorm",
   "lit-crucible",
   "lit-init",
   "lit-humanizer",
@@ -170,6 +171,7 @@ test("bundled skills are rich workflows rather than LitHermes placeholders", () 
     ["lit-burnoff", 18000],
     ["review-work", 7000],
     ["litgoal", 10000],
+    ["lit-brainstorm", 12000],
     ["litwork", 10000],
   ]);
 
@@ -251,7 +253,7 @@ test("every bundled skill declares a valid output channel contract", () => {
   ]);
   const docs = bundledSkillDocs();
 
-  assert.equal(docs.length, 58, `expected 58 bundled SKILL.md files, found ${docs.length}`);
+  assert.equal(docs.length, 59, `expected 59 bundled SKILL.md files, found ${docs.length}`);
   for (const file of docs) {
     const relative = path.relative(skillsRoot, file).split(path.sep).join("/");
     let declaration = outputChannelDeclaration(fs.readFileSync(file, "utf8"));
@@ -907,7 +909,7 @@ test("lit planning produces proportionate objective-achievable checklists and re
   }
 
   for (const required of [
-    "plan-review mode",
+    "plan review mode",
     "objective achievability",
     "atomic checklist",
     "acceptance and evidence",
@@ -923,6 +925,45 @@ test("lit planning produces proportionate objective-achievable checklists and re
 
   for (const existingLane of ["scope/diff", "tests/evidence", "package/payload", "security/provenance", "real-surface/docs"]) {
     assert.match(reviewWork, new RegExp(existingLane.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `review-work lost ${existingLane}`);
+  }
+});
+
+test("lit-brainstorm is an open-ask divergent-then-convergent skill that never implements", () => {
+  const brainstorm = fs.readFileSync(skillPath("lit-brainstorm"), "utf8");
+  assert.match(brainstorm, /^---\nname: lit-brainstorm\n/);
+
+  for (const required of [
+    "deep-interview",
+    "lit-plan",
+    "lit-crucible",
+    "diverge",
+    "converge",
+    "quantity before judgment",
+    "delegate_task",
+    "no combined wait",
+    ".hermes/lithermes/brainstorm/",
+    "lit brainstorm",
+    "lit ideation",
+    "lit idea",
+    "lithermes:lit-brainstorm",
+    "never implement",
+    "READY FOR deep-interview",
+    "READY FOR lit-plan",
+  ]) {
+    assert.match(brainstorm, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replaceAll(" ", "\\s+"), "i"), `lit-brainstorm missing ${required}`);
+  }
+
+  const interview = fs.readFileSync(skillPath("deep-interview"), "utf8");
+  assert.match(interview, /open-ended brainstorming.{0,60}lit-brainstorm/);
+});
+
+test("litgoal and review-work state their D3 meanings in the skill text", () => {
+  const litgoal = fs.readFileSync(skillPath("litgoal"), "utf8");
+  assert.ok(litgoal.includes("litgoal sets and keeps the finish line; lit-loop and start-work run toward it."));
+
+  const reviewWork = fs.readFileSync(skillPath("review-work"), "utf8");
+  for (const required of ["Plan review", "Work review", "lit review plan", "lit review work", "auto-pick"]) {
+    assert.ok(reviewWork.includes(required), `review-work missing ${required}`);
   }
 });
 

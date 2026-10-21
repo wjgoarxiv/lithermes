@@ -103,6 +103,7 @@ const need = (cond, field, message) => { if (!cond) throw new Invalid(field, mes
 
 function check(t, { outDir, examples }) {
   need(t && typeof t === 'object' && !Array.isArray(t), 'treatment', 'treatment.json must be a JSON object');
+  need(t.mode !== 'cover', 'mode', 'this is a cover treatment; render it with `cover --out DIR` (references/cover.md)');
   for (const field of ['request', 'genre', 'path', 'pathReason', 'idea', 'audience', 'channel', 'format', 'durationSec', 'beats', 'subject', 'visualDevices', 'typePlan', 'palette', 'sound', 'copy', 'ambition']) {
     need(t[field] !== undefined && t[field] !== null && t[field] !== '', field, `${field} is required`);
   }

@@ -361,7 +361,7 @@ class CliSurface(unittest.TestCase):
             "on_session_reset",
         ):
             self.assertIn(h, r)
-        self.assertIn("skills (36)", r)  # motion skill is enrolled
+        self.assertIn("skills (37)", r)  # motion skill is enrolled
         for k in ("red", "green", "scenario", "cleanup", "note"):
             self.assertIn(k, r)  # evidence-kind discovery (#6)
 

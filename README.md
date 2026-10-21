@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
 # LitHermes
 
@@ -109,7 +109,7 @@ To have it on in every session, set `LITHERMES_AUTO_HANDOFF=1` and `LITHERMES_AU
 
 ## What you get
 
-LitHermes installs 36 skills. These six are a good place to start.
+LitHermes installs 37 skills. These six are a good place to start.
 
 ### A task that ends checked
 
@@ -129,7 +129,7 @@ lit plan add CSV export to the reports page
 
 ### A review with five readers
 
-`lit review` hands the same change to five reviewers who read it separately, and each one leads with what it found.
+`lit review` has two modes. A plan review checks a plan after `lit plan` and before `start-work`. A work review hands the finished change to five reviewers who read it separately, and each one leads with what it found. It picks the mode from what exists in your project, says which one it picked on its first line, and `lit review plan` or `lit review work` forces one.
 
 ```text
 lit review the changes on this branch
@@ -198,13 +198,13 @@ If the installer made compatibility edits to your Hermes installation, add `--ro
 
 - [Install, update and remove](./docs/install.md): every install option, how updates work, troubleshooting and limits
 - [A tour of LitHermes](./docs/tour.md): screens from a first run, the short film, the Ignition skin and the LIT marks
-- [Skills and commands](./docs/skills.md): all 36 skills with pictures, the command list, and what the document, film and prose skills make
+- [Skills and commands](./docs/skills.md): all 37 skills with pictures, the command list, and what the document, film and prose skills make
 - [Automatic handoff](./docs/automatic-handoff.md): handing work across a compaction, step by step
 - <a href="./docs/guide.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> Operating guide</a>: commands, natural routing, models, skins and safety in full
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition film</a> (MP4)
 - [Python plugin contract](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm package page](./packages/lithermes-installer/README.md) · [Changelog](./CHANGELOG.md) · [Privacy](./docs/privacy.md) · [Migration](./docs/migration.md)
 
-LitHermes belongs to [LitFamily](https://github.com/wjgoarxiv/litfamily), the same `lit` workflow ported to five coding agents, each installed on its own.
+LitHermes belongs to [LitFamily](https://github.com/wjgoarxiv/litfamily), the same `lit` workflow ported to seven coding agents, each installed on its own.
 
 ## Contributing
 

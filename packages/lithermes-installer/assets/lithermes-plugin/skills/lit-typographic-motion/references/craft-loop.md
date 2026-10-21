@@ -1,7 +1,10 @@
 # Craft loop, look rounds and done
 
 Both paths share one loop: treatment, author, a stills round you look at, the
-film, a last look, then the done-check. A gate PASS alone is never done.
+film, a last look, then the done-check. A gate PASS alone is never done. A cover
+loop has its own eight questions, its own stills (the decoded sheet with its
+frame-difference plot, the poster and the seam pair), defects with a window
+re-render, and its own done; see `cover.md`.
 
 ## One loop
 

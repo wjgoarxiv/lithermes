@@ -12,6 +12,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync,
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { describeSpawnFailure, pickPython, spawnTool, venvPython } from '../engine/hostexec.mjs';
 
 export const skillRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const runtimeRoot = join(skillRoot, 'runtime');
@@ -86,10 +87,10 @@ export function fontState(env = process.env) {
 }
 
 function run(cmd, args, options = {}) {
-  const result = spawnSync(cmd, args, { encoding: 'utf8', ...options });
+  const result = spawnTool(cmd, args, { encoding: 'utf8', ...options });
   if (result.error || result.status !== 0) {
-    const detail = result.error?.message || (result.stderr || '').trim().split('\n').slice(-3).join(' ') || `exit ${result.status}`;
-    throw new Error(`${cmd} ${args[0] || ''} failed: ${detail}`);
+    const detail = (result.stderr || '').trim().split(/\r?\n/).slice(-3).join(' ');
+    throw new Error(`${describeSpawnFailure(`${cmd} ${args[0] || ''}`.trim(), { ...result, stderr: detail })}`);
   }
   return result.stdout;
 }
@@ -111,14 +112,9 @@ export async function fetchPinned(entry, targetFile, { mirror = process.env.LITH
   writeFileSync(targetFile, bytes, { flag: 'wx' });
 }
 
-function pythonFor(env) {
-  const candidates = [env.LITHERMES_MOTION_PYTHON, 'python3.11', 'python3.12', 'python3.13', 'python3'].filter(Boolean);
-  for (const candidate of candidates) {
-    const probe = spawnSync(candidate, ['-c', 'import sys; print(sys.version.split()[0])'], { encoding: 'utf8' });
-    if (probe.status === 0) return { python: candidate, version: probe.stdout.trim() };
-  }
-  return null;
-}
+// The audio venv takes the office runtime's supported-python pick, with a 3.11 floor: the lock pins
+// numpy 2.4 and scipy 1.17, which start at Python 3.11.
+export const pickAudioPython = (env = process.env) => pickPython({ env, override: 'LITHERMES_MOTION_PYTHON', min: [3, 11] });
 
 export const audioDir = (cache) => join(cache, `audio-${audioDigest}`);
 
@@ -126,7 +122,7 @@ export const audioDir = (cache) => join(cache, `audio-${audioDigest}`);
 export function audioState(env = process.env) {
   const cache = findCache(env) || cacheRoots(env)[0];
   const dir = audioDir(cache);
-  const python = join(dir, 'venv', 'bin', 'python');
+  const python = venvPython(join(dir, 'venv'));
   if (!existsSync(python) || !existsSync(join(dir, 'AUDIO_READY'))) return { state: 'absent', python: null, dir };
   const expected = [...audioLockBytes.toString().matchAll(/^([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+-]+)/gm)].map(([, name, version]) => [name, version]);
   const script = [
@@ -139,19 +135,19 @@ export function audioState(env = process.env) {
     'print(json.dumps(bad))',
   ].join('\n');
   const check = spawnSync(python, ['-c', script, JSON.stringify(expected)], { encoding: 'utf8', timeout: 20000 });
-  if (check.status !== 0) return { state: 'mismatched', python, dir, detail: (check.stderr || '').trim().split('\n').at(-1) };
+  if (check.status !== 0) return { state: 'mismatched', python, dir, detail: (check.stderr || '').trim().split(/\r?\n/).at(-1) };
   const bad = JSON.parse(check.stdout || '[]');
   return bad.length ? { state: 'mismatched', python, dir, detail: `pins drifted: ${bad.join(', ')}` } : { state: 'ready', python, dir };
 }
 
 async function installAudio(cache, env) {
-  const py = pythonFor(env);
-  if (!py) throw new Error('no python3 interpreter found for the --audio venv (set LITHERMES_MOTION_PYTHON)');
+  const py = pickAudioPython(env);
+  if (!py.python) throw new Error(`${py.detail}; the --audio venv needs one (install Python 3.14 or set LITHERMES_MOTION_PYTHON)`);
   const dir = audioDir(cache);
   const stage = `${dir}.stage-${process.pid}`;
   rmSync(stage, { recursive: true, force: true });
   run(py.python, ['-m', 'venv', join(stage, 'venv')]);
-  run(join(stage, 'venv', 'bin', 'python'), ['-m', 'pip', 'install', '--disable-pip-version-check', '--require-hashes', '--only-binary=:all:', '-r', join(runtimeRoot, 'requirements.lock')], { timeout: 900000 });
+  run(venvPython(join(stage, 'venv')), ['-m', 'pip', 'install', '--disable-pip-version-check', '--require-hashes', '--only-binary=:all:', '-r', join(runtimeRoot, 'requirements.lock')], { timeout: 900000 });
   writeFileSync(join(stage, 'AUDIO_READY'), `${audioDigest}\n`);
   rmSync(dir, { recursive: true, force: true });
   renameSync(stage, dir);
@@ -217,6 +213,14 @@ export async function install({ audio = false, wordTiming: wantWords = false, en
   return receipts.join('\n');
 }
 
+function coverEncoderLine(env) {
+  const tool = (name) => { const probe = spawnSync(name, ['-version'], { encoding: 'utf8', timeout: 10000, env }); return probe.status === 0 ? (/\d+\.\d+(?:\.\d+)?/.exec(`${probe.stdout}${probe.stderr}`)?.[0] || 'unknown version') : null; };
+  const img2webp = tool('img2webp'), dwebp = tool('dwebp');
+  if (img2webp && dwebp) return `img2webp ${img2webp} and dwebp ${dwebp}; README covers encode as animated WebP and gate the decoded file`;
+  if (spawnSync('gifski', ['--version'], { encoding: 'utf8', timeout: 10000, env }).status === 0) return `gifski (GIF fallback; img2webp${img2webp ? '' : ' missing'}, dwebp${dwebp ? '' : ' missing'})`;
+  return 'not found: install libwebp (img2webp, dwebp) or gifski; cover renders stop with exit 21';
+}
+
 const chromeProbeScript = () => {
   const gl = document.createElement('canvas').getContext('webgl2');
   if (!gl) return null;
@@ -224,7 +228,8 @@ const chromeProbeScript = () => {
   return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown (debug-info extension unavailable)';
 };
 
-// MO-A-44: five probes on every run, in this product's "name: value" status style.
+// MO-A-44: five probes on every run, in this product's "name: value" status style, plus the
+// cover encoder that cover mode needs (img2webp and dwebp, or the gifski fallback).
 export async function status(env = process.env) {
   const { chromeExecutable, launchChrome } = await import('../engine/browser.mjs');
   const { isSoftwareRenderer, UNKNOWN_RENDERER } = await import('../engine/constants.mjs');
@@ -253,7 +258,7 @@ export async function status(env = process.env) {
       glLine = `${renderer} (flags: ${launched.flags.join(' ')})`;
       await launched.context.close().catch(() => {});
     } catch (error) {
-      glLine = `no WebGL2 context obtainable: ${String(error.message).split('\n')[0]}`;
+      glLine = `no WebGL2 context obtainable: ${String(error.message).split(/\r?\n/)[0]}`;
     } finally { rmSync(profileRoot, { recursive: true, force: true }); }
   }
   const software = !renderer ? 'unknown (no renderer probed)'
@@ -269,10 +274,11 @@ export async function status(env = process.env) {
   const warm = warmParts.length ? `NOT READY - ${warmParts.join('; ')}; fix: ${WARM}` : `READY cache=${deps.cache}`;
   return [
     `Chrome: ${chrome ? `${chrome} (${version || 'version unknown'})` : 'not found on PATH / not installed (set CHROME_PATH)'}`,
-    `ffmpeg: ${ffmpeg.status === 0 ? `${ffmpeg.stdout.split('\n')[0]}; preview encoder: ${preview}` : 'not found on PATH (video export blocked; stills and sheet still work)'}`,
+    `ffmpeg: ${ffmpeg.status === 0 ? `${ffmpeg.stdout.split(/\r?\n/)[0]}; preview encoder: ${preview}` : 'not found on PATH (video export blocked; stills and sheet still work)'}`,
     `WebGL2 renderer: ${glLine}`,
     `software GL: ${software}`,
     `pre-warm: ${warm}; ${audioText}`,
+    `cover encoder: ${coverEncoderLine(env)}`,
   ];
 }
 

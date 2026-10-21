@@ -116,6 +116,12 @@
       "license": "licenses/EMS-OFL.txt"
     },
     {
+      "path": "fonts/JetBrainsMono-wght-latin.woff2",
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/files/jetbrains-mono-latin-wght-normal.woff2",
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e",
+      "license": "licenses/JetBrainsMono-OFL.txt"
+    },
+    {
       "path": "licenses/Galmuri-OFL.md",
       "url": "https://raw.githubusercontent.com/quiple/galmuri/v2.40.4/ofl.md",
       "sha256": "9a9e5a342c430c3fcf01a408b680f4405d5bf4ac659c931be35f8a1b27ea69c9"
@@ -149,6 +155,11 @@
       "path": "licenses/Archivo-OFL.txt",
       "url": "https://raw.githubusercontent.com/mexicat/pdoom-video/ca251e3dddda422b364385eb484b5a3593a0990d/app/public/fonts/src/OFL.txt",
       "sha256": "108b4e57c9c796d3d38d0428ca7ee39de47ad93187302718d9b2d8864b9b716b"
+    },
+    {
+      "path": "licenses/JetBrainsMono-OFL.txt",
+      "url": "https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/LICENSE",
+      "sha256": "403581b69dac5cff4079205e01c6b467e56af449ecbd7247693ddb1baafa005b"
     }
   ]
 }

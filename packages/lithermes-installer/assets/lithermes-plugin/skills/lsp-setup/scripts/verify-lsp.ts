@@ -118,6 +118,19 @@ function makeReader(onMessage: (message: JsonRpcMessage) => void): (chunk: Buffe
 	}
 }
 
+// Windows installs npm language servers as .cmd shims, which Node refuses to spawn without a
+// shell (EINVAL). A shell line is built only from the configured command, each part quoted;
+// a quote, percent sign or line break in it is refused rather than escaped.
+function launch(bin: string, args: string[]) {
+	const stdio: ["pipe", "pipe", "pipe"] = ["pipe", "pipe", "pipe"]
+	if (process.platform !== "win32") return spawn(bin, args, { stdio })
+	const quote = (part: string): string => {
+		if (/["%\r\n\0]/.test(part)) throw new Error(`refusing language server argument with a quote, percent sign or line break: ${part.slice(0, 40)}`)
+		return /^[\w@+=:,./\\-]+$/.test(part) ? part : `"${part.replace(/\\+$/, (run) => run + run)}"`
+	}
+	return spawn([bin, ...args].map(quote).join(" "), { stdio, shell: true })
+}
+
 function languageId(ext: string): string {
 	const server = LANGUAGES.find((entry) => entry.extensions.includes(ext))
 	return server?.language ?? ext.replace(/^\./, "")
@@ -145,9 +158,9 @@ async function run(filePath: string, timeoutMs: number, configPath: string): Pro
 	return await new Promise<number>((resolveResult) => {
 		let child
 		try {
-			child = spawn(bin, binArgs, { stdio: ["pipe", "pipe", "pipe"] })
-		} catch {
-			process.stdout.write(`FAIL ${absolute}: language server not installed (${bin})\n`)
+			child = launch(bin, binArgs)
+		} catch (error) {
+			process.stdout.write(`FAIL ${absolute}: language server could not start (${bin}): ${error instanceof Error ? error.message : String(error)}\n`)
 			resolveResult(1)
 			return
 		}

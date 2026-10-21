@@ -32,8 +32,8 @@ function assertCoverImage(text, label, repository) {
   assert.ok(text.includes('srcset="' + reducedMotionSrc + '"'), label + " needs a reduced-motion still from the motion cover");
   assert.ok(text.includes('src="' + motionSrc + '"'), label + " needs the motion cover as the img fallback");
   const coverAlt = text.includes('alt="LitFamily motion cover:')
-    ? "LitFamily motion cover: five armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up."
-    : "LitFamily 모션 커버: 다섯 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상";
+    ? "LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up."
+    : "LitFamily 모션 커버: 일곱 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상";
   assert.ok(text.includes('alt="' + coverAlt + '"'), label + " needs meaningful motion-cover alt text");
   const heroPicture = '<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="' + reducedMotionSrc + '" /><img src="' + motionSrc + '" width="100%" alt="' + coverAlt + '" /></picture></p>';
   assert.ok(text.startsWith(heroPicture + "\n\n"), label + " must open with the motion cover as its only cover picture");
@@ -43,6 +43,18 @@ function assertCoverImage(text, label, repository) {
   assert.ok(h1Index >= 0, label + " must have a title");
   assert.ok(text.indexOf(heroPicture) < h1Index, label + " cover image must appear before the title");
 }
+
+test("the painted-light recipe keeps the five-robot painting it was measured on", () => {
+  const { createHash } = require("node:crypto");
+  const base = fs.readFileSync(path.join(repoRoot, "docs", "assets", "recipes", "painted-light-base.png"));
+  assert.equal(createHash("sha256").update(base).digest("hex"), "955ccd875bd0da509ba850b76a83ac7aa76f2ecc5c019bcb2d04043e8d46179e");
+  assert.equal(base.toString("ascii", 1, 4), "PNG");
+  assert.deepEqual([base.readUInt32BE(16), base.readUInt32BE(20)], [1536, 1024], "PAINTING.panels are x ranges on a 1536x1024 painting");
+  const qa = fs.readFileSync(path.join(packageRoot, "qa", "cover-recipes.js"), "utf8");
+  assert.ok(qa.includes('"docs", "assets", "recipes", "painted-light-base.png"'), "the recipe QA must render from the retained painting");
+  const landing = fs.readFileSync(path.join(repoRoot, "docs", "assets", "litfamily-machines.png"));
+  assert.notEqual(createHash("sha256").update(landing).digest("hex"), createHash("sha256").update(base).digest("hex"), "the landing painting shows seven machines, not the recipe base");
+});
 
 test("repository covers match the Hermes outlined vector and WebP exports", () => {
   const { createHash } = require("node:crypto");
@@ -58,13 +70,13 @@ test("repository covers match the Hermes outlined vector and WebP exports", () =
   const cover = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover.webp"));
   assert.equal(cover.toString("ascii", 0, 4), "RIFF");
   assert.equal(cover.toString("ascii", 8, 12), "WEBP");
-  assert.equal(createHash("sha256").update(cover).digest("hex"), "c125a3ff2ebe1a62535bd159b9a8b277f72002a6bb95ea22015a4f8849a4e3ea");
+  assert.equal(createHash("sha256").update(cover).digest("hex"), "eaa94fe07f86deca1bafe7a5b89b64e93c775cc9989e31ea4853d5e1281c05f2");
   const motionCover = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover-motion.webp"));
   assert.ok(motionCover.length <= 2_621_440, "motion cover must stay under 2.5 MiB");
-  assert.equal(createHash("sha256").update(motionCover).digest("hex"), "83f0361043b21e5aba1fdbc34737efc55f329eb36f76db6cddc6d40ad87301c7");
+  assert.equal(createHash("sha256").update(motionCover).digest("hex"), "6c06f2952d621bb5357f7156fb25b9bf0117688905c0b7dde19e9820bcac9254");
   assert.deepEqual(fs.readFileSync(path.join(packageRoot, "readme-assets", "cover-motion.webp")), motionCover);
   const motionStill = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover-motion-still.webp"));
-  assert.equal(createHash("sha256").update(motionStill).digest("hex"), "8f9165e78ae6789242b4f49f47dc741ffaad23195d528260536e04ad14fe981b");
+  assert.equal(createHash("sha256").update(motionStill).digest("hex"), "7000a8cac2ecbb0415e0f29d828e4daa3e9d43ac8b0c9512709715406e2a9cce");
   assert.deepEqual(fs.readFileSync(path.join(packageRoot, "readme-assets", "cover-motion-still.webp")), motionStill);
 });
 

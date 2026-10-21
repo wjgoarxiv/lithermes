@@ -23,6 +23,7 @@ import { WARM, audioState, findCache, fontFile, fontState, hangulPath, runtimeRe
 import { loadTreatment } from '../engine/treatment.mjs';
 import { recordFirstTreatment } from '../engine/director.mjs';
 import { stageCommand, stageRegate } from '../engine/stage.mjs';
+import { coverCommand, coverGateCommand } from '../engine/cover.mjs';
 import { completeCommand, lookCommand } from '../engine/look.mjs';
 import { stampStills, stillsPlan, writeStillsSet } from '../engine/stills.mjs';
 import { produceSound, soundCommand, soundGate } from '../engine/sound.mjs';
@@ -31,6 +32,11 @@ import { viewedFiles } from '../engine/director.mjs';
 const USAGE = `LitHermes lit-typographic-motion
 usage: node motion.mjs <subcommand> --out DIR [options]   (write DIR/treatment.json first)
   stage    --out DIR [--stills-only] [--round 1-3]                stage path: capture DIR/stage/index.html frame by frame; stills, film, sound, gate
+  cover    --out DIR [--round 1-3] [--window t0,t1] [--detach]    cover mode (treatment mode: cover): the silent README loop DIR/cover/index.html,
+                                                                  captured at 2x, encoded to cover.webp and gated on the decoded file;
+                                                                  --window re-renders only t0-0.5 s .. t1+0.5 s and sheets it (never done)
+  cover-gate FILE [--frames D --frames2 D --masks D --title x,y,w,h] [--strict] [--json]
+                                                                  the cover gate on any cover file or PNG frame folder
   run      --out DIR [--brief FILE] [--round 1-3] [--stills-only] type path: the WebGL2 type engine; stills, cut sheet, film, preview, poster, gate
   sound    --out DIR                                              build the generated sound bed and sound-cues.json from the treatment
   look     --out DIR --round 1-3 --answers FILE                   record one look round against the latest stills set
@@ -39,7 +45,8 @@ usage: node motion.mjs <subcommand> --out DIR [options]   (write DIR/treatment.j
 type-path tools: stills, sheet, video, perf (--brief FILE --out DIR)
 options: --scale 1-4  --word-timing  --force-software
 exit: 0 ok, 10 no Chrome, 11 no WebGL2, 12 no ffmpeg for video, 13 QA gate failed, 14 not pre-warmed, 15 font missing or corrupt,
-      16 treatment invalid, 17 stage contract, 18 stage not deterministic, 19 stage network request, 20 sound invalid
+      16 treatment invalid, 17 stage contract, 18 stage not deterministic, 19 stage network request, 20 sound invalid,
+      21 no cover encoder (img2webp and dwebp, or gifski), 22 a listed cover asset is missing
 ${CREDIT_LINE}`;
 
 const sha = (data) => createHash('sha256').update(data).digest('hex');
@@ -53,7 +60,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (!arg.startsWith('--')) { flags._.push(arg); continue; }
     const key = arg.slice(2);
-    if (['stills-only', 'cuts', 'word-timing', 'force-software', 'help', 'no-rerender', 'aids', 'detach'].includes(key)) flags[key] = true;
+    if (['stills-only', 'cuts', 'word-timing', 'force-software', 'help', 'no-rerender', 'aids', 'detach', 'strict', 'json'].includes(key)) flags[key] = true;
     else if (key === 'viewed') flags.viewed = String(argv[++i] || '').split(',').map((v) => Number(v.replace(/^f/, ''))).filter(Number.isInteger);
     else flags[key] = argv[++i];
   }
@@ -154,7 +161,7 @@ class Session {
     const grid = join(this.out, 'audio-grid.json');
     const result = spawnSync(state.python, [join(skillRoot, 'bin', 'audio.py'), audioPath, grid], { encoding: 'utf8', timeout: 300000 });
     if (result.status !== 0 || !existsSync(grid)) {
-      this.warnings.push(`audio analysis failed (${(result.stderr || result.error?.message || '').trim().split('\n').at(-1)}); Tier 1 text timing used`);
+      this.warnings.push(`audio analysis failed (${(result.stderr || result.error?.message || '').trim().split(/\r?\n/).at(-1)}); Tier 1 text timing used`);
       return null;
     }
     const parsed = JSON.parse(readFileSync(grid, 'utf8'));
@@ -385,7 +392,7 @@ class Session {
       if (f % 60 === 59) process.stderr.write(`motion: ${f + 1}/${this.totalFrames} frames\n`);
     }
     const encoded = await encoder.finish();
-    if (encoded.code !== 0) throw fail(1, `ffmpeg master encode failed: ${encoded.stderr.split('\n').filter(Boolean).at(-1) || encoded.code}`);
+    if (encoded.code !== 0) throw fail(1, `ffmpeg master encode failed: ${encoded.stderr.split(/\r?\n/).filter(Boolean).at(-1) || encoded.code}`);
     // Every planned track is muxed here, whatever the --audio tier's state:
     // the beat grid is optional, the soundtrack is not.
     const supplied = this.brief.audio ? (isAbsolute(this.brief.audio) ? this.brief.audio : resolve(dirname(this.briefPath), this.brief.audio)) : null;
@@ -430,8 +437,8 @@ class Session {
       if (this.flags['force-software']) args.push('--force-software');
       const res = spawnSync(process.execPath, args, { encoding: 'utf8', timeout: 600000 });
       rmSync(dir, { recursive: true, force: true });
-      const line = (res.stdout || '').split('\n').find((l) => l.startsWith('MOTION_FRAME '));
-      if (!line) throw new Error(`determinism child for frame ${frame} failed: ${(res.stderr || '').trim().split('\n').at(-1) || res.status}`);
+      const line = (res.stdout || '').split(/\r?\n/).find((l) => l.startsWith('MOTION_FRAME '));
+      if (!line) throw new Error(`determinism child for frame ${frame} failed: ${(res.stderr || '').trim().split(/\r?\n/).at(-1) || res.status}`);
       return JSON.parse(line.slice('MOTION_FRAME '.length));
     };
     const checks = [];
@@ -542,6 +549,8 @@ async function main(argv) {
   if (!mode || flags.help || mode === 'help') { console.log(USAGE); return 0; }
   if (mode === 'complete') return completeCommand(resolve(flags.out || 'motion-output'));
   if (mode === 'stage') return stageCommand(flags);
+  if (mode === 'cover') return coverCommand(flags);
+  if (mode === 'cover-gate') return coverGateCommand(flags);
   if (mode === 'sound') return soundCommand(flags);
   if (mode === 'look') return lookCommand(flags);
   if (!['run', 'stills', 'sheet', 'video', 'perf', 'gate', 'hash-frame'].includes(mode)) { console.error(USAGE); return 2; }
@@ -630,6 +639,10 @@ async function main(argv) {
 async function regate(flags) {
   const out = resolve(flags.out || 'motion-output');
   const manifestPath = join(out, 'manifest.json');
+  if (existsSync(manifestPath) && JSON.parse(readFileSync(manifestPath, 'utf8')).path === 'cover') {
+    console.error(`${out} holds a cover: re-gate it with \`cover-gate ${join(out, 'cover.webp')} --strict\`, or render it again with \`cover --out ${out}\``);
+    return 2;
+  }
   if (!existsSync(manifestPath) || !existsSync(join(out, 'render.jsonl'))) { console.error(`no finished render in ${out}`); return 2; }
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   if (manifest.path === 'stage') return stageRegate(out);

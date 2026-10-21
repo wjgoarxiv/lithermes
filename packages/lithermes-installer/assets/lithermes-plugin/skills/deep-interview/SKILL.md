@@ -125,12 +125,13 @@ Deep Interview is an intent-first Socratic clarification loop that runs before p
 - The user says "deep interview", "interview me", "ask me everything", or "don't assume"
 - The user wants to avoid misaligned implementation from underspecified requirements
 - You need a clear requirements artifact before handing off to planning or implementation
+- A pick handed over by `lit-brainstorm` is still vague and needs one decision-complete spec
 </Use_When>
 
 <Do_Not_Use_When>
 - The request already has concrete file/symbol targets and clear acceptance criteria
 - The user explicitly asks to skip planning/interview and execute immediately
-- The user asks for lightweight, open-ended brainstorming only
+- The user asks for open-ended brainstorming (many options, no single spec): use `lithermes:lit-brainstorm`, which hands a still-vague pick back here
 - A complete spec/plan already exists and execution should start
 </Do_Not_Use_When>
 

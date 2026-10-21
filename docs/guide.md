@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-        LH --> S["36 skills"]
+        LH --> S["37 skills"]
 ```
 
-> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 36-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
+> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 37-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
 
 ## Core commands
 
@@ -113,9 +113,9 @@ flowchart LR
 | `/lit` | Run a bounded Litwork task. |
 | `/lit-loop` | Start or inspect the explicit loop lifecycle. |
 | `/lit-plan` | Create a plan before execution. |
-| `/review-work` | Review a plan or completed work without implementing the review. |
+| `/review-work` | Review a plan (before `start-work`) or completed work, picked from what exists or forced with `plan` or `work`, without implementing the review. |
 | `/start-work` | Execute an already-approved plan only. |
-| `/litgoal` | Track criteria, evidence, checkpoints, and blockers. |
+| `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints, and blockers. `lit-loop` and `start-work` run toward it. |
 | `/lit-recap` | Read a concise Korean recap of work and evidence. |
 | `/lit-handoff` | Write a verified continuation packet. |
 | `/lit-scientific-visualization` | Build publication figures from the bundled source. |
@@ -145,7 +145,7 @@ wait.
 The complete skill catalog is `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
 `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
 `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,

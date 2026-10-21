@@ -5,11 +5,13 @@ from pathlib import Path
 
 try:
     from .core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
-    from .core_contract import LIT_CONTEXT, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from .core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from .core_review import review_mode_line, review_target
     from .core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
 except (ImportError, ModuleNotFoundError):
     from core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
-    from core_contract import LIT_CONTEXT, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from core_review import review_mode_line, review_target
     from core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
 
 # Intent-shaped skill routes: one wrapper each, same shape as the hand-written
@@ -453,6 +455,20 @@ def _build_natural_mode_context(
                 "</lithermes-natural-route>",
             ]
         )
+    if route.mode == "lit-brainstorm":
+        return "\n".join(
+            [
+                "<lithermes-natural-route mode=\"lit-brainstorm\">",
+                contract_route_block("lit-brainstorm", surface="natural-route", compact=True),
+                "Natural routing: standalone lit brainstorm, lit ideation or lit idea -> lithermes:lit-brainstorm.",
+                f"Open ask: {escape(objective, quote=True)}",
+                "Mode Contract: brainstorm-only. Diverge into many different options (quantity before judgment), cluster, score against stated criteria, converge to a short list with trade-offs, ask the user to pick or combine. Do not implement, write a plan, run start-work, or start a run.",
+                "Handoff: a still-vague pick goes to deep-interview, a concrete pick goes to lit-plan; end with READY FOR deep-interview, READY FOR lit-plan, or NOT READY.",
+                "Notes, only when the session spans turns: .hermes/lithermes/brainstorm/<slug>/notes.md. Ask in plain text, at most one blocking question.",
+                skill_view_reference("lit-brainstorm", "for the lenses, scoring matrix, and handoff rules"),
+                "</lithermes-natural-route>",
+            ]
+        )
     if route.mode == "lit-crucible":
         return "\n".join(
             [
@@ -479,12 +495,13 @@ def _build_natural_mode_context(
         return "\n".join(
             [
                 "<lithermes-natural-route mode=\"review-work\">",
-                contract_route_block("review-work", surface="natural-route"),
+                contract_route_block("review-work", surface="natural-route", compact=True),
                 "Natural routing: standalone lit review -> lithermes:review-work.",
-                f"Review target: {objective}",
-                "Mode Contract: verify only. Run the 5-lane review: goal/constraints, real-surface QA, code quality, security/safety, and context/docs/package readiness.",
-                "All lanes must pass; timeout, missing evidence, inconclusive output, or cleanup gaps block approval.",
-                _skill_body_block("review-work"),
+                review_mode_line(route.objective),
+                f"Review target: {review_target(route.objective) or objective}",
+                "Mode Contract: verify only. Plan review audits a draft plan before start-work; work review runs the 5-lane review: goal/constraints, real-surface QA, code quality, security/safety, and context/docs/package readiness.",
+                "Name the picked mode on the first line of the report. All work-review lanes must pass; timeout, missing evidence, inconclusive output, or cleanup gaps block approval.",
+                skill_view_reference("review-work", "for the plan review lanes, the five work-review lane prompts, and the verdict contracts"),
                 "</lithermes-natural-route>",
             ]
         )
@@ -526,12 +543,13 @@ def _build_natural_mode_context(
         return "\n".join(
             [
                 "<lithermes-natural-route mode=\"litgoal\">",
-                contract_route_block("litgoal", surface="natural-route"),
+                contract_route_block("litgoal", surface="natural-route", compact=True),
                 "Natural routing: standalone lit goal -> lithermes:litgoal.",
                 f"Objective: {objective}",
+                LITGOAL_MEANING,
                 "Mode Contract: bind one objective plus checkable criteria. Use goal_set with happy/edge/regression criteria before work proceeds.",
                 "Durable state: .hermes/lithermes/litgoal/ via goal_* tools or `hermes lithermes goal status`.",
-                _skill_body_block("litgoal"),
+                skill_view_reference("litgoal", "for the criteria, evidence, gate and steering procedure"),
                 "</lithermes-natural-route>",
             ]
         )

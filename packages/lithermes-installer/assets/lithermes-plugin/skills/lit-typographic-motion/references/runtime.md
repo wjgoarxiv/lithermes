@@ -26,7 +26,7 @@ Hermes session runs npm, pip or a download. Run the pre-warm in a normal shell,
 outside any sandboxed session, with the same `HOME`, `HERMES_HOME` and
 `XDG_CACHE_HOME` the session will use.
 
-## Status (five probes)
+## Status (six probes)
 
 `lithermes motion-runtime status` and `lithermes doctor` report, every time:
 
@@ -41,6 +41,9 @@ outside any sandboxed session, with the same `HOME`, `HERMES_HOME` and
 5. **Pre-warm**: READY with the cache path, or exactly which dependencies and
    fonts are missing or hash-mismatched and the command that fixes them; plus
    the state of the optional audio venv.
+6. **Cover encoder**: img2webp and dwebp (libwebp) with their version, the
+   gifski fallback, or not found (cover renders then stop with exit 21). These
+   are host tools, never bundled or installed by this product.
 
 ## Chrome launch
 
@@ -71,6 +74,8 @@ the render with exit 10 and that line. The engine never adds `--no-sandbox`.
 | 13 | GATE_FAIL_QA | the gate or the pre-flight failed; the report names the rules; fix and rerun the next round |
 | 14 | BLOCKED_DEPS_NOT_PREWARMED | the cache is not warm (or word-timing models are absent): run `lithermes motion-runtime install` outside this session |
 | 15 | BLOCKED_FONT_FETCH | a pinned font or licence is missing or its sha256 differs: rerun `lithermes motion-runtime install`; never accept or re-fetch it inside a session |
+| 21 | BLOCKED_NO_COVER_ENCODER | cover mode found neither img2webp with dwebp nor gifski; install libwebp (or gifski) on the host |
+| 22 | BLOCKED_ASSET_MISSING | cover mode: an asset listed in `assets.json` is missing; supply or generate it, never a stand-in |
 | 2 | usage | a missing or invalid brief or flag |
 
 Pre-flight order: brief, word-timing request, dependencies (14), fonts (15),
@@ -82,10 +87,13 @@ glyph coverage and timeline floors (13, nothing rendered), ffmpeg for `video`
 `lithermes motion-runtime install --audio` creates a Python venv in the cache
 from `runtime/requirements.lock` with
 `pip install --require-hashes --only-binary=:all:` (librosa and its pinned
-dependencies; Python 3.11 to 3.13; set `LITHERMES_MOTION_PYTHON` to choose the
-interpreter). When a brief names an `audio` file and the venv is ready and still
-matches its pins, `bin/audio.py` analyses that file once into
-`<out>/audio-grid.json` and the beats replace the fixed grid. If the venv is
+dependencies; the newest Python from 3.14 down to 3.11 on PATH, picked the way the
+Office runtime picks, so a python3 that is 3.15 is passed over; the lock pins
+numpy 2.4, which starts at 3.11, and carries audioread's extra dependencies
+for 3.13 and newer; set `LITHERMES_MOTION_PYTHON` to choose
+the interpreter). When a brief names an
+`audio` file and the venv is ready and still matches its pins, `bin/audio.py`
+analyses that file once into `<out>/audio-grid.json` and the beats replace the fixed grid. If the venv is
 missing, drifted, or the analysis fails, the cuts use text timing and the
 manifest and report carry the warning. Either way the audio itself is always
 muxed into the MP4 (AAC 256k), padded or trimmed to the film with a 50 ms

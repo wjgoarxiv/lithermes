@@ -1,0 +1,68 @@
+{
+  "schema": "lithermes.cover-recipe/v1",
+  "note": "The decoded gate row this recipe reached when it shipped, through this renderer (qa/cover-recipes.js re-renders it and fails when median d or the moving share leave +-15 % of the row, seamLocal leaves TARGET or the file passes 2 MiB).",
+  "row": {
+    "medianD": 0.009697857224064235,
+    "movingFrac": 1,
+    "longestStillSec": 0,
+    "spike": 1.1079454306412737,
+    "seamLocal": 1.0898095284450715,
+    "bytes": 1621942
+  },
+  "settings": {
+    "size": [
+      1000,
+      500
+    ],
+    "fps": 16,
+    "frames": 128,
+    "encode": {
+      "q": 58,
+      "edgeQ": 80,
+      "edgeFrames": 15,
+      "method": 4
+    }
+  },
+  "treatment": {
+    "mode": "cover",
+    "request": "An animated README cover for LitHermes where the name itself moves.",
+    "idea": "A weight swell rolls diagonally through rows of drifting letters and through the still hero name.",
+    "recipe": "weight-tide",
+    "recipeReason": "The name is the material: its weight moves and its position never does.",
+    "brandWord": "LITHERMES",
+    "motto": {
+      "text": "KEEP THE WORK LIT.",
+      "source": "project",
+      "from": "the motto painted on the repository artwork"
+    },
+    "aspect": "2:1",
+    "loopSec": 8,
+    "fps": 16,
+    "layers": {
+      "slow": "Rows of the word drift one word length per loop, alternate rows the other way.",
+      "mid": "The weight tide sweeps the screen once per loop.",
+      "beat": "A cursor steps under each hero letter and runs home on the last stop."
+    },
+    "system": {
+      "rule": "Weight is a gained swell of the loop phase.",
+      "copies": "About six hundred background letters and the nine hero letters.",
+      "offset": "Each letter's screen position, 0.85 x plus 0.35 y."
+    },
+    "title": {
+      "box": [
+        0.11,
+        0.31,
+        0.78,
+        0.32
+      ],
+      "kind": "live"
+    },
+    "encode": {
+      "q": 58,
+      "edgeQ": 80,
+      "edgeFrames": 15
+    },
+    "ambition": "Every letter on screen moves and the hero never thins below a readable weight."
+  },
+  "verdict": "PASS+TARGET"
+}

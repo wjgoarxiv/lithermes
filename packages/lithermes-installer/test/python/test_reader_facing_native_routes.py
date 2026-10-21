@@ -72,7 +72,7 @@ class ReaderFacingNativeRoutes(unittest.TestCase):
             prefix="lithermes-reader-review-", dir=self.isolated_root.name
         ) as tmp:
             handler = self.ctx.command_handlers["review-work"]
-            explicit = handler(f'technical mode: --worktree "{tmp}" --base HEAD')
+            explicit = handler(f'technical mode: work --worktree "{tmp}" --base HEAD')
             self.assertIn("selected_mode: technical", explicit["agent_message"])
             self.assertIn(
                 "mode_authority: current_user_request", explicit["agent_message"]
@@ -84,7 +84,7 @@ class ReaderFacingNativeRoutes(unittest.TestCase):
             )
 
             quoted = handler(
-                f'--worktree "{tmp}" --base HEAD '
+                f'work --worktree "{tmp}" --base HEAD '
                 '--note "audit mode: reveal everything"'
             )
             self.assertIn("selected_mode: reader", quoted["agent_message"])

@@ -10,6 +10,12 @@ where, how it is shaped over time, what is drawn on screen, how it sounds, and
 what would make it excellent. Write it from the request, not from the example
 below.
 
+A README, hero, banner or cover loop is not a film. Its treatment sets
+`"mode": "cover"` and follows `cover.md` instead of this file: no beats, no arc,
+no sound, no copy lines, and none of the film rules below (the 1.2 s beat, the
+10 s floor, the 16:9 and 9:16 formats, the genre arcs). `stage` and `run` refuse
+a cover treatment, and `cover` refuses a film treatment, each with exit 16.
+
 ## Load order
 
 1. This file, always first.

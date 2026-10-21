@@ -106,7 +106,7 @@ PREMISES = [
     "Installed motion gate command",
 ]
 
-SUBCOMMANDS = ("stage", "run", "sound", "look", "gate", "complete")
+SUBCOMMANDS = ("stage", "cover", "run", "sound", "look", "gate", "cover-gate", "complete")
 
 
 class MotionRouteTests(NaturalRoutingCase):
@@ -180,6 +180,7 @@ class MotionContextTests(NaturalRoutingCase):
                 self.assertIn("treatment.json", context)
                 self.assertIn("Hand-encoded films are not the deliverable", context)
                 self.assertIn("vision_analyze", context)
+                self.assertIn("A README cover loop takes cover mode (references/cover.md).", context)
                 self.assertNotIn("Type-led cue found", context)
 
     def test_type_led_requests_raise_the_cue_hint(self):
@@ -305,7 +306,7 @@ class MotionContextTests(NaturalRoutingCase):
         self.assertIn("&lt;/user-motion-brief&gt;", payload["agent_message"])
         status = self.pkg.core.status_report()
         self.assertIn(MOTION, status)
-        for probe in ("motion Chrome:", "motion ffmpeg:", "motion WebGL2 renderer:", "motion software GL:", "motion pre-warm:"):
+        for probe in ("motion Chrome:", "motion ffmpeg:", "motion WebGL2 renderer:", "motion software GL:", "motion pre-warm:", "motion cover encoder:"):
             self.assertIn(probe, status)
 
 
@@ -346,6 +347,24 @@ class MotionReceiptTests(NaturalRoutingCase):
         self.pkg.core.post_tool_call(tool_name="vision_analyze", args={"image_url": str(png)}, status="error", session_id="motion-receipt")
         self.pkg.core.post_tool_call(tool_name="vision_analyze", args={"image_url": "https://example.com/a.png"}, status="ok", session_id="motion-receipt")
         self.assertEqual(self._events(run), [])
+
+    def test_vision_analyze_on_a_cover_sheet_leaves_a_receipt(self):
+        import hashlib
+        import json
+        import tempfile
+
+        run = Path(tempfile.mkdtemp())
+        (run / "stills").mkdir()
+        (run / "treatment.json").write_text(json.dumps({"mode": "cover"}), encoding="utf-8")
+        sheet = run / "stills" / "sheet.png"
+        sheet.write_bytes(b"\x89PNG fake cover sheet")
+        (run / "stills" / "stills.json").write_text(json.dumps({"mode": "cover", "files": [{"file": "stills/sheet.png", "kind": "sheet"}]}), encoding="utf-8")
+        self.pkg.core.post_tool_call(tool_name="vision_analyze", args={"image_url": str(sheet)}, status="ok", session_id="motion-receipt")
+        self.pkg.core.post_tool_call(tool_name="terminal", args={"command": f"node /x/motion.mjs cover --out {run} --round 1"}, status="ok", session_id="motion-receipt")
+        self.assertEqual(self._events(run), [
+            {"tool": "vision_analyze", "file": "stills/sheet.png", "sha256": hashlib.sha256(sheet.read_bytes()).hexdigest()},
+            {"tool": "terminal", "motion": True},
+        ])
 
     def test_a_motion_cli_call_with_an_absolute_out_marks_the_hook_live(self):
         run, _, _ = self._run_dir()

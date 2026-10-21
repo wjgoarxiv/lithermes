@@ -27,13 +27,13 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 </tr>
 <tr>
 <td><img src="./assets/skills/review-work.webp" width="240" alt="리뷰어 다섯이 같은 변경을 각자 읽고, 찾은 문제부터 알려 줍니다." /></td>
-<td><code>review-work</code><br /><sub><code>lit review &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
-<td>리뷰어 다섯이 같은 변경을 각자 읽고, 찾은 문제부터 알려 줍니다.</td>
+<td><code>review-work</code><br /><sub><code>lit review [plan|work] &lt;scope&gt;</code> · <code>/review-work</code></sub></td>
+<td>계획 검토는 <code>start-work</code> 전에 계획을 점검합니다. 작업 검토는 리뷰어 다섯이 끝난 변경을 각자 읽고, 찾은 문제부터 알려 줍니다. 있는 것을 보고 방식을 고르며 첫 줄에 어느 쪽인지 밝힙니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/litgoal.webp" width="240" alt="목표 하나와 확인 가능한 기준을 디스크에 남겨, 다음 세션이 이어받을 수 있습니다." /></td>
 <td><code>litgoal</code><br /><sub><code>lit goal &lt;outcome&gt;</code> · <code>/litgoal</code></sub></td>
-<td>목표 하나와 확인 가능한 기준을 디스크에 남겨, 다음 세션이 이어받을 수 있습니다.</td>
+<td>결승선을 정하고 지킵니다. 목표 하나와 확인 가능한 기준을 디스크에 남겨 다음 세션이 이어받을 수 있고, <code>lit-loop</code>와 <code>start-work</code>가 그 결승선을 향해 달립니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/lit-recap.webp" width="240" alt="읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다." /></td>
@@ -44,6 +44,11 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td><img src="./assets/skills/lit-handoff.webp" width="240" alt="handoff라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td><code>handoff</code>라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-brainstorm</code><br /><sub><code>lit brainstorm &lt;ask&gt;</code> · <code>lit ideation &lt;ask&gt;</code> · <code>lit idea &lt;ask&gt;</code></sub></td>
+<td>이름이나 방향처럼 열린 요청에 씁니다. 서로 다른 선택지를 먼저 많이 내고, 장단점이 붙은 짧은 목록으로 좁힙니다. 고르면 그 선택을 <code>deep-interview</code>나 <code>lit-plan</code>으로 넘기며, 직접 만들지는 않습니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/deep-interview.webp" width="240" alt="한 번에 한 질문씩 물어 아이디어를 만들 수 있을 만큼 분명하게 다듬습니다. 남은 모호함은 게이지로 보입니다." /></td>
@@ -200,11 +205,12 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 | `handoff` 또는 `/lit-handoff` | 현재 작업과 다음 할 일을 다음 세션으로 넘깁니다. |
 | `lit-plan` 또는 `/lit-plan` | 실행 전에 계획을 작성합니다. |
 | `/start-work <승인된 계획>` | 승인한 계획을 실행합니다. |
-| `/review-work` | 계획이나 결과를 검토하고 발견 사항을 남깁니다. |
-| `lit review <대상>` | 계획이나 결과를 검토합니다. |
+| `/review-work [plan\|work]` | 계획이나 끝난 작업을 검토하고 발견 사항을 남깁니다. |
+| `lit review [plan\|work] <대상>` | `start-work` 전에는 계획을, 끝난 뒤에는 작업을 검토합니다. |
+| `lit brainstorm <요청>`, `lit ideation <요청>`, `lit idea <요청>` | 아이디어 세션을 엽니다. 선택지를 많이 내고, 짧은 목록으로 좁혀 고르게 합니다. |
 | `litresearch` 또는 `lit research <질문>` | 출처 메모가 있는 조사 흐름을 사용합니다. |
 | `/lit-loop` | 명시적 반복 작업을 시작하고 확인하고, 다시 잇거나 끝냅니다. |
-| `/litgoal` | 기준과 근거, 체크포인트와 막힌 지점을 추적합니다. |
+| `/litgoal` | 결승선을 정하고 지킵니다. 기준과 근거, 체크포인트와 막힌 지점을 추적합니다. |
 | `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭은 `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`입니다. |
 | `/lit-diagram-drawer <brief>` | 설치된 Python 도구로 내용과 기하 구조를 검사하며 접근성·한국어를 고려한 다이어그램을 만듭니다. |
 | `/lit-pptx <brief>` | 번들된 AZURE-PRO 엔진으로 발표자료를 만들고 검사합니다. |
@@ -240,6 +246,8 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 영상을 만들려면 컴퓨터에 Chrome과 ffmpeg가 있어야 하고, 버전을 고정한 보조 패키지와 폰트도 몇 가지 필요합니다. 렌더링은 스스로 아무것도 내려받지 않기 때문에, 보조 패키지와 폰트는 영상을 만들기 전에 로컬 캐시에 들어 있어야 합니다. `lithermes install`이 설치하면서 이 캐시를 채워 보고, `--offline` 등으로 건너뛰었거나 끝내지 못했으면 그 사실을 한 줄로 알려 줍니다. 그럴 때는 렌더 세션 밖에서 `lithermes motion-runtime install`을 실행해 나중에 채우면 됩니다.
 
 지금 상태가 궁금하면 `lithermes motion-runtime status`를 실행하세요. Chrome, ffmpeg, WebGL2, 소프트웨어 렌더링으로 내려갔는지 여부, 고정 폰트 상태를 보여 줍니다. 마지막 검사를 통과하면 60fps 영상(1920×1080, 스테이지 경로는 1080×1920도 가능), 미리보기, 포스터, 움직임 축소용 정지 이미지, 수치 검사 보고서를 받습니다. 타이포그래피 모션 엔진은 mexicat/pdoom-video (MIT, Giacomo Magnanini), 커밋 `ca251e3`에서 각색했습니다.
+
+README 커버는 영상과 다른 일이라서 따로 다룹니다. README, 히어로, 배너 루프를 요청하면 영상의 비트와 사운드, 엔드 카드를 건너뜁니다. 대신 멈추지 않고 움직이면서 시작점이 보이지 않는 그림 한 장을 만듭니다. 기본은 그림 위로 빛이 지나가는 방식이고, 글자가 움직이는 방식과 작은 궤도 시스템도 있습니다. 렌더러는 이 루프를 2 MiB 이하의 애니메이션 WebP로 인코딩한 뒤 그 파일을 다시 디코딩해서 검사합니다. 손실 인코더가 인코딩 전에는 멀쩡해 보이던 느린 페이드를 조용히 지워 버리기 때문입니다. 넘기기 전에 0.5초마다 무언가 움직이는지, 이음매가 보이지 않는지, README 폭에서도 제목이 읽히는지, 바탕 그림이 첫 프레임에 그대로 보이는지 확인합니다. 커버에는 libwebp의 img2webp와 dwebp가 필요하고(없으면 gifski로 대신합니다), `lithermes motion-runtime status`가 이 도구도 함께 보여 줍니다.
 
 ### 화면과 README
 

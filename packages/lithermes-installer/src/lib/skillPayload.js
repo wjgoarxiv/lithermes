@@ -16,7 +16,7 @@ const MAX_PAYLOAD_TOTAL_BYTES = 24 * 1024 * 1024;
 const requiredSkills = [
   "lit-burnoff-file", "autoconference", "autoresearch", "browser-drive", "comment-checker", "debugging",
   "deep-interview",
-  "frontend-ui-ux", "readme-studio", "lit-commit", "lit-crucible", "lit-init",
+  "frontend-ui-ux", "readme-studio", "lit-commit", "lit-brainstorm", "lit-crucible", "lit-init",
   "lit-humanizer", "lit-comprehend", "lit-handoff", "lit-plan", "lit-recap",
   "lit-scientific-visualization", "lit-diagram-drawer", "lit-pptx", "lit-docx", "lit-typographic-motion", "litgoal", "litresearch", "litwork", "lsp",
   "lsp-setup", "lit-code", "refactor", "lit-burnoff", "review-work",

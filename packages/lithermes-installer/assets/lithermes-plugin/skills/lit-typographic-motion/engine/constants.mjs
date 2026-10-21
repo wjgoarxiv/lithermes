@@ -143,6 +143,35 @@ export const EXIT = Object.freeze({
   STAGE_NONDETERMINISTIC: 18,
   STAGE_NETWORK_REQUEST: 19,
   SOUND_INVALID: 20,
+  // Cover mode.
+  BLOCKED_NO_COVER_ENCODER: 21,
+  BLOCKED_ASSET_MISSING: 22,
+});
+
+// Cover mode (references/cover.md): the decoded-file gate, calibrated on 2026-10-20 against eight
+// earlier painted README covers, four slide-like negative loops and three pilot loops. FLOOR fails
+// a cover (every calibration cover passes it, every negative fails it). TARGET is what a cover
+// render must reach; the calibration covers miss it on purpose (a 1.9 s hold, a flash at the seam).
+// A number here changes only with a new calibration table, never to let a cover pass.
+export const COVER = Object.freeze({
+  maxBytes: 3 * 1024 * 1024, targetBytes: 2 * 1024 * 1024,
+  minSec: 6, maxSec: 12, fps: Object.freeze([16, 20, 25]),
+  gridMs: 50, // metrics run on a grid of max(gridMs, the shortest decoded frame)
+  stillEps: 0.0005, // a grid step whose mean |dY| (0..1, ~300 px wide) is below this is still
+  floor: Object.freeze({ medianD: 0.0004, movingFrac: 0.45, stillSec: 2.0, seamLocal: 8 }),
+  target: Object.freeze({ medianD: 0.0015, movingFrac: 0.95, stillSec: 0.5, spike: 6, seamLo: 0.25, seamHi: 2.0 }),
+  minContrast: 4.5,
+  minCapPx: 24, displayWidth: 830, // G6: cap height at the README column width
+  artSsim: 0.9, artMinShare: 0.1, // frame 0 shows the base art
+  seekSamples: 16, seekLevels: 1, // seek-order check: frames re-drawn out of order, one-level tolerance
+  windowPadSec: 0.5, maxDefects: 3,
+  captureScale: 2,
+  // Laid out at `page` CSS px, captured at captureScale, downsampled (Lanczos) to `size`.
+  aspects: Object.freeze({
+    '2:1': Object.freeze({ page: Object.freeze([1200, 600]), size: Object.freeze([1000, 500]) }),
+    '3:2': Object.freeze({ page: Object.freeze([1200, 800]), size: Object.freeze([960, 640]) }),
+  }),
+  encode: Object.freeze({ q: 86, edgeQ: 97, edgeFrames: 15, method: 4 }),
 });
 
 // MO-A-58 post-chain override vocabulary: [min, max, neutral]. null max = no ceiling.

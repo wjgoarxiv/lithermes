@@ -175,7 +175,7 @@ test("normal Python import cache is retained outside a successful repeat install
   manifest.files.push({ path: "migration_owned.py", sha256: sha256(source) });
   fs.writeFileSync(manifestPath(home), JSON.stringify(manifest));
   const imported = require("node:child_process").spawnSync(process.env.LITHERMES_PYTHON || "python3", [
-    "-E", "-c", "import sys; sys.dont_write_bytecode = False; sys.path.insert(0, sys.argv[1]); import migration_owned; assert migration_owned.VALUE == 42; print(migration_owned.__cached__)", dest,
+    "-E", "-c", "import sys; sys.dont_write_bytecode = False; sys.path.insert(0, sys.argv[1]); import migration_owned; assert migration_owned.VALUE == 42; print(migration_owned.__spec__.cached)", dest,
   ], {
     encoding: "utf8", cwd: home, timeout: 10000,
     env: { ...process.env, HOME: home, USERPROFILE: home, HERMES_HOME: home, TMPDIR: home },

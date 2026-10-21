@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnTool } from './hostexec.mjs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildBlockRegistry } from './block-registry.mjs';
 import { agentBrowserSupported } from './browser-version.mjs';
@@ -23,9 +23,9 @@ const resolved=path.resolve(input);
 if(!fs.existsSync(resolved)){console.error('INPUT_MISSING '+resolved);process.exit(2);}
 const outputRelative=path.relative(root,output);
 if(outputRelative===''||(!outputRelative.startsWith('..'+path.sep)&&outputRelative!=='..'&&!path.isAbsolute(outputRelative))){console.error('EXPORT_OUTPUT_IN_PAYLOAD choose an output directory outside the installed skill');process.exit(2);}
-const browserVersion=spawnSync('agent-browser',['--version'],{encoding:'utf8'});
+const browserVersion=spawnTool('agent-browser',['--version'],{encoding:'utf8'});
 if(browserVersion.status!==0||!agentBrowserSupported(browserVersion.stdout)){console.error('RENDERER_REQUIRED agent-browser 0.38.1 or later is required; install it yourself with: npm install -g agent-browser');process.exit(2);}
-const doctor=spawnSync('agent-browser',['doctor','--json'],{encoding:'utf8'});
+const doctor=spawnTool('agent-browser',['doctor','--json'],{encoding:'utf8'});
 let doctorJson;
 try{doctorJson=JSON.parse(doctor.stdout);}catch{doctorJson=null;}
 const chrome=doctorJson?.checks?.find((x)=>x.id==='chrome.installed')?.message||'';
@@ -73,7 +73,7 @@ if(office){
   officeSvg=officeSvg.replace(/(<svg\b[^>]*>)/i,'$1'+style);
 }
 function run(commandArgs, env={}) {
-  const r=spawnSync('agent-browser',['--profile',profile,'--session',session,...commandArgs],{encoding:'utf8',env:{...process.env,AGENT_BROWSER_ALLOW_FILE_ACCESS:'true',...env},maxBuffer:2*1024*1024});
+  const r=spawnTool('agent-browser',['--profile',profile,'--session',session,...commandArgs],{encoding:'utf8',env:{...process.env,AGENT_BROWSER_ALLOW_FILE_ACCESS:'true',...env},maxBuffer:2*1024*1024});
   if(r.status!==0) throw new Error((r.stderr||r.stdout||'agent-browser failed').trim());
   return (r.stdout||'').trim();
 }
@@ -109,7 +109,7 @@ try{
   process.exitCode=1;
 } finally {
   if(opened) {
-    const close=spawnSync('agent-browser',['--profile',profile,'--session',session,'close'],{encoding:'utf8'});
+    const close=spawnTool('agent-browser',['--profile',profile,'--session',session,'close'],{encoding:'utf8'});
     if(close.status!==0) console.error('BROWSER_CLOSE_WARNING '+(close.stderr||''));
   }
   fs.rmSync(profile,{recursive:true,force:true});

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
+import { spawnTool } from './hostexec.mjs';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -109,7 +110,7 @@ if (origin.schema !== 'lithermes.browser-drive-origin/v1' || origin.package?.nam
 }
 let capability;
 try {
-  capability = JSON.parse(execFileSync('python3', [resolve(pluginDir, 'skills/browser-drive/scripts/capability_probe.py')],
+  capability = JSON.parse(execFileSync(process.platform === 'win32' ? 'python' : 'python3', [resolve(pluginDir, 'skills/browser-drive/scripts/capability_probe.py')],
     { encoding: 'utf8', timeout: 15000, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
 } catch {
   save({ status: 'BLOCKED: browser unavailable', findings: fallback.findings, not_verified: fallback.not_verified,
@@ -137,7 +138,7 @@ const cases = [
   { name: '1440-zoom200', width: thresholds.zoomWidthPx, height: thresholds.zoomHeightPx, zoom: 200 },
 ];
 const run = (...args) => {
-  const result = spawnSync(capability.command, ['--session', session, ...args], {
+  const result = spawnTool(capability.command, ['--session', session, ...args], {
     encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024,
     env: browserEnv,
   });
@@ -157,7 +158,7 @@ try {
     run('set', 'media', item.dark ? 'dark' : 'light', ...(item.reduced ? ['reduced-motion'] : []));
     run('open', url);
     run('wait', '1200');
-    const raw = spawnSync(capability.command, ['--session', session, 'eval', '--stdin'], {
+    const raw = spawnTool(capability.command, ['--session', session, 'eval', '--stdin'], {
       input: script.replace('__UIUX_THRESHOLDS__', JSON.stringify(thresholds)).replace('__UIUX_VIEWPORT__', JSON.stringify(item.name)),
       encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: browserEnv,
     });
@@ -167,7 +168,7 @@ try {
     if (!Array.isArray(value.findings)) throw new Error(`eval ${item.name}: invalid findings`);
     if (value.readyState !== 'complete') {
       run('wait', '1200');
-      const retry = spawnSync(capability.command, ['--session', session, 'eval', '--stdin'], {
+      const retry = spawnTool(capability.command, ['--session', session, 'eval', '--stdin'], {
         input: script.replace('__UIUX_THRESHOLDS__', JSON.stringify(thresholds)).replace('__UIUX_VIEWPORT__', JSON.stringify(item.name)),
         encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: browserEnv,
       });

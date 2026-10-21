@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/lit/fonts.css">
+<script src="/lit/loop-kit.js"></script>
+<style>
+  html, body { margin: 0; width: 1200px; height: 600px; overflow: hidden; background: #080d14; color: #f2efdf; font-family: "JetBrains Mono"; }
+  .mid { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; }
+  body.mask, body.mask * { background: #000 !important; color: #000 !important; border-color: #000 !important; }
+  body.mask .title { color: #fff !important; }
+</style>
+<style>.card { position: absolute; inset: 0; opacity: 0; } .box { position: absolute; border: 3px solid #ff6337; border-radius: 10px; }</style>
+</head>
+<body>
+<!-- NEGATIVE (never a recipe): the old stage path as a cover. Four card scenes fade in, hold and
+     fade out, the last one an end card. It must keep failing G2: the holds leave most grid steps
+     still, whatever the fades do. -->
+<div class="card" id="c0"><div class="mid title" style="top:200px;font-size:96px;font-weight:800">LITHERMES</div><div class="mid" style="top:340px;font-size:30px">A workflow family for Hermes Agent</div></div>
+<div class="card" id="c1"><div class="box" style="left:160px;top:180px;width:260px;height:240px"></div><div style="position:absolute;left:480px;top:240px;font-size:44px;font-weight:700">1. Plan</div><div style="position:absolute;left:480px;top:310px;font-size:26px">Decision-complete steps.</div></div>
+<div class="card" id="c2"><div class="box" style="left:160px;top:180px;width:260px;height:240px;border-color:#d7f75b"></div><div style="position:absolute;left:480px;top:240px;font-size:44px;font-weight:700">2. Loop</div><div style="position:absolute;left:480px;top:310px;font-size:26px">Test first, then green.</div></div>
+<div class="card" id="c3"><div class="mid" style="top:250px;font-size:64px;font-weight:700">KEEP THE WORK <span style="color:#ff6337">LIT.</span></div></div>
+<script>
+const { clamp, ease } = LitLoop, LENGTH = 10, SCENES = [[0, 2.6], [2.6, 5.0], [5.0, 7.4], [7.4, 10]];
+window.renderFrame = (t, options = {}) => {
+  document.body.className = options.mask ? 'mask' : '';
+  const s = t * LENGTH;
+  SCENES.forEach(([a, b], i) => {
+    const el = document.getElementById(`c${i}`);
+    el.style.opacity = String(ease.smooth(clamp((s - a) / 0.4)) * (1 - ease.smooth(clamp((s - (b - 0.4)) / 0.4))));
+    el.style.transform = `translateX(${20 * (1 - ease.outCubic(clamp((s - a) / 0.5)))}px)`;
+  });
+};
+document.fonts.load('800 96px "JetBrains Mono"').then(() => document.fonts.ready).then(() => { window.renderFrame(0); window.ready = true; });
+</script>
+</body>
+</html>

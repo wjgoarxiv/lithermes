@@ -282,7 +282,7 @@ export function muxArgs({ video, track, output, durationSec }) {
 
 export function muxAudio({ video, track, output, durationSec }) {
   const result = spawnSync('ffmpeg', muxArgs({ video, track, output, durationSec }), { encoding: 'utf8' });
-  if (result.status !== 0) throw fail(`the sound track could not be muxed: ${(result.stderr || result.error?.message || '').trim().split('\n').at(-1)}`);
+  if (result.status !== 0) throw fail(`the sound track could not be muxed: ${(result.stderr || result.error?.message || '').trim().split(/\r?\n/).at(-1)}`);
 }
 
 function streams(file) {

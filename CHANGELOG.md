@@ -6,6 +6,9 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- Typing `lit` again in the same session now continues the active mode instead of starting over. The first `lit` still sends the full activation; the next ones send a note under 600 bytes and open no new run, plan file or goal. `lit plan` while a loop runs switches with the full plan activation, a bare `lit` continues the active mode, or with none active resumes an unfinished start-work run or bounded work, and `lit new ...` or `lit restart ...` starts fresh. A bare `lit` with nothing active now asks what to start. After a context compaction the full activation is sent again.
+- Film renders need `lithermes motion-runtime install` once after you update. The motion runtime's pinned fonts changed, so the cache from an earlier release no longer matches and `cover` and `stage` renders stop with exit 14 until it is warmed again. `lithermes install` and the automatic update warm it for you; run the command yourself if the install reported `pre-warm incomplete`.
+
 ## [1.0.27] - 2026-10-19
 
 - The humanizer now catches a paragraph that explains a number or a thing only by saying what it is not, such as `18,420회는 주민 수가 아님. 고유 방문자 수도 아님.` When one paragraph, list or table column holds two such Korean negations, or three in any language, `write_file` and `patch` refuse the write and say how to rewrite it: state what the thing is first, then give a needed caveat once. Rewordings such as `~로 읽을 수 없음` and `does not mean` count the same. Exactly two that are not both Korean only draw a `negation-cluster` warning, and the write goes through. Code, inline code and `>` quotes are skipped, so a bad example you need to show can sit there. A plain `~와 다른` no longer counts; only the contrastive `~와는 다릅니다` does.

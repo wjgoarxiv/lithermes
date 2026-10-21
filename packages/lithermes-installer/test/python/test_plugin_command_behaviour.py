@@ -19,7 +19,7 @@ class CommandBehaviour(unittest.TestCase):
         cls.core = sys.modules["lithermes_plugin_pkg"].core
 
     def test_review_work_emits_five_lanes_and_gate(self):
-        res = self.core.command_review_work("--base HEAD~1")
+        res = self.core.command_review_work("work --base HEAD~1")
         self.assertIn("agent_message", res)
         msg = res["agent_message"]
         for lane in ["lane[goal]", "lane[qa]", "lane[code-quality]", "lane[security]", "lane[context]"]:
@@ -68,7 +68,7 @@ class CommandBehaviour(unittest.TestCase):
     def test_review_work_is_one_async_batch_not_team_or_fake_blocking(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
-            res = self.core.command_review_work(f"--worktree {tmp} --base HEAD~1")
+            res = self.core.command_review_work(f"work --worktree {tmp} --base HEAD~1")
         msg = res["agent_message"]
         self.assertIn("IN ONE delegate_task call", msg)
         self.assertIn("array of 5 entries", msg)

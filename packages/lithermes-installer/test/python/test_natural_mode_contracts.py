@@ -253,10 +253,6 @@ class NaturalModeContracts(NaturalRoutingCase):
         cases = [
             ("lit-crucible this release", "lit-crucible", "lithermes:lit-crucible"),
             ("lit lit-crucible this release", "lit-crucible", "lithermes:lit-crucible"),
-            ("review-work check this diff", "review-work", "lithermes:review-work"),
-            ("lit review this diff", "review-work", "lithermes:review-work"),
-            ("litgoal bind release readiness", "litgoal", "lithermes:litgoal"),
-            ("lit goal bind release readiness", "litgoal", "lithermes:litgoal"),
             ("lit-init --max-depth=2", "lit-init", "lithermes:lit-init"),
             ("lit lit-init --max-depth=2", "lit-init", "lithermes:lit-init"),
             ("start-work approved-plan", "start-work", "start-work"),
@@ -281,7 +277,7 @@ class NaturalModeContracts(NaturalRoutingCase):
                 self.assertIn(_skill_body(skill_name), context)
                 self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
     def test_lit_plan_and_litresearch_routes_defer_their_bodies_to_skill_view(self):
-        # These two bodies (28 KB and 45 KB) pushed every later-turn route past the
+        # These bodies (28 KB, 45 KB, 21 KB and 26 KB) pushed every later-turn route past the
         # host's 10,000-character spill, so the model saw neither the body nor the
         # planning-only guard. The route keeps its guard and names the skill instead.
         registered = {name for name, _ in self.pkg.PORTED_SKILLS}
@@ -290,6 +286,10 @@ class NaturalModeContracts(NaturalRoutingCase):
             ("lit plan build a plan", "lit-plan"),
             ("litresearch compare async runtimes", "litresearch"),
             ("lit research compare async runtimes", "litresearch"),
+            ("review-work check this diff", "review-work"),
+            ("lit review this diff", "review-work"),
+            ("litgoal bind release readiness", "litgoal"),
+            ("lit goal bind release readiness", "litgoal"),
         ]
         for message, skill_name in cases:
             with self.subTest(message=message), tempfile.TemporaryDirectory() as tmp:

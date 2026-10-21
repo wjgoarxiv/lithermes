@@ -36,7 +36,7 @@ def installed_web_probe_command() -> str:
     return f'node {shlex.quote(str(probe))} --url "$UI_URL" --out "$UIUX_EVIDENCE_DIR" --static "$PWD"'
 
 
-MOTION_SUBCOMMANDS = "stage|run|sound|look|gate|complete"
+MOTION_SUBCOMMANDS = "stage|cover|run|sound|look|gate|cover-gate|complete"
 # The neutral film context every motion surface shares. It states the path rule
 # without choosing a path; the skill and the treatment decide.
 MOTION_FILM_CONTEXT = (
@@ -45,7 +45,7 @@ MOTION_FILM_CONTEXT = (
     "quote video, a title sequence, or supplied words with no other subject) at 16:9; stage for "
     "every other film, and for any 9:16. Hand-encoded films are not the deliverable. Bare lit asks "
     "nothing; label every invention and a generated sound bed. View stills with vision_analyze; "
-    "done when $M complete exits 0."
+    "done when $M complete exits 0. A README cover loop takes cover mode (references/cover.md)."
 )
 
 
@@ -231,6 +231,11 @@ def _skill_body_block(name: str) -> str:
     if not body:
         return f"WARNING: lithermes:{name} was requested, but the bundled SKILL.md body could not be loaded."
     return f"<lithermes-skill-body name=\"{name}\">\n{body}\n</lithermes-skill-body>"
+
+
+# The one-line meaning of litgoal. The skill, the route, the slash command and the
+# skill index all quote it, so the sentence is written once.
+LITGOAL_MEANING = "litgoal sets and keeps the finish line; lit-loop and start-work run toward it."
 
 
 def skill_view_reference(name: str, when: str) -> str:

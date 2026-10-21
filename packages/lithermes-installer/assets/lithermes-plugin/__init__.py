@@ -97,7 +97,7 @@ PORTED_SKILLS = [
     ),
     ("lit-pptx", "Create and inspect PowerPoint decks with the installed Office engine and QA gate."),
     ("lit-docx", "Create, edit, convert, and audit styled Word documents."),
-    ("lit-typographic-motion", "Direct an original film from a treatment: a drawn stage film or a type film, gated before delivery."),
+    ("lit-typographic-motion", "Direct an original film from a treatment, or a seamless README cover loop, gated before delivery."),
     (
         "readme-studio",
         "Write factual READMEs and compose local covers with outlined type, honest image capability and verified motion.",
@@ -105,6 +105,10 @@ PORTED_SKILLS = [
     (
         "lit-commit",
         "Run the LitHermes git-history specialist for commits, rebases, blame, and bisect.",
+    ),
+    (
+        "lit-brainstorm",
+        "Many options for an open ask, then a short list",
     ),
     (
         "lit-crucible",
@@ -132,7 +136,7 @@ PORTED_SKILLS = [
     ),
     (
         "review-work",
-        "Use when a patch, diff, branch or open changes need a defect or merge-readiness review with evidence per finding.",
+        "Use when a plan needs review before start-work, or finished work needs defect review with evidence per finding.",
     ),
     (
         "rules",
@@ -148,7 +152,7 @@ PORTED_SKILLS = [
     ),
     (
         "litgoal",
-        "Drive the LitHermes litgoal durable runtime (criteria, evidence, gates).",
+        "Sets and keeps the finish line that lit-loop and start-work run toward.",
     ),
     (
         "litwork",

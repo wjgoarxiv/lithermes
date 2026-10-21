@@ -2,16 +2,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { spawnTool } from './hostexec.mjs';
 import { fileURLToPath } from 'node:url';
 import { agentBrowserSupported } from './browser-version.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const report=[];
 function check(name,ok,detail){report.push({name,status:ok?'pass':'fail',detail});}
-const version=spawnSync('agent-browser',['--version'],{encoding:'utf8'});
+const version=spawnTool('agent-browser',['--version'],{encoding:'utf8'});
 check('agent-browser >=0.38.1',version.status===0&&agentBrowserSupported(version.stdout),(version.stdout||version.stderr||'not found').trim());
-const browser=spawnSync('agent-browser',['doctor','--json'],{encoding:'utf8'});
+const browser=spawnTool('agent-browser',['doctor','--json'],{encoding:'utf8'});
 let doctor=null;try{doctor=JSON.parse(browser.stdout);}catch{}
 const chrome=doctor?.checks?.find((x)=>x.id==='chrome.installed')?.message||'';
 check('Chrome for Testing 154',!!doctor?.success&&chrome.includes('154.'),chrome||'not found');

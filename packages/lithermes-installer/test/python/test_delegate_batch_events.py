@@ -64,7 +64,7 @@ class DelegateBatchIntentTelemetry(unittest.TestCase):
 
     def test_review_work_emits_one_five_lane_delegate_batch_intent(self):
         with tempfile.TemporaryDirectory(prefix="lh-workspace-") as workspace:
-            result = core.command_review_work(f"--worktree {workspace} --base HEAD~1")
+            result = core.command_review_work(f"work --worktree {workspace} --base HEAD~1")
         msg = result["agent_message"]
         self.assertIn("IN ONE delegate_task call", msg)
         self.assertIn("array of 5 entries", msg)

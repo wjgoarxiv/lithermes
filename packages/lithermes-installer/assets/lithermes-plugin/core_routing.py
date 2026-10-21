@@ -87,6 +87,7 @@ _BARE_SKILL_PREFIXES = (
     ("wikify", "wikify"),
     ("litresearch", "litresearch"),
     ("lit-comprehend", "lit-comprehend"),
+    ("lit-brainstorm", "lit-brainstorm"),
     ("humanizer", "lit-humanizer"),
     ("lit-humanizer", "lit-humanizer"),
     ("comprehend", "lit-comprehend"),
@@ -136,6 +137,15 @@ _LIT_SKILL_SUFFIXES = (
     ("wikify", "wikify"),
     ("lit-comprehend", "lit-comprehend"),
     ("comprehend", "lit-comprehend"),
+    # Open-ask words. Safe HERE: the user already typed `lit`. They are not bare
+    # routes, because "idea" and "brainstorming" open ordinary sentences.
+    ("lit-brainstorm", "lit-brainstorm"),
+    ("brainstorm", "lit-brainstorm"),
+    ("brainstorming", "lit-brainstorm"),
+    ("ideation", "lit-brainstorm"),
+    ("ideate", "lit-brainstorm"),
+    ("idea", "lit-brainstorm"),
+    ("ideas", "lit-brainstorm"),
     ("comment-checker", "comment-checker"),
     ("lsp-setup", "lsp-setup"),
     ("lsp", "lsp"),

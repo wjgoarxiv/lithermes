@@ -49,6 +49,8 @@ font: <cache>/assets/fonts/stroke/EMSReadability.svg
   licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
 font: <cache>/assets/fonts/stroke/EMSTech.svg
   licence: runtime/licenses/EMS-OFL.txt and runtime/licenses/CREDITS (in this package)
+font: <cache>/assets/fonts/JetBrainsMono-wght-latin.woff2 (variable wght 100-800, latin subset, from @fontsource-variable/jetbrains-mono 5.3.0; unmodified)
+  licence: <cache>/assets/licenses/JetBrainsMono-OFL.txt (SIL OFL 1.1, no Reserved Font Name)
 font: ../lit-pptx/pretendard-font/public/static/Pretendard-Regular.otf (reused by path, unmodified)
   licence: ../lit-pptx/fonts/PRETENDARD-OFL.txt (SIL OFL 1.1)
 font: ../lit-pptx/pretendard-font/public/static/Pretendard-Bold.otf (reused by path, unmodified)

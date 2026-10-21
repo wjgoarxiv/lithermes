@@ -1,6 +1,6 @@
 ---
 name: litgoal
-description: Durable repo-native goal runtime with embedded success criteria, evidence ledger, checkpoints, steering, and an evidence-gated completion contract.
+description: Sets and keeps the finish line: a durable repo-native goal runtime with embedded success criteria, evidence ledger, checkpoints, steering, and an evidence-gated completion contract that lit-loop and start-work run toward.
 ---
 
 ## #contract.activation
@@ -114,6 +114,24 @@ limitations_channel: inline
 | claim done from tests alone | pair tests with route/plugin/CLI evidence and cleanup receipts |
 | broaden scope while editing | keep changes tied to the user request and preserve unrelated worktree state |
 | skip payload sync | run `sync-plugin -- --in-place` and report the hash-manifest change |
+
+## What litgoal is for
+
+litgoal sets and keeps the finish line; lit-loop and start-work run toward it.
+
+| Question | Owner |
+|---|---|
+| What counts as done, and what proves it? | `litgoal`: objective, success criteria, evidence, checkpoints, the completion gate |
+| Do the work toward that finish line in one go | `lit-loop` (bare `lit <task>` or `/lit-loop`) |
+| Execute an approved plan row by row toward it | `start-work` (`/start-work <approved-plan>`) |
+| Is the plan, or the finished work, any good? | `review-work` |
+
+litgoal never does the work itself. It records the finish line, keeps it across
+turns and sessions, injects the unmet criteria into every turn, and refuses
+`goal_complete` until the evidence is there. The route name is the skill name:
+`litgoal <objective>`, `lit goal <objective>`, `/litgoal`, and
+`lithermes:litgoal` all open this skill. Hermes' own native `/goal` stays
+user-managed and unobserved; litgoal never mutates it.
 
 ## LitHermes durable runtime (authoritative — overrides any legacy examples below)
 

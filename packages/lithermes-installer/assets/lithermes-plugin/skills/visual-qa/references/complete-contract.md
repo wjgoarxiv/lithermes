@@ -503,7 +503,7 @@ enabled config: PASS
 
 $ hermes lithermes doctor
 [OK] plugin.yaml readable (version 1.0.27)
-[OK] skills bundled: 36
+[OK] skills bundled: 37
 [OK] litgoal durable runtime importable
 ```
 

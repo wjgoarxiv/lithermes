@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
+const { spawnTool } = require("./hostExec");
 
 class LitHermesError extends Error {
   constructor(message, exitCode = 1) {
@@ -124,7 +124,7 @@ function ensureHermesHome(flags = {}, { forInstall = false } = {}) {
 }
 
 function detectHermesVersion() {
-  const result = spawnSync("hermes", ["--version"], { encoding: "utf8", timeout: 15000 });
+  const result = spawnTool("hermes", ["--version"], { encoding: "utf8", timeout: 15000 });
   return result.status === 0 ? (result.stdout || result.stderr || "") : "";
 }
 

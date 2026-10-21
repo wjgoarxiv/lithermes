@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-    LH --> S["36 skills"]
+    LH --> S["37 skills"]
 ```
 
-> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 36개 skill catalog가 실제 host에 로드됩니다.
+> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 37개 skill catalog가 실제 host에 로드됩니다.
 
 ## 핵심 명령
 
@@ -113,9 +113,9 @@ flowchart LR
 | `/lit` | bounded Litwork task를 실행합니다. |
 | `/lit-loop` | 명시적인 loop lifecycle을 시작하거나 확인합니다. |
 | `/lit-plan` | 실행 전에 plan을 만듭니다. |
-| `/review-work` | plan 또는 완료 작업을 검토하며 검토 중 구현하지 않습니다. |
+| `/review-work` | plan(`start-work` 전) 또는 완료 작업을 검토합니다. 있는 것을 보고 방식을 고르거나 `plan`·`work`로 직접 정하며, 검토 중 구현하지 않습니다. |
 | `/start-work` | 승인된 plan만 실행합니다. |
-| `/litgoal` | criteria, evidence, checkpoint, blocker를 관리합니다. |
+| `/litgoal` | 결승선을 정하고 지킵니다. criteria, evidence, checkpoint, blocker를 관리하며 `lit-loop`와 `start-work`가 그 결승선을 향해 갑니다. |
 | `/lit-recap` | 작업과 evidence를 한국어로 읽기 쉽게 요약합니다. |
 | `/lit-handoff` | live state를 확인한 continuation packet을 작성합니다. |
 | `/lit-scientific-visualization` | 번들 source로 publication figure를 만듭니다. |
@@ -145,7 +145,7 @@ receipt를 반환하고 parent가 merge 또는 batch completion을 추적합니�
 전체 skill catalog는 `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
 `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
 `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,

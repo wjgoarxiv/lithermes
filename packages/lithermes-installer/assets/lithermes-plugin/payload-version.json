@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-19T12:29:49.086Z",
+  "syncedAt": "2026-10-21T16:06:04.801Z",
   "source": "bundled-payload",
-  "sourceHash": "2bb93dc4c7d46d48dcc893b33faebb7065d343a2f636fadb1d25f1695c1ef23d",
+  "sourceHash": "36cf003ed69490d71d4274c9e0222ed8dbc18025a36f2a491263939167d4169e",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "882eb72644fe3bab11a110196dd6692d74ee51525f75e64a7cfa04e3c658de60"
+      "sha256": "a131b4c9b6ba4f180675fa3e3c6c87c95a798b6c0710b68a876ca9128968142e"
     },
     {
       "path": "__init__.py",
-      "sha256": "3ccd142c77ef0dc3039d0c61f8e6ee7a8e39ea02c3889ba7908b044467ac7286"
+      "sha256": "d7eb034b26a12fee3b1cf1fc016dd0fcf5af41c412122c7afeb45738d3b465b5"
     },
     {
       "path": "auto_handoff.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "auto_update.py",
-      "sha256": "ba2beba07210ccd934ddc5902a5054a8fbe0f5bb9dcd9e9019196551bf4ea92b"
+      "sha256": "062e9ace40cc802b4889e0f69cc67155ef20ecb73f2d20e5c46bae4662253c50"
     },
     {
       "path": "bounded_work.py",
@@ -33,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "44ea3860657ebe8dc335ccefb613ad21700b725ba0f4cb60a1cf81da18f61ff5"
+      "sha256": "fc66432d79c9308f1e8163bda819c07db62d6a397499049d3c3cc370fc714f11"
     },
     {
       "path": "core_commands.py",
@@ -41,11 +41,11 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "4923e1e9f72e52c6c83e19adaab835b6bccd1de6a3943f3275483c5b42eea7d8"
+      "sha256": "2627863707a82d9197c1f18f411571fbac00504bb5695c5a1d7390fc1128d84c"
     },
     {
       "path": "core_contract.py",
-      "sha256": "532d73146aaff3e5e2553195b0d08a941bd1c90b4ec29539dd00f5904075cb02"
+      "sha256": "5f55b98ad1791566f4885c48583ec870ab301e9b04b783272285cefb4e58d7ac"
     },
     {
       "path": "core_plans.py",
@@ -65,11 +65,11 @@
     },
     {
       "path": "core_review.py",
-      "sha256": "3d05efd7188596af86b9da3bdb044ff60497868f00389c25b1f1897a131bc2b6"
+      "sha256": "dc81766b3c446f4c05daac0a7bd42ad92c32ff439515a018782abcbe56bfc69a"
     },
     {
       "path": "core_routing.py",
-      "sha256": "9ede6c4c4a003121fefff9c0e0fcdba755f7bf4916b1c30094a9adeff089eb9c"
+      "sha256": "08d887e3f2866b2c6b7fd59534595057b63b266ee28d21da9e7431ea49174871"
     },
     {
       "path": "core_runs.py",
@@ -81,7 +81,7 @@
     },
     {
       "path": "core_workflow_commands.py",
-      "sha256": "6c8b4fc2a960c82be38248117150ed7211d0f572b8ca4da05840367a4dd49768"
+      "sha256": "e8ca7656e1a66149b11c6e9ce982becf8fca700a9cd9d614c89fb349c4811e0f"
     },
     {
       "path": "deliverable_hedge_guard.py",
@@ -89,7 +89,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "13fdef893d10cecdffdbb61daf64629e5ccbf4777964e75930ca34017472828e"
+      "sha256": "b855f13673a0b102273e03603c9695c7c0bfe0cbbb644f801264684ddcdaea68"
     },
     {
       "path": "handoff.py",
@@ -122,6 +122,10 @@
     {
       "path": "lit_mark_rows.json",
       "sha256": "e7f3e2be168bedc5c15836d105ffed570f3bfd8745522502293de8718f503aec"
+    },
+    {
+      "path": "lit_reentry.py",
+      "sha256": "d0a945ae8b6ee417b49e683939d81373f6b35a02d6cd7f6282761cc1102672c2"
     },
     {
       "path": "litgoal/__init__.py",
@@ -189,7 +193,7 @@
     },
     {
       "path": "rules/__init__.py",
-      "sha256": "5083ce8a1f09c52f5ed113acf88b356f9ccaf65e6a1e5ebf398889c6e41d5b1c"
+      "sha256": "a436c667a14d3930b7ac6634c94b437475c2272dd50d37462661618527da1587"
     },
     {
       "path": "rules/bundled-rules/baseline-discipline.md",
@@ -217,7 +221,7 @@
     },
     {
       "path": "rules/engine.py",
-      "sha256": "fb811fe3aaf838b8ac3b193018497e2b247d5da403fb2bb6aea01e2bd7419f73"
+      "sha256": "917c4e54a80aa4c810072bbdbd0263aaba2d29ebbb393bb1c5805f91537100f8"
     },
     {
       "path": "rules/frontmatter.py",
@@ -569,7 +573,7 @@
     },
     {
       "path": "skills/deep-interview/SKILL.md",
-      "sha256": "52505231224e9388ba687f562d00c48d0448794b01b14c17d22c4648f868dee0"
+      "sha256": "686401d29a2507235ba92b466d9c67b2ec153f72c214cac752bb62d5d7c214eb"
     },
     {
       "path": "skills/frontend-ui-ux/SKILL.md",
@@ -1281,7 +1285,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/complete-contract.md",
-      "sha256": "f3d9ba63058388aba9ecd7684b15ae7d544ac488d7be1f78ce06886f18fbc623"
+      "sha256": "9d9cfea0abc2f5112596c3e7b2a2ef0e3b31f88b6a6fa0e5b013ca2395c38a06"
     },
     {
       "path": "skills/frontend-ui-ux/references/composition.md",
@@ -1404,6 +1408,10 @@
       "sha256": "7920a1fddf462bba68854d90b89f26c77e6f7ffd58282fcde2233e567473fda3"
     },
     {
+      "path": "skills/frontend-ui-ux/scripts/hostexec.mjs",
+      "sha256": "95451a260bf47cfb7e26df81c16a33898c56480b31d7aad86de6b9a5d8f87224"
+    },
+    {
       "path": "skills/frontend-ui-ux/scripts/import_design_intelligence.py",
       "sha256": "2542d7c35aff9be499696bdfffe93d09f203737877ece3d2b087ca537bdf64ab"
     },
@@ -1417,7 +1425,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/scripts/probe.mjs",
-      "sha256": "a852974746cd2528c8c91c99461b4469cd2d03fdca2de6d966df4fdd2e3289cc"
+      "sha256": "fa736dcde2f00fd0bf21022193125c93970a265a4a8d81c0febf3b6ff92f7596"
     },
     {
       "path": "skills/frontend-ui-ux/scripts/source_import.py",
@@ -1426,6 +1434,10 @@
     {
       "path": "skills/frontend-ui-ux/scripts/source_manifest.py",
       "sha256": "b1b8a5a194156ff18207c359b1527bc27e0a1f3d2a58af32c9bac3c550c63906"
+    },
+    {
+      "path": "skills/lit-brainstorm/SKILL.md",
+      "sha256": "528b2f27c0cf7feb2ae34f3ce56427063b291e59ca0995a7f00da22176030e3f"
     },
     {
       "path": "skills/lit-burnoff/SKILL.md",
@@ -2969,7 +2981,7 @@
     },
     {
       "path": "skills/lit-diagram-drawer/scripts/doctor.mjs",
-      "sha256": "0d7ed941a007edd8bd3add08e22024a45bd98dd0d6972c1cd3c40543d940a60b"
+      "sha256": "74649e94a08d70d554b394fba2b5b7571327106cdef6194d841bc205f2243cb4"
     },
     {
       "path": "skills/lit-diagram-drawer/scripts/drawio_extract.py",
@@ -2989,7 +3001,11 @@
     },
     {
       "path": "skills/lit-diagram-drawer/scripts/export.mjs",
-      "sha256": "13cf5fe8bca9e70062443fbc0b133903b8f485ac44ec7c9be8f7d81e51a58e14"
+      "sha256": "38f9ba5b9e2979c4f183a4d93879bf815d270d9956624ec86cde0b920765a672"
+    },
+    {
+      "path": "skills/lit-diagram-drawer/scripts/hostexec.mjs",
+      "sha256": "95451a260bf47cfb7e26df81c16a33898c56480b31d7aad86de6b9a5d8f87224"
     },
     {
       "path": "skills/lit-diagram-drawer/scripts/mermaid_extract.py",
@@ -3133,7 +3149,7 @@
     },
     {
       "path": "skills/lit-docx/scripts/convert_md_to_pdf.py",
-      "sha256": "23cbc66128baa47ed9ad805c0211068d3580bcd1954bd507874545afc45e2cd0"
+      "sha256": "aabc876d83dbc7bd02407e89c938a5a749870b1f053969522eac918a14994f5e"
     },
     {
       "path": "skills/lit-docx/scripts/convert_pdf.py",
@@ -3197,7 +3213,7 @@
     },
     {
       "path": "skills/lit-docx/templates/latex/acs/template.tex",
-      "sha256": "759e5d9c3bdcb06f062798159875f65da4a0d84dfefc0fb5b5aa47c3c5324f1c"
+      "sha256": "1e92ee928d33007f4324e269c17054607f83dd3d5a25a94de2c71685ab35407d"
     },
     {
       "path": "skills/lit-docx/templates/latex/elsevier/README.md",
@@ -3205,7 +3221,7 @@
     },
     {
       "path": "skills/lit-docx/templates/latex/elsevier/template.tex",
-      "sha256": "bc200e370955617189a5244a87b72c2ee45a7d4d8dc38ff8f1967f94e9bbf41d"
+      "sha256": "8c9f1d9d21434a5fe37936d23b6bf5be00aa9491fe9a646caf52f14365ebb4aa"
     },
     {
       "path": "skills/lit-docx/templates/latex/ieee/README.md",
@@ -3213,7 +3229,7 @@
     },
     {
       "path": "skills/lit-docx/templates/latex/ieee/template.tex",
-      "sha256": "bdadfdacac95c73144bdb6e166080e0ce7da83ee77ff8eea48f02a18cfc7a2be"
+      "sha256": "d5aed7b9c043c437302d996352093a621d27ad5a118ea256d975cd4b38d96d81"
     },
     {
       "path": "skills/lit-docx/templates/latex/korean-generic/README.md",
@@ -3221,7 +3237,7 @@
     },
     {
       "path": "skills/lit-docx/templates/latex/korean-generic/template.tex",
-      "sha256": "9e18e94d768b41fe8a5bd65d642fc6327ebbe116eb97f8789de48e0d01094989"
+      "sha256": "3d57f2639bea123b8ee8efafc54d723cb58d81e5f66bbf8bec33e491aca66fa5"
     },
     {
       "path": "skills/lit-docx/templates/latex/nature/README.md",
@@ -3229,7 +3245,7 @@
     },
     {
       "path": "skills/lit-docx/templates/latex/nature/template.tex",
-      "sha256": "74437009d7fe894b8e2c8c256f300181081195e1f9831e922e20af6606704265"
+      "sha256": "40d2d44d9664e1c7fd7f2bea52dc778b5863a297843c2445861e9eb75367e505"
     },
     {
       "path": "skills/lit-docx/templates/registry.yaml",
@@ -3584,8 +3600,12 @@
       "sha256": "27e355441a8c2b8747a1ba065d0b0ca900e3b5e66bac4d5d72b05e7d383d8689"
     },
     {
+      "path": "skills/lit-pptx/bin/hostexec.mjs",
+      "sha256": "95451a260bf47cfb7e26df81c16a33898c56480b31d7aad86de6b9a5d8f87224"
+    },
+    {
       "path": "skills/lit-pptx/bin/office.mjs",
-      "sha256": "e3f4ebbf38bf58b2a4f0d8daa26ee663e842cecb7322c032501fcd93e1388e39"
+      "sha256": "4871d5444c8f57807379b79ef2c19c0f754a6d2bb3448ef9119e4339431e3994"
     },
     {
       "path": "skills/lit-pptx/fonts/PRETENDARD-OFL.txt",
@@ -3981,7 +4001,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
-      "sha256": "390466bf5bc5634b97c3c1163d212cdd15a4ef9a809916e7d07e9b7223923cda"
+      "sha256": "af4f9824fafa2a795b3fd0d561b561b32cac11c7d12d5351060865c42b87c18a"
     },
     {
       "path": "skills/lit-typographic-motion/bin/audio.py",
@@ -3989,11 +4009,11 @@
     },
     {
       "path": "skills/lit-typographic-motion/bin/motion.mjs",
-      "sha256": "bbd6e482b8a01736aa0cedc8d31decc3e20e0b46c623d4a60e25a2c5b71bb2fb"
+      "sha256": "c3442e2d6b69e7311ed83798db960d43be2c104761cf1b4111dda426a5b7be52"
     },
     {
       "path": "skills/lit-typographic-motion/bin/runtime.mjs",
-      "sha256": "81bd14b1f4cb767ae624767def2f915f2135ea751f5d148ec00f4b575a0f12b8"
+      "sha256": "24b4794a66195ffd351a67d8ba22d3ba9b4b091f6f5224495be645aa33610e13"
     },
     {
       "path": "skills/lit-typographic-motion/engine/NOTICE",
@@ -4001,11 +4021,11 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/THIRD_PARTY_NOTICES",
-      "sha256": "b53d8a16333dd33454a5545840cd059c6ae7579530ea2814af88fb9ed09e28ef"
+      "sha256": "6315280f65ceb5e1829ad60e5c4a302335f68729d56990c882596396de65887a"
     },
     {
       "path": "skills/lit-typographic-motion/engine/browser.mjs",
-      "sha256": "fe506c7a38a3d93241328930e515dc5ac8a74f138e68624242a2fbb633213d93"
+      "sha256": "70ee97565c26f31721fc310bc656b67d60664adf8322ad035dcd00ae3a7daf97"
     },
     {
       "path": "skills/lit-typographic-motion/engine/completion.mjs",
@@ -4013,7 +4033,51 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/constants.mjs",
-      "sha256": "cf6dc912c7ad59d2284525741c510e40d2918aa7aa0517b33aa5144e75dc27c5"
+      "sha256": "3cef523feac7e0fc4482afa4ddbff32a9fe4b35772b561ba088cc752a9f42fa1"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-assets.mjs",
+      "sha256": "4d34feddf0b4d7e7b40dde3521a3907b794f0c9a143261416341905ef4782c74"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-capture.mjs",
+      "sha256": "63c4a8af6d51c5d48d1518b47256d03c6f2877bbc908ee2852769259f01a34ee"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-gate.mjs",
+      "sha256": "a92c488da0ecf7bd2e54fab41d313796e6b2e98bcfd413cb057a0d40c13b05a9"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-image.mjs",
+      "sha256": "0d2bc7c3f66eeaad866e352c7877ff92dd879600f40d6d5a2808e5f49421d561"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-init.js",
+      "sha256": "ce03ec31cbb4bd3533bdcb3a7a249d7eda1f3a27bed7c5f1bab7da0f4399cd06"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-png.mjs",
+      "sha256": "d44720525c3137d8e46aef2baf8e4ea65d46de2af9c645009fcf3e572715f605"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-sheet.mjs",
+      "sha256": "9b29ec960855aae1c9d2cc626050a7dade3e4c4870eb0ece49b14719cc6eca1a"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-treatment.mjs",
+      "sha256": "8fb871f67905b338daf22210254ddeedfc7fcb9fce18620afc8c37d0dfaf23bc"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-webp.mjs",
+      "sha256": "931ed22c48f3c1ec0425fc6627a67a637478de58bb39648e0543066b2979dfdc"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover-worker.mjs",
+      "sha256": "f2cedddcbe7e3881d4e608cbab9df2396b71ed14e8ba1a0822fc2c588c036414"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/cover.mjs",
+      "sha256": "7bd6e2ff73ebb0525bf416f8685a36236316443631217245055c68668cfaa15f"
     },
     {
       "path": "skills/lit-typographic-motion/engine/director.mjs",
@@ -4021,7 +4085,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/encode.mjs",
-      "sha256": "adf07a2e8ba43b385d13bfccc0a27dc6ab68ba7aed17fce3ae85460678d8a0d0"
+      "sha256": "4afe37fb976c6d8ebcb7096866223dc53566ce6c66118a1ca5e21eed519c2031"
     },
     {
       "path": "skills/lit-typographic-motion/engine/flash.mjs",
@@ -4036,8 +4100,16 @@
       "sha256": "d9d00474b87d342679e7f5611c6d34745d50b1e45c0d0018246ebf0e7afb9f0b"
     },
     {
+      "path": "skills/lit-typographic-motion/engine/hostexec.mjs",
+      "sha256": "95451a260bf47cfb7e26df81c16a33898c56480b31d7aad86de6b9a5d8f87224"
+    },
+    {
       "path": "skills/lit-typographic-motion/engine/look.mjs",
-      "sha256": "b047e1b8134db536d12f12344a9134a29b766b8b64e4fd146ddc6639a07b5c00"
+      "sha256": "216c766f9077cb55a76896b28c80a8c6ee84bc5fcf17d502393fb7af90ff24f1"
+    },
+    {
+      "path": "skills/lit-typographic-motion/engine/loop-kit.js",
+      "sha256": "451ef21b81bee3f3914622bfbcdd965e72ffb38e1ed12d009983444b0f1cd9ed"
     },
     {
       "path": "skills/lit-typographic-motion/engine/page.js",
@@ -4053,7 +4125,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/sound.mjs",
-      "sha256": "7300584e7cc730834776c7d77c0c56759c71450a9e7f4b39425ccb9980b533de"
+      "sha256": "3427c0e4b76f7f202c3926b52e7ef222263e49d7de90ba3e2a40d81894c17c91"
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage-gate.mjs",
@@ -4077,7 +4149,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage.mjs",
-      "sha256": "f93369324d0116c4e0fc2d6c5237878b6c47441303a5f59b8a66d994bd49d15a"
+      "sha256": "c02b077c4a3176ccff055fb785705822eb9af0b4782a127128151620a8c558d7"
     },
     {
       "path": "skills/lit-typographic-motion/engine/stills.mjs",
@@ -4093,7 +4165,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/treatment.mjs",
-      "sha256": "b70e41511c290829bb57f7819f088a1d70c891d1bd373e979a6ac377507ff122"
+      "sha256": "4e8418c6f1fe7e59115dced1ee0c33703a6d4be4fa5505f87de2cd08550412fd"
     },
     {
       "path": "skills/lit-typographic-motion/engine/type.mjs",
@@ -4104,8 +4176,68 @@
       "sha256": "00b7e3e68d2225bc6054132d3ae6c5805dd51e0a660775d0951f41df8af26826"
     },
     {
+      "path": "skills/lit-typographic-motion/recipes/negatives/card-scenes/expected.json",
+      "sha256": "9e52d0a29422f06e27d125bc982a65abfb47f4a795ae13513d0beeb2ea0edead"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/card-scenes/index.html",
+      "sha256": "5bcb5a60412b79912e1f23f962847837b410248a5d121d3cc33629ac531f3318"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/reset-sweep/expected.json",
+      "sha256": "b9f0b8a3ff25c5e32c70be6e7038cf7810389b35f6d51273e5faae0ed63fb8ce"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/reset-sweep/index.html",
+      "sha256": "8b68b95bc28397e058e1f64bc7d2c75f885bc599226ad7bbf3f4359a543f1f6a"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/still-glow/expected.json",
+      "sha256": "17aa359188c6a1c5be6699aeeeed35efdf7bd59b9aefa18008cecd3c51f6b0fa"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/still-glow/index.html",
+      "sha256": "e2a6d1179f4e85c171ce81770a038aa975b0ad37454229a5a72aa868dfbe409c"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/title-slam/expected.json",
+      "sha256": "5f68cd67a2dcf741d53d3e77c3028770f276d50d41121378188cff1fd092bea2"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/negatives/title-slam/index.html",
+      "sha256": "15ed73e9dd9fd699b053e525b29cdf2a6d3c3cdd8edcba675ce3e6e80a842619"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/orbit-loop/expected.json",
+      "sha256": "2b06d924753520284360e4df7622785199e5dd7b6712f374a16196f00c169737"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/orbit-loop/index.html",
+      "sha256": "bbf012ef313a126660d13045cc4ab27d563a2d4a44caeb5c39ecf9ea88c7a23a"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/painted-light/expected.json",
+      "sha256": "b08276e07baadf7ffa82a79bd2bd0084fd4f7e735522b8768b6e9c9c7c9e7800"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/painted-light/index.html",
+      "sha256": "309cf826b1a25d5af3d377585f053ff57581abba2fe642e85e8f86b7147913a5"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/weight-tide/expected.json",
+      "sha256": "b38570cfe4d30ea9f3c2a3a698743955bfa4fc186b122d816aa47b45b25b2b0a"
+    },
+    {
+      "path": "skills/lit-typographic-motion/recipes/weight-tide/index.html",
+      "sha256": "848b8d766abb0c6640c79e5fb079a8b4ffe22f1b0a617adbc00844fa4d1ec956"
+    },
+    {
+      "path": "skills/lit-typographic-motion/references/cover.md",
+      "sha256": "7fb371705fa74cf1f8e862f8a8488699aa4a3adaa9096f69a35ed5f1e02097b4"
+    },
+    {
       "path": "skills/lit-typographic-motion/references/craft-loop.md",
-      "sha256": "d159666e4c03e59976a702c515b4a0c407f55c068e75794e6caa4d66b743f41e"
+      "sha256": "39c51921c0bf576d45b3cad45af2854e4398e8faccd5b96417b2a94a7747b17c"
     },
     {
       "path": "skills/lit-typographic-motion/references/engine-contract.md",
@@ -4113,11 +4245,11 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/runtime.md",
-      "sha256": "11245a022bdcf4adbaaf542c99fd846ba2137b488cbdfa4ca9eef071cb542d61"
+      "sha256": "f8254e2d97be57ec95ff013b114b10b1ff01ebc0fdbd1ce6ec6235ba4cc80718"
     },
     {
       "path": "skills/lit-typographic-motion/references/stage.md",
-      "sha256": "eed9583840f61562e82c37fc4ef98ce226c0778846ff829f6af01d1cef8717b7"
+      "sha256": "555e788a408d41e74ce217a63507d096a4d945419e79f33cdf05cc4af236dca8"
     },
     {
       "path": "skills/lit-typographic-motion/references/style-bibles.md",
@@ -4125,7 +4257,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/treatment.md",
-      "sha256": "79c58cbd10e94cee10373f51f186f45cb0fee01f5816145972274eeb030d7fda"
+      "sha256": "ba4c9cbba6917f7d91cd22323050f58e6a0e90cc462613ef0e357796edb5b5ce"
     },
     {
       "path": "skills/lit-typographic-motion/references/type-craft.md",
@@ -4133,7 +4265,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/runtime/fonts.json",
-      "sha256": "7d9f6cb296cc726dfb701ede0b1043fee342b8c554047a8a48d5fbccf42e596c"
+      "sha256": "65686173aaa746a31c0ec35e64c7b7745e9b46bcb08dc85e33ebb40eb381dcdc"
     },
     {
       "path": "skills/lit-typographic-motion/runtime/licenses/CREDITS",
@@ -4157,7 +4289,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/runtime/requirements.lock",
-      "sha256": "37f2bd3362fe34af37830d8df1ea87c0f41de0772e54b25ddb087c8ca694cb41"
+      "sha256": "7495ed165e9d1f66ae99eb6b51b2eca65f0857175b04fb7da5ec4d276e3c50ea"
     },
     {
       "path": "skills/lit-typographic-motion/runtime/word-timing.json",
@@ -4169,7 +4301,7 @@
     },
     {
       "path": "skills/litgoal/SKILL.md",
-      "sha256": "65ca8763d31d855aa691af59c72a8024b6fbe1ccc55505792d83c10e19737e1a"
+      "sha256": "ec38d44e41e91013f58867836cf0e156c702b0b22e5ea853f430420151d410f0"
     },
     {
       "path": "skills/litresearch/ATTRIBUTION.md",
@@ -4285,7 +4417,7 @@
     },
     {
       "path": "skills/lsp-setup/scripts/verify-lsp.ts",
-      "sha256": "33c6c22236234ed5f4db7b0deae560b9b5e0c8c018be4ded1a6c1179792655fe"
+      "sha256": "f4974fad32446709d5617ac8b724c6959fed8c767fb491004ce779412c549061"
     },
     {
       "path": "skills/readme-studio/SKILL.md",
@@ -4377,7 +4509,7 @@
     },
     {
       "path": "skills/review-work/SKILL.md",
-      "sha256": "a1023bb8470066f6aca59398f7ccf35b7639b6fe50b3b8dc7872c16cbec1c98e"
+      "sha256": "6c8bd88338f670dd7c30e1715eab018a1f825cdfb981b35fbf9cea2d7b0d5e3a"
     },
     {
       "path": "skills/rules/SKILL.md",
@@ -4401,7 +4533,7 @@
     },
     {
       "path": "skills/visual-qa/references/complete-contract.md",
-      "sha256": "0ed07370f299c81cfdd7fc6c26c8d3e4af784286df25234a425ee8ec3cd7a3b3"
+      "sha256": "f473f1dd9e3c85585b50d7abac8956d7437aba28ff1b3ba8ecf7ab9cab215269"
     },
     {
       "path": "skills/visual-qa/schemas/evidence-manifest-v1alpha1.schema.json",

@@ -142,12 +142,13 @@ test("runtime: status on an empty cache names what is missing and the fix", () =
   const run = spawnSync(process.execPath, [path.join(skillRoot, "bin", "runtime.mjs"), "status"], { encoding: "utf8", env: { ...process.env, HOME: home, XDG_CACHE_HOME: path.join(home, "cache"), HERMES_HOME: path.join(home, "hh") } });
   assert.equal(run.status, 0, run.stderr);
   const lines = run.stdout.trim().split("\n");
-  assert.equal(lines.length, 5, run.stdout);
+  assert.equal(lines.length, 6, run.stdout);
   assert.match(lines[0], /^Chrome: /);
   assert.match(lines[1], /^ffmpeg: /);
   assert.match(lines[2], /^WebGL2 renderer: /);
   assert.match(lines[3], /^software GL: /);
   assert.match(lines[4], /^pre-warm: NOT READY - missing node dependencies[\s\S]*missing fonts\/licences: fonts\/Galmuri9\.ttf[\s\S]*fix: lithermes motion-runtime install/);
+  assert.match(lines[5], /^cover encoder: (?:img2webp .* and dwebp .*|gifski .*|not found: install libwebp .*exit 21)$/);
 });
 
 function brief(dir, extra = {}) {
@@ -269,7 +270,7 @@ print(json.dumps(out))
   assert.ok(path.isAbsolute(scriptPath), cli[0]);
   const real = fs.realpathSync(scriptPath);
   assert.ok(real.startsWith(fs.realpathSync(path.join(installedPlugin, "skills", "lit-typographic-motion")) + path.sep), `${real} is not under the installed skill`);
-  assert.match(context, /^Subcommands: \$M stage\|run\|sound\|look\|gate\|complete --out DIR$/m);
+  assert.match(context, /^Subcommands: \$M stage\|cover\|run\|sound\|look\|gate\|cover-gate\|complete --out DIR$/m);
   const help = spawnSync(process.execPath, [real, "--help"], { encoding: "utf8" });
   assert.equal(help.status, 0);
   assert.match(help.stdout, /LitHermes lit-typographic-motion/);
@@ -295,7 +296,7 @@ test("pack: the tarball ships the engine, lockfiles, notices and licences, and s
   assert.doesNotMatch(lock, /^(?:aubio|essentia|madmom)==/m, "GPL/AGPL analysers and non-commercial weights are never pinned");
 });
 
-test("lithermes doctor prints the five motion probes on every run", () => {
+test("lithermes doctor prints the five motion probes and the cover encoder on every run", () => {
   const home = tmp("motion-doctor-");
   assert.equal(installInto(home).status, 0);
   const host = fakeHost();
@@ -303,7 +304,7 @@ test("lithermes doctor prints the five motion probes on every run", () => {
     encoding: "utf8", env: { ...process.env, PATH: host.PATH, HOME: home, XDG_CACHE_HOME: path.join(home, "xdg-cache") },
   });
   const lines = doctor.stdout.split("\n");
-  for (const probe of ["motion Chrome: ", "motion ffmpeg: ", "motion WebGL2 renderer: ", "motion software GL: ", "motion pre-warm: "]) {
+  for (const probe of ["motion Chrome: ", "motion ffmpeg: ", "motion WebGL2 renderer: ", "motion software GL: ", "motion pre-warm: ", "motion cover encoder: "]) {
     assert.ok(lines.some((line) => line.startsWith(probe)), `doctor lacks "${probe}"\n${doctor.stdout}`);
   }
   assert.match(lines.find((line) => line.startsWith("motion pre-warm: ")), /NOT READY[\s\S]*fix: lithermes motion-runtime install/);

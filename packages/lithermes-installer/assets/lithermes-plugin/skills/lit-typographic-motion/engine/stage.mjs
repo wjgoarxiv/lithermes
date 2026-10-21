@@ -167,7 +167,7 @@ export function scanStage(stageDir) {
   const bySize = new Map();
   for (const r of rasters) if (r.size) { const key = r.size.join('x'); bySize.set(key, (bySize.get(key) || 0) + 1); }
   for (const [key, count] of bySize) if (count >= RASTER_LIMITS.sameSize) contract.push(`${count} rasters of the same size ${key} read as a flipbook; draw motion, do not play frames`);
-  return { contract: [...new Set(contract)], network: [...new Set(network)], files: files.length, rasters: { count: rasters.length, bytes: total } };
+  return { contract: [...new Set(contract)], network: [...new Set(network)], files: files.length, rasters: { count: rasters.length, bytes: total, paths: rasters.map((r) => r.rel) } };
 }
 
 // ---------------------------------------------------------------------------
@@ -181,6 +181,8 @@ const FACE_ROUTES = [
   ['Silkscreen', 400, '100%', 'silkscreen-400'], ['Silkscreen', 700, '100%', 'silkscreen-700'],
 ];
 
+const MONO_FILE = 'JetBrainsMono-wght-latin.woff2';
+
 export function fontRoutes(cache) {
   const routes = new Map();
   const faces = [];
@@ -192,6 +194,10 @@ export function fontRoutes(cache) {
     const format = name.endsWith('.otf') ? 'opentype' : 'truetype';
     faces.push(`@font-face { font-family: "${family}"; src: url("/lit/fonts/${name}") format("${format}"); font-weight: ${weight}; font-stretch: ${stretch}; font-style: normal; font-display: block; }`);
   }
+  // JetBrains Mono, pinned in the same cache: a variable face with a real wght axis (100-800)
+  // and a fixed advance, so weight motion on a cover never reflows a line.
+  routes.set(`/lit/fonts/${MONO_FILE}`, fontFile(cache, `fonts/${MONO_FILE}`));
+  faces.push(`@font-face { font-family: "JetBrains Mono"; src: url("/lit/fonts/${MONO_FILE}") format("woff2"); font-weight: 100 800; font-style: normal; font-display: block; }`);
   return { routes, css: `${faces.join('\n')}\n` };
 }
 
@@ -515,7 +521,7 @@ class StageSession {
       this.masterSec = Number(process.hrtime.bigint() - started) / 1e9;
       if (encoder) {
         const done = await encoder.finish();
-        if (done.code !== 0) throw fail(1, `ffmpeg master encode failed: ${done.stderr.split('\n').filter(Boolean).at(-1) || done.code}`);
+        if (done.code !== 0) throw fail(1, `ffmpeg master encode failed: ${done.stderr.split(/\r?\n/).filter(Boolean).at(-1) || done.code}`);
       }
       this.pngs = pngs;
     } finally {

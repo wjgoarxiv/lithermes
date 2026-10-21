@@ -324,6 +324,22 @@ def end_session(session_id):
     _SESSION_STATE.pop(str(session_id or ""), None)
 
 
+def _compaction_messages(conversation_history):
+    if not isinstance(conversation_history, (list, tuple)):
+        return
+    for message in conversation_history:
+        if not isinstance(message, dict):
+            continue
+        if message.get(C.COMPACTION_METADATA_KEY):
+            yield message
+            continue
+        content = message.get("content")
+        if isinstance(content, str) and content:
+            lowered = content.lower()
+            if any(marker in lowered for marker in C.COMPACTION_TEXT_MARKERS):
+                yield message
+
+
 def history_was_compacted(conversation_history) -> bool:
     """Detect a Hermes context compaction in this turn's history.
 
@@ -331,19 +347,18 @@ def history_was_compacted(conversation_history) -> bool:
     `_compressed_summary` (agent/context_compressor.py). The text markers are a
     fallback for transports that drop message metadata.
     """
-    if not isinstance(conversation_history, (list, tuple)):
-        return False
-    for message in conversation_history:
-        if not isinstance(message, dict):
-            continue
-        if message.get(C.COMPACTION_METADATA_KEY):
-            return True
-        content = message.get("content")
-        if isinstance(content, str) and content:
-            lowered = content.lower()
-            if any(marker in lowered for marker in C.COMPACTION_TEXT_MARKERS):
-                return True
-    return False
+    return next(_compaction_messages(conversation_history), None) is not None
+
+
+def compaction_stamp(conversation_history) -> str:
+    """Identify the compaction summary in this history: "" when none, else a short hash.
+
+    A later compaction replaces the summary, so the stamp changes with it.
+    """
+    summaries = [str(message.get("content")) for message in _compaction_messages(conversation_history)]
+    if not summaries:
+        return ""
+    return hashlib.sha256("\0".join(summaries).encode("utf-8", "replace")).hexdigest()[:16]
 
 
 def consume_compaction_budget(session_id) -> bool:

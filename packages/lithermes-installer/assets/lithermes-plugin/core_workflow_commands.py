@@ -3,7 +3,7 @@ from __future__ import annotations
 try:
     from .core_commands import _join_positional
     from .core_contract import (
-        _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
+        LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
         reader_facing_contract_block,
     )
     from .core_plans import plan_structure_issues, unchecked_items
@@ -14,7 +14,7 @@ try:
 except (ImportError, ModuleNotFoundError):
     from core_commands import _join_positional
     from core_contract import (
-        _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
+        LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
         reader_facing_contract_block,
     )
     from core_plans import plan_structure_issues, unchecked_items
@@ -39,6 +39,7 @@ def command_litgoal(raw_args: str) -> dict[str, str]:
         "<lithermes-litgoal-command>",
         contract_route_block("litgoal", surface="slash-command"),
         f"workspace: {workspace}",
+        LITGOAL_MEANING,
         "Durable goal state lives under .hermes/lithermes/litgoal/ (goals.json + ledger.jsonl + evidence/).",
         "Drive it through the model-facing goal tools, not prose:",
         "- goal_status to read the active objective, criteria, evidence, and quality gate;",

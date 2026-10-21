@@ -139,7 +139,8 @@ class RouteContextBudget(NaturalRoutingCase):
         self._turn(LITWORK_ROUTES["lit-en"], "budget-seq", first=True)
         second = self._turn("lit now fix the typo in CHANGELOG.md", "budget-seq", first=False)
         self._assert_visible_route(second, LITWORK_BUDGET)
-        self.assertIn("now fix the typo in CHANGELOG.md", second)
+        self.assertIn("already active", second)
+        self.assertLessEqual(len(second.encode("utf-8")), 600)
 
     def test_lit_plan_keeps_its_guard_and_plan_path_in_view(self):
         for first in (True, False):

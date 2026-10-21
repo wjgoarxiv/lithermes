@@ -538,8 +538,8 @@ async function main(argv, runtime = {}) {
         else {
           const warm = motionRuntime('install', flags);
           receipt = warm.status === 0
-            ? `Motion runtime: ${warm.output.split('\n')[0]}`
-            : `Motion runtime: pre-warm incomplete (${warm.output.split('\n').filter(Boolean).at(-1)}); run \`lithermes motion-runtime install\` before rendering a film.`;
+            ? `Motion runtime: ${warm.output.split(/\r?\n/)[0]}`
+            : `Motion runtime: pre-warm incomplete (${warm.output.split(/\r?\n/).filter(Boolean).at(-1)}); run \`lithermes motion-runtime install\` before rendering a film.`;
         }
         (flags.json ? console.error : console.log)(receipt);
       }

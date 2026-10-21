@@ -4,6 +4,7 @@
     "lit-burnoff-file": "A single-file smell taxonomy, safety exceptions, process, and report contract is complete for this procedural review.",
     "comment-checker": "Intent, accuracy, necessity, maintenance checks, and the native route and evidence behavior are fully bounded.",
     "deep-interview": "Ambiguity scoring, question loops, state and resume, readiness, and approval gates form a complete interview procedure.",
+    "lit-brainstorm": "Framing, divergence lenses, optional idea lanes, scoring, convergence, the pick and the handoff are complete in one file; no corpus is claimed.",
     "lit-commit": "The document provides inventory, operation classification, isolation, history, staging, and receipt discipline for Git work.",
     "lit-crucible": "Native parallel discovery, cross-review, defense, synthesis, and handoff rules form a complete bounded planning procedure.",
     "lit-init": "Discovery, scoring, instruction placement, conflict analysis, generation, and verification are fully specified as a workflow.",

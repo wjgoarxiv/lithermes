@@ -498,15 +498,17 @@ def _motion_runtime_lines() -> list[str]:
     command = PLUGIN_ROOT / "skills" / "lit-typographic-motion" / "bin" / "runtime.mjs"
     if not command.is_file():
         return ["motion Chrome: unavailable", "motion ffmpeg: unavailable", "motion WebGL2 renderer: unavailable",
-                "motion software GL: unknown", "motion pre-warm: missing; run lithermes motion-runtime install"]
+                "motion software GL: unknown", "motion pre-warm: missing; run lithermes motion-runtime install",
+                "motion cover encoder: unavailable"]
     try:
         result = subprocess.run(["node", str(command), "status"], capture_output=True, text=True, timeout=35)
-        if result.returncode == 0 and len(result.stdout.splitlines()) == 5:
+        if result.returncode == 0 and len(result.stdout.splitlines()) == 6:
             return ["motion " + line for line in result.stdout.splitlines()]
     except (OSError, subprocess.TimeoutExpired):
         pass
     return ["motion Chrome: unavailable", "motion ffmpeg: unavailable", "motion WebGL2 renderer: unavailable",
-            "motion software GL: unknown", "motion pre-warm: status failed; run lithermes motion-runtime status"]
+            "motion software GL: unknown", "motion pre-warm: status failed; run lithermes motion-runtime status",
+            "motion cover encoder: unavailable"]
 
 
 def _motion_line_needs_attention(line: str) -> bool:

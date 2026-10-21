@@ -1,0 +1,68 @@
+{
+  "schema": "lithermes.cover-recipe/v1",
+  "note": "The decoded gate row this recipe reached when it shipped, through this renderer (qa/cover-recipes.js re-renders it and fails when median d or the moving share leave +-15 % of the row, seamLocal leaves TARGET or the file passes 2 MiB).",
+  "row": {
+    "medianD": 0.002682811781258311,
+    "movingFrac": 1,
+    "longestStillSec": 0,
+    "spike": 1.6632692481475795,
+    "seamLocal": 1.6221165835071816,
+    "bytes": 1433792
+  },
+  "settings": {
+    "size": [
+      1000,
+      500
+    ],
+    "fps": 25,
+    "frames": 200,
+    "encode": {
+      "q": 78,
+      "edgeQ": 90,
+      "edgeFrames": 25,
+      "method": 4
+    }
+  },
+  "treatment": {
+    "mode": "cover",
+    "request": "An animated README cover for LitHermes that shows a working system.",
+    "idea": "Dots lap three rings, flash a gate at twelve o'clock and light a ledger that empties as the loop returns.",
+    "recipe": "orbit-loop",
+    "recipeReason": "A system with crossings reads as work being checked, beside a still name.",
+    "brandWord": "LITHERMES",
+    "motto": {
+      "text": "KEEP THE WORK LIT.",
+      "source": "project",
+      "from": "the motto painted on the repository artwork"
+    },
+    "aspect": "2:1",
+    "loopSec": 8,
+    "fps": 25,
+    "layers": {
+      "slow": "Dashed ring shadows turn a quarter lap per loop.",
+      "mid": "Dots lap at three, two and one laps per loop and the core breathes once.",
+      "beat": "Gates flash on each crossing, the core rings on four bars, ledger cells light."
+    },
+    "system": {
+      "rule": "One orbit rule with integer laps per loop.",
+      "copies": "Eight dots on three rings and sixteen ledger cells.",
+      "offset": "Each dot's start angle and its ring's lap count."
+    },
+    "title": {
+      "box": [
+        0.04,
+        0.33,
+        0.46,
+        0.18
+      ],
+      "kind": "live"
+    },
+    "encode": {
+      "q": 78,
+      "edgeQ": 90,
+      "edgeFrames": 25
+    },
+    "ambition": "Every crossing is visible on the beat and the ledger loops without a reset."
+  },
+  "verdict": "PASS+TARGET"
+}
