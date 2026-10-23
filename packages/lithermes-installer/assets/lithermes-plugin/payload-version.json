@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-23T16:52:31.109Z",
+  "syncedAt": "2026-10-23T22:25:06.840Z",
   "source": "bundled-payload",
-  "sourceHash": "faacddedc1af18a6b07851a7cc03cfb7f3563f5cd43768280f86fd2ddefc50b9",
+  "sourceHash": "352c16218984bcfbae653e39d88cf565b980dae596ceb8e5e52c73fbf47de113",
   "files": [
     {
       "path": "NOTICE.md",
@@ -4481,7 +4481,7 @@
     },
     {
       "path": "skills/readme-studio/templates/remotion/package-lock.json",
-      "sha256": "ee738084263482454b4c6e941a9583d58f091d8cb6c901522138a21b39381564"
+      "sha256": "6d11743275bad840924a50e5ba03f11b89048417ebe8eed382ef523992cdb4c2"
     },
     {
       "path": "skills/readme-studio/templates/remotion/package.json",
