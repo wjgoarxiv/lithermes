@@ -6,9 +6,17 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
-- Add `lit-adhd` (alias `lit-rewind`) for the cross-session brief: a read-only Node collector over the Hermes session store, plans, goals, handoffs, git, the adhd stack file and run states, with D9 gauges, one next step and a bare-`go` continuation within 30 minutes; typed boundaries stay in chat. Routed by name, `lit adhd|rewind`, `/lit-adhd [--here] [--since 7d] [--max 12]` and a bare `go`, with a read-only prompt-hook stack and the counts-only headline as the status line.
-- Add `lit-hijack` for clean-room ports of published know-how: capture with provenance, licence gate, source-free spec, fenced build via `delegate_task`, parity proof, routed by name, `/lit-hijack <brief>` and `lit hijack|hijacking|하이재킹|하이잭` intent.
-- Add `lit-schematic` for drawings of real equipment: QA-gated P&IDs, PFDs, apparatus figures and isometric cutaways as editable SVG with PDF and 600 dpi PNG, routed by name, `/lit-schematic <brief>` and `lit` intent. `lit-diagram-drawer` keeps abstract boxes-and-arrows; measured-data plots stay with `lit-scientific-visualization`, which now renders a rich figure by default (light major grid, direct labels, insets, multi-panel context). Diagram defaults turn rich too (density near 8/10, 14–24 nodes, 3–5 role-bound accent families with OF-202 failing at six or more).
+## [1.0.30] - 2026-10-27
+
+- New `lit-schematic` skill for drawings of real equipment: detailed P&IDs with ISA tags and control loops, PFDs and layouts, apparatus figures for papers and isometric cutaways, saved as editable SVG with PDF and a 600 dpi PNG and checked by a QA gate before delivery. Ask for one by name, with `/lit-schematic <brief>`, or in a `lit` request. Abstract boxes-and-arrows stay with `lit-diagram-drawer`, and plots of measured data stay with `lit-scientific-visualization`.
+- Diagrams and scientific figures are now rich by default: denser diagrams with a few colour families tied to roles, and figures with a light grid, direct labels, insets and multi-panel context.
+- New `lit-adhd` skill (also `lit-rewind`) gives a short brief across your recent Hermes sessions, plans, goals, handoffs and git history, with progress gauges and one suggested next step. It only reads; finished sessions fold into a short table. Run it with `/lit-adhd`, `/lit-rewind` or `lit adhd`, and answer a bare `go` within 30 minutes to take the suggested step.
+- New `lit-hijack` skill turns published know-how into a skill of your own without copying it: it records where the material came from, checks the licence, writes a spec free of source text, builds through `delegate_task` and proves the result matches. Run it with `/lit-hijack <brief>` or `lit hijack`.
+- `lit-pptx` adds five looks (computational brutalism, neo-brutalism, Bauhaus, risograph and newsroom), each with its own sheet and example deck. `frontend-ui-ux` ships a component kit and a design lock, and its probe flags pages that drift from the locked fonts, colours and spacing.
+- Design skills (`lit-pptx`, `frontend-ui-ux`, `lit-schematic`) now ask which look you want before they build, with the recommended choice first. Name a look in the request or say "you choose" to skip the question; non-interactive runs take the recommendation.
+- The motion skill gains house styles, a storyboard board you can review before the full render, a layered original score and a reading-time check that no longer fails a line for its exit slide.
+- Security fixes: web fetches in `lit-hijack` and the motion font loader follow redirects only to public addresses, cap size and time, and connect to the exact address that passed the check, so a name that changes its answer mid-request cannot reach a private host. The session brief removes secrets before shortening lines, strips terminal control codes, and its state files refuse symlinks.
+- The README shows a gallery of real output: a P&ID, a session brief, a deck slide and a landing page.
 
 ## [1.0.29] - 2026-10-26
 

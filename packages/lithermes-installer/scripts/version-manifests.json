@@ -167,6 +167,15 @@
           ],
           "occurrences": 2,
           "why": "npm resolved @types/estree in the README Studio template, in its version field and tarball URL; this exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
+        },
+        {
+          "versionParts": [
+            1,
+            0,
+            30
+          ],
+          "occurrences": 3,
+          "why": "npm pinned caniuse-lite in the README Studio template (range, version field and tarball URL); its long build-number version happens to begin with these three parts, is an independent dependency pin and must not follow LitHermes releases."
         }
       ]
     },
