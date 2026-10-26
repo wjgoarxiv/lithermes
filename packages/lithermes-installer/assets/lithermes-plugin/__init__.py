@@ -39,8 +39,11 @@ _NATIVE_COMMANDS = frozenset(
         "lit-handoff",
         "lit-scientific-visualization",
         "lit-diagram-drawer",
+        "lit-schematic",
         "lit-pptx",
         "lit-docx",
+        "lit-hijack",
+        "lit-adhd",
         "lit-typographic-motion",
         *core.KOREAN_PROSE_COMMANDS,
         *core.KOREAN_PROSE_ALIASES,
@@ -81,11 +84,11 @@ PORTED_SKILLS = [
     ),
     (
         "debugging",
-        "Use when something fails, hangs or returns a wrong result and the cause must be reproduced, fixed and rechecked.",
+        "Use when something fails, hangs or returns a wrong result; the cause must be reproduced, fixed and rechecked.",
     ),
     (
         "deep-interview",
-        "Run the LitHermes Socratic deep-interview clarity gate before planning.",
+        "Run the Socratic deep-interview clarity gate before planning.",
     ),
     (
         "frontend-ui-ux",
@@ -95,16 +98,28 @@ PORTED_SKILLS = [
         "lit-diagram-drawer",
         "Create clear, accessible, Korean-ready diagrams with product-local Python verification and optional export.",
     ),
+    (
+        "lit-schematic",
+        "Draw P&IDs, PFDs, apparatus figures and isometric cutaways; QA-gated SVG with PDF and 600 dpi PNG in full material colour.",
+    ),
     ("lit-pptx", "Create and inspect PowerPoint decks with the installed Office engine and QA gate."),
     ("lit-docx", "Create, edit, convert, and audit styled Word documents."),
-    ("lit-typographic-motion", "Direct an original film from a treatment, or a seamless README cover loop, gated before delivery."),
+    (
+        "lit-hijack",
+        "Port published know-how into your skill.",
+    ),
+    (
+        "lit-adhd",
+        "Cross-session brief with gauges and one next step.",
+    ),
+    ("lit-typographic-motion", "Direct an original film or a README cover loop, gated before delivery."),
     (
         "readme-studio",
         "Write factual READMEs and compose local covers with outlined type, honest image capability and verified motion.",
     ),
     (
         "lit-commit",
-        "Run the LitHermes git-history specialist for commits, rebases, blame, and bisect.",
+        "Run the git-history specialist for commits, rebases, blame and bisect.",
     ),
     (
         "lit-brainstorm",
@@ -112,7 +127,7 @@ PORTED_SKILLS = [
     ),
     (
         "lit-crucible",
-        "Stress-test a plan with Hermes-native delegate_task lanes before handing off to /lit-plan.",
+        "Stress-test a plan with delegate_task lanes before handing off to /lit-plan.",
     ),
     (
         "lit-init",
@@ -120,11 +135,11 @@ PORTED_SKILLS = [
     ),
     (
         "lsp",
-        "Use Hermes' native LSP diagnostics with LitHermes LSP guidance.",
+        "Use Hermes' native LSP diagnostics with LSP guidance.",
     ),
     (
         "lit-code",
-        "Use LitHermes programming references for Python, TypeScript, Go, and Rust.",
+        "Use programming references for Python, TypeScript, Go and Rust.",
     ),
     (
         "refactor",
@@ -156,7 +171,7 @@ PORTED_SKILLS = [
     ),
     (
         "litwork",
-        "Use when a defined code change must be carried to done: build, test, verify the real surface, report. Not for documents or decks.",
+        "Use when a defined code change must be carried to done: build, test, verify the real surface, report; not for documents or decks.",
     ),
     (
         "visual-qa",
@@ -172,7 +187,7 @@ PORTED_SKILLS = [
     ),
     (
         "litresearch",
-        "Use when a question needs broad cited research into prior work or how others solve it, with disputed claims checked at the source.",
+        "Use when a question needs broad cited research into prior work or how others solve it; disputed claims checked at the source.",
     ),
     (
         "lit-recap",
@@ -458,7 +473,7 @@ def _setup_lithermes_cli(parser) -> None:
         "slash commands: /lit /lit-loop /lit-plan /litgoal /review-work /start-work /deep-interview "
         "/lit-humanizer (legacy aliases: /lit-korean /text-naturalization /text-neutralization "
         "/korean-ai-slop-remover) /lit-recap "
-        "/lit-handoff /lit-scientific-visualization /lit-diagram-drawer /lit-pptx /lit-docx /lit-typographic-motion\n"
+        "/lit-handoff /lit-scientific-visualization /lit-diagram-drawer /lit-schematic /lit-pptx /lit-docx /lit-hijack /lit-adhd /lit-typographic-motion\n"
         f"skills: {len(PORTED_SKILLS)} lithermes:* skills — `hermes lithermes status` lists them\n"
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
@@ -774,6 +789,12 @@ def register(ctx) -> None:
         description="Create and verify an accessible diagram from a supplied brief",
         args_hint="<diagram brief>",
     )
+    ctx.register_command(
+        "lit-schematic",
+        _command_handler(ctx, core.command_lit_schematic, "lit-schematic"),
+        description="Draw and QA-check a P&ID, PFD, apparatus figure or isometric cutaway from a supplied brief",
+        args_hint="<schematic brief>",
+    )
     for name in ("lit-pptx", "lit-docx"):
         ctx.register_command(
             name,
@@ -781,6 +802,24 @@ def register(ctx) -> None:
             description="Create and verify a PowerPoint deck" if name == "lit-pptx" else "Create and audit a Word document",
             args_hint="<document brief>",
         )
+    ctx.register_command(
+        "lit-hijack",
+        _command_handler(ctx, core.command_lit_hijack, "lit-hijack"),
+        description="Port published know-how into your own skill, clean-room",
+        args_hint="<urls or files> [into <target>]",
+    )
+    ctx.register_command(
+        "lit-adhd",
+        _command_handler(ctx, core.command_lit_adhd, "lit-adhd"),
+        description="Cross-session brief with gauges and one next step",
+        args_hint="[--here] [--since 7d] [--max 12]",
+    )
+    ctx.register_command(
+        "lit-rewind",
+        _command_handler(ctx, lambda raw: core.command_lit_adhd(raw, route="/lit-rewind"), "lit-adhd"),
+        description="Cross-session brief with gauges and one next step (alias of lit-adhd)",
+        args_hint="[--here] [--since 7d] [--max 12]",
+    )
     ctx.register_command(
         "lit-typographic-motion",
         _command_handler(ctx, core.command_motion_skill, "lit-typographic-motion"),

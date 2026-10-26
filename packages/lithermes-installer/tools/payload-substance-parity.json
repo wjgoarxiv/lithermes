@@ -86,8 +86,8 @@
         "wikify"
       ],
       "inventory": {
-        "count": 37,
-        "sha256": "174cfdf442f61b00912ecf20f589ab013e49b629d52217dc5bea7b654add4ce5"
+        "count": 40,
+        "sha256": "9d09285caf052cf017c4e247c2d94d29f9a1e3889015bd8f3f75f1bae6226e94"
       }
     },
     "p31": {
@@ -291,7 +291,7 @@
       "median": 209,
       "closures": {
         "p27": 209,
-        "p28": 215,
+        "p28": 227,
         "p31": 198,
         "p32": 209,
         "p33": 211

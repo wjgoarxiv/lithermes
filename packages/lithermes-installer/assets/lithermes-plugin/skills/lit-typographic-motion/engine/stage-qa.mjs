@@ -131,6 +131,15 @@ const PAGE_QA = String(function install() {
   };
 });
 
+export function copyOverlaps(boxes) {
+  const hits = [];
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+    const [ax0, ay0, ax1, ay1] = boxes[i], [bx0, by0, bx1, by1] = boxes[j];
+    if (Math.min(ax1, bx1) > Math.max(ax0, bx0) && Math.min(ay1, by1) > Math.max(ay0, by0)) hits.push([i, j]);
+  }
+  return hits;
+}
+
 function inkMask(a, b, width, height, rects) {
   const mask = Buffer.alloc(width * height);
   const inside = new Uint8Array(width * height);
@@ -191,7 +200,7 @@ export async function runTextQa(session) {
   const tenFps = Math.max(1, Math.round(fps / 10));
   const visibleSpans = new Map();
   const seenCopy = new Set();
-  const results = { contrast: [], safe: [], decorCopy: [], decorArea: [], meta: new Set(), fonts: [], moved: [], canvasUnmeasured: false, nonText: [], floors: [] };
+  const results = { contrast: [], safe: [], decorCopy: [], decorArea: [], meta: new Set(), fonts: [], moved: [], canvasUnmeasured: false, nonText: [], floors: [], overlap: [] };
   const stage = await session.open('q');
   const cdp = stage.cdp;
   const PNG = session.PNG;
@@ -215,7 +224,9 @@ export async function runTextQa(session) {
       const now = new Map();
       for (const run of runs) {
         const visible = run.opacity >= 0.6 && run.rects.length > 0;
-        const key = `${run.norm}|${run.bucket}`;
+        // The floor span is the copy line's, not its position bucket's: a line
+        // that slides (a push handoff moves its box) keeps one continuous span.
+        const key = run.norm;
         now.set(run.id, run);
         if (!visible || !run.norm) continue;
         if (isCopy(run.norm)) for (const c of copyLines) if (c.norm.includes(run.norm) || run.norm.includes(c.norm)) seenCopy.add(c.line);
@@ -268,6 +279,12 @@ export async function runTextQa(session) {
         }
         if (textArea > 0 && decorArea / textArea > 0.25) results.decorArea.push(`${Math.round((100 * decorArea) / textArea)} % at frame ${f}`);
         if (sample.kind === 'mid') results.nonText.push(lumStdOutside(b, W, H, visibleRuns.flatMap((r) => r.rects)));
+        if (sample.kind === 'settled') {
+          const settledCopy = visibleRuns.filter((r) => !r.decor && r.opacity >= 0.95 && isCopy(r.norm));
+          for (const [i, j] of copyOverlaps(settledCopy.map((r) => r.box))) {
+            results.overlap.push(`"${settledCopy[i].text.slice(0, 30)}" over "${settledCopy[j].text.slice(0, 30)}" at frame ${f}`);
+          }
+        }
       }
       prevRuns = now;
     }
@@ -287,7 +304,7 @@ export async function runTextQa(session) {
   if (missing.length) throw fail(EXIT.STAGE_CONTRACT_ERROR, `STAGE_CONTRACT_ERROR: copy line not on screen: "${missing[0].line}"${missing.length > 1 ? ` (+${missing.length - 1} more)` : ''}; every copy.lines entry must appear as text the QA can read`);
 
   const rules = [];
-  const row = (id, status, detail) => rules.push({ id, status, detail });
+  const row = (id, status, detail) => { rules.push({ id, status, detail }); if (!QA_ROW_IDS.includes(id)) QA_ROW_IDS.push(id); };
   const lowCopy = results.contrast.filter((c) => !c.decor && c.ratio < c.floor);
   const lowDecor = results.contrast.filter((c) => c.decor && c.ratio < c.floor);
   const worst = results.contrast.reduce((m, c) => (m && m.ratio / m.floor <= c.ratio / c.floor ? m : c), null);
@@ -307,8 +324,11 @@ export async function runTextQa(session) {
   row('qa-samples', results.moved.length ? 'WARN' : 'PASS', results.moved.length ? `state moved while the text was hidden at frames ${results.moved.slice(0, 6).join(', ')}; those samples were discarded` : `${samples.size} samples measured`);
   const lively = results.nonText.filter((s) => s > 8 / 255).length;
   row('non-text-presence', results.nonText.length && lively * 2 >= results.nonText.length ? 'PASS' : 'WARN', `${lively} of ${results.nonText.length} beat midpoints show a non-text image (luminance spread over 8/255 outside the text)`);
+  row('text-overlap', results.overlap.length ? 'FAIL' : 'PASS', results.overlap.length ? `settled copy overlaps: ${results.overlap[0]}` : 'no two settled copy lines overlap');
   return { rules, summary: { samples: [...samples.keys()].sort((a, b) => a - b), contrast: results.contrast.length, copySeen: [...seenCopy], meta: [...results.meta] } };
 }
+
+export const QA_ROW_IDS = ['text-contrast', 'text-title-safe', 'text-reading-floor', 'copy-found', 'decor-copy', 'decor-area', 'meta-label', 'fonts', 'canvas-text', 'qa-samples', 'non-text-presence', 'text-overlap'];
 
 // The platform names of this product's verified faces, read from probe spans.
 async function faceNames(stage) {

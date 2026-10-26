@@ -271,6 +271,153 @@ export function buildBed({ out, treatment, fps, totalFrames, cuts }) {
 }
 
 // ---------------------------------------------------------------------------
+// Layered score DSP. The score engine (score.mjs) is built from these: cue
+// planning, wavetable synthesis, the mastering stage and the WAV writer.
+
+export const SOUND = Object.freeze({
+  sampleRate: 48000,
+  channels: 2,
+  bitsPerSample: 16,
+  targetLufs: -16,
+  lufsTolerance: 2,
+  bedPeakDbfs: -2,
+  gatePeakDbfs: -0.5,
+  silenceDbfs: -50,
+  silenceWindowSec: 0.05,
+  silenceMaxSec: 1.5,
+  silenceHeadSec: 3,
+  durationToleranceSec: 0.1,
+  fadeSec: 0.05,
+});
+
+// Sounds an on-screen event can make (treatment `sound.events`): a tap (a
+// small click with a pitched body), a hit (the cut hit), a whoosh (air ending
+// on the event) and a chime (two notes of the key: something completes).
+export const EVENT_SOUNDS = Object.freeze(['tap', 'hit', 'whoosh', 'chime']);
+
+const CUE_WORDS = [
+  ['hit', /\b(?:hits?|impacts?|cuts?|stabs?|accents?)\b|타격|히트|컷|강세/iu],
+  ['rise', /\b(?:rises?|rising|risers?|swells?|swelling|builds?|building|build-?ups?|lifts?|lifting)\b|상승|고조|빌드업/iu],
+  ['cadence', /\b(?:cadences?|resolves?|resolving|resolution|close|closing|ending|final chord)\b|종지|마무리|해결/iu],
+];
+
+// Cue kinds a beat's free-text `sound` field asks for; none when nothing matches.
+export function cueKindsFor(soundText) {
+  const text = String(soundText ?? '');
+  return CUE_WORDS.filter(([, re]) => re.test(text)).map(([kind]) => kind);
+}
+
+const nearest = (times, t, within) => {
+  let best = null;
+  for (const c of times) if (Math.abs(c - t) <= within && (best === null || Math.abs(c - t) < Math.abs(best - t))) best = c;
+  return best;
+};
+const round4 = (x) => Math.round(x * 10000) / 10000;
+
+// Accent cues, each measured against the beat boundary or cut it serves, plus
+// one `event` cue per on-screen event at its own time (it never snaps to a
+// cut: it follows the picture).
+export function planCues({ beats = [], durationSec, cutTimes = [], events = [] }) {
+  const cues = [];
+  const clampT = (t) => Math.min(durationSec, Math.max(0, t));
+  beats.forEach((beat, beatIndex) => {
+    const t0 = clampT(Number(beat.t0));
+    const t1 = clampT(Number(beat.t1));
+    for (const kind of cueKindsFor(beat.sound)) {
+      if (kind === 'hit') {
+        const cut = nearest(cutTimes, t0, 0.5);
+        const target = cut ?? t0;
+        cues.push({ kind, t: round4(target), beatIndex, target: round4(target), delta: 0 });
+      } else if (kind === 'rise') {
+        const cut = nearest(cutTimes, t1, 0.5);
+        const end = cut ?? t1;
+        const start = Math.max(t0, end - 1.0);
+        cues.push({ kind, t: round4(end), start: round4(start), beatIndex, target: round4(end), delta: 0 });
+      } else {
+        const t = t0 + 0.6 * (t1 - t0);
+        cues.push({ kind, t: round4(t), beatIndex, target: round4(t), delta: 0, end: round4(beatIndex === beats.length - 1 ? durationSec : t1) });
+      }
+    }
+  });
+  for (const e of Array.isArray(events) ? events : []) {
+    if (!EVENT_SOUNDS.includes(e?.kind) || !(e.t >= 0 && e.t < durationSec)) continue;
+    const beatIndex = Math.max(0, beats.findIndex((b) => e.t >= Number(b.t0) && e.t < Number(b.t1)));
+    const cut = nearest(cutTimes, e.t, Infinity);
+    cues.push({ kind: 'event', sound: e.kind, t: round4(e.t), beatIndex, target: round4(e.t), delta: 0, on: String(e.on ?? ''), fromCut: cut === null ? null : round4(Math.abs(e.t - cut)) });
+  }
+  cues.sort((a, b) => a.t - b.t || a.beatIndex - b.beatIndex);
+  return cues;
+}
+
+export function samplePeakDbfs(channels) {
+  let peak = 0;
+  for (const c of channels) for (let i = 0; i < c.length; i++) {
+    const v = Math.abs(c[i]);
+    if (v > peak) peak = v;
+  }
+  return dbfs(peak);
+}
+
+// The shared master stage: look-ahead limiting under the ceiling, then the
+// gain that lands the bus on the target LUFS.
+export function masterTo(L, R) {
+  const sampleCount = L.length;
+  const ceiling = 10 ** (-2.1 / 20);
+  const ahead = Math.round(0.005 * SOUND.sampleRate);
+  const release = 1 - Math.exp(-1 / (0.08 * SOUND.sampleRate));
+  const q = (v) => Math.round(Math.max(-1, Math.min(1, v)) * 32767) / 32767;
+  const render = (gain) => {
+    const need = new Float32Array(sampleCount);
+    for (let s = 0; s < sampleCount; s++) {
+      const a = Math.max(Math.abs(L[s]), Math.abs(R[s])) * gain;
+      need[s] = a > ceiling ? ceiling / a : 1;
+    }
+    const held = new Float32Array(sampleCount);
+    const deque = new Int32Array(sampleCount + ahead + 1);
+    let head = 0;
+    let tail = 0;
+    let next = 0;
+    for (let s = 0; s < sampleCount; s++) {
+      for (; next < Math.min(sampleCount, s + ahead + 1); next++) {
+        while (tail > head && need[deque[tail - 1]] >= need[next]) tail--;
+        deque[tail++] = next;
+      }
+      while (deque[head] < s) head++;
+      held[s] = need[deque[head]];
+    }
+    let env = 1;
+    const smooth = new Float32Array(sampleCount);
+    for (let s = 0; s < sampleCount; s++) {
+      env = Math.min(held[s], env + (1 - env) * release);
+      smooth[s] = env;
+    }
+    const l = new Float32Array(sampleCount);
+    const r = new Float32Array(sampleCount);
+    let win = ahead;
+    for (let s = 0; s < sampleCount; s++) {
+      win += smooth[s] - (s >= ahead ? smooth[s - ahead] : 1);
+      const g = win / ahead;
+      l[s] = q(Math.max(-ceiling, Math.min(ceiling, L[s] * gain * g)));
+      r[s] = q(Math.max(-ceiling, Math.min(ceiling, R[s] * gain * g)));
+    }
+    return [l, r];
+  };
+  const raw = integratedLoudness([Float32Array.from(L), Float32Array.from(R)]);
+  let gain = Number.isFinite(raw) ? 10 ** ((SOUND.targetLufs - raw) / 20) : 1;
+  let [left, right] = render(gain);
+  let lufs = integratedLoudness([left, right]);
+  for (let i = 0; i < 8 && Number.isFinite(lufs) && Math.abs(lufs - SOUND.targetLufs) > 0.2; i++) {
+    gain *= 10 ** ((SOUND.targetLufs - lufs) / 20);
+    [left, right] = render(gain);
+    lufs = integratedLoudness([left, right]);
+  }
+  return { left, right, gain, lufs };
+}
+
+// The score writer uses the same 16-bit stereo bytes as the bed writer.
+export const encodeWav = ({ left, right }) => wavBytes(left, right);
+
+// ---------------------------------------------------------------------------
 // Mux and gate.
 
 export function muxArgs({ video, track, output, durationSec }) {
@@ -338,6 +485,15 @@ export async function produceSound({ out, treatment, fps, totalFrames, cuts, vid
     return { summary: { mode, label: 'no sound (silence was asked for, or the channel plays muted)' }, rules: [{ id: 'sound-stream', status: 'PASS', detail: 'no sound planned' }] };
   }
   let track, bed = null;
+  if (mode === 'score') {
+    const { writeScore } = await import('./score.mjs');
+    const score = writeScore({ treatment, frameCount: totalFrames, fps, cutTimes: cuts, dir: out });
+    track = score.file;
+    const label = `score, ${score.genre} in ${score.key}, ${score.tempo} BPM, ${score.stems.filter((s) => s.kind !== 'return').length} stems; ${score.progression}; ${score.lufs.toFixed(1)} LUFS, peak ${score.peakDbfs.toFixed(1)} dBFS — labelled as generated`;
+    muxAudio({ video, track, output, durationSec });
+    const gate = soundGate({ file: output, mode });
+    return { summary: { mode, label, track, score: { sha256: score.sha256, loudnessLufs: score.lufs, peakDbfs: score.peakDbfs, genre: score.genre, key: score.key, tempo: score.tempo }, mux: { peakDbfs: gate.peakDbfs, audioSec: gate.audioSec, videoSec: gate.videoSec } }, rules: gate.rules };
+  }
   if (mode === 'generated') {
     bed = buildBed({ out, treatment, fps, totalFrames, cuts });
     track = bed.file;
@@ -360,6 +516,21 @@ export async function soundCommand(flags) {
   const out = resolve(flags.out || 'motion-output');
   try {
     const { treatment } = loadTreatment(out, EXIT.BLOCKED_TREATMENT_INVALID);
+    if (treatment.sound.mode === 'score') {
+      const { writeScore } = await import('./score.mjs');
+      const fps = treatment.fps === 30 ? 30 : 60;
+      const manifestFile = join(out, 'manifest.json');
+      const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : null;
+      const totalFrames = manifest?.totalFrames || Math.round((manifest?.durationSec || treatment.durationSec) * fps);
+      const cuts = manifest?.path === 'stage' && manifest.beats ? manifest.beats.slice(1).map((b) => b.first / fps)
+        : manifest?.timeline ? manifest.timeline.filter((u) => u.kind === 'line').slice(1).map((u) => u.start)
+          : treatment.beats.slice(1).map((b) => b.t0);
+      const score = writeScore({ treatment, frameCount: totalFrames, fps: manifest?.fps || fps, cutTimes: cuts, dir: out });
+      const sections = score.sections.map((s) => s.kind).join(' → ');
+      console.log(`sound: sound/score.wav (score, ${score.genre} in ${score.key}, ${score.tempo} BPM; ${score.progression}; ${sections}; sidechain ${score.sidechainDb.toFixed(1)} dB; ${score.lufs.toFixed(1)} LUFS, peak ${score.peakDbfs.toFixed(1)} dBFS; stems in sound/stems)`);
+      console.log(`cues: ${join(out, 'sound-cues.json')} (${score.cues.length} cues)`);
+      return 0;
+    }
     if (treatment.sound.mode !== 'generated') {
       console.log(`sound: the treatment's sound mode is ${treatment.sound.mode}; nothing to generate`);
       return 0;

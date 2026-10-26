@@ -361,7 +361,7 @@ class CliSurface(unittest.TestCase):
             "on_session_reset",
         ):
             self.assertIn(h, r)
-        self.assertIn("skills (37)", r)  # motion skill is enrolled
+        self.assertIn("skills (40)", r)  # schematic, hijack and adhd skills are enrolled
         for k in ("red", "green", "scenario", "cleanup", "note"):
             self.assertIn(k, r)  # evidence-kind discovery (#6)
 
@@ -370,6 +370,7 @@ class CliSurface(unittest.TestCase):
         self.assertEqual(code, 0, "\n".join(lines))
         self.assertTrue(any("plugin.yaml" in l for l in lines))
         self.assertIn("[OK] lit-diagram-drawer entrypoint present", lines)
+        self.assertIn("[OK] lit-schematic entrypoint present", lines)
 
     def test_cli_setup_registers_version_status_doctor(self):
         import argparse

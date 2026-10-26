@@ -20,6 +20,8 @@ function base() {
     genre: "explainer",
     path: "stage",
     pathReason: "the film has to show animals and water, not only words",
+    style: "paper",
+    register: "rich",
     idea: "썰물 뒤에 남은 작은 바다가 한 마리 소라게의 하루로 열린다.",
     audience: "초등학생과 보호자",
     channel: "과학관 로비 대형 화면",
@@ -27,11 +29,26 @@ function base() {
     formatReason: "a landscape lobby screen",
     durationSec: 20,
     beats: [
-      { t0: 0, t1: 5, purpose: "질문을 던진다", onScreen: "물이 빠진 바위와 웅덩이", motion: "수면이 내려가며 웅덩이가 드러난다", sound: "잔잔한 패드에 첫 박" },
-      { t0: 5, t1: 10, purpose: "첫 번째 생물", onScreen: "소라게가 껍데기를 고른다", motion: "껍데기 윤곽이 그려진 뒤 몸이 들어간다", sound: "컷에 맞춘 타격" },
-      { t0: 10, t1: 15, purpose: "두 번째 생물", onScreen: "말미잘이 촉수를 오므린다", motion: "촉수 패스가 모프한다", sound: "상승음으로 전환" },
-      { t0: 15, t1: 20, purpose: "정리", onScreen: "웅덩이 전체 단면도", motion: "카메라가 뒤로 빠진다", sound: "종지 화음" },
+      { t0: 0, t1: 5, purpose: "질문을 던진다", onScreen: "물이 빠진 바위와 웅덩이", motion: "수면이 내려가며 웅덩이가 드러난다", sound: "잔잔한 패드에 첫 박", layout: "title", hero: "물이 빠지며 웅덩이가 드러난다", transition: "cut" },
+      { t0: 5, t1: 10, purpose: "첫 번째 생물", onScreen: "소라게가 껍데기를 고른다", motion: "껍데기 윤곽이 그려진 뒤 몸이 들어간다", sound: "컷에 맞춘 타격", layout: "split", hero: "껍데기 윤곽이 그려진다", transition: "wipe" },
+      { t0: 10, t1: 15, purpose: "두 번째 생물", onScreen: "말미잘이 촉수를 오므린다", motion: "촉수 패스가 모프한다", sound: "상승음으로 전환", layout: "stage", hero: "촉수가 오므라든다", transition: "push" },
+      { t0: 15, t1: 20, purpose: "정리", onScreen: "웅덩이 전체 단면도", motion: "카메라가 뒤로 빠진다", sound: "종지 화음", layout: "hero", hero: "웅덩이 전체가 보인다", transition: "end" },
     ],
+    story: { expect: "the pool shows one animal after another", turn: "the second animal answers the first one's question", beat: 2, payoff: "the tide returns the pool to the children" },
+    protagonist: {
+      name: "소라게 모래", kind: "character", look: "a small crab in a borrowed shell, name tag on its back, pasta scale beside the pool",
+      acts: [
+        { beat: 0, action: "the crab crosses the exposed rock toward the pool" },
+        { beat: 1, action: "the crab tries three shells and picks one" },
+        { beat: 2, action: "the crab watches the anemone close its hand" },
+        { beat: 3, action: "the crab settles into the whole pool view" },
+      ],
+    },
+    world: {
+      layers: ["the rock and the pool water in front", "the crab and the shells in the middle", "the sky and the returning tide behind"],
+      labels: ["pool", "crab", "shell", "anemone", "name tag", "tide line"],
+      camera: [{ beat: 1, move: "push-in on the shell" }, { beat: 3, move: "pull back to the whole pool" }],
+    },
     subject: { name: "소라게 모래", source: "invented", specifics: ["껍데기를 세 번 바꿔 입은 소라게", "아이들이 붙인 이름표를 단 채 웅덩이 가장자리에 산다"] },
     visualDevices: [
       { kind: "illustration", role: "subject", beats: [0, 1, 2, 3] },
@@ -41,11 +58,19 @@ function base() {
     ],
     typePlan: { faces: ["Pretendard"], hierarchy: "one headline, one caption", maxWordsOnScreen: 6 },
     palette: [
-      { color: "#0f3b4c", role: "deep water" },
-      { color: "#f2c14e", role: "shell highlight" },
-      { color: "#f7f4ea", role: "caption type" },
+      { color: "#1d1b18", role: "ink type" },
+      { color: "#5b564e", role: "caption type" },
+      { color: "#b0452a", role: "shell highlight" },
+      { color: "#f3eee5", role: "caption type on dark" },
     ],
-    sound: { mode: "generated", plan: "slow pulse under a warm pad, hits on each cut", palette: "soft-mallet" },
+    sound: {
+      mode: "score", plan: "a house score that drops on the turn",
+      events: [
+        { t: 2.5, on: "the pool appears", kind: "tap" },
+        { t: 7.5, on: "the shell outline draws", kind: "whoosh" },
+        { t: 12.5, on: "the anemone closes its hand", kind: "hit" },
+      ],
+    },
     copy: { source: "invented", lines: ["썰물이 남긴 작은 바다", "소라게는 집을 바꿔 입는다", "말미잘은 손을 오므린다", "다음 썰물에 다시 만나요"] },
     inventions: ["소라게 모래 (invented subject)", "all four copy lines"],
     ambition: "Match cuts between shell outlines and a steady pulse should make the tide feel alive.",
@@ -133,6 +158,7 @@ test("treatment: the stage path needs a drawn subject device and two counting ki
 test("treatment: the type path needs user copy or a type-led cue, at 16:9 only", async () => {
   const t = base();
   t.path = "type";
+  t.style = "swiss-signal";
   await expectField(t, "path");
   const u = base();
   u.request = '"물은 빠져도 바다는 남는다" 이 문장으로 세로 영상 만들어줘';
@@ -140,10 +166,16 @@ test("treatment: the type path needs user copy or a type-led cue, at 16:9 only",
   u.genre = "type-led";
   u.copy = { source: "user", lines: ["물은 빠져도 바다는 남는다"] };
   u.format = "9:16";
-  u.beats = [{ t0: 0, t1: 20, purpose: "한 호흡", onScreen: "문장", motion: "어절 단위로 떠오른다", sound: "패드" }];
+  u.story = { expect: "the line reads once", turn: "the line reads itself back", beat: 1, payoff: "the sea stays after the line" };
+  u.beats = [
+    { t0: 0, t1: 10, purpose: "한 호흡", onScreen: "문장", motion: "어절 단위로 떠오른다", sound: "패드" },
+    { t0: 10, t1: 20, purpose: "여운", onScreen: "문장", motion: "한 줄이 남는다", sound: "패드" },
+  ];
   u.visualDevices = [];
+  u.style = "swiss-signal";
   await expectField(u, "path");
   u.format = "16:9";
+  u.style = "swiss-signal";
   const { validateTreatment } = await load();
   assert.equal(validateTreatment(u).ok, true, validateTreatment(u).message);
 });
@@ -170,6 +202,11 @@ test("treatment: invented parts must list the subject name, and the genre floor 
   const u = base();
   u.durationSec = 8;
   u.beats = u.beats.map((b, i) => ({ ...b, t0: i * 2, t1: i * 2 + 2 }));
+  u.sound.events = [
+    { t: 1, on: "the pool appears", kind: "tap" },
+    { t: 3, on: "the shell outline draws", kind: "whoosh" },
+    { t: 5, on: "the anemone closes its hand", kind: "hit" },
+  ];
   await expectField(u, "durationSec");
   u.request = "바닷가 조수 웅덩이 생물을 8초짜리 영상으로 만들어줘";
   u.idea = "작은 바다가 소라게의 하루로 열린다.";

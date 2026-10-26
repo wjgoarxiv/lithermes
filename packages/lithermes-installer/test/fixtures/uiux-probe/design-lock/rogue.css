@@ -1,0 +1,2 @@
+/* Deliberately outside the lock: a literal family and a literal colour. */
+body { font-family: Arial, sans-serif; color: #ff0000; }

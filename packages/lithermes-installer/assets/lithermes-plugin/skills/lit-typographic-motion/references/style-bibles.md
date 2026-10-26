@@ -36,11 +36,18 @@ merely ends. An explicit `"style"` in the brief always wins over this table.
 The report labels a style you chose as `agent default`; it says
 `user-specified` only when the user's own request named that style.
 
-| Brief mentions | Preset |
+| Brief mentions | Style |
 |---|---|
 | 터미널, 해커 / terminal, hacker, CRT | `terminalcore` |
 | 물결, 파도, 잔잔한, 흐름 / gradient, wave, tide, calm | `tidal` |
-| anything else | `swiss-signal` |
+| 따뜻한, 밝은, 종이, 손그림, 포근한, 아기자기 / warm, cozy, bright, paper, handmade, hand-drawn | `paper` (stage only) |
+| anything else | the default `swiss-signal` |
+
+A style named in the request wins; then the project's house style
+(`motion-house.json` beside the output folder, written by a passed render),
+then the keyword table above, then the genre (`explainer` takes `paper`,
+`brand-mood` takes `tidal`), then the default. The manifest records the pick
+and the reason.
 
 `system`, `status` and a bare `flow` are deliberately not keywords: they appear
 in payment-system, design-system and workflow briefs that have nothing to do

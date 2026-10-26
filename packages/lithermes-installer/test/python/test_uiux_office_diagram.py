@@ -21,12 +21,33 @@ class DiagramCraftChecks(unittest.TestCase):
           <rect data-node-id="b" x="100" y="25" width="40" height="35" fill="#22aa44"/>
           <rect data-node-id="c" x="175" y="25" width="40" height="35" fill="#3355dd"/>
           <rect data-node-id="d" x="260" y="25" width="40" height="35" fill="#ddaa22"/>
+          <rect data-node-id="e" x="20" y="110" width="40" height="35" fill="#aa33cc"/>
+          <rect data-node-id="f" x="100" y="110" width="40" height="35" fill="#22aaaa"/>
           <text data-role="node" x="22" y="48" font-size="16">Review Of System</text>
         </svg>'''
         issues = quality_issues(source)
         for code in ("OF-201", "OF-202", "OF-203", "OF-204"):
             with self.subTest(code=code):
                 self.assertTrue(any(issue.startswith(code) for issue in issues), issues)
+
+    def test_three_to_five_accent_families_pass_and_six_fail(self):
+        def nodes(fills):
+            rects = "".join(
+                f'<rect data-node-id="n{index}" x="{20 + 50 * index}" y="25" width="40" height="35" fill="{fill}"/>'
+                for index, fill in enumerate(fills)
+            )
+            return (
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" role="img" aria-labelledby="t d">'
+                '<title id="t">Roles</title><desc id="d">Role colours</desc>' + rects + "</svg>"
+            )
+
+        families = ["#dd4433", "#22aa44", "#3355dd", "#ddaa22", "#aa33cc", "#22aaaa"]
+        for count in (3, 4, 5):
+            with self.subTest(count=count):
+                issues = quality_issues(nodes(families[:count]))
+                self.assertFalse(any(issue.startswith("OF-202") for issue in issues), issues)
+        issues = quality_issues(nodes(families))
+        self.assertTrue(any(issue.startswith("OF-202") for issue in issues), issues)
 
     def test_flat_single_accent_diagram_does_not_gain_group_or_accent_issue(self):
         source = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" role="img" aria-labelledby="t d">

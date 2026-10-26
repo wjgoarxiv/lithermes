@@ -21,6 +21,8 @@ import { areaResize, contactSheet, encodePreview, ffprobe, hasFfmpeg, pngDecode,
 import { openRenderer } from '../engine/browser.mjs';
 import { WARM, audioState, findCache, fontFile, fontState, hangulPath, runtimeRequire, skillRoot, wordTimingReady } from './runtime.mjs';
 import { loadTreatment } from '../engine/treatment.mjs';
+import { readStyle, STYLE_IDS } from '../engine/styles.mjs';
+import { writeScaffold } from '../engine/scaffold.mjs';
 import { recordFirstTreatment } from '../engine/director.mjs';
 import { stageCommand, stageRegate } from '../engine/stage.mjs';
 import { coverCommand, coverGateCommand } from '../engine/cover.mjs';
@@ -38,9 +40,12 @@ usage: node motion.mjs <subcommand> --out DIR [options]   (write DIR/treatment.j
   cover-gate FILE [--frames D --frames2 D --masks D --title x,y,w,h] [--strict] [--json]
                                                                   the cover gate on any cover file or PNG frame folder
   run      --out DIR [--brief FILE] [--round 1-3] [--stills-only] type path: the WebGL2 type engine; stills, cut sheet, film, preview, poster, gate
-  sound    --out DIR                                              build the generated sound bed and sound-cues.json from the treatment
+  sound    --out DIR                                              build the score (or generated bed) and sound-cues.json from the treatment
+  blender  --out DIR [--final]                                   offline Blender rung: stills at the beat midpoints (stage/plate-preview) or the plate (stage/plate)
   look     --out DIR --round 1-3 --answers FILE                   record one look round against the latest stills set
   gate     --out DIR                                              rerun the gate on an existing output dir
+  styles   [--out DIR] [--format 16:9|9:16]                       print the house-style table; with --out, write the style catalog styles.json
+  scaffold --out DIR                                              write DIR/stage/index.html from the treatment (never overwrites a page)
   complete --out DIR                                              exit 0 only when this film is done (treatment, gate, look rounds)
 type-path tools: stills, sheet, video, perf (--brief FILE --out DIR)
 options: --scale 1-4  --word-timing  --force-software
@@ -60,7 +65,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (!arg.startsWith('--')) { flags._.push(arg); continue; }
     const key = arg.slice(2);
-    if (['stills-only', 'cuts', 'word-timing', 'force-software', 'help', 'no-rerender', 'aids', 'detach', 'strict', 'json'].includes(key)) flags[key] = true;
+    if (['stills-only', 'cuts', 'word-timing', 'force-software', 'help', 'no-rerender', 'aids', 'detach', 'strict', 'json', 'final'].includes(key)) flags[key] = true;
     else if (key === 'viewed') flags.viewed = String(argv[++i] || '').split(',').map((v) => Number(v.replace(/^f/, ''))).filter(Number.isInteger);
     else flags[key] = argv[++i];
   }
@@ -548,10 +553,59 @@ async function main(argv) {
   const mode = flags._[0];
   if (!mode || flags.help || mode === 'help') { console.log(USAGE); return 0; }
   if (mode === 'complete') return completeCommand(resolve(flags.out || 'motion-output'));
+  if (mode === 'styles') {
+    const format = flags.format === '9:16' ? '9:16' : '16:9';
+    const rows = STYLE_IDS.map((id) => {
+      const style = readStyle(id);
+      return { id, name: style.name, format, palette: style.palette, typePreset: style.typePreset, beds: style.beds.map((bed) => `${bed.timbre} ${bed.key} ${bed.tempo}bpm`), motions: style.motion, transitions: style.transitions };
+    });
+    for (const row of rows) console.log(`${row.id}: ${row.name} (type preset ${row.typePreset ?? 'none, stage only'}; beds ${row.beds.join(' / ')})`);
+    if (flags.out) {
+      mkdirSync(resolve(flags.out), { recursive: true });
+      writeJson(join(resolve(flags.out), 'styles.json'), { schema: 'litfamily.motion-styles/v1', format, styles: rows });
+      console.log(`styles: ${join(resolve(flags.out), 'styles.json')}`);
+    }
+    return 0;
+  }
+  if (mode === 'scaffold') {
+    const out = resolve(flags.out || 'motion-output');
+    try {
+      const { treatment } = loadTreatment(out, EXIT.BLOCKED_TREATMENT_INVALID);
+      if (treatment.path !== 'stage') throw fail(EXIT.BLOCKED_TREATMENT_INVALID, `BLOCKED_TREATMENT_INVALID: field path: this treatment takes the type path; scaffold writes the stage page`);
+      const { file, note } = writeScaffold(out, treatment);
+      console.log(`scaffold: ${file}`);
+      if (note) console.log(note);
+    } catch (error) {
+      if (error && typeof error.message === 'string' && error.message.startsWith('scaffold: ')) {
+        console.error(error.message);
+        return 2;
+      }
+      if (error && Number.isInteger(error.exitCode)) {
+        console.error(error.message);
+        return error.exitCode;
+      }
+      throw error;
+    }
+    return 0;
+  }
   if (mode === 'stage') return stageCommand(flags);
   if (mode === 'cover') return coverCommand(flags);
   if (mode === 'cover-gate') return coverGateCommand(flags);
   if (mode === 'sound') return soundCommand(flags);
+  if (mode === 'blender') {
+    const { blenderCommand } = await import('../engine/blender.mjs');
+    try {
+      const result = await blenderCommand({ out: resolve(flags.out || 'motion-output'), final: Boolean(flags.final) });
+      console.log(result.message);
+      return result.code;
+    } catch (error) {
+      if (error && Number.isInteger(error.exitCode)) {
+        console.error(error.message);
+        return error.exitCode;
+      }
+      throw error;
+    }
+  }
   if (mode === 'look') return lookCommand(flags);
   if (!['run', 'stills', 'sheet', 'video', 'perf', 'gate', 'hash-frame'].includes(mode)) { console.error(USAGE); return 2; }
   if (mode === 'gate') return regate(flags);

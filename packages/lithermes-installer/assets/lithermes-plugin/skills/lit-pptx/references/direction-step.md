@@ -1,8 +1,9 @@
 # Direction step
 
 On every route (`/lit-pptx`, bare `lit`, office brief) `lithermes:lit-pptx` picks a tonality
-(`ledger`, `signal`, `atlas`, `chalk`, `paper`, `gazette`, `studio`, `night`), two alternatives and a
-reason before any slide. No house look. A bare request gets no style question; pause only for a
+(`ledger`, `signal`, `atlas`, `chalk`, `paper`, `gazette`, `studio`, `night`,
+`computational-brutalism`, `neo-brutalism`, `bauhaus`, `riso`, `newsroom`), two alternatives and a
+reason before any slide. No house look. A bare request gets the style question first (SKILL.md: recommended tonality plus two alternatives, recommended first); pause only for a
 deliberately open look (compare strip) or a dial move above 2. If Tonality and Reason cannot be
 filled, stop and ask.
 
@@ -18,13 +19,18 @@ The first candidate wins unless a signal reorders.
 | Deck type | Candidates (density, variance) |
 |---|---|
 | Pitch (투자·제안 피치) | `signal` (10, 6); `studio` (10, 7); `atlas` (10, 7) when the product is visual |
+| Launch, demo day or campaign (런칭·데모데이·캠페인) | `neo-brutalism` (10, 7); `signal` (10, 6); `studio` (10, 7) |
+| Engineering or developer review (아키텍처·인프라·장애 리뷰) | `computational-brutalism` (10, 7); `night` (10, 6) for a stage; `ledger` (10, 5) when it is read alone |
 | Business review (경영 실적 보고) | `ledger` (10, 5); `gazette` (10, 4) when circulated in Korean and read alone; `night` (10, 6) for a stage review |
 | Research talk (연구 발표) | `paper` (10, 5); `night` (10, 5) for a keynote room; `chalk` (10, 6) for a tutorial talk |
 | Lecture or teaching (강의) | `chalk` (10, 6); `paper` (10, 5); `studio` (10, 7) for a public lecture |
+| Design or culture lecture (디자인·건축·전시·워크숍) | `bauhaus` (10, 7); `studio` (10, 8); `atlas` (10, 7) when the works are the deck |
 | Data-heavy review (데이터 리뷰) | `night` (10, 6); `ledger` (10, 5); `paper` (10, 5) for a written analysis |
 | Image-led (product, portfolio) | `atlas` (10, 7); `studio` (10, 8); `signal` (10, 6) for a launch |
 | Korean text briefing (보고서형 덱) | `gazette` (10, 4); `ledger` (10, 5) |
 | Status update (주간·월간 보고) | `ledger` (10, 5); `gazette` (10, 4); `night` (10, 6) |
+| Community, culture or education programme (커뮤니티·문화·교육 프로그램) | `riso` (10, 7); `studio` (10, 7); `bauhaus` (10, 7) for a design programme |
+| Data story for the public (주민·독자 대상 데이터 브리핑) | `newsroom` (10, 6); `gazette` (10, 4) when it is read alone; `ledger` (10, 5) |
 
 ## Signals that reorder
 

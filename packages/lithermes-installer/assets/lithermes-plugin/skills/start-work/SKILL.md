@@ -157,7 +157,8 @@ The trigger is any of:
 If `/start-work` was given a brief or a slug that does not resolve to an existing
 plan, stop with `BLOCKED`. Do not create a plan here. Planning belongs to
 `/lit-plan` / natural `lit plan`; execution begins only after the user approves a
-real plan artifact.
+real plan artifact. A plan built from a `lit-hijack` `SPEC.md` executes like any
+approved plan; keep captured sources out of the run evidence.
 
 Before creating a run directory, `/start-work` is the runtime enforcer for the
 shared plan-row grammar: implementation rows are column-zero

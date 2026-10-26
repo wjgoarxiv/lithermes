@@ -1,6 +1,6 @@
 ---
 name: lit-diagram-drawer
-description: Create clear, accessible, Korean-ready diagrams for architecture, workflows, systems, data models, decision paths, schedules, ownership, and conceptual relationships. Use when a reader will understand the subject faster from a diagram than from prose or a table. Send product pages and interface layouts to frontend-ui-ux; send plots of measured scientific data to lit-scientific-visualization.
+description: Create clear, accessible, Korean-ready diagrams for architecture, workflows, systems, data models, decision paths, schedules, ownership, and conceptual relationships. Use when a reader will understand the subject faster from a diagram than from prose or a table. Send product pages and interface layouts to frontend-ui-ux; send plots of measured scientific data to lit-scientific-visualization; send drawings of real equipment (P&IDs, PFDs, apparatus figures, isometric cutaways) to lit-schematic.
 ---
 
 # LitHermes Diagram Drawer
@@ -72,6 +72,7 @@ Use this skill for conceptual, editorial, technical, and operational diagrams: s
 
 - Product screens, responsive layouts, dashboards, application components, and interactive UI belong to `lithermes:frontend-ui-ux`.
 - Plots of measured scientific data, statistical inference, uncertainty, and instrument output belong to `lithermes:lit-scientific-visualization`.
+- Drawings of real equipment, piping and instruments (P&IDs, PFDs, apparatus figures for a paper, isometric cutaways) belong to `lithermes:lit-schematic`; use this skill for the abstract boxes-and-arrows version.
 - Presentation story, slide pacing, and deck composition belong to `lithermes:lit-pptx`; use this skill for an individual diagram embedded in that deck.
 - If a short list, a table, or a direct sentence communicates the same relationships more plainly, use that instead.
 
@@ -98,6 +99,8 @@ The boundary check requires both lists, exactly one corresponding boundary recta
 
 Preserve source wording when it carries legal, policy, technical, or scientific meaning. A diagram label is still a claim: do not strengthen “expected” into “measured”, turn “not observed” into “absent”, or remove uncertainty to make a layout cleaner.
 
+Ask the theme first with the host's question tool (Hermes clarify): offer the recommended theme and two alternatives, recommended first with one line each. Skip only when the brief names the canvas or theme, or the user said "you choose"; in a non-interactive run take the recommended theme and say so in one line.
+
 ### 3. Select a semantic pattern and catalog type
 
 Read `references/type-catalog.json`, select one of its 61 supported types, then open the matching `references/type-<id>.md` guide. If state, behavior, enforcement, or risk is central, read `references/semantic-patterns.md` first and choose the nearest visual type second. Do not invent a new type id to avoid the catalog.
@@ -118,9 +121,9 @@ Use 1080×640 as the reference canvas unless the destination requires another ra
 - node labels: at least 15px;
 - route and boundary labels: at least 13px.
 
-At the reference canvas, keep node-to-node gaps at 12px or more. Prefer grouping, splitting, or removing secondary content over shrinking type. Aim for readable density around 4/10; divide material that will not fit. Keep the occupied node-and-route bounds substantial enough for a slide or document, with visible breathing room at the edges. Avoid ornamental empty space that makes a reader hunt for the subject.
+At the reference canvas, keep node-to-node gaps at 12px or more. Prefer grouping, zoning, and a larger canvas preset over shrinking type. Aim for density near 8/10: about 14-24 nodes for an architecture overview in named zones or tiers, a technical sublabel under each node name, numbered step badges on the main path, a role legend written in the subject's words, and an annotation or two on the decisive edge or node, as `references/style-guide.md` describes. Split only content that would fall below a type floor. Keep the occupied node-and-route bounds substantial enough for a slide or document. A minimal diagram (density 4/10, one or two focal accents, plain boxes) is the path taken only when the user asks for minimal, calm, quiet or sparse output; every floor and check stays the same.
 
-Use a 4px layout grid where it helps consistency. Limit emphasis to two focal accents, then use neutral surfaces and restrained connector colors. Never encode an important state only with color. Add text, shape, line, or position cues and check contrast against the actual paper color.
+Use a 4px layout grid where it helps consistency. Use 3-5 accent families, each bound to one role (a zone, a category of node, the critical path, a risk or a state) and named in the legend; neutrals carry the rest, and a minimal request uses one or two. Never encode an important state only with color. Add text, shape, line, or position cues and check contrast against the actual paper color.
 
 ### 5. Draft semantic, accessible HTML/SVG
 
@@ -194,7 +197,7 @@ python3 scripts/verify-all.py
 
 Use the type id that the diagram actually declares. `verify-motion.py` detects unbounded animation and missing reduced-motion source rules; manually inspect a complete static state, frame order, and controls. Run `verify-all.py` for a corpus review; it checks all 183 catalog templates and eight approved after-examples, their type identity, catalog resource closure, geometry, accessibility, motion source rules, visible text, and brief coverage.
 
-The native SVG verifier also reports OF-201–OF-204: a 2× inter-group spacing ratio when declared boundaries exist, accent-family count from node fills, sentence case for Latin labels, and label width inside node or boundary boxes. Edge-label width remains outside the measurable box model; inspect those labels in the rendered diagram. Preserve approved templates and correct only a new diagram's genuine finding.
+The native SVG verifier also reports OF-201–OF-204: a 2× inter-group spacing ratio when declared boundaries exist, accent-family count from node fills (three to five families pass; six or more fail OF-202), sentence case for Latin labels, and label width inside node or boundary boxes. Edge-label width remains outside the measurable box model; inspect those labels in the rendered diagram. Preserve approved templates and correct only a new diagram's genuine finding.
 
 The per-document geometry check reports stable issue codes. Correct every issue it reports before export. Compare type semantics, theme/profile polarity, factual claims, and other properties not named in its JSON output against the brief and source data. Humanizer warnings require editorial review; keep the needed factual label and record why it is needed rather than mechanically rewriting technical truth.
 

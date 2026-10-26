@@ -3,7 +3,7 @@
 How to author a deck in the constrained Markdown dialect that `scripts/compile-deck.js` compiles. Template-agnostic — the enrolled template owns fonts, palette, dimensions, and decorations. The full contract is `slide-formats/markdown-slide-spec-v1.md`; this guide is the working reference.
 
 ## 1. Pick a direction (tonality), or a named template
-A new deck has no default look. Run the direction step (`direction-step.md`): choose one of the eight tonalities from the deck type and the measured content, name two alternatives, and write `tonality: <id>` in the frontmatter. Then write each slide's `layout:` as a family of that pack (`layout-families.md`) and follow `density-and-fill.md`.
+A new deck has no default look. Run the direction step (`direction-step.md`): choose one of the thirteen tonalities from the deck type and the measured content, name two alternatives, and write `tonality: <id>` in the frontmatter. Then write each slide's `layout:` as a family of that pack (`layout-families.md`) and follow `density-and-fill.md`.
 ```bash
 node scripts/compile-deck.js --list-tonalities
 node scripts/compile-deck.js --list-layouts <tonality-or-TEMPLATE>   # families, treatments, variants

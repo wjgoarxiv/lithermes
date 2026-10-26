@@ -66,6 +66,41 @@ test('static fallback scans a project directory', () => {
   } finally { rmSync(out, { recursive: true, force: true }); }
 });
 
+test('design-lock fixtures: an unlocked page fails DS-001, DS-006 and DS-008', () => {
+  const out = mkdtempSync(join(tmpdir(), 'lithermes-uiux-'));
+  try {
+    const fixture = join(root, 'test/fixtures/uiux-probe/design-lock/unlocked-bad.html');
+    const run = spawnSync(process.execPath, [driver, '--static', fixture, '--out', out], { encoding: 'utf8' });
+    assert.equal(run.status, 2, run.stderr);
+    const report = JSON.parse(readFileSync(join(out, 'report.json'), 'utf8'));
+    for (const rule of ['DS-001', 'DS-006', 'DS-008'])
+      assert.ok(report.findings.some((finding) => finding.rule === rule && finding.severity === 'HIGH'), `missing ${rule}`);
+  } finally { rmSync(out, { recursive: true, force: true }); }
+});
+
+test('design-lock fixtures: a locked page has no DS findings', () => {
+  const out = mkdtempSync(join(tmpdir(), 'lithermes-uiux-'));
+  try {
+    const fixture = join(root, 'test/fixtures/uiux-probe/design-lock/locked-ok.html');
+    const run = spawnSync(process.execPath, [driver, '--static', fixture, '--out', out], { encoding: 'utf8' });
+    assert.equal(run.status, 2, run.stderr);
+    const report = JSON.parse(readFileSync(join(out, 'report.json'), 'utf8'));
+    assert.deepEqual(report.findings.filter((finding) => finding.rule.startsWith('DS-')), []);
+  } finally { rmSync(out, { recursive: true, force: true }); }
+});
+
+test('design-lock fixtures: a stylesheet outside the lock fails DS-002 and DS-003', () => {
+  const out = mkdtempSync(join(tmpdir(), 'lithermes-uiux-'));
+  try {
+    const fixture = join(root, 'test/fixtures/uiux-probe/design-lock/rogue.css');
+    const run = spawnSync(process.execPath, [driver, '--static', fixture, '--out', out], { encoding: 'utf8' });
+    assert.equal(run.status, 2, run.stderr);
+    const report = JSON.parse(readFileSync(join(out, 'report.json'), 'utf8'));
+    for (const rule of ['DS-002', 'DS-003'])
+      assert.ok(report.findings.some((finding) => finding.rule === rule && finding.severity === 'HIGH'), `missing ${rule}`);
+  } finally { rmSync(out, { recursive: true, force: true }); }
+});
+
 test('rendered fixtures distinguish a broken page from a clean page', async (t) => {
   const capability = spawnSync('python3', [join(root, 'assets/lithermes-plugin/skills/browser-drive/scripts/capability_probe.py')],
     { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });

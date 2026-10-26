@@ -321,8 +321,10 @@ def _short_column(p, content, title, shown, body_floor, column5, W, H):
     """A column of a two-column body that stops short of its neighbour: the largest empty band inside it, from the
     body's top down to where the neighbour ends, over 40 % of the body. A source or note strip that closes the
     column does not hide the band above it. Returns (shape name, value) or None."""
-    # The body starts under a top title; beside a side title (in its rail) or over a bottom title, at the top.
-    top_of_title = title["y"] + title["h"] if shown not in ("bottom-anchor", "side-rail") else 0.0
+    # The body starts under a top title, or below a bottom title (the source gate vacates what a
+    # bottom title closes: a table with its takeaways under it is not a short column). Beside a
+    # side title, in its rail, the strict read from the page top stays.
+    top_of_title = title["y"] + title["h"] if shown != "side-rail" else 0.0
     fields = [m for m in p["marks"] if m["kind"] == "shape" and m["filled"] and m["w"] * m["h"] >= 0.1 * W * H]
     body = [m for m in content if m["y"] >= top_of_title - TOL and m["y"] < body_floor and m["w"] > 0 and m["h"] > 0
             and not (shown == "side-rail" and m["x"] + m["w"] <= column5 + TOL) and not any(_inside(m, f) for f in fields)]

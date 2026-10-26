@@ -7,7 +7,7 @@ Sequential Planner → Architect → Critic loop for PPTX slide structure planni
 
 ### Planner (Orchestrator acts as Planner)
 - Reads the interview spec (or direct user request)
-- Writes the direction card first (`direction-step.md`): tonality, two named alternatives, reason from the measured content; no style question for a bare request
+- Writes the direction card first (`direction-step.md`): tonality, two named alternatives, reason from the measured content; a bare request gets the style question first (SKILL.md), the card records its answer
 - Creates a slide-by-slide implementation plan
 - Specifies layout, content, data, and render path per slide
 

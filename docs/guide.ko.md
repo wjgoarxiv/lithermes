@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-    LH --> S["37 skills"]
+    LH --> S["39 skills"]
 ```
 
-> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 37개 skill catalog가 실제 host에 로드됩니다.
+> **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 39개 skill catalog가 실제 host에 로드됩니다.
 
 ## 핵심 명령
 
@@ -146,7 +146,8 @@ receipt를 반환하고 parent가 merge 또는 batch completion을 추적합니�
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
 `lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
-`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
+`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-pptx`, `lit-docx`,
+`lit-hijack`, `lit-adhd`,
 `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,
 `wikify`, `lit-plan`, `litgoal`, `litwork`입니다.

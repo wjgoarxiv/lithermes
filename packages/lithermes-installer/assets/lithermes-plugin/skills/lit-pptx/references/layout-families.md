@@ -26,7 +26,7 @@ Pick by job, not by the previous slide. Blocks are named `family@<id>`.
 | `table-insight`: table beside its reading — pipe table, `>` caption, bullets | ledger, signal, chalk, paper, gazette |
 | `ledger-table`: full-width evidence table — table, caption, takeaways under it | ledger, gazette |
 | `matrix-2x2`: options on two axes — 3 × 3 table, corner `효과 \ 비용`, cells `item · detail · detail`, takeaways after the caption | ledger, gazette |
-| `comparison`: two sides point by point — `:::: columns`, `**head**` and `(1)` `(2)` items; shared `비용: …` labels form a criteria column (rail under a side title); a label over three words is not a label, so that slide keeps its points whole and nothing goes to the rail | all eight |
+| `comparison`: two sides point by point — `:::: columns`, `**head**` and `(1)` `(2)` items; shared `비용: …` labels form a criteria column (rail under a side title); a label over three words is not a label, so that slide keeps its points whole and nothing goes to the rail | all thirteen |
 | `chart-insight`: chart plus 2-3 points — `::: chart` or data table, bullets | ledger, signal, paper, studio, night |
 | `full-chart`: one full-width chart — `::: chart`, optional note | ledger, signal, paper, night |
 | `big-number`: a few real figures — KPI table with basis row, 2-3 evidence bullets | ledger, signal, studio, night |

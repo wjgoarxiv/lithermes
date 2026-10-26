@@ -1,0 +1,306 @@
+const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const test = require("node:test");
+const assert = require("node:assert/strict");
+
+const SKILL = path.join(__dirname, "..", "assets", "lithermes-plugin", "skills", "lit-adhd");
+const CLI = path.join(SKILL, "scripts", "adhd.mjs");
+
+function runCLI(args, options) {
+  return spawnSync(process.execPath, [CLI, ...args], { encoding: "utf8", ...options });
+}
+
+function fixtureWs() {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-adhd-")));
+  fs.mkdirSync(path.join(root, "plans"), { recursive: true });
+  fs.writeFileSync(path.join(root, "plans", "a.md"), "# A\n\n- [ ] 1. Do the one thing\n- [ ] 2. Do the other thing\n");
+  return root;
+}
+
+function baseEnv(extra) {
+  const env = { ...process.env, ...extra };
+  delete env.HERDR_ENV;
+  return env;
+}
+
+function hasSqlite3() {
+  try {
+    return spawnSync("sqlite3", ["--version"], { encoding: "utf8" }).status === 0;
+  } catch {
+    return false;
+  }
+}
+
+function writeFixtureDb(dbPath, ws) {
+  const now = Math.floor(Date.now() / 1000);
+  const secret = "s3cr3t-collector-value-99";
+  const sql = [
+    "CREATE TABLE sessions (id TEXT PRIMARY KEY, started_at REAL, ended_at REAL, last_activity_at REAL, cwd TEXT, git_branch TEXT, git_repo_root TEXT, message_count INTEGER, tool_call_count INTEGER, tool_names TEXT, title TEXT, display_name TEXT, archived INTEGER, hidden INTEGER);",
+    "CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, role TEXT, content TEXT, tool_call_id TEXT, tool_calls TEXT, tool_name TEXT, timestamp REAL, active INTEGER);",
+    `INSERT INTO sessions VALUES ('sess-active-1', ${now - 3600}, NULL, ${now - 60}, '${ws}', 'port/1038', '', 4, 2, '["edit_file"]', '', 'Bridge the collector', 0, 0);`,
+    `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-active-1', 'user', 'please bridge the collector next, api_token=${secret}', ${now - 300}, 1);`,
+    `INSERT INTO messages (session_id, role, content, tool_name, timestamp, active) VALUES ('sess-active-1', 'tool', 'wrote the file', 'edit_file', ${now - 120}, 1);`,
+    `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-active-1', 'assistant', 'on it', ${now - 60}, 1);`,
+    `INSERT INTO sessions VALUES ('sess-old-1', ${now - 86400 * 9}, ${now - 86400 * 8}, ${now - 86400 * 8}, '${ws}', '', '', 1, 0, '[]', '', 'Old thread', 0, 0);`,
+    `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-old-1', 'user', 'old ask', ${now - 86400 * 8}, 1);`,
+  ].join("\n");
+  const r = spawnSync("sqlite3", [dbPath], { input: sql, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+  return secret;
+}
+
+test("the collector briefs plans with no store and exits 64 on a bogus flag", () => {
+  const ws = fixtureWs();
+  try {
+    const env = baseEnv({ HERMES_SESSION_STORE: path.join(ws, "no-store.db") });
+    const brief = runCLI(["--json", "--here"], { cwd: ws, env });
+    assert.equal(brief.status, 0, brief.stderr);
+    const data = JSON.parse(brief.stdout);
+    assert.equal(data.sources.sessions, "unknown");
+    assert.equal(data.sources.plans, "ok");
+    assert.equal(data.roadmap.plans[0].plan, "plans/a.md");
+    assert.equal(data.roadmap.plans[0].progress.gauge, "[░░] 0/2");
+    assert.equal(data.next.kind, "start-plan");
+    assert.equal(data.next.command, "/start-work plans/a.md");
+    const bad = runCLI(["--bogus"], { cwd: ws, env });
+    assert.equal(bad.status, 64);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("sessions, gauges and redaction come from the Hermes store", { skip: !hasSqlite3() }, () => {
+  const ws = fixtureWs();
+  try {
+    const db = path.join(ws, "state.db");
+    const secret = writeFixtureDb(db, ws);
+    const workDir = path.join(ws, ".hermes", "lithermes", "work", "work-1");
+    fs.mkdirSync(workDir, { recursive: true });
+    fs.writeFileSync(path.join(workDir, "state.json"), JSON.stringify({
+      work_id: "work-1", status: "active", plan: path.join(ws, "plans", "a.md"),
+      active_session_id: "sess-active-1",
+      progress: [{ id: "s1", status: "pass" }, { id: "s2", status: "pending" }],
+    }));
+    const env = baseEnv({ HERMES_SESSION_STORE: db });
+    const brief = runCLI(["--json", "--here", "--session", "sess-active-1"], { cwd: ws, env });
+    assert.equal(brief.status, 0, brief.stderr);
+    const data = JSON.parse(brief.stdout);
+    assert.equal(data.sources.sessions, "ok");
+    // Only the recent session is in the window; the nine-day-old one is out.
+    assert.equal(data.summary.sessions, 1);
+    const session = data.sessions[0];
+    assert.equal(session.title, "Bridge the collector");
+    assert.deepEqual(session.asked, ["please bridge the collector next, [redacted]"]);
+    assert.equal(session.status, "active");
+    assert.equal(session.branch, "port/1038");
+    assert.ok((session.done.tools.edit_file ?? 0) >= 1, "tool tally keeps the store count");
+    assert.equal(data.nextRecorded, true);
+    const record = JSON.parse(fs.readFileSync(path.join(ws, ".hermes", "lithermes", "adhd", "next-sess-active-1.json"), "utf8"));
+    assert.equal(record.kind, "continue-work");
+    // A planted credential shape never leaves the collector.
+    const raw = brief.stdout;
+    assert.ok(!raw.includes(secret), "planted secret leaked into the brief");
+    assert.ok(raw.includes("[redacted]"), "redaction marker missing");
+    // No forbidden placeholder reaches the surface.
+    for (const token of ["?/?", "[???]", "k/?"]) assert.ok(!raw.includes(token), `${token} reached the brief`);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("the text brief carries the next command and names unknown sources once", { skip: !hasSqlite3() }, () => {
+  const ws = fixtureWs();
+  try {
+    const db = path.join(ws, "state.db");
+    writeFixtureDb(db, ws);
+    const env = baseEnv({ HERMES_SESSION_STORE: db });
+    const brief = runCLI(["--here", "--width", "100"], { cwd: ws, env });
+    assert.equal(brief.status, 0, brief.stderr);
+    assert.match(brief.stdout, /lit-adhd: 1 session\(s\) · 0 waiting on you · next: start plan/);
+    assert.match(brief.stdout, /\(run \/start-work plans\/a\.md\)/);
+    assert.match(brief.stdout, /\[░░\] 0\/2/);
+    assert.doesNotMatch(brief.stdout, /Say `go`/);
+    assert.match(brief.stdout, /^unknown: .*$/m);
+    for (const token of ["?/?", "[???]", "k/?"]) assert.ok(!brief.stdout.includes(token), `${token} reached the text brief`);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("ended sessions fold to a table and a missing step becomes a suggestion", { skip: !hasSqlite3() }, async () => {
+  const ws = fixtureWs();
+  try {
+    fs.writeFileSync(path.join(ws, "plans", "a.md"), "# A\n\n- [x] 1. The done thing\n");
+    const db = path.join(ws, "state.db");
+    const now = Math.floor(Date.now() / 1000);
+    const sql = [
+      "CREATE TABLE sessions (id TEXT PRIMARY KEY, started_at REAL, ended_at REAL, last_activity_at REAL, cwd TEXT, git_branch TEXT, git_repo_root TEXT, message_count INTEGER, tool_call_count INTEGER, tool_names TEXT, title TEXT, display_name TEXT, archived INTEGER, hidden INTEGER);",
+      "CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, role TEXT, content TEXT, tool_call_id TEXT, tool_calls TEXT, tool_name TEXT, timestamp REAL, active INTEGER);",
+      `INSERT INTO sessions VALUES ('sess-active-1', ${now - 3600}, NULL, ${now - 60}, '${ws}', 'port/1038', '', 4, 2, '["edit_file"]', '', 'Bridge the collector', 0, 0);`,
+      `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-active-1', 'user', 'please bridge the collector next', ${now - 300}, 1);`,
+      `INSERT INTO messages (session_id, role, content, tool_name, timestamp, active) VALUES ('sess-active-1', 'tool', 'wrote the file', 'edit_file', ${now - 120}, 1);`,
+      `INSERT INTO sessions VALUES ('sess-ended-1', ${now - 86400 * 2}, ${now - 86400}, ${now - 86400}, '${ws}', '', '', 1, 1, '["read_file"]', '', 'A very long finished thread title that keeps going well past the forty-four column goal limit', 0, 0);`,
+      `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-ended-1', 'user', 'old ask', ${now - 86400}, 1);`,
+    ].join("\n");
+    assert.equal(spawnSync("sqlite3", [db], { input: sql, encoding: "utf8" }).status, 0);
+    const env = baseEnv({ HERMES_SESSION_STORE: db });
+    const brief = runCLI(["--here", "--width", "160"], { cwd: ws, env });
+    assert.equal(brief.status, 0, brief.stderr);
+    assert.match(brief.stdout, /next: check sess-act/);
+    assert.match(brief.stdout, /-- ended · 1 --/);
+    assert.match(brief.stdout, /\| id \| where \| goal \| ago \| done \|/);
+    assert.match(brief.stdout, /now: edit_file "wrote the file"/);
+    assert.match(brief.stdout, /\| sess-end \|/);
+    assert.match(brief.stdout, /\| 1d \|/);
+    assert.match(brief.stdout, /used read_file/);
+    const gauge = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/gauge.mjs");
+    for (const raw of brief.stdout.split("\n")) assert.ok(gauge.displayWidth(raw) <= 160, `line exceeds width: ${raw}`);
+    const narrow = runCLI(["--here", "--width", "100"], { cwd: ws, env });
+    assert.equal(narrow.status, 0, narrow.stderr);
+    for (const raw of narrow.stdout.split("\n")) assert.ok(gauge.displayWidth(raw) <= 100, `line exceeds width: ${raw}`);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("the skill body carries its contracts and cross-links lit-recap both ways", () => {
+  const text = fs.readFileSync(path.join(SKILL, "SKILL.md"), "utf8");
+  assert.ok(text.split(/\s+/u).length >= 1000, "dense body");
+  for (const heading of ["## When this applies", "## Inputs and state", "## Procedure", "## Hermes tools and approvals", "## Evidence", "## Stop and report", "## Pitfalls"]) {
+    assert.ok(text.includes(heading), heading);
+  }
+  for (const rule of [/\[▉▉▉░░\] 3\/5/u, /remaining items?/iu, /… \d+ steps/u, /no typed `go`/u]) {
+    assert.ok(rule.test(text), `gauge rule: ${rule}`);
+  }
+  for (const ref of ["references/status-taxonomy.md", "references/card-examples.md", "references/brief-contract.md"]) {
+    assert.ok(text.includes(ref), ref);
+    assert.ok(fs.existsSync(path.join(SKILL, ref)), ref);
+  }
+  for (const lib of ["scripts/adhd.mjs", "scripts/lib/collect.mjs", "scripts/lib/gauge.mjs", "scripts/lib/redact.mjs", "scripts/lib/secret-shapes.mjs", "scripts/lib/plan-task-rows.mjs", "scripts/lib/next-step.mjs", "scripts/lib/hermes-sessions.mjs"]) {
+    assert.ok(fs.existsSync(path.join(SKILL, lib)), `${lib} ships`);
+  }
+  const description = /^description: "(.*)"$/mu.exec(text)[1];
+  assert.ok(Buffer.byteLength(description) <= 110, `catalog description ${Buffer.byteLength(description)} B fits the budget`);
+  assert.match(text, /lit recap/u, "cross-links lit-recap");
+  const recap = fs.readFileSync(path.join(SKILL, "..", "lit-recap", "SKILL.md"), "utf8");
+  assert.match(recap, /lit adhd/u, "lit-recap cross-links lit-adhd");
+});
+
+test("redaction masks quoted-JSON secrets and short secret-like env values", async () => {
+  const { makeRedactor } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/redact.mjs");
+  const redact = makeRedactor({ env: { ADHD_TEST_API_TOKEN: "zq9x", ADHD_TEST_MODE: "ab", PATH: "/usr/bin:/bin" }, home: "/tmp/nowhere-home" });
+  assert.equal(redact('{"api_key":"supersecret12"}'), '{"api_key":"[redacted]"}');
+  assert.equal(redact("{'password':'abc'}"), "{'password':'[redacted]'}");
+  assert.ok(!redact("use zq9x now").includes("zq9x"), "short secret-like env value leaked");
+  assert.ok(redact("mode ab here").includes("ab"), "non-secret short value must stay");
+  assert.ok(redact("PATH is /usr/bin:/bin").includes("/usr/bin"), "path value must stay");
+});
+
+test("redaction strips terminal control bytes but keeps tabs and newlines", async () => {
+  const { makeRedactor } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/redact.mjs");
+  const redact = makeRedactor({ env: {}, home: "/tmp/nowhere-home" });
+  const out = redact("landed\u001b]0;pwned\u0007done");
+  assert.ok(!out.includes("\u001b") && !out.includes("\u0007"), "escape bytes survived redaction");
+  assert.ok(out.includes("landed") && out.includes("done"), "printable text lost");
+  assert.equal(redact("a\tb\nc"), "a\tb\nc");
+});
+
+test("clipToWidth strips terminal control bytes before measuring", async () => {
+  const { clipToWidth } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/gauge.mjs");
+  assert.equal(clipToWidth("a\u001b[2Jb", 10), "ab");
+  assert.equal(clipToWidth("landed\u001b]0;pwned\u0007done", 40), "landeddone");
+  assert.equal(clipToWidth("a\tb", 10), "a\tb");
+});
+
+test("a secret past the clip window is masked, not cut and leaked", { skip: !hasSqlite3() }, () => {
+  const ws = fixtureWs();
+  try {
+    const db = path.join(ws, "state.db");
+    const now = Math.floor(Date.now() / 1000);
+    const secret = "zx9q-unique-collector-77";
+    const pad = "P".repeat(140);
+    const sql = [
+      "CREATE TABLE sessions (id TEXT PRIMARY KEY, started_at REAL, ended_at REAL, last_activity_at REAL, cwd TEXT, git_branch TEXT, git_repo_root TEXT, message_count INTEGER, tool_call_count INTEGER, tool_names TEXT, title TEXT, display_name TEXT, archived INTEGER, hidden INTEGER);",
+      "CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, role TEXT, content TEXT, tool_call_id TEXT, tool_calls TEXT, tool_name TEXT, timestamp REAL, active INTEGER);",
+      `INSERT INTO sessions VALUES ('sess-long-1', ${now - 3600}, NULL, ${now - 60}, '${ws}', 'port/1038', '', 1, 0, '[]', '', 'Long thread', 0, 0);`,
+      `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-long-1', 'user', '${pad} see ${secret} here', ${now - 300}, 1);`,
+    ].join("\n");
+    assert.equal(spawnSync("sqlite3", [db], { input: sql, encoding: "utf8" }).status, 0);
+    const env = baseEnv({ HERMES_SESSION_STORE: db, ADHD_TEST_LONG_TOKEN: secret });
+    const brief = runCLI(["--json", "--here", "--width", "100"], { cwd: ws, env });
+    assert.equal(brief.status, 0, brief.stderr);
+    assert.ok(!brief.stdout.includes("zx9q"), "cut secret fragment leaked into the brief");
+    assert.ok(brief.stdout.includes("[redacted]"), "redaction marker missing");
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("a session whose bodies exceed the remaining budget is dropped unread", async () => {
+  const lib = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/hermes-sessions.mjs");
+  const big = "X".repeat(20_000_000);
+  const bodyQueries = [];
+  const exec = (file, args) => {
+    const sql = args[args.length - 1];
+    if (sql.includes("SUM(")) return JSON.stringify([{ total: 20000000 }]);
+    bodyQueries.push(sql);
+    return JSON.stringify([{ role: "user", content: big, tool_name: null, tool_calls: null, timestamp: 1, active: 1 }]);
+  };
+  const budget = lib.makeBudget();
+  const out = lib.readHermesMessages("/nonexistent/store.db", "sess-big", budget, { exec });
+  assert.equal(out, null, "over-budget batch was loaded instead of dropped");
+  assert.equal(budget.exhausted, true);
+  assert.equal(bodyQueries.length, 0, "message bodies were read for an over-budget batch");
+});
+
+test("next-step writes refuse planted symlinks", async () => {
+  const { writeNextStep, nextStepPath } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/next-step.mjs");
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-symlink-")));
+  try {
+    const adhdDir = path.join(root, ".hermes", "lithermes", "adhd");
+    fs.mkdirSync(adhdDir, { recursive: true });
+    const target = path.join(root, "victim.json");
+    fs.writeFileSync(target, "original");
+    const session = "sess-link";
+    const staging = `${nextStepPath(root, session)}.${process.pid}.tmp`;
+    fs.symlinkSync(target, staging);
+    assert.throws(() => writeNextStep(root, session, { kind: "none", target: null }), "staging symlink was followed");
+    assert.equal(fs.readFileSync(target, "utf8"), "original", "symlink target was overwritten");
+    fs.rmSync(staging);
+    const root2 = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-symlinkdir-")));
+    try {
+      const outside = path.join(root2, "outside");
+      fs.mkdirSync(outside, { recursive: true });
+      fs.symlinkSync(outside, path.join(root2, ".hermes"));
+      assert.throws(() => writeNextStep(root2, session, { kind: "none", target: null }), "symlinked .hermes was followed");
+      assert.equal(fs.readdirSync(outside).length, 0, "write escaped through the symlinked directory");
+    } finally {
+      fs.rmSync(root2, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("the collector records the next step beside cwd, not at the outermost git root", async () => {
+  const { collectAdhd } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/collect.mjs");
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-cwdroot-")));
+  try {
+    fs.mkdirSync(path.join(root, ".git"));
+    const sub = path.join(root, "sub");
+    fs.mkdirSync(path.join(sub, "plans"), { recursive: true });
+    fs.writeFileSync(path.join(sub, "plans", "a.md"), "# A\n\n- [ ] 1. Do the one thing\n");
+    const exec = (file, args) => {
+      if (file === "git") throw new Error("no git here");
+      throw new Error(`unexpected exec ${file}`);
+    };
+    const data = collectAdhd({ cwd: sub, here: true, sessionId: "sess-cwd", exec, env: { ...process.env, HERMES_SESSION_STORE: path.join(sub, "no-store.db") } });
+    assert.equal(data.nextRecorded, true);
+    assert.ok(fs.existsSync(path.join(sub, ".hermes", "lithermes", "adhd", "next-sess-cwd.json")), "record missing beside cwd");
+    assert.ok(!fs.existsSync(path.join(root, ".hermes")), "record escaped to the git root");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

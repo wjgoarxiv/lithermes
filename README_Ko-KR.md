@@ -109,7 +109,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 ## 할 수 있는 일
 
-LitHermes는 스킬 37개를 설치합니다. 처음에는 아래 여섯 가지부터 써 보세요.
+LitHermes는 스킬 39개를 설치합니다. 처음에는 아래 여섯 가지부터 써 보세요.
 
 ### 확인까지 끝나는 작업
 
@@ -198,7 +198,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 - [설치, 업데이트, 삭제](./docs/install.ko.md): 설치 옵션 전부, 업데이트가 움직이는 방식, 문제 해결과 한계
 - [LitHermes 둘러보기](./docs/tour.ko.md): 처음 실행했을 때의 화면, 짧은 영상, Ignition 스킨, LIT 마크
-- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 37개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
+- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 39개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
 - [자동 핸드오프](./docs/automatic-handoff.ko.md): 압축을 사이에 두고 작업을 넘기는 과정을 단계별로
 - <a href="./docs/guide.ko.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> 사용 안내</a>: 명령, 자연어 routing, 모델, 스킨, 안전 모델 전체
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> (MP4)

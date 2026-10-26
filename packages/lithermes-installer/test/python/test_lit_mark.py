@@ -271,3 +271,83 @@ process.stdout.write(JSON.stringify({
         with patch.dict("sys.modules", {"hermes_cli.skin_engine": engine}):
             self.mark.configure_welcome_skin()
         self.assertEqual(skin.banner_logo, "user-owned")
+
+
+class LitLooks(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.pkg = _load_plugin_package()
+        cls.mark = importlib.import_module(f"{cls.pkg.__name__}.lit_mark")
+
+    def test_look_registry_maps_skills_to_looks(self):
+        self.assertEqual(self.mark.lookOf("lit-adhd"), "rewind")
+        self.assertEqual(self.mark.lookOf("lit-rewind"), "rewind")
+        self.assertEqual(self.mark.lookOf("review-work"), "lanes")
+        for discipline in ("lit-plan", "lit-loop", "litwork", "lit-humanizer", "browser-drive"):
+            self.assertIsNone(self.mark.lookOf(discipline))
+
+    def test_look_blocks_carry_labels_markers_and_host_limits(self):
+        rewind = self.mark.look_block("rewind")
+        self.assertIn("REWIND <<", rewind)
+        self.assertIn("YOUR TURN", rewind)
+        self.assertIn("✦ done", rewind)
+        lanes = self.mark.look_block("lanes")
+        self.assertIn("[lane[goal] ✓]", lanes)
+        self.assertIn("[lane[goal] ·]", lanes)
+        self.assertIn("Never fill a lane without its report", lanes)
+        self.assertIn("YOUR TURN", lanes)
+        self.assertIn("✦ done", lanes)
+        waiting = self.mark.look_block("waiting")
+        self.assertIn("YOUR TURN", waiting)
+        self.assertIn("Plain text on this host", waiting)
+        done = self.mark.look_block("done")
+        self.assertIn("✦ done", done)
+        self.assertIn("Never on routine turns", done)
+        self.assertEqual(self.mark.look_block("no-such-look"), "")
+
+    def test_look_blocks_are_plain_text_and_route_inert(self):
+        blocks = [self.mark.look_block(name) for name in ("rewind", "lanes", "waiting", "done")]
+        for block in blocks:
+            self.assertNotIn("\x1b", block)
+            self.assertIsNone(self.pkg.core.detect_lit_mode(block))
+
+    def test_route_look_block_fails_open(self):
+        self.assertIn('name="rewind"', self.mark.route_look_block("lit-adhd"))
+        self.assertIn('name="rewind"', self.mark.route_look_block("lit-rewind"))
+        self.assertIn('name="lanes"', self.mark.route_look_block("review-work"))
+        self.assertEqual(self.mark.route_look_block("lit-plan"), "")
+        self.assertEqual(self.mark.route_look_block("bad\nname"), "")
+
+    def test_lanes_strip_shows_only_reported_lanes(self):
+        self.assertEqual(
+            self.mark.lanes_strip({}),
+            "[lane[goal] ·] [lane[qa] ·] [lane[code-quality] ·] [lane[security] ·] [lane[context] ·]",
+        )
+        self.assertEqual(
+            self.mark.lanes_strip({"goal": True, "qa": True}),
+            "[lane[goal] ✓] [lane[qa] ✓] [lane[code-quality] ·] [lane[security] ·] [lane[context] ·]",
+        )
+        full = self.mark.lanes_strip({key: True for key in ("goal", "qa", "code-quality", "security", "context")})
+        self.assertNotIn("·", full)
+        partial = self.mark.lanes_strip({"goal": "yes", "qa": 1, "bogus-lane": True})
+        self.assertIn("[lane[goal] ·]", partial)
+        self.assertNotIn("bogus-lane", partial)
+
+    def test_slash_routes_with_looks_select_them_and_plain_routes_do_not(self):
+        ctx = _FakeCtx()
+        self.pkg.register(ctx)
+        for command in ("lit-adhd", "lit-rewind", "review-work"):
+            with self.subTest(command=command):
+                args = "work --base HEAD~1" if command == "review-work" else "--here"
+                result = ctx.command_handlers[command](args)
+                message = result["agent_message"]
+                self.assertIn("<lithermes-look", message)
+                self.assertIn("YOUR TURN", message)
+                self.assertIn("✦ done", message)
+        adhd = ctx.command_handlers["lit-adhd"]("--here")["agent_message"]
+        self.assertIn('name="rewind"', adhd)
+        self.assertIn("REWIND <<", adhd)
+        review = ctx.command_handlers["review-work"]("work --base HEAD~1")["agent_message"]
+        self.assertIn('name="lanes"', review)
+        plain = self.pkg.core.ignite({"display": "d", "agent_message": "m"}, "lit-plan")
+        self.assertNotIn("<lithermes-look", plain["agent_message"])

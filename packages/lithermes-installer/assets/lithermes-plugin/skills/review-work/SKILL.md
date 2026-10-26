@@ -406,6 +406,8 @@ Cleanup receipts: <what was removed or confirmed absent>
 Residual risks: <only honest remaining uncertainty>
 ```
 
+Lane strip (the lanes look): one line `[lane[goal] ✓] [lane[qa] ✓] [lane[code-quality] ·] [lane[security] ·] [lane[context] ·]`, `✓` for a lane with a verdict, `·` for a lane with no report yet; never fill a lane without its report. Hermes shows no colour or animation, so the strip is the whole look.
+
 ## Minimum-First Review
 
 Minimum-first does not mean underbuilt. Accept the smallest complete solution

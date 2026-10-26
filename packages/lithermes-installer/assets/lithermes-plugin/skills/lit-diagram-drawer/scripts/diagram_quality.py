@@ -35,7 +35,7 @@ _CONTAMINATION = (
 OFFICE_RULES = {
     "group_ratio": 2, "accent_saturation": .12, "accent_light_min": .12,
     "accent_light_max": .93, "accent_hue_family_deg": 20,
-    "accent_medium_count": 3, "accent_high_count": 4,
+    "accent_high_count": 6,
     "latin_share": .80, "title_case_share": .60,
     "label_inset_px": 4,
 }
@@ -70,9 +70,9 @@ def _office_craft_issues(parsed: ParsedSvg, nodes: tuple[Shape, ...]) -> list[st
             continue
         if not any(min(abs(hue - prior), 360 - abs(hue - prior)) <= OFFICE_RULES["accent_hue_family_deg"] for prior in hues):
             hues.append(hue)
-    if len(hues) >= OFFICE_RULES["accent_medium_count"]:
-        level = "HIGH" if len(hues) >= OFFICE_RULES["accent_high_count"] else "MEDIUM"
-        issues.append(f"OF-202 {level} accent families={len(hues)}")
+    # Three to five role-bound families are the default palette and pass; six or more stop reading as roles.
+    if len(hues) >= OFFICE_RULES["accent_high_count"]:
+        issues.append(f"OF-202 HIGH accent families={len(hues)}; keep three to five, each tied to a role")
 
     for text in parsed.texts:
         label = text.label.strip()

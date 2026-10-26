@@ -32,8 +32,11 @@ const workflowSkills = [
   "lit-handoff",
   "lit-scientific-visualization",
   "lit-diagram-drawer",
+  "lit-schematic",
   "lit-pptx",
   "lit-docx",
+  "lit-hijack",
+  "lit-adhd",
   "lit-typographic-motion",
   "lsp",
   "lsp-setup",
@@ -253,7 +256,7 @@ test("every bundled skill declares a valid output channel contract", () => {
   ]);
   const docs = bundledSkillDocs();
 
-  assert.equal(docs.length, 59, `expected 59 bundled SKILL.md files, found ${docs.length}`);
+  assert.equal(docs.length, 62, `expected 62 bundled SKILL.md files, found ${docs.length}`);
   for (const file of docs) {
     const relative = path.relative(skillsRoot, file).split(path.sep).join("/");
     let declaration = outputChannelDeclaration(fs.readFileSync(file, "utf8"));
@@ -867,6 +870,49 @@ test("lit-code skill carries the build-decision gate before the language gate", 
       codeSkill.indexOf("PHASE 0 — LANGUAGE GATE"),
     "build-decision gate must precede the language gate",
   );
+});
+
+test("design skills ask the look first, before the build step", () => {
+  const bodies = {
+    "lit-pptx": fs.readFileSync(skillPath("lit-pptx"), "utf8"),
+    "lit-schematic": fs.readFileSync(skillPath("lit-schematic"), "utf8"),
+    "frontend-ui-ux": fs.readFileSync(skillPath("frontend-ui-ux"), "utf8"),
+    "lit-docx": fs.readFileSync(skillPath("lit-docx"), "utf8"),
+    "lit-diagram-drawer": fs.readFileSync(skillPath("lit-diagram-drawer"), "utf8"),
+    "readme-studio": fs.readFileSync(skillPath("readme-studio"), "utf8"),
+    "lit-typographic-motion": fs.readFileSync(skillPath("lit-typographic-motion"), "utf8"),
+  };
+  const buildMarkers = {
+    "lit-pptx": "## Direction card",
+    "lit-schematic": "**Build.**",
+    "frontend-ui-ux": "lock the look",
+    "lit-docx": "## Direction card",
+    "lit-diagram-drawer": "### 3. Select a semantic pattern",
+    "readme-studio": "## #contract.outputs",
+    "lit-typographic-motion": "Author the stage page",
+  };
+  const askMarkers = {
+    "lit-pptx": "style question first",
+    "lit-schematic": "ask the look first",
+    "frontend-ui-ux": "ask the look first",
+    "lit-docx": "style question first",
+    "lit-diagram-drawer": "ask the theme first",
+    "readme-studio": "ask the cover look first",
+    "lit-typographic-motion": "ask the style first",
+  };
+  for (const [name, body] of Object.entries(bodies)) {
+    assert.match(body, /Hermes clarify/, `${name} must name the host question tool`);
+    assert.match(body, /recommended first/, `${name} must put the recommended look first`);
+    assert.match(body, /you choose/, `${name} must skip the question when the user said you choose`);
+    assert.match(body, /non-interactive/i, `${name} must cover the non-interactive run`);
+    const lowered = body.toLowerCase();
+    const askAt = lowered.indexOf(askMarkers[name]);
+    assert.ok(askAt >= 0, `${name} must carry an ask-first step`);
+    assert.ok(askAt < body.indexOf(buildMarkers[name]), `${name} must ask before the build step`);
+    assert.doesNotMatch(body, /gets no style question|ask nothing for a bare request/, `${name} must not refuse the style question`);
+  }
+  const contexts = fs.readFileSync(path.join(pluginRoot, "core_contexts.py"), "utf8");
+  assert.match(contexts, /ask the look first with the host's question tool/, "route context must carry the ask-first step");
 });
 
 test("lit planning and review surfaces enforce minimum-first without underbuilding", () => {

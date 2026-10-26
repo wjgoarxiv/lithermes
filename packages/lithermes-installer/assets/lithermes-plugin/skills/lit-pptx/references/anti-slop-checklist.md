@@ -6,6 +6,9 @@ Run after building any deck. Brand specifics (palette, fonts) come from the chos
 - `python3 scripts/qa_deck.py output.pptx` — honest gate: overflow/overlap/off-slide + WCAG contrast + anti-slop terms + objective executive/research OOXML checks (exit non-zero = FAIL).
 - `python3 scripts/inventory.py output.pptx verification.json --issues-only` — geometry issues only.
 - A clean gate means **no known defects, not that the deck looks good** — render and eyeball every slide (next section).
+- A pack can claim gate headroom in its own `qa:` block (e.g. `accent-families: 5` lets a tonality built on
+several accents pass OF-101; `offset-shadow: true` lets its hard offset shadow pass OF-120). The claim only
+widens the named limit and is range-checked when the pack loads; content stays honest.
 
 ## Human-eye checks
 

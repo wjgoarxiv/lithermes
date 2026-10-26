@@ -86,6 +86,21 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td>슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다.</td>
 </tr>
 <tr>
+<td></td>
+<td><code>lit-schematic</code><br /><sub><code>lit-schematic &lt;brief&gt;</code> · <code>/lit-schematic</code></sub></td>
+<td>실제 설비 도면 전용입니다. QA 게이트를 거친 P&ID·PFD·장치도·아이소메트릭 단면도를 편집 가능한 SVG와 PDF·600dpi PNG로 만듭니다.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-hijack</code><br /><sub><code>lit hijack &lt;brief&gt;</code> · <code>/lit-hijack</code></sub></td>
+<td>공개 노하우의 클린룸 포팅입니다. 출처 기록과 함께 가져오고, 라이선스 게이트와 원천 없는 명세, 격리된 빌드와 parity 검증으로 옮깁니다.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
+<td>여러 세션을 한 번에 브리핑합니다. 각 세션의 질문·작업·대기 상태와 로드맵 게이지, 다음 한 단계를 보여줍니다. 읽기 전용입니다.</td>
+</tr>
+<tr>
 <td><img src="./assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 먼저 여덟 가지 디자인 방향 가운데 하나를 고르고 다른 후보 둘과 함께 알려 준 뒤, 편집 가능한 PowerPoint 파일과 원고 Markdown을 만듭니다. 완성된 파일로 제목·배치·채움 검사를 돌립니다." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td><code>lit</code>으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다.</td>
@@ -213,8 +228,11 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 | `/litgoal` | 결승선을 정하고 지킵니다. 기준과 근거, 체크포인트와 막힌 지점을 추적합니다. |
 | `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭은 `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`입니다. |
 | `/lit-diagram-drawer <brief>` | 설치된 Python 도구로 내용과 기하 구조를 검사하며 접근성·한국어를 고려한 다이어그램을 만듭니다. |
+| `/lit-schematic <brief>` | QA 게이트를 거친 P&ID·PFD·장치도·아이소메트릭 단면도를 만듭니다. |
 | `/lit-pptx <brief>` | 번들된 AZURE-PRO 엔진으로 발표자료를 만들고 검사합니다. |
 | `/lit-docx <brief>` | 출판 프로필을 적용해 Word 문서를 만들고 편집·검토합니다. |
+| `/lit-hijack <brief>` | 공개 노하우를 클린룸으로 포팅합니다. 출처 기록·라이선스 게이트·명세·빌드·검증을 거칩니다. |
+| `/lit-adhd [--here] [--since 7d] [--max 12]` | 최근 세션을 게이지와 다음 한 단계로 브리핑합니다. 읽기 전용입니다. |
 | `/lit-typographic-motion <brief>` | 트리트먼트에서 출발해 스테이지 또는 타입 경로로 원본 영상을 연출하고 검사합니다. |
 
 Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체 명령 예시와 훅 동작은 [운영 안내](./guide.ko.md)에 있습니다. 명령 뒤에 확인 줄이 뜨면 작업이 시작된 것입니다. 결과를 믿고 쓰기 전에는 화면 확인까지 포함해 직접 살펴보세요.
@@ -237,7 +255,7 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 
 ### 다이어그램
 
-개념도나 기술 다이어그램이 필요하면 `lit-diagram-drawer`를 쓰세요. Hermes 목록에는 `lithermes:lit-diagram-drawer`로 나옵니다. 다이어그램을 부탁하면서 앞이나 뒤에 단독 `lit`만 붙여도 LitHermes가 이 스킬을 고르고, 설치된 진입 파일이 어디 있는지 Hermes에 알려 줍니다. 제품 화면은 `frontend-ui-ux`, 측정한 과학 데이터 그래프는 `lit-scientific-visualization`이 맡습니다.
+개념도나 기술 다이어그램이 필요하면 `lit-diagram-drawer`를 쓰세요. Hermes 목록에는 `lithermes:lit-diagram-drawer`로 나옵니다. 다이어그램을 부탁하면서 앞이나 뒤에 단독 `lit`만 붙여도 LitHermes가 이 스킬을 고르고, 설치된 진입 파일이 어디 있는지 Hermes에 알려 줍니다. 제품 화면은 `frontend-ui-ux`, 측정한 과학 데이터 그래프는 `lit-scientific-visualization`이 맡습니다. 실제 설비 도면(P&ID·PFD·장치도·아이소메트릭 단면도)은 `lit-schematic`(`lithermes:lit-schematic`, `/lit-schematic <brief>`)이 맡습니다.
 
 ### 영상
 

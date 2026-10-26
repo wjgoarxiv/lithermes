@@ -14,6 +14,8 @@ boundaries after explicit activation.
 
 For conceptual system, process, or trust-boundary diagrams without measured data, route to `lithermes:lit-diagram-drawer`.
 
+For drawings of real equipment, piping, apparatus or isometric cutaways, route to `lithermes:lit-schematic`; a figure that mixes an apparatus panel with a data panel splits by panel.
+
 ```yaml
 schema_version: lithermes_llm_contract/v1
 artifact_kind: hermes_skill_entrypoint
@@ -95,7 +97,23 @@ on its own, before any other reply content:
    `assets/` directory itself on Python's import path; do not assume the source
    root is sufficient. Keep inputs inert and validate the requested output
    directory before export.
-7. Verify actual figure output: readable file, requested format, nonzero size,
+7. Make the figure rich by default. LitHermes carries a standing request on the
+   user's behalf, which satisfies the source's "only when requested" clauses for
+   gridlines and annotation: after `rcparams()` apply a light major grid
+   (`axes.grid` on, `axes.axisbelow` on, `grid.linewidth` 0.4, `grid.alpha` 0.35,
+   `grid.color` `#9a9a9a`); label series directly at their line ends and mark
+   the values a reader will ask about (maxima, crossovers, thresholds, a fitted
+   parameter with its uncertainty and units) with notes that never sit on data;
+   add an inset where a region matters at another scale; and build a multi-panel
+   figure with bold (a), (b), (c) labels when the data supports a second view
+   (raw and derived, per condition, a fit and its residuals). Every layer stays
+   true: annotations quote only computed values, replicate spread is shown when
+   replicates exist, and unordered observations stay scatter-only. A minimal
+   figure (no grid, no annotations, one panel) is made only when the user asks
+   for minimal, clean, simple or a journal's bare style. The slash command and
+   the exact natural route inject this same block, because the command carries
+   the source skill directly and this adapter body is not part of that message.
+8. Verify actual figure output: readable file, requested format, nonzero size,
    final dimensions/DPI, fonts, colors, legends, axes, accessibility, and the
    target journal's current requirements.
 

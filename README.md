@@ -109,7 +109,7 @@ To have it on in every session, set `LITHERMES_AUTO_HANDOFF=1` and `LITHERMES_AU
 
 ## What you get
 
-LitHermes installs 37 skills. These six are a good place to start.
+LitHermes installs 39 skills. These six are a good place to start.
 
 ### A task that ends checked
 
@@ -161,6 +161,15 @@ humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …
 
 The other 30 cover debugging, refactoring, browser work, films, interfaces, scientific figures and more. [Skills and commands](./docs/skills.md) shows each one with a picture, and any skill also loads by name as `lithermes:<name>`.
 
+## What you can make
+
+Every picture below is a real output of LitHermes. The P&ID and the deck were rendered by their skills from the examples they ship with, the landing page passed the interface probe, and the brief is a verbatim collector run over this repository's own Hermes sessions. None of them is a mock-up.
+
+<table>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/pid-dosing-skid.webp" width="400" alt="P&ID of a sodium hypochlorite dosing skid: atmospheric tank TK-101, duty and standby dosing pumps P-101A and P-101B, a pulsation damper, a pressure safety valve, flow and pressure instruments with a control loop, a legend column and a title block." /><br /><b>lit-schematic</b> · hypochlorite dosing skid<br /><sub>Rendered by the skill from its bundled dosing-skid example; the drawing gate passed.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-qa-title.webp" width="400" alt="Cover slide of a status deck: the title Lithermes parity round, wave 6 QA status above four KPI figures for node tests, python tests, board check and flash gate." /><br /><b>lit-pptx</b> · QA status deck<br /><sub>Built by the skill's compiler; every slide passed the gate for overflow, contrast and empty slides.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/ui-landing-hero.webp" width="400" alt="Hero of a graphite landing page for a kinetic-type film skill: the headline Turn one line of chat into a kinetic-type film beside a closing-lines type set piece, with primary and secondary actions below." /><br /><b>frontend-ui-ux</b> · landing page hero<br /><sub>Locked to the graphite house style, then opened at several widths and reviewed by its own probe.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the brief<br /><code>lit adhd</code></td></tr>
+</table>
+
 ## How it works
 
 LitHermes is a Python plugin. When Hermes loads it, `register(ctx)` adds hooks, commands, skills and work tools. The hooks step in just before and after each model or tool call. The `goal_*` tools write your goals, and the evidence gathered for them, to local records in your project.
@@ -198,7 +207,7 @@ If the installer made compatibility edits to your Hermes installation, add `--ro
 
 - [Install, update and remove](./docs/install.md): every install option, how updates work, troubleshooting and limits
 - [A tour of LitHermes](./docs/tour.md): screens from a first run, the short film, the Ignition skin and the LIT marks
-- [Skills and commands](./docs/skills.md): all 37 skills with pictures, the command list, and what the document, film and prose skills make
+- [Skills and commands](./docs/skills.md): all 39 skills with pictures, the command list, and what the document, film and prose skills make
 - [Automatic handoff](./docs/automatic-handoff.md): handing work across a compaction, step by step
 - <a href="./docs/guide.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> Operating guide</a>: commands, natural routing, models, skins and safety in full
 - <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition film</a> (MP4)

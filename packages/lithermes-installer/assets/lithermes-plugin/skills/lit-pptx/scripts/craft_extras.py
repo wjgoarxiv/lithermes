@@ -25,6 +25,46 @@ ADVISORY_BY_TEMPLATE = {"AZURE-PRO": {"OF-109"}}
 EMU = 914400
 NUMERIC = re.compile(r"^[\s,$€£¥₩%▲▼+\-±().0-9]+$")
 EMOJI = re.compile("[\U0001f000-\U0001faff\u2600-\u27bf]")
+STAMP = re.compile(r"\blit-pptx tonality=(\S+) density=(\d+) grid=(\w+) variance=(\d+)")
+QA_KEY = re.compile(r"^  ([a-z-]+):\s*(\S+)\s*$")
+
+
+def pack_allowances(deck_subject) -> dict:
+    """The stamped tonality pack's `qa:` block as {key: int or bool}; empty without a stamp or a block."""
+    stamp = STAMP.search(deck_subject or "")
+    if not stamp or not re.fullmatch(r"[a-z][a-z0-9-]*", stamp.group(1)):
+        return {}
+    path = Path(__file__).parent.parent / "templates" / "tonalities" / stamp.group(1) / "pack.yaml"
+    if not path.is_file():
+        return {}
+    allowed, inside = {}, False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if not line.startswith(" "):
+            inside = line.rstrip() == "qa:"
+            continue
+        match = QA_KEY.match(line) if inside else None
+        if match:
+            value = match.group(2)
+            allowed[match.group(1)] = value == "true" if value in ("true", "false") else int(value) if value.isdigit() else value
+    return allowed
+
+
+def shadow_findings(number, slide, allowed) -> list:
+    """OF-120: a hard offset shadow (blur 0) is a pack's look or nothing; a pack that has it keeps every shadow hard."""
+    from pptx.oxml.ns import qn
+    found = []
+    for shape in slide.shapes:
+        for shadow in shape._element.iter(qn("a:outerShdw")):
+            hard = int(shadow.get("blurRad") or 0) == 0
+            if hard and not allowed.get("offset-shadow"):
+                found.append(("OF-120", "HIGH", number, shape.name, "hard offset shadow in a pack that does not draw one",
+                              "Remove the shadow; only a pack whose qa block allows offset-shadow draws one."))
+            elif not hard and allowed.get("offset-shadow"):
+                found.append(("OF-120", "HIGH", number, shape.name, "soft shadow beside the pack's hard offset shadows",
+                              "Draw the shadow with no blur at the pack's offset, or remove it."))
+    return found
 
 
 def _box(shape):
@@ -100,7 +140,11 @@ def check(path: Path) -> dict:
                          "threshold": threshold, "tier": tier,
                          **({"advisory_template": template_id} if advisory else {})})
 
+    allowed = pack_allowances(subject)
     for slide_no, slide in enumerate(deck.slides, 1):
+        for rule, severity, number, name, value, hint in shadow_findings(slide_no, slide, allowed):
+            shape = next((s for s in slide.shapes if s.name == name), slide)
+            add(rule, severity, number, shape, value, hint)
         shapes = list(slide.shapes)
         display = _title_or_display(shapes)
         # A pack slide names its family: a cover, section, statement, quote or full-bleed picture is a display slide.
@@ -123,6 +167,11 @@ def check(path: Path) -> dict:
             if not any(min(abs(hue - known), 360 - abs(hue - known)) <= RULES["hue_family_deg"] for known in hues):
                 hues.append(hue)
         high = 4 if display else 3
+        # A pack's own limit only widens the default: N families pass, N + 1 fail, with no advisory step between.
+        allow_key = "display-accent-families" if display else "accent-families"
+        limit = allowed.get(allow_key)
+        if isinstance(limit, int) and not isinstance(limit, bool):
+            high = max(high, limit + 1)
         if len(hues) >= high:
             add("OF-101", "HIGH", slide_no, slide, len(hues), f"<{high} accent families")
         elif len(hues) == high - 1:

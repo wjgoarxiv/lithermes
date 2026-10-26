@@ -1,6 +1,6 @@
 ---
 name: frontend-ui-ux
-description: Route authorized UI work to focused design guidance and rendered review.
+description: Route authorized UI work to design guidance and rendered review.
 ---
 
 ## #contract.activation
@@ -28,10 +28,10 @@ surfaces:
 
 | Mode | Trigger | Contract |
 |---|---|---|
-| Build | Implementation requested | Build on the real stack. |
+| Build | Asked to implement | Build on the real stack. |
 | Plan/review | Critique or review | Read only. |
-| Direction | Material choice open | Ask one key question. |
-| Web UI verification | A page can be served | Run the installed measured probe. |
+| Direction | Choice open | Ask one key question. |
+| Verification | A page can be served | Run the installed probe. |
 
 ## #contract.procedure
 
@@ -39,7 +39,7 @@ surfaces:
 2. Preserve design and behavior; check access and responsiveness.
 3. Use Design Contract `litfamily.design-contract/v1beta2`; valid `litfamily.design-contract/v1beta1` is evidence-eligible. `litfamily.evidence-manifest/v1beta1` is a separate schema.
 4. Resolve material choices and inspect states; source is not rendered evidence.
-5. Select `build`, `polish`, `audit`, or `harden` per `references/complete-contract.md` and its craft/slop rules. For a served page, run the absolute probe command in route context, or set `HERMES_HOME`, `UI_URL`, and `UIUX_EVIDENCE_DIR` and run:
+5. Ask the look first (Hermes clarify), recommended first; skip if named or "you choose". Non-interactive takes it and says so. For `build`, lock the look; probe enforces DS-001/002/003/006/008. Select `build`, `polish`, `audit`, or `harden` per `references/complete-contract.md` and its craft/slop rules. For a served page, run the absolute probe command in route context, or set `HERMES_HOME`, `UI_URL`, and `UIUX_EVIDENCE_DIR` and run:
 
    `node "$HERMES_HOME/plugins/lithermes/skills/frontend-ui-ux/scripts/probe.mjs" --url "$UI_URL" --out "$UIUX_EVIDENCE_DIR" --static "$PWD"`
 
@@ -64,7 +64,7 @@ limitations_channel: reply
 
 ## #contract.evidence
 
-- The probe verifies web UI. `lithermes:visual-qa` adds visual judgment afterward. `variance`, `motion`, and `density` are optional taste dials.
+- The probe verifies web UI; `lithermes:visual-qa` judges afterward. Dials: variance, motion, density.
 
 ## #contract.hard_stops
 
@@ -77,4 +77,4 @@ limitations_channel: reply
 
 ## Read map
 
-Read `references/complete-contract.md` and its reference router. `references/taste-direction.md` defines the optional dials. Use `default-editorial-pixel.json` only as a reversible fallback without a direction or brand.
+Read `references/complete-contract.md` and its router; `references/taste-direction.md` is optional, `default-editorial-pixel.json` the fallback.

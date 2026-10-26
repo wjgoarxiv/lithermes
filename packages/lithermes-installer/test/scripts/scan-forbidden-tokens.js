@@ -43,7 +43,8 @@ const DEFAULT_PACK_LIMITS = Object.freeze({
   maxArchiveBytes: 13 * 1024 * 1024,
   maxFileBytes: MAX_PACK_FILE_BYTES,
   maxMembers: 2048,
-  maxTotalBytes: 24 * 1024 * 1024,
+  // 1.0.30 unpacks to ~25.3 MiB: motion vendors three.js, lit-pptx ships its mono font, plus lit-schematic.
+  maxTotalBytes: 28 * 1024 * 1024,
 });
 const ESSENTIAL_PACK_PATHS = Object.freeze([
   "package.json",

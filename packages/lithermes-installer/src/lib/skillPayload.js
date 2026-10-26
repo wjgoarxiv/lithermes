@@ -18,7 +18,7 @@ const requiredSkills = [
   "deep-interview",
   "frontend-ui-ux", "readme-studio", "lit-commit", "lit-brainstorm", "lit-crucible", "lit-init",
   "lit-humanizer", "lit-comprehend", "lit-handoff", "lit-plan", "lit-recap",
-  "lit-scientific-visualization", "lit-diagram-drawer", "lit-pptx", "lit-docx", "lit-typographic-motion", "litgoal", "litresearch", "litwork", "lsp",
+  "lit-scientific-visualization", "lit-diagram-drawer", "lit-schematic", "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "lit-typographic-motion", "litgoal", "litresearch", "litwork", "lsp",
   "lsp-setup", "lit-code", "refactor", "lit-burnoff", "review-work",
   "rules", "start-work", "structural-search", "visual-qa", "wikify",
 ];

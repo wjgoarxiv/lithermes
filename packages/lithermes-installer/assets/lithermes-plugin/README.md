@@ -86,6 +86,18 @@ CLI/plugin name, not the npm package name.
   installed diagram skill. Its Python checks cover source geometry, accessibility,
   content requirements, motion source rules, and visible-text findings; actual
   rendering remains a separate local capability.
+- `/lit-schematic <brief>` and the exact `lit-schematic` route load the
+  installed schematic skill. Drawings of real equipment (P&IDs, PFDs, apparatus
+  figures, isometric cutaways) belong here; abstract boxes-and-arrows stay with
+  `lithermes:lit-diagram-drawer`.
+- `/lit-hijack <brief>` and the exact `lit-hijack` route (also `lit hijack`,
+  `lit hijacking`, `lit 하이재킹`, `lit 하이잭`) load the installed hijack skill.
+  Published know-how enters only through capture with provenance, a licence gate,
+  a source-free spec and a parity proof.
+- `/lit-adhd [--here] [--since 7d] [--max 12]` and the exact `lit-adhd` route
+  (also `lit adhd`, `lit rewind`, `lit-rewind`) load the installed adhd skill.
+  One collector run reads the session store read-only and prints the
+  cross-session brief; a bare `go` continues the offered step within 30 minutes.
 - The `pre_llm_call` hook injects an Litwork directive when the user says
   a standalone `lit` or `litwork`. It also routes `lit plan`, `lit review`,
   `lit research`, `lit goal`, and durable `lit workflow` / `lit kanban` / `lit team`
@@ -179,7 +191,8 @@ CLI/plugin name, not the npm package name.
   `lithermes:frontend-ui-ux`, `lithermes:readme-studio`, `lithermes:lit-commit`,
     `lithermes:lit-crucible`, `lithermes:lit-init`, `lithermes:lit-recap`,
   `lithermes:lit-handoff`, `lithermes:lit-scientific-visualization`,
-  `lithermes:lit-diagram-drawer`,
+  `lithermes:lit-diagram-drawer`, `lithermes:lit-schematic`, `lithermes:lit-hijack`,
+  `lithermes:lit-adhd`,
     `lithermes:lsp`, `lithermes:lsp-setup`,
   `lithermes:litresearch`, `lithermes:lit-code`, `lithermes:refactor`,
   `lithermes:lit-burnoff`, `lithermes:review-work`,
@@ -379,7 +392,7 @@ npm --prefix packages/lithermes-installer run sync-plugin -- --in-place
   uses A/B checks, and keeps a claim/source/confidence/uncertainty graph. The
   acquisition procedure loads from `lithermes:litresearch` through `skill_view`.
 - `lit-crucible`, `lit-init`, `lit-recap`, `lit-handoff`,
-  `lit-scientific-visualization`, and `lit-diagram-drawer`: bounded bare or exact natural routes load the bundled
+  `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-hijack`, and `lit-adhd`: bounded bare or exact natural routes load the bundled
   skill body for the matching explicit skill; they do not fall back to generic
   Litwork.
 - `lit goal`: litgoal sets and keeps the finish line; lit-loop and start-work run toward it.

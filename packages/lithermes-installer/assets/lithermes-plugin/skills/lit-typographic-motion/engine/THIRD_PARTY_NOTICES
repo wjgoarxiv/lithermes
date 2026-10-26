@@ -4,6 +4,15 @@ Engine: portions adapted from mexicat/pdoom-video, commit
 ca251e3dddda422b364385eb484b5a3593a0990d (MIT, Giacomo Magnanini). The full
 MIT permission text is in engine/NOTICE next to this file.
 
+Vendored library (bundled, unmodified, served to stage pages at /lit/three/)
+  three.js r170 (npm three@0.170.0, MIT), Copyright 2010-2024 Three.js Authors
+    licence:    engine/vendor/three/LICENSE
+    source:     https://registry.npmjs.org/three/-/three-0.170.0.tgz
+    files (sha256), copied unmodified from the tarball (build/, examples/jsm/):
+      three.module.js                           ce1fa418de16a19495a9f72495580e3015d7745c296d3ce0485897f902ddedfb
+      addons/environments/RoomEnvironment.js    85869bdd22f7cf0b22e68dcefe6cb710480af0f5c901a76f7a7764fd07fc8014
+      addons/geometries/RoundedBoxGeometry.js   d20aeaf7077c459a8d952d215738d7b44fba028440bb862d84b622a34f0c80bb
+
 Fonts. Nothing below is bundled in this package. `lithermes motion-runtime
 install` fetches each file from its pinned URL, verifies its sha256 against
 runtime/fonts.json, and stores it with its licence file in the product cache.

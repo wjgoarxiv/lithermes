@@ -1,0 +1,42 @@
+{
+  "schema_id": "litfamily.frontend-kit-fonts/v1",
+  "note": "The kit reuses font files that sibling skills in this plugin already ship. design-lock.mjs copies them into the project only after their sha256 matches the value recorded here, so a build never fetches a font.",
+  "fonts": [
+    {
+      "family": "Pretendard Variable",
+      "file": "PretendardVariable.woff2",
+      "source": "../../lit-diagram-drawer/assets/fonts/PretendardVariable.woff2",
+      "sha256": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
+      "weight": "45 920",
+      "licence": {
+        "file": "Pretendard-OFL.txt",
+        "source": "../../lit-diagram-drawer/assets/fonts/OFL.txt",
+        "sha256": "85fce85e25260b03777bf10373d3bd9363b9da96d9e0ca86a280dd37ed7667a0"
+      }
+    },
+    {
+      "family": "JetBrains Mono",
+      "file": "JetBrainsMono-Regular.ttf",
+      "source": "../../lit-pptx/fonts/jetbrains-mono/JetBrainsMono-Regular.ttf",
+      "sha256": "a0bf60ef0f83c5ed4d7a75d45838548b1f6873372dfac88f71804491898d138f",
+      "weight": 400,
+      "licence": {
+        "file": "JetBrainsMono-OFL.txt",
+        "source": "../../lit-pptx/fonts/jetbrains-mono/OFL.txt",
+        "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad"
+      }
+    },
+    {
+      "family": "JetBrains Mono",
+      "file": "JetBrainsMono-Bold.ttf",
+      "source": "../../lit-pptx/fonts/jetbrains-mono/JetBrainsMono-Bold.ttf",
+      "sha256": "5590990c82e097397517f275f430af4546e1c45cff408bde4255dad142479dcb",
+      "weight": 700,
+      "licence": {
+        "file": "JetBrainsMono-OFL.txt",
+        "source": "../../lit-pptx/fonts/jetbrains-mono/OFL.txt",
+        "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad"
+      }
+    }
+  ]
+}

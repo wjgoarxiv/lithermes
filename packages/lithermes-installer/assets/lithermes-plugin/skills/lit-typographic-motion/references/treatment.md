@@ -57,7 +57,11 @@ span is removed from it.
 | `audience`, `channel` | Who watches, and where it plays. |
 | `format`, `formatReason` | `16:9` (1920×1080) or `9:16` (1080×1920), with a reason tied to `channel`. |
 | `durationSec` | 4 to 90. Unless the user asked for a length, `announcement`, `event`, `explainer` and `motion-graphics` run at least 10 s. |
-| `beats[]` | `{t0, t1, purpose, onScreen, motion, sound}` each. They cover 0 to `durationSec` with no gap over 0.25 s, every beat lasts at least 1.2 s, and there are at least as many beats as the genre's arc has stages. |
+| `beats[]` | `{t0, t1, purpose, onScreen, motion, sound}` each, plus `layout`, `hero` and `transition` on the stage path. They cover 0 to `durationSec` with no gap over 0.25 s, every beat lasts at least 1.2 s, and there are at least as many beats as the genre's arc has stages. |
+| `story` | `{expect, turn, payoff}` (one or two sentences each; the turn differs from the expectation) and `beat` (the shot where the turn lands: after the opening, before the end). A genre arc alone is an information order, not a story. |
+| `protagonist` | Stage path only: `{name, kind: character or object, look, acts[]}`. One drawn character or hero object that acts across the film: one act per shot, acts covering at least half the film, including the turn shot. |
+| `depth`, `render3d` | `depth` is `2d` or `3d` (a stage-path route). A `depth3d` subject device needs `depth: 3d`, and `3d` needs the subject. `render3d` is `three` (the GPU rung, the default) or `blender` (the offline Cycles rung) and needs `depth: 3d`. |
+| `world` | Stage path, rich register only: `{layers[], labels[], camera[]}`. At least 3 depth layers back to front, at least 6 labelled parts the viewer reads (4 words each at most), and camera moves covering at least half the shots. |
 | `subject` | `{name, source: user or invented, specifics[]}`. When the request names no specific subject, invent one: a name plus at least 2 concrete specifics (what it is or does, for whom, one distinctive detail). |
 | `visualDevices[]` | `{kind, role: subject, support or texture, beats[]}`, where `beats` lists beat indexes from 0. Kinds: `illustration`, `diagram`, `chart`, `icon`, `shape`, `path`, `mask`, `depth3d`, `particles`, `grid`, `gradient`, `photo-texture`. |
 | `typePlan` | `{faces[], hierarchy, maxWordsOnScreen}`. Faces come from this product's verified set: Pretendard, Archivo, Galmuri9, VT323, Silkscreen, MesloLGS NF. |
@@ -89,13 +93,21 @@ span is removed from it.
 
 ### Sound rules
 
-- `generated` is the default under bare `lit`, on both paths. The `sound`
-  subcommand builds a deterministic bed from the treatment: tempo, pulse and a
-  pad chord progression, plus accents only where a beat's `sound` field asks
-  (a hit on a cut, a rise into a change, a closing cadence). `sound.palette` is
-  one of `soft-mallet`, `warm-keys`, `glass-pulse` or `low-strings`; key and
-  tempo follow from the treatment, so two films rarely share a bed. The reply
-  labels the bed as generated.
+- `score` is the default for rich films, built per film from the film itself:
+  the words seed its key, mode, tempo, progression, motif and percussion, the
+  beats arrange it (intro, build, the drop on the turn, break, outro), and the
+  `sound` subcommand writes `sound/score.wav`, one stem per part in
+  `sound/stems/` and the cue plan in `sound-cues.json`. The reply labels the
+  score as generated. `generated` is the bed for minimal films only: tempo,
+  pulse and a pad chord progression, plus accents only where a beat's `sound`
+  field asks (a hit on a cut, a rise into a change, a closing cadence).
+  `sound.palette` is one of `soft-mallet`, `warm-keys`, `glass-pulse` or
+  `low-strings`; key and tempo follow from the treatment, so two films rarely
+  share a bed.
+- On the stage path a `score` or `generated` film lists at least 2 on-screen
+  events that make a sound (`sound.events`: `{t, on, kind}`, `kind` one of
+  `tap`, `hit`, `whoosh`, `chime`), at least half of them away from the cuts.
+  The score plays them on screen; the bed accents them where a beat asks.
 - `supplied`: the user's WAV, named in `sound.file`, relative to the output dir.
 - `authored`: a WAV you wrote into the stage dir (`stage/*.wav`).
 - `none` only when the user asked for silence, or when the channel plays muted
@@ -143,6 +155,10 @@ mostly equal this example's (`copiedExample`). Do not copy it; write your own.
   "beats": [
     { "t0": "<start s>", "t1": "<end s>", "purpose": "<arc stage>", "onScreen": "<what is drawn>", "motion": "<how it moves>", "sound": "<what the sound does here>" }
   ],
+  "story": { "expect": "<what the viewer expects>", "turn": "<what happens instead>", "beat": "<shot index of the turn>", "payoff": "<what the ending gives>" },
+  "protagonist": { "name": "<the character or hero object>", "kind": "<character or object>", "look": "<shape, material, colour role, scale>", "acts": [{ "beat": "<beat index>", "action": "<what it does in this shot>" }] },
+  "depth": "<2d or 3d>",
+  "world": { "layers": ["<depth layer, back to front>"], "labels": ["<part the viewer reads>"], "camera": [{ "beat": "<beat index>", "move": "<push-in, truck, crane, orbit, rack focus>" }] },
   "subject": { "name": "<a specific name>", "source": "<user or invented>", "specifics": ["<what it is or does>", "<for whom>", "<one distinctive detail>"] },
   "visualDevices": [
     { "kind": "<device kind>", "role": "<subject, support or texture>", "beats": ["<beat index>"] }

@@ -7,6 +7,11 @@
 // and the product installer are the only callers of install() (MO-A-42/43).
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { lookup } from 'node:dns/promises';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
+import { isIP } from 'node:net';
+import { Readable } from 'node:stream';
 import { createRequire } from 'node:module';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -97,14 +102,134 @@ function run(cmd, args, options = {}) {
 
 // Pinned URL + sha256, verified before it lands; a mirror (file:// or http://127.0.0.1)
 // replaces the host part for offline tests.
-export async function fetchPinned(entry, targetFile, { mirror = process.env.LITHERMES_MOTION_FONT_MIRROR } = {}) {
+const FONT_FETCH_LIMIT = 32 * 1024 * 1024;
+
+/** True only for a public unicast address (mirrors the hijack capture guard). */
+const isPublicUnicastIp = (ip) => {
+  if (isIP(ip) === 4) {
+    const parts = ip.split('.').map(Number);
+    if (parts[0] === 127 || parts[0] === 10) return false;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
+    if (parts[0] === 192 && parts[1] === 168) return false;
+    if (parts[0] === 169 && parts[1] === 254) return false;
+    if (parts.every((part) => part === 0)) return false;
+    if (parts[0] >= 224 && parts[0] <= 239) return false;
+    return true;
+  }
+  if (isIP(ip) === 6) {
+    const lower = ip.toLowerCase();
+    if (lower === '::1' || lower === '::' || lower.startsWith('ff')) return false;
+    const first = Number.parseInt(lower.split(':', 1)[0] || '0', 16);
+    if (first >= 0xfe80 && first <= 0xfebf) return false;
+    const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/u);
+    if (mapped) return isPublicUnicastIp(mapped[1]);
+    return true;
+  }
+  return false;
+};
+
+const resolvePublicHost = async (hostname, lookupImpl) => {
+  let records;
+  try {
+    records = await lookupImpl(hostname, { all: true });
+  } catch (error) {
+    throw new Error(`cannot resolve ${hostname}: ${error.message}`);
+  }
+  if (!records.length) throw new Error(`${hostname} resolves to nothing`);
+  for (const record of records) {
+    if (!isPublicUnicastIp(record.address)) {
+      throw new Error(`${hostname} resolves to ${record.address}, which is not a public unicast address`);
+    }
+  }
+  return { address: records[0].address, family: records[0].family };
+};
+
+const pinnedSend = (requestImpl) => (href, init, pin) => new Promise((resolveResponse, rejectResponse) => {
+  const pinLookup = (_host, options, callback) => (
+    options?.all
+      ? callback(null, [{ address: pin.address, family: pin.family }])
+      : callback(null, pin.address, pin.family)
+  );
+  const req = requestImpl(href, { signal: init.signal, lookup: pinLookup }, (res) => {
+    const answer = new Headers();
+    for (const [name, value] of Object.entries(res.headers)) {
+      for (const item of [value].flat()) if (item !== undefined) answer.append(name, String(item));
+    }
+    const empty = [204, 205, 304].includes(res.statusCode);
+    if (empty) res.resume();
+    try {
+      resolveResponse(new Response(empty ? null : Readable.toWeb(res), { status: res.statusCode, headers: answer }));
+    } catch (error) {
+      res.destroy();
+      rejectResponse(error);
+    }
+  });
+  req.on('error', rejectResponse);
+  req.end();
+});
+
+const PINNED_REQUESTS = { 'http:': httpRequest, 'https:': httpsRequest };
+
+export async function fetchPinned(entry, targetFile, { mirror = process.env.LITHERMES_MOTION_FONT_MIRROR, fetchImpl = null, requestImpls = PINNED_REQUESTS, lookupImpl = lookup } = {}) {
   const url = mirror ? `${mirror.replace(/\/$/, '')}/${entry.path}` : entry.url;
   let bytes;
   if (url.startsWith('file://')) bytes = readFileSync(fileURLToPath(url));
   else {
-    const response = await fetch(url, { redirect: 'follow' });
-    if (!response.ok) throw new Error(`${entry.path}: HTTP ${response.status} from ${url}`);
-    bytes = Buffer.from(await response.arrayBuffer());
+    // Every hop is resolved and checked before connecting, with a timeout, and
+    // no hop may leave the entry host: a rebinding mirror must not smuggle the
+    // fetch onto loopback, and a compromised CDN must not redirect it away. The
+    // socket connects to the address the check approved, even if the name
+    // rebinds afterwards; TLS still verifies the certificate for the name.
+    const send = fetchImpl
+      ? (href, init) => fetchImpl(href, init)
+      : (href, init, pin) => pinnedSend({ ...PINNED_REQUESTS, ...requestImpls }[new URL(href).protocol])(href, init, pin);
+    const pinned = new URL(url).host;
+    const limit = FONT_FETCH_LIMIT;
+    let current = url;
+    let chunks = null;
+    for (let hop = 0; hop <= 5; hop += 1) {
+      const checked = new URL(current);
+      if (checked.host !== pinned) {
+        throw new Error(`${entry.path}: refusing font redirect off ${pinned} to ${checked.host}`);
+      }
+      let pin;
+      if (isIP(checked.hostname)) {
+        if (!isPublicUnicastIp(checked.hostname)) {
+          throw new Error(`${checked.hostname} is not a public unicast address`);
+        }
+        pin = { address: checked.hostname, family: isIP(checked.hostname) };
+      } else {
+        pin = await resolvePublicHost(checked.hostname, lookupImpl);
+      }
+      const response = await send(current, { redirect: 'manual', signal: AbortSignal.timeout(30_000) }, pin);
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get('location');
+        if (!location) throw new Error(`${entry.path}: font redirect without a location`);
+        current = new URL(location, current).toString();
+        continue;
+      }
+      if (!response.ok) throw new Error(`${entry.path}: HTTP ${response.status} from ${current}`);
+      const declared = Number(response.headers.get('content-length'));
+      if (Number.isFinite(declared) && declared > limit) {
+        throw new Error(`${entry.path}: declares ${declared} bytes, over the ${limit} byte cap`);
+      }
+      const reader = response.body.getReader();
+      chunks = [];
+      let size = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > limit) {
+          try { await reader.cancel(); } catch { /* the server side already went away */ }
+          throw new Error(`${entry.path}: larger than ${limit} bytes`);
+        }
+        chunks.push(value);
+      }
+      break;
+    }
+    if (!chunks) throw new Error(`${entry.path}: redirected more than 5 times`);
+    bytes = Buffer.concat(chunks);
   }
   const got = sha(bytes);
   if (got !== entry.sha256) throw new Error(`${entry.path}: sha256 mismatch (got ${got}, pinned ${entry.sha256})`);

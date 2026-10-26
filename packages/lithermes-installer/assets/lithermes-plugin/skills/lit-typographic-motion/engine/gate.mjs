@@ -429,6 +429,19 @@ const LABELS = {
 const MAIN_ORDER = ['MO-C-01', 'MO-C-02', 'MO-C-03', 'MO-C-04', 'MO-C-05', 'MO-C-06', 'MO-C-07/08', 'MO-C-09', 'MO-C-10/11/12', 'MO-C-13', 'MO-C-14',
   'MO-C-25', 'MO-C-26', 'MO-C-27', 'MO-C-29', 'MO-D-02', 'MO-D-03', 'MO-D-04'];
 
+export const GATE_IDS = Object.freeze([...MAIN_ORDER]);
+
+// Older notes name six text rules with no runtime of their own. Each names a
+// real check below; references/studio.md carries the same table for readers.
+export const DOC_GATES = Object.freeze({
+  'TEXT-OVERLAP': { kind: 'qa-row', id: 'text-overlap' },
+  'TEXT-ON-STYLE': { kind: 'qa-row', id: 'fonts' },
+  'TEXT-ZONE': { kind: 'qa-row', id: 'text-title-safe' },
+  'FLAT-FRAME': { kind: 'gate', id: 'MO-D-03' },
+  'DEAD-AIR': { kind: 'qa-row', id: 'non-text-presence' },
+  'RICH-FILL': { kind: 'treatment', id: 'palette' },
+});
+
 export function renderReport(manifest, gate, { outputs = {}, framesViewed = [], egress = 'websocket', withheld = false, preflight = false } = {}) {
   const lx = manifest.lithermes || {};
   const byId = new Map(gate.rules.map((r) => [r.id, r]));

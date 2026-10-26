@@ -122,23 +122,77 @@ function packText(slide, S, text, box, o = {}) {
 
 function packRect(slide, S, box, o = {}) {
   const radius = o.radius || 0;
+  // In a pack with hard edges a block of the field (a band, a plate, a rail) carries the border too.
+  if (S.pack.shadow && o.fill === "field" && !o.line && box.w >= 24 && box.h >= 24) o = { ...o, line: S.pack["edge-colour"] || "line", lineWidth: S.pack["edge-weight"] };
   slide.addShape(radius ? "roundRect" : "rect", {
     x: IN(box.x), y: IN(box.y), w: IN(box.w), h: IN(box.h),
     ...(radius ? { rectRadius: IN(radius) } : {}),
     fill: o.fill ? { color: S.colour(o.fill), transparency: o.alpha || 0 } : { type: "none" },
     line: o.line ? { color: S.colour(o.line), width: o.lineWidth || 0.75 } : { type: "none" },
+    // A hard offset shadow: no blur, fully opaque, down and to the right.
+    ...(o.shadow && S.pack.shadow ? { shadow: { type: "outer", blur: 0, offset: S.pack.shadow.offset, angle: 45, color: S.colour(S.pack.shadow.colour).replace("#", ""), opacity: 1 } } : {}),
     ...(o.name ? { objectName: o.name } : {}),
   });
 }
 
 /** A surface (card, box, panel) in the pack's edge treatment and radius. */
-function surfaceRect(slide, S, box, fill = "surface") {
+function surfaceRect(slide, S, box, fill = "surface", shadow = false) {
   const edge = S.pack.edge;
+  // A shadowed surface is filled, so its shadow never shows through it.
+  const packShadow = shadow && S.pack.shadow ? S.pack.shadow : null;
   packRect(slide, S, box, {
-    fill: edge === "border" ? null : fill,
-    line: edge === "fill" ? null : "line",
+    fill: edge === "border" && !packShadow ? null : edge === "border" ? "ground" : fill,
+    line: edge === "fill" ? null : S.pack["edge-colour"] || "line",
+    lineWidth: S.pack["edge-weight"],
     radius: S.pack.radius,
+    shadow: packShadow,
   });
+}
+
+/** A pack with a hard shadow draws every box with its border and shadow (filled, `fill` when given). */
+function hardEdge(S, fill) {
+  if (!S.pack.shadow) return {};
+  return { line: S.pack["edge-colour"] || "line", lineWidth: S.pack["edge-weight"], shadow: S.pack.shadow, ...(fill ? { fill } : {}) };
+}
+
+/**
+ * The slide's column marks in the top margin on the ground: one tick per column
+ * with its number, and the slide index at the right. The marks read on the ground;
+ * a band or a filled rail there would cover them.
+ */
+function gridMarks(slide, S, n, total) {
+  const g = S.grid;
+  const size = S.sizes.source;
+  const y = 12;
+  for (let a = 1; a <= 12; a++) {
+    const x = g.colX(a);
+    packRect(slide, S, { x, y, w: 0.75, h: size * 1.2 }, { fill: "line", name: "grid-mark", shadow: false });
+    if (a < 11) packText(slide, S, String(a).padStart(2, "0"), { x: x + 4, y, w: g.col - 4, h: size * 1.2 }, { face: "label", size, colour: S.colour("ink-muted"), lineSpacing: 1.2, name: "grid-mark" });
+  }
+  const index = `[${String(n).padStart(2, "0")}/${String(total).padStart(2, "0")}]`;
+  const right = g.span(11, 12);
+  packText(slide, S, index, { ...right, y, h: size * 1.2 }, { face: "label", size, colour: S.colour("ink"), align: "right", lineSpacing: 1.2, name: "grid-mark index" });
+}
+
+/**
+ * Elementary geometry in the primaries, in a region of the page that holds no text: a square in the
+ * surface colour, a circle in the accent, a bar in the ink and a triangle in the field, one per cell
+ * of a two-by-two grid, so no shape overlaps another or the text.
+ */
+function geometry(slide, S, region) {
+  const cw = region.w / 2;
+  const ch = region.h / 2;
+  const d = Math.min(cw, ch);
+  const cell = (i, j) => ({ x: region.x + i * cw, y: region.y + j * ch });
+  const shape = (kind, box, fill) => slide.addShape(kind, { x: IN(box.x), y: IN(box.y), w: IN(box.w), h: IN(box.h), fill: { color: S.colour(fill) }, line: { type: "none" } });
+  const a = cell(0, 0);
+  shape("rect", { x: a.x, y: a.y, w: cw, h: ch }, "accent-tint");
+  const b = cell(1, 0);
+  shape("ellipse", { x: b.x + (cw - d) / 2, y: b.y + (ch - d) / 2, w: d, h: d }, "accent");
+  const c = cell(0, 1);
+  shape("rect", { x: c.x + cw * 0.38, y: c.y, w: cw * 0.24, h: ch }, "ink");
+  const e = cell(1, 1);
+  shape("triangle", { x: e.x, y: e.y + (ch - d), w: cw, h: d }, "field");
 }
 
 // ── Content atoms ───────────────────────────────────────────────────────────
@@ -1772,7 +1826,8 @@ function drawPlaced(slide, S, p, ctx) {
   if (p.kind === "kpi") {
     p.cards.forEach((card, i) => {
       const x = p.x + i * (p.cardW + S.grid.gutter);
-      surfaceRect(slide, S, { x, y: p.y, w: p.cardW, h: p.cardH });
+      // Card rows stand as surfaces with the pack's edge; on the compact step they cast its shadow.
+      surfaceRect(slide, S, { x, y: p.y, w: p.cardW, h: p.cardH }, "surface", Boolean(S.tok.tight));
       const inner = p.cardW - p.pad * 2;
       const valueH = p.value * 1.15;
       packText(slide, S, plainText(card.value), { x: x + p.pad, y: p.y + p.pad, w: inner, h: valueH },
@@ -2696,6 +2751,13 @@ function statementDevice(slide, S, f, supportH) {
     packRect(slide, S, { x: full.x, y: below, w: full.w, h: 0.75 }, { fill: "line" });
     return t.colour;
   }
+  if (device === "geometry") {
+    // The composition stands beside the sentence when the title leaves room; otherwise the
+    // sentence stands alone and the device reads as open.
+    const right = g.W - (t.x + t.w);
+    if (right >= g.pitch * 3) geometry(slide, S, { x: t.x + t.w + g.gutter, y: t.y, w: right - g.gutter, h: G.ZONE.floor - t.y });
+    return t.colour;
+  }
   if (device === "offset") {
     // The rail stops a column short of the sentence and at the body floor, so both gaps belong to the grid.
     packRect(slide, S, { x: 0, y: 0, w: t.x - g.gutter / 2 - g.pitch, h: G.ZONE.floor }, { fill: S.pack.rail === "field" ? "field" : "surface" });
@@ -2797,6 +2859,13 @@ const TYPE_COVERS = {
     const line = metaLine(meta);
     if (line) packText(slide, S, line, { ...g.span(1, 6), y: 438, h: 24 }, { size: S.sizes.label, colour: S.colour("ink-muted"), lineSpacing: 1.2 });
     packText(slide, S, spec.title, { ...span, y: 144, h }, { face: "display", size, lineSpacing: 1.1, title: true, balance: true, name: "title@cover" });
+  },
+  geometry(slide, spec, S, meta) {
+    // The composition stands in the free side columns; the words keep the plain frames.
+    const g = S.grid;
+    const side = g.span(10, 12);
+    geometry(slide, S, { x: side.x, y: G.ZONE.top, w: side.w, h: G.ZONE.floor - G.ZONE.top });
+    return TYPE_COVERS.plain(slide, spec, S, meta);
   },
 };
 
@@ -3257,19 +3326,36 @@ async function renderPack(resolved, templateObj, outputPath) {
       // Nothing unnamed was drawn (a statement alone): an empty marker carries the family.
       slide.addShape("rect", { x: IN(S.grid.margin), y: IN(G.ZONE.top), w: 0, h: 0, fill: { type: "none" }, line: { type: "none" }, objectName: `family@${spec.family}` });
     }
+    // The marks read on the ground; a statement page may be drenched in the field, so it goes without.
+    if (spec.kind === "content" && chosenBy[spec.index] !== "statement" && S.deco.has("grid-marks")) gridMarks(slide, S, spec.index + 1, (resolved.slides || []).length);
     if (notice) packNotice(slide, S, notice);
   }
   for (const line of log) console.log(line);
   console.log(`Treatments: ${Object.entries(chosenBy).map(([i, t]) => `${Number(i) + 1}:${t}`).join(" ")}`);
-  await writeWithEastAsianFaces(pptx, S.faces.body.font, outputPath);
+  await writeWithEastAsianFaces(pptx, S.faces.body.font, outputPath, Object.values(S.faces).filter((f) => f.ea), Boolean(S.pack.shadow));
   return outputPath;
 }
 
-/** Write the deck with the pack's body face also named for East Asian text in charts and the theme. */
-async function writeWithEastAsianFaces(pptx, face, outputPath) {
-  await shared().writeTagged(pptx, outputPath, (name, xml) => (/^ppt\/(charts\/chart\d+|theme\/theme\d+)\.xml$/u.test(name)
-    ? xml.replace(/<a:ea typeface=""\/>/gu, `<a:ea typeface="${face}"/>`).replace(/(<a:latin typeface="([^"]*)"\/>)(?!<a:ea)/gu, `$1<a:ea typeface="$2"/>`)
-    : xml));
+/**
+ * Write the deck with the pack's body face also named for East Asian text in charts and the theme.
+ * Chart text otherwise carries only a Latin face, and a renderer sets Hangul axis labels in
+ * whatever system font it finds. Korean runs are tagged ko-KR on the way (see writeTagged).
+ */
+async function writeWithEastAsianFaces(pptx, face, outputPath, latinOnly = [], hardShadows = false) {
+  await shared().writeTagged(pptx, outputPath, (name, xml) => {
+    if (/^ppt\/(charts\/chart\d+|theme\/theme\d+)\.xml$/u.test(name)) {
+      xml = xml.replace(/<a:ea typeface=""\/>/gu, `<a:ea typeface="${face}"/>`).replace(/(<a:latin typeface="([^"]*)"\/>)(?!<a:ea)/gu, `$1<a:ea typeface="$2"/>`);
+    }
+    // A Latin-only face names its East Asian face for the Hangul in its runs.
+    if (/^ppt\/(slides\/slide\d+|charts\/chart\d+)\.xml$/u.test(name)) {
+      for (const f of latinOnly) xml = xml.split(`<a:ea typeface="${f.font}"`).join(`<a:ea typeface="${f.ea}"`);
+    }
+    // pptxgenjs reads a blur of 0 as "unset" and writes its default; a pack's shadow is drawn with none.
+    if (hardShadows && /^ppt\/slides\/slide\d+\.xml$/u.test(name)) {
+      xml = xml.replace(/(<a:outerShdw\b[^>]*?\bblurRad=")\d+"/gu, '$10"');
+    }
+    return xml;
+  });
 }
 
 module.exports = { renderPack, PLANS, COVERS, SECTIONS };

@@ -55,6 +55,27 @@ class OfficePptxChecks(unittest.TestCase):
             self.assertFalse(result["pass"])
             self.assertEqual(path.read_bytes(), before)
 
+    def test_stamped_pack_allowance_widens_of101_without_mutating_deck(self):
+        with tempfile.TemporaryDirectory() as directory:
+            deck = Presentation()
+            deck.core_properties.subject = "lit-pptx tonality=bauhaus density=10 grid=compact variance=7"
+            slide = deck.slides.add_slide(deck.slide_layouts[6])
+            title = slide.shapes.add_textbox(Inches(1), Inches(0.5), Inches(5), Inches(0.6))
+            title.text_frame.text = "A content slide with four hue families"
+            body = slide.shapes.add_textbox(Inches(1), Inches(4.5), Inches(5), Inches(1))
+            body.text_frame.text = "Body copy keeps the slide a content slide"
+            for index, color in enumerate(((200, 38, 28), (31, 60, 153), (242, 194, 48), (30, 107, 62))):
+                shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(1 + index), Inches(1.5), Inches(.8), Inches(.8))
+                shape.fill.solid()
+                shape.fill.fore_color.rgb = RGBColor(*color)
+            path = Path(directory) / "maximal.pptx"
+            deck.save(path)
+            before = path.read_bytes()
+            result = qa_deck.check_office_craft(path)
+            high = {item["rule"] for item in result["findings"] if item["severity"] == "HIGH"}
+            self.assertNotIn("OF-101", high)
+            self.assertEqual(path.read_bytes(), before)
+
     def test_plain_slide_has_no_high_new_craft_findings(self):
         with tempfile.TemporaryDirectory() as directory:
             deck = Presentation()

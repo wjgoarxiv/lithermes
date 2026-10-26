@@ -24,9 +24,14 @@ const XDG = process.env.LITHERMES_MOTION_TEST_XDG;
 const chromeSkip = !fs.existsSync(CHROME) ? "no Chrome" : !XDG || !fs.existsSync(path.join(XDG, "lithermes", "motion")) ? "LITHERMES_MOTION_TEST_XDG does not name a pre-warmed motion cache" : !hasFfmpeg ? "no ffmpeg" : false;
 
 function generatedTreatment(palette = "soft-mallet") {
-  const t = stageTreatment({ durationSec: 12, sound: { mode: "generated", plan: "pulse under a pad, a hit on the second cut", palette } });
+  const t = stageTreatment({ durationSec: 12, register: "minimal", sound: { mode: "generated", plan: "pulse under a pad, a hit on the second cut", palette } });
+  t.request += " 차분한 영상으로 만들어줘";
   t.beats[1].sound = "a soft hit on the cut";
   t.beats[2].sound = "a closing cadence";
+  t.sound.events = [
+    { t: 2, on: "the tower draws in", kind: "tap" },
+    { t: 6, on: "the beam crosses the water", kind: "whoosh" },
+  ];
   return t;
 }
 
@@ -155,9 +160,9 @@ test("type path: a supplied WAV is muxed even when the librosa tier is absent", 
   assert.ok(Math.abs(Number(audio.duration) - Number(vid.duration)) <= 0.1, `audio ${audio.duration} vs video ${vid.duration}`);
 });
 
-test("type path: the generated bed is the default and is muxed", { skip: chromeSkip, timeout: 900000 }, () => {
+test("type path: the generated bed is muxed for a minimal film", { skip: chromeSkip, timeout: 900000 }, () => {
   const out = tmp("type-bed-");
-  writeTreatment(out, typeTreatment(undefined, { durationSec: 4 }));
+  writeTreatment(out, typeTreatment(undefined, { durationSec: 4, register: "minimal" }));
   const run = spawnSync(process.execPath, [motion, "run", "--out", out, "--round", "2"], { encoding: "utf8", env: { ...process.env, XDG_CACHE_HOME: XDG, HOME: tmp("home-") }, timeout: 900000 });
   assert.ok([0, 13].includes(run.status), run.stderr);
   const report = fs.readFileSync(path.join(out, "gate-report.txt"), "utf8");
@@ -169,7 +174,16 @@ test("type path: the generated bed is the default and is muxed", { skip: chromeS
 test("stage path: a generated bed is built, muxed and gated", { skip: chromeSkip, timeout: 900000 }, () => {
   const out = tmp("stage-bed-");
   fs.cpSync(path.join(__dirname, "fixtures", "motion-stage", "clock", "stage"), path.join(out, "stage"), { recursive: true });
-  writeTreatment(out, stageTreatment({ durationSec: 4, sound: { mode: "generated", plan: "a pad that turns with the beam", palette: "low-strings" } }));
+  writeTreatment(out, stageTreatment({
+    durationSec: 4, register: "minimal",
+    sound: {
+      mode: "generated", plan: "a pad that turns with the beam", palette: "low-strings",
+      events: [
+        { t: 0.7, on: "the tower draws in", kind: "tap" },
+        { t: 2, on: "the beam crosses the water", kind: "whoosh" },
+      ],
+    },
+  }));
   const run = spawnSync(process.execPath, [motion, "stage", "--out", out, "--round", "2"], { encoding: "utf8", env: { ...process.env, XDG_CACHE_HOME: XDG, HOME: tmp("home-") }, timeout: 900000 });
   assert.equal(run.status, 0, run.stderr + run.stdout);
   const report = fs.readFileSync(path.join(out, "gate-report.txt"), "utf8");

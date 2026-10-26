@@ -4,7 +4,7 @@ import { spawnTool } from './hostexec.mjs';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve, sep as separator } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -25,8 +25,9 @@ mkdirSync(out, { recursive: true });
 const thresholds = JSON.parse(readFileSync(join(scriptDir, 'probe-rules.json'), 'utf8'));
 const referenceDir = resolve(scriptDir, '../references');
 const allRules = [...new Set(['craft-floor.md', 'slop-register.md'].flatMap((name) =>
-  [...readFileSync(join(referenceDir, name), 'utf8').matchAll(/^\| ((?:CF|RS|SLOP)-\d{3}) \|/gm)].map((match) => match[1])))];
-const staticRules = new Set(['SLOP-058', 'CF-503', 'SLOP-009', 'SLOP-057', 'SLOP-060', 'SLOP-061', 'CF-507']);
+  [...readFileSync(join(referenceDir, name), 'utf8').matchAll(/^\| ((?:CF|RS|SLOP|DS)-\d{3}) \|/gm)].map((match) => match[1])))];
+const staticRules = new Set(['SLOP-058', 'CF-503', 'SLOP-009', 'SLOP-057', 'SLOP-060', 'SLOP-061', 'CF-507',
+  'DS-001', 'DS-002', 'DS-003', 'DS-006', 'DS-008']);
 const liveRules = new Set(['RS-001', 'RS-002', 'RS-003', 'RS-006', 'RS-007', 'RS-008', 'CF-101', 'CF-102', 'CF-103',
   'CF-107', 'CF-201', 'CF-202', 'CF-205', 'CF-401', 'CF-404', 'CF-406', 'CF-503', 'CF-507', 'CF-603', 'CF-701', 'CF-806', 'CF-807', 'SLOP-008',
   'SLOP-009', 'SLOP-036', 'SLOP-040', 'SLOP-053', 'SLOP-057', 'SLOP-058', 'SLOP-059', 'SLOP-060', 'SLOP-061']);
@@ -35,6 +36,33 @@ const notVerified = allRules.filter((rule) => !staticRules.has(rule))
 
 function staticFallback(file) {
   if (!file || !existsSync(file)) return { findings: [], not_verified: notVerified, source: null };
+  const root = lstatSync(file).isDirectory() ? file : dirname(file);
+  const locks = new Map();
+  const collect = (item) => {
+    const info = lstatSync(item);
+    if (info.isSymbolicLink()) return;
+    if (info.isDirectory()) {
+      for (const child of readdirSync(item)) {
+        if (child === 'node_modules' || child === '.git') continue;
+        collect(join(item, child));
+      }
+      return;
+    }
+    if (item.endsWith(`${separator}design.lock.json`) || item === join(root, 'design.lock.json')) {
+      try { locks.set(dirname(item), JSON.parse(readFileSync(item, 'utf8'))); } catch { /* unparseable lock: no DS cover */ }
+    }
+  };
+  try { collect(root); } catch { /* unreadable tree: no DS cover */ }
+  const lockFor = (item) => {
+    let directory = dirname(item);
+    while (directory.startsWith(root)) {
+      if (locks.has(directory)) return locks.get(directory);
+      const parent = dirname(directory);
+      if (parent === directory) break;
+      directory = parent;
+    }
+    return null;
+  };
   const findings = [];
   const visit = (item) => {
     const info = lstatSync(item);
@@ -62,7 +90,46 @@ function staticFallback(file) {
     if (/lorem ipsum|\[placeholder\]|\bTODO\b/i.test(contents)) add('SLOP-060', 'placeholder copy', 'finished copy', 'LOW');
     if (/<marquee\b/i.test(contents)) add('SLOP-061', 'marquee', 'stationary copy');
     if (/will-change\s*:\s*(?:all|width|height|margin|padding)/i.test(contents)) add('CF-507', 'layout property', 'active compositor property');
+    const lock = item && ['.html', '.htm', '.css'].includes(extension) ? lockFor(item) : null;
+    if (lock && ['.html', '.htm'].includes(extension) && !/tokens\.css/.test(contents))
+      add('DS-001', 'design lock not applied', 'locked tokens.css linked', 'HIGH', 'measured');
+    if (lock && ['.html', '.htm'].includes(extension)) {
+      const slot = /\{\{(?! )[^{}\n]{1,80}(?<! )\}\}/.exec(contents);
+      if (slot) add('DS-006', 'starter slot left in the page', 'slots replaced with content', 'HIGH', 'measured', slot);
+      const kind = lock.moment && lock.moment.kind;
+      if (!kind || !contents.includes(`data-ui-moment="${kind}"`))
+        add('DS-008', 'signature moment missing', `data-ui-moment="${kind || 'a declared kind'}" on content`, 'HIGH', 'measured');
+    }
+    if (lock && extension === '.css' && extname(item) !== '.map' && !/(^|[\\/])tokens\.css$/.test(item)) {
+      const bare = contents.replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/@font-face\s*\{[^{}]*\}/gi, ' ')
+        .replace(/:root\s*\{[^{}]*\}/gi, ' ');
+      const masked = maskVarSpans(bare);
+      const family = /font-family\s*:\s*([^;{}]+);/gi;
+      let declared;
+      while ((declared = family.exec(masked)) !== null) {
+        if (declared[1].trim() !== '' && !/^\s*var\(/.test(declared[1])) {
+          add('DS-002', 'font family outside the lock', 'var(--font-*) family', 'HIGH', 'measured');
+          break;
+        }
+      }
+      const colour = /(#[0-9a-fA-F]{3,8}\b|rgba?\([^()]*\)|hsla?\([^()]*\))/g;
+      const hit = colour.exec(masked);
+      if (hit) add('DS-003', 'colour outside the locked palette', 'var(--c-*) role', 'HIGH', 'measured', hit);
+    }
   };
+  function maskVarSpans(text) {
+    let depth = 0;
+    let out = '';
+    for (let index = 0; index < text.length; index += 1) {
+      if (text.startsWith('var(', index)) { depth += 1; out += '    '; index += 3; continue; }
+      const char = text[index];
+      if (char === '(') depth += 1;
+      else if (char === ')') depth = Math.max(0, depth - 1);
+      out += depth > 0 ? ' ' : char;
+    }
+    return out;
+  }
   visit(file);
   return { findings, not_verified: notVerified, source: file };
 }
@@ -88,7 +155,12 @@ function save(report) {
 }
 
 function fixFor(rule) {
-  const named = { 'RS-006': 'Remove page overflow or contain the intentional rail',
+  const named = { 'DS-001': 'Link the locked ui/tokens.css before any other stylesheet',
+    'DS-002': 'Use var(--font-text), var(--font-display) or var(--font-mono); a new family needs a new lock',
+    'DS-003': 'Replace the literal colour with the var(--c-*) role that means the same thing',
+    'DS-006': 'Replace every {{slot}} from the kit layout with real content, or delete the element',
+    'DS-008': 'Record one signature moment in design.lock.json and mark that element with data-ui-moment',
+    'RS-006': 'Remove page overflow or contain the intentional rail',
     'RS-007': 'Restore readable text and its container', 'CF-201': 'Use a contrasting ink or surface',
     'CF-701': 'Expand the target without shifting visual hierarchy', 'CF-503': 'Start entrance at or above the scale floor',
     'SLOP-058': 'Use a working destination', 'SLOP-060': 'Replace unfinished copy' };

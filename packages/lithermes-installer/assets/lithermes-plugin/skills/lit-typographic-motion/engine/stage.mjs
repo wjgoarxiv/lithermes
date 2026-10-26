@@ -8,20 +8,39 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSy
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
-import { ALWAYS_FLAGS, EXIT, OUTPUT } from './constants.mjs';
+import { ALWAYS_FLAGS, EXIT, OUTPUT, chromeFlagLadder } from './constants.mjs';
 import { chromeExecutable, launchCause, profileSockets } from './browser.mjs';
 import { FlashDetector } from './flash.mjs';
 import { encodePreview, ffprobe, hasFfmpeg, pngEncode, startMaster } from './encode.mjs';
 import { FORMATS, loadTreatment } from './treatment.mjs';
+import { readPlate } from './blender.mjs';
 import { recordFirstTreatment, writeJson, writeRunState } from './director.mjs';
 import { stampStills, stillsPlan, writeStillsSet } from './stills.mjs';
 import { runStageGate, renderStageReport } from './stage-gate.mjs';
 import { produceSound, soundGate } from './sound.mjs';
 import { runTextQa } from './stage-qa.mjs';
+import { readStyle, styleCss, styleScript } from './styles.mjs';
+import { addToStills, writeBoard } from './board.mjs';
 import { FONT_FILES } from './frame.mjs';
+
 import { findCache, fontFile, fontState, hangulPath, runtimeRequire, WARM } from '../bin/runtime.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
+// The pinned three.js build and its two addons (engine/vendor/three, MIT),
+// served to stage pages at /lit/three/; anything else under that prefix is refused.
+const THREE_DIR = join(here, 'vendor', 'three');
+
+// Resolve a /lit/three/ request to a vendored file: only .js paths without ..
+// that exist under engine/vendor/three. Anything else is refused, never served.
+export function threeFile(pathname) {
+  const rel = String(pathname).slice('/lit/three/'.length);
+  if (rel.split('/').includes('..') || !rel.endsWith('.js')) return { status: 404, reason: `request for ${pathname} is not a vendored three.js file` };
+  let real = null;
+  try { real = realpathSync(join(THREE_DIR, rel)); } catch { return { status: 404, reason: `request for ${pathname} is not a vendored three.js file` }; }
+  const root = realpathSync(THREE_DIR);
+  if (real !== root && !real.startsWith(root + sep)) return { status: 404, reason: `request for ${pathname} is not a vendored three.js file` };
+  return { status: 200, file: real };
+}
 export const ORIGIN = 'http://lit.stage';
 const sha = (data) => createHash('sha256').update(data).digest('hex');
 const fail = (code, message, extra = {}) => Object.assign(new Error(message), { exitCode: code, ...extra });
@@ -39,6 +58,19 @@ export const RASTER_LIMITS = Object.freeze({ count: 24, bytes: 8 * 1024 * 1024, 
 // The software rung only (SwiftShader, CPU raster): a mismatch between two
 // captures can then only come from the page. Plus the stage set and the two
 // keychain flags every Chrome launch carries.
+// The 3D route's flag set: the platform's GPU rung first, then the software
+// rung; the determinism flags after the rung are the same as the software rung's.
+export function gpuStageFlags({ width, height }, platform = process.platform) {
+  return [...chromeFlagLadder(platform)[0], ...stageFlags({ width, height }).slice(3)];
+}
+
+// The browser rung: a three.js world asks for the GPU; anything else (a 2D
+// film, or a Blender film that shows its path-traced plate under HTML type)
+// needs only the software rung.
+export function stageRung(treatment) {
+  return treatment?.depth === '3d' && treatment?.render3d !== 'blender' ? 'gpu' : 'software';
+}
+
 export function stageFlags({ width, height }) {
   return [
     '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu-rasterization',
@@ -221,25 +253,62 @@ export function stageFile(root, pathname) {
   return { status: 200, file: real, type };
 }
 
-export async function openStage({ runtime, stageDir, profileRoot, width, height, seed, fontCss, fontFiles, env = process.env }) {
+const webglProbe = () => {
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl2');
+  if (!gl) return { webgl2: false, renderer: null };
+  const ext = gl.getExtension('WEBGL_debug_renderer_info');
+  return { webgl2: true, renderer: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null };
+};
+
+export async function openStage({ runtime, stageDir, profileRoot, width, height, seed, fontCss, fontFiles, style = null, rung = 'software', platform = process.platform, env = process.env }) {
   const chrome = chromeExecutable(env);
   if (!chrome) throw fail(EXIT.BLOCKED_NO_CHROME, 'BLOCKED_NO_CHROME: Chrome/Chromium not found; install Chrome or set CHROME_PATH');
   const { chromium } = runtime('playwright-core');
-  const flags = stageFlags({ width, height });
   mkdirSync(profileRoot, { recursive: true });
   const profile = join(profileRoot, 'p');
+  const launch = (flags) => chromium.launchPersistentContext(profile, {
+    executablePath: chrome, headless: true, chromiumSandbox: true, args: flags, timeout: 30000,
+    viewport: { width, height }, deviceScaleFactor: 1, serviceWorkers: 'block',
+  });
+  const notices = [];
+  let flags = rung === 'gpu' ? gpuStageFlags({ width, height }, platform) : stageFlags({ width, height });
+  let used = rung;
   let context;
   try {
-    context = await chromium.launchPersistentContext(profile, {
-      executablePath: chrome, headless: true, chromiumSandbox: true, args: flags, timeout: 30000,
-      viewport: { width, height }, deviceScaleFactor: 1, serviceWorkers: 'block',
-    });
+    context = await launch(flags);
   } catch (error) {
-    rmSync(profile, { recursive: true, force: true });
-    throw fail(EXIT.BLOCKED_NO_CHROME, `BLOCKED_NO_CHROME: headless Chrome failed to launch on the software rung: ${launchCause(error)}`);
+    if (rung !== 'gpu') {
+      rmSync(profile, { recursive: true, force: true });
+      throw fail(EXIT.BLOCKED_NO_CHROME, `BLOCKED_NO_CHROME: headless Chrome failed to launch on the software rung: ${launchCause(error)}`);
+    }
+    notices.push(`the 3D route asked for the GPU rung and it did not start (${launchCause(error).slice(0, 120)}); rendered on the software rung (SwiftShader), slower, same frames`);
+    flags = stageFlags({ width, height });
+    used = 'software';
+    try {
+      context = await launch(flags);
+    } catch (retry) {
+      rmSync(profile, { recursive: true, force: true });
+      throw fail(EXIT.BLOCKED_NO_CHROME, `BLOCKED_NO_CHROME: headless Chrome failed to launch on both rungs: ${launchCause(retry)}`);
+    }
   }
-  const page = context.pages()[0] || await context.newPage();
+  let page = context.pages()[0] || await context.newPage();
   page.setDefaultTimeout(0);
+  const probe = await page.evaluate(webglProbe).catch(() => ({ webgl2: false, renderer: null }));
+  if (used === 'gpu' && !probe.webgl2) {
+    notices.push('the 3D route asked for the GPU rung and the page got no WebGL there; rendered on the software rung (SwiftShader), slower, same frames');
+    await context.close().catch(() => {});
+    flags = stageFlags({ width, height });
+    used = 'software';
+    try {
+      context = await launch(flags);
+    } catch (error) {
+      rmSync(profile, { recursive: true, force: true });
+      throw fail(EXIT.BLOCKED_NO_CHROME, `BLOCKED_NO_CHROME: headless Chrome failed to launch on the software rung: ${launchCause(error)}`);
+    }
+    page = context.pages()[0] || await context.newPage();
+    page.setDefaultTimeout(0);
+  }
   const cdp = await context.newCDPSession(page);
   const root = realpathSync(stageDir);
   const kit = readFileSync(join(here, 'stage-kit.js'));
@@ -260,6 +329,16 @@ export async function openStage({ runtime, stageDir, profileRoot, width, height,
     const path = decodeURIComponent(url.pathname);
     if (path === '/lit/stage-kit.js') return reply(200, CONTENT_TYPES['.js'], kit);
     if (path === '/lit/fonts.css') return reply(200, CONTENT_TYPES['.css'], fontCss);
+    if (path === '/lit/style.css' && style) return reply(200, CONTENT_TYPES['.css'], style.css);
+    if (path === '/lit/style.js' && style) return reply(200, CONTENT_TYPES['.js'], style.js);
+    if (path.startsWith('/lit/three/')) {
+      const found = threeFile(path);
+      if (found.status !== 200) {
+        contract.push(found.reason);
+        return reply(404, 'text/plain', 'not found');
+      }
+      return reply(200, CONTENT_TYPES['.js'], readFileSync(found.file));
+    }
     if (fontFiles.has(path)) return reply(200, CONTENT_TYPES[extname(path).toLowerCase()] || 'font/ttf', readFileSync(fontFiles.get(path)));
     const found = stageFile(root, path);
     if (found.status === 403) { contract.push(found.reason); return reply(403, 'text/plain', 'forbidden'); }
@@ -272,7 +351,7 @@ export async function openStage({ runtime, stageDir, profileRoot, width, height,
   await page.addInitScript({ content: `try { ${init.trim()}(${JSON.stringify({ seed, epochMs: 1767225600000 })}); } catch (error) { window.__litStageInitError = String(error && error.stack || error); }` });
   const sockets = profileSockets(profile);
   return {
-    page, cdp, flags, blocked, contract, sockets,
+    page, cdp, flags, blocked, contract, sockets, rung: used, renderer: probe.renderer, notices,
     async load() {
       await page.goto(`${ORIGIN}/index.html`, { waitUntil: 'load', timeout: 120000 });
       return page.evaluate(() => {
@@ -437,12 +516,22 @@ class StageSession {
     this.PNG = this.require('pngjs').PNG;
     this.fonts = fontRoutes(this.cache);
     this.ffmpeg = hasFfmpeg();
+    const filmStyle = readStyle(this.treatment.style);
+    this.style = { css: styleCss(filmStyle, this.treatment.format), js: styleScript(filmStyle, this.treatment.format, this.treatment) };
+    this.rung = stageRung(this.treatment);
+    // A Blender film shows its path-traced plate under HTML type, so it shares the page's
+    // run with a 3-D-of-any-kind page: render the plate first, blender --out DIR --final
+    // (no Blender: set render3d to three and use the GPU rung).
+    if (this.treatment.depth === '3d' && this.treatment.render3d === 'blender' && !readPlate(this.stageDir)) {
+      throw fail(EXIT.STAGE_CONTRACT_ERROR, `STAGE_CONTRACT_ERROR: render3d is blender but stage/plate/plate.json is missing or does not match its frames; render the plate first: blender --out ${this.out} --final (no Blender: set render3d to three and use the GPU rung)`);
+    }
   }
 
-  open(tag) {
+  open(tag, { stageDir = this.stageDir, width = this.size[0], height = this.size[1] } = {}) {
     return openStage({
-      runtime: this.require, stageDir: this.stageDir, profileRoot: join(this.out, '.run', `${tag}${process.pid % 100000}`),
-      width: this.size[0], height: this.size[1], seed: this.seed, fontCss: this.fonts.css, fontFiles: this.fonts.routes,
+      runtime: this.require, stageDir, profileRoot: join(this.out, '.run', `${tag}${process.pid % 100000}`),
+      width, height, seed: this.seed, fontCss: this.fonts.css, fontFiles: this.fonts.routes, style: this.style,
+      rung: this.rung || 'software',
     });
   }
 
@@ -576,7 +665,10 @@ class StageSession {
       schemaVersion: 2, path: 'stage', format: this.treatment.format, fps: this.fps, resolution: [W, H], durationSec: this.durationSec,
       targetDurationSec: this.treatment.durationSec, totalFrames: this.totalFrames, round: this.round, mode: this.mode,
       treatment: { file: join(this.out, 'treatment.json'), sha256: sha(readFileSync(join(this.out, 'treatment.json'))) },
-      chromeFlags: this.stage?.flags || [], chromeSockets: this.stage?.sockets || [], renderer: 'SwiftShader (software rung)',
+      chromeFlags: this.stage?.flags || [], chromeSockets: this.stage?.sockets || [],
+      rung: this.stage?.rung || this.rung || 'software',
+      renderer: this.stage?.rung === 'gpu' ? (this.stage?.renderer || 'GPU rung') : 'SwiftShader (software rung)',
+      rungNotices: this.stage?.notices || [],
       faces: this.faces, scan: this.scan, beats: this.beats, stills: this.plan, determinism: this.determinismResult || null,
       frameTimeMs: { p50: pick(0.5), p95: pick(0.95), captured: timing.length }, masterSec: this.masterSec, warnings: this.warnings,
       generatedAt: new Date().toISOString(), ...extra,
@@ -597,9 +689,24 @@ export async function stageCommand(flags) {
       writeJson(join(session.out, 'manifest.json'), manifest);
       stampStills(session.out);
       if (!session.ffmpeg && !session.stillsOnly) throw fail(EXIT.BLOCKED_NO_FFMPEG_FOR_VIDEO, `BLOCKED_NO_FFMPEG_FOR_VIDEO: stills and the contact sheet are in ${session.out}; ffmpeg is not on PATH, so no film was encoded`);
+      // The board round: the text and style rules run on the board frames, the storyboard is
+      // drawn with the verdict on it, and a FAIL ends the round here (exit 13).
+      const qa = await runTextQa(session);
+      writeJson(join(session.out, 'stills', 'check.json'), { rules: qa.rules, summary: qa.summary });
+      const beatFiles = stills.files.filter((f) => f.kind === 'beat-mid').sort((a, b) => a.beat - b.beat).map((f) => join(session.out, f.file));
+      const boardFile = await writeBoard({
+        out: session.out, treatment: session.treatment, beatFiles, check: { rules: qa.rules },
+        open: (opts) => session.open('b', opts),
+      });
+      const boardSha = addToStills(session.out, { file: 'stills/board.png', kind: 'board', frames: session.beats.map((b) => b.index) }, { sha256: sha });
+      const failed = qa.rules.filter((rule) => rule.status === 'FAIL');
+      if (failed.length) {
+        writeRunState(session.out, { exitCode: EXIT.GATE_FAIL_QA, mode: session.mode, round: session.round, finished: false, failed: failed.map((r) => r.id), path: 'stage' });
+        throw fail(EXIT.GATE_FAIL_QA, `BOARD_CHECK_FAIL: ${failed.map((r) => `${r.id} ${r.detail}`).join('; ')}. Fix the page, render --stills-only again, then look at the board ${boardFile} and every file in ${join(session.out, 'stills')}`);
+      }
       writeRunState(session.out, { exitCode: 0, mode: session.mode, round: session.round, finished: true, failed: [], path: 'stage' });
-      console.log(`stills: ${stills.files.map((f) => join(session.out, f.file)).join(' ')}`);
-      console.log('View every still, strip and the contact sheet, then record the round with `look` before the full render.');
+      console.log(`stills: ${stills.files.map((f) => join(session.out, f.file)).join(' ')} board ${boardFile} (stills index ${boardSha.slice(0, 12)})`);
+      console.log(`STILLS ONLY: board check PASS; open the storyboard ${boardFile} and every file in ${join(session.out, 'stills')}, record the round with look --round ${session.round}, make the change, then render the film with --round ${session.round + 1} (no --stills-only).`);
       return 0;
     }
     await session.determinism();

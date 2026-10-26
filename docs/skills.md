@@ -86,6 +86,21 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports.</td>
 </tr>
 <tr>
+<td></td>
+<td><code>lit-schematic</code><br /><sub><code>lit-schematic &lt;brief&gt;</code> · <code>/lit-schematic</code></sub></td>
+<td>Drawings of real equipment: QA-gated P&IDs, PFDs, apparatus figures and isometric cutaways as editable SVG with PDF and 600 dpi PNG.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-hijack</code><br /><sub><code>lit hijack &lt;brief&gt;</code> · <code>/lit-hijack</code></sub></td>
+<td>A clean-room port of published know-how: capture with provenance, licence gate, source-free spec, fenced build and parity proof.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
+<td>A cross-session brief: what each recent session was asked, did and waits on, roadmap gauges and one next step. Read-only.</td>
+</tr>
+<tr>
 <td><img src="./assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and the skill first picks one of eight looks for your deck, names it with two alternatives, then builds an editable PowerPoint file and its Markdown source. QA checks title, layout and fill variety on the finished file." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td>Ask for slides with <code>lit</code> and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file.</td>
@@ -213,8 +228,11 @@ These are all the skills you can call in LitHermes, with the words that start ea
 | `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints and blockers. |
 | `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases include `/lit-korean`, `/text-naturalization`, `/text-neutralization` and `/korean-ai-slop-remover`. |
 | `/lit-diagram-drawer <brief>` | Create an accessible, Korean-ready diagram and check its content and geometry with the installed Python tools. |
+| `/lit-schematic <brief>` | Draw a QA-gated P&ID, PFD, apparatus figure or isometric cutaway as editable SVG with PDF and 600 dpi PNG. |
 | `/lit-pptx <brief>` | Create and check a PowerPoint deck with the bundled AZURE-PRO engine. |
 | `/lit-docx <brief>` | Create, edit and audit a Word report with publisher profiles. |
+| `/lit-hijack <brief>` | Port published know-how into your own skill, clean-room: capture, licence gate, spec, build, parity. |
+| `/lit-adhd [--here] [--since 7d] [--max 12]` | Brief recent sessions with gauges and one next step, read-only. |
 | `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.
@@ -237,7 +255,7 @@ The installed skill IDs are `lit-pptx` and `lit-docx`; Hermes lists them as `lit
 
 ### Diagrams
 
-For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists it as `lithermes:lit-diagram-drawer`). You can also just ask for a diagram and put a bare `lit` before or after the request; LitHermes picks this skill and tells Hermes where its installed entrypoint is. Product pages belong to `frontend-ui-ux`, and plots of measured scientific data to `lit-scientific-visualization`.
+For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists it as `lithermes:lit-diagram-drawer`). You can also just ask for a diagram and put a bare `lit` before or after the request; LitHermes picks this skill and tells Hermes where its installed entrypoint is. Product pages belong to `frontend-ui-ux`, and plots of measured scientific data to `lit-scientific-visualization`. Drawings of real equipment (P&IDs, PFDs, apparatus figures, isometric cutaways) belong to `lit-schematic` (`lithermes:lit-schematic`, `/lit-schematic <brief>`).
 
 ### Films
 

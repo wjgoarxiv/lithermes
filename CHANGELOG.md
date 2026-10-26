@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- Add `lit-adhd` (alias `lit-rewind`) for the cross-session brief: a read-only Node collector over the Hermes session store, plans, goals, handoffs, git, the adhd stack file and run states, with D9 gauges, one next step and a bare-`go` continuation within 30 minutes; typed boundaries stay in chat. Routed by name, `lit adhd|rewind`, `/lit-adhd [--here] [--since 7d] [--max 12]` and a bare `go`, with a read-only prompt-hook stack and the counts-only headline as the status line.
+- Add `lit-hijack` for clean-room ports of published know-how: capture with provenance, licence gate, source-free spec, fenced build via `delegate_task`, parity proof, routed by name, `/lit-hijack <brief>` and `lit hijack|hijacking|하이재킹|하이잭` intent.
+- Add `lit-schematic` for drawings of real equipment: QA-gated P&IDs, PFDs, apparatus figures and isometric cutaways as editable SVG with PDF and 600 dpi PNG, routed by name, `/lit-schematic <brief>` and `lit` intent. `lit-diagram-drawer` keeps abstract boxes-and-arrows; measured-data plots stay with `lit-scientific-visualization`, which now renders a rich figure by default (light major grid, direct labels, insets, multi-panel context). Diagram defaults turn rich too (density near 8/10, 14–24 nodes, 3–5 role-bound accent families with OF-202 failing at six or more).
+
 ## [1.0.29] - 2026-10-26
 
 - The README studio's HyperFrames and Remotion templates pin newer `hono` and `fast-uri` in their lockfiles, picking up upstream fixes. A fresh template setup installs these versions; nothing else about how the skills run changes.

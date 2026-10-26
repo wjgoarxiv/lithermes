@@ -578,6 +578,10 @@ Stop when:
 
 On resume (after compaction, cancel, or restart): reread the on-disk `SESSION_DIR` — `expansion-log.md` for the lead ledger, every `wave-*.md` for merged findings, and the live plain-text tracker — before launching any new wave. The on-disk ledger, not session memory, is the source of truth for what is open and closed.
 
+## Port handoff
+
+When the user wants a found mechanism ported into their own skill, hand the ranked sources to `lit-hijack` (`lit hijack <source> into <target>`): it captures with provenance, applies the licence gate and builds a source-free spec the target can be built from.
+
 ## Anti-patterns
 
 - Self-activating on a question one read would answer.

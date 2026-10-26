@@ -95,6 +95,81 @@ def probe_line(route: str) -> str:
     return f"🔥 **LIT IGNITED · {discipline(route)}** 🔥"
 
 
+# Skill looks for the Hermes text surface (BRIEF-mod-looks). A skill or state maps
+# to a look = corner label + marker style, mirroring LitClaude lib/mod/motion.mjs
+# lookOf keyed on discipline. Hermes shows no colour or animation, so every look
+# is label/marker text only; NO_COLOR and reduced motion hold by construction.
+# Blocks are plain text with inline-code markers, so the natural router (which
+# only matches whole words at message start, outside code spans) stays inert.
+_LOOK_DISCIPLINES = {"lit-adhd": "rewind", "lit-rewind": "rewind", "review-work": "lanes"}
+
+_LOOK_BLOCKS = {
+    "rewind": (
+        "Look: REWIND <<. Open the brief with `REWIND <<` on its own line "
+        "(badges and gauges follow the skill). A wait opens with `YOUR TURN` "
+        "(plain text); done closes once with `✦ done`."
+    ),
+    "lanes": (
+        "Look: review-work lanes. One strip: `[lane[goal] ✓]` with a verdict, "
+        "`[lane[goal] ·]` without; keys goal, qa, code-quality, security, context. "
+        "Never fill a lane without its report. A wait opens with `YOUR TURN`; "
+        "done closes once with `✦ done`."
+    ),
+    "waiting": (
+        "Look: YOUR TURN. While the session waits on the user — a question, an approval, "
+        "a typed start-work boundary, a BLOCKED report — open the reply with the label "
+        "`YOUR TURN` on its own line. Plain text on this host: no amber, no breathing, "
+        "no flashing. Emit only while the wait holds; the user's next message ends it."
+    ),
+    "done": (
+        "Look: done burst. When a plan or goal reaches done, or a release is published, "
+        "close with one `✦ done` line, once. Never on routine turns, never repeated, "
+        "never looped."
+    ),
+}
+
+_WORK_LANE_KEYS = ("goal", "qa", "code-quality", "security", "context")
+
+
+def lookOf(discipline: str) -> str | None:
+    """Return the look name for a skill discipline, or None when it keeps no look."""
+    return _LOOK_DISCIPLINES.get(discipline)
+
+
+def look_block(name: str) -> str:
+    """Return the text-only look block for a look or state name, or '' when unknown."""
+    body = _LOOK_BLOCKS.get(name)
+    if not body:
+        return ""
+    return f'<lithermes-look name="{name}">\n{body}\n</lithermes-look>'
+
+
+def route_look_block(route: str) -> str:
+    """Return the discipline look block for a route, or '' when it keeps no look.
+
+    Never raises: an unparsable route simply selects no look.
+    """
+    try:
+        name = lookOf(discipline(route))
+    except ValueError:
+        return ""
+    return look_block(name) if name else ""
+
+
+def lanes_strip(reported: dict) -> str:
+    """Format the five review-work lanes from real report flags.
+
+    reported maps lane key -> True when that lane reported its verdict. Lanes
+    without a report render dim (`·`); a lane is never filled without its report.
+    Unknown keys are ignored so a caller typo cannot invent a lane.
+    """
+    parts = []
+    for key in _WORK_LANE_KEYS:
+        mark = "✓" if reported.get(key) is True else "·"
+        parts.append(f"[lane[{key}] {mark}]")
+    return " ".join(parts)
+
+
 def harness_banner(route: str) -> str:
     return f"🔥 LIT IGNITED · {discipline(route)} 🔥"
 

@@ -210,6 +210,86 @@ test("runtime: font fetch accepts only the pinned sha256 from a local mirror", a
   assert.equal(fs.existsSync(path.join(out, "bad.ttf")), false);
 });
 
+test("runtime: font fetch stays on the pinned host with dns checks and a timeout", async (t) => {
+  const { fetchPinned } = await import(path.join(skillRoot, "bin", "runtime.mjs"));
+  const entry = (over = {}) => ({ path: "fonts/demo.ttf", url: "https://cdn.example.invalid/fonts/demo.ttf", sha256: "0".repeat(64), ...over });
+  const target = () => path.join(tmp("motion-fontpin-"), "demo.ttf");
+  await t.test("a redirect off the pinned host is refused", async () => {
+    const calls = [];
+    const fetchImpl = async (url, options) => {
+      calls.push(String(url));
+      assert.ok(options && options.signal instanceof AbortSignal, "fetch needs a timeout signal");
+      return { status: 302, ok: false, headers: new Map([["location", "http://other.invalid/fonts/demo.ttf"]]), body: null };
+    };
+    await assert.rejects(
+      fetchPinned(entry(), target(), { mirror: "http://localhost:9", fetchImpl, lookupImpl: async () => [{ address: "93.184.216.34", family: 4 }] }),
+      /host|redirect/i,
+    );
+    assert.equal(calls.length, 1);
+  });
+  await t.test("a pinned host that resolves to loopback is refused before connecting", async () => {
+    let connected = false;
+    const fetchImpl = async () => { connected = true; throw new Error("must not connect"); };
+    await assert.rejects(
+      fetchPinned(entry(), target(), { mirror: "http://rebound.invalid", fetchImpl, lookupImpl: async () => [{ address: "127.0.0.1", family: 4 }] }),
+      /loopback|public/i,
+    );
+    assert.equal(connected, false);
+  });
+  await t.test("a loopback mirror is refused end to end", async () => {
+    const http = await import("node:http");
+    const server = http.createServer((req, res) => { res.writeHead(200); res.end("bytes"); });
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const port = server.address().port;
+      await assert.rejects(
+        fetchPinned(entry(), target(), { mirror: `http://127.0.0.1:${port}` }),
+        /loopback|public/i,
+      );
+    } finally {
+      server.close();
+    }
+  });
+});
+
+test("runtime: font fetch connects to the address the hop check approved, even if the name rebinds", async () => {
+  const { fetchPinned } = await import(path.join(skillRoot, "bin", "runtime.mjs"));
+  const { Readable } = require("node:stream");
+  const exterior = "203.0.113.9"; // TEST-NET-3: public, never a real host
+  let resolutions = 0;
+  const lookupImpl = async () => {
+    resolutions += 1;
+    // A rebinding name answers public once, then loopback: the socket must
+    // still go to the first, approved answer, with no second resolution.
+    return [{ address: resolutions === 1 ? exterior : "127.0.0.1", family: 4 }];
+  };
+  let connectedTo = null;
+  const requestImpls = {
+    "https:": (href, { lookup }, onResponse) => {
+      lookup("rebind.example", {}, (error, address, family) => {
+        assert.ifError(error);
+        connectedTo = `${address}#${family}`;
+      });
+      const req = {
+        on: () => req,
+        end: () => {
+          const body = Readable.from([Buffer.from("ok")]);
+          body.statusCode = 200;
+          body.headers = {};
+          onResponse(body);
+        },
+      };
+      return req;
+    },
+  };
+  const entry = { path: "fonts/demo.ttf", url: "https://rebind.example/fonts/demo.ttf", sha256: crypto.createHash("sha256").update("ok").digest("hex") };
+  const target = path.join(tmp("motion-rebind-"), "demo.ttf");
+  await fetchPinned(entry, target, { requestImpls, lookupImpl });
+  assert.equal(connectedTo, `${exterior}#4`);
+  assert.equal(resolutions, 1);
+  assert.equal(fs.readFileSync(target, "utf8"), "ok");
+});
+
 test("runtime: an absent or drifted --audio venv degrades to text timing, never repaired", async () => {
   const home = tmp("motion-audio-");
   const env = { ...process.env, HOME: home, XDG_CACHE_HOME: path.join(home, "cache") };
@@ -276,7 +356,7 @@ print(json.dumps(out))
   assert.match(help.stdout, /LitHermes lit-typographic-motion/);
 });
 
-test("pack: the tarball ships the engine, lockfiles, notices and licences, and stays under 12 MiB", () => {
+test("pack: the tarball ships the engine, lockfiles, notices and licences, and stays under 13 MiB", () => {
   const packed = spawnSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: packageRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   assert.equal(packed.status, 0, packed.stderr);
   const info = JSON.parse(packed.stdout)[0];
@@ -289,7 +369,8 @@ test("pack: the tarball ships the engine, lockfiles, notices and licences, and s
   assert.equal([...files].some((f) => f.startsWith(prefix) && /\.(?:ttf|otf|svg|woff2?)$/i.test(f)), false, "LitHermes bundles no motion font (MO-A-47)");
   assert.ok(files.has("assets/lithermes-plugin/motion_receipts.py"), "the look-receipt hook ships with the plugin");
   assert.equal([...files].some((f) => /fixtures\/motion-stage|motion-director-support|test\//.test(f)), false, "no stage fixture or test helper ships");
-  assert.ok(info.size <= 12 * 1024 * 1024, `pack is ${info.size} bytes`);
+  // 13 MiB cap since lit-schematic (32 files, ~390 KB packed) joined the payload.
+  assert.ok(info.size <= 13 * 1024 * 1024, `pack is ${info.size} bytes`);
   const text = fs.readFileSync(path.join(packageRoot, prefix, "engine", "NOTICE"), "utf8");
   assert.match(text, /ca251e3dddda422b364385eb484b5a3593a0990d/);
   const lock = fs.readFileSync(path.join(packageRoot, prefix, "runtime", "requirements.lock"), "utf8");

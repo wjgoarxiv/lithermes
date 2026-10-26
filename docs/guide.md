@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-        LH --> S["37 skills"]
+        LH --> S["39 skills"]
 ```
 
-> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 37-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
+> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 38-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
 
 ## Core commands
 
@@ -146,8 +146,8 @@ The complete skill catalog is `lit-burnoff-file`, `autoconference`, `autoresearc
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
 `lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
-`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-pptx`, `lit-docx`,
-`lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
+`lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-pptx`, `lit-docx`,
+`lit-hijack`, `lit-adhd`, `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,
 `wikify`, `lit-plan`, `litgoal`, and `litwork`.
 

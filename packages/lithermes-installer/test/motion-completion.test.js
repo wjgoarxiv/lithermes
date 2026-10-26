@@ -68,3 +68,46 @@ for (const [name, state] of done) {
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 }
+
+function previewDir({ pass = true }) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'motion-done-'));
+  const out = path.join(dir, 'out');
+  fs.mkdirSync(path.join(out, 'stills'), { recursive: true });
+  fs.writeFileSync(path.join(out, 'treatment.json'), JSON.stringify({ preview: true }));
+  fs.writeFileSync(path.join(out, 'stills', 'check.json'), JSON.stringify({ rules: [{ id: 'text-overlap', status: pass ? 'PASS' : 'FAIL', detail: pass ? 'no overlap' : 'overlap' }] }));
+  if (pass) fs.writeFileSync(path.join(out, 'stills', 'board.png'), 'board');
+  fs.writeFileSync(path.join(out, 'run-state.json'), JSON.stringify({ exitCode: 0, mode: 'stills-only', round: 1, failed: [], finished: true }));
+  return { dir, out };
+}
+
+test('completion counts: a preview film is done at its board', async () => {
+  const { checkCompletion } = await load();
+  const { dir, out } = previewDir({ pass: true });
+  try {
+    const result = checkCompletion(out);
+    assert.equal(result.done, true, result.reason);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('completion does NOT count: a preview film whose board check failed', async () => {
+  const { checkCompletion } = await load();
+  const { dir, out } = previewDir({ pass: false });
+  try {
+    const result = checkCompletion(out);
+    assert.equal(result.done, false);
+    assert.ok(result.reason.length > 0);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('completion records a downgrade but still counts the render', async () => {
+  const { checkCompletion } = await load();
+  const { dir, out } = runDir({ exit: 0 });
+  try {
+    fs.mkdirSync(path.join(out, '.run'), { recursive: true });
+    fs.writeFileSync(path.join(out, '.run', 'treatment-first.json'), JSON.stringify({ durationSec: 20, path: 'stage', sound: { mode: 'score' }, visualDevices: [{ role: 'subject', beats: [0, 1, 2, 3] }] }));
+    fs.writeFileSync(path.join(out, 'treatment.json'), JSON.stringify({ durationSec: 10, path: 'stage', sound: { mode: 'score' }, visualDevices: [{ role: 'subject', beats: [0] }] }));
+    const result = checkCompletion(out);
+    assert.equal(result.done, true, result.reason);
+    assert.ok(result.downgraded.length > 0, 'the shortened film is recorded as downgraded');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

@@ -162,7 +162,7 @@ test("the collapsible banner guard rejects lost copyability, changed rows and an
 });
 
 const GITHUB_SECTIONS = {
-  en: ["Why LitHermes", "Quick start", "What you get", "How it works", "Requirements, updates and removal", "Learn more", "Contributing"],
+  en: ["Why LitHermes", "Quick start", "What you get", "What you can make", "How it works", "Requirements, updates and removal", "Learn more", "Contributing"],
   ko: ["왜 LitHermes인가요", "빠른 시작", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "기여"],
 };
 const NPM_SECTIONS = {

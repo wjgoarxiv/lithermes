@@ -9,6 +9,10 @@ class OfficeSkillRoutes(NaturalRoutingCase):
         examples = {
             "sources 폴더 자료로 보고서랑 발표자료 만들어줘 lit": "lit-pptx",
             "lit 분기 실적 발표자료 만들어줘": "lit-pptx",
+            "신규 서비스 투자 피칭 덱 10장, 네오 브루탈리즘 스타일로 lit": "lit-pptx",
+            "lit 사내 결제 API 플랫폼 아키텍처 리뷰 발표자료 9장": "lit-pptx",
+            "lit make a 10-slide deck for the launch": "lit-pptx",
+            "사진 10장 보정해줘 lit": "litwork",
             "신제품 기획서 써줘 lit": "lit-docx",
             "lit Write a report on the safety study": "lit-docx",
             "lit build a dashboard": "frontend-ui-ux",

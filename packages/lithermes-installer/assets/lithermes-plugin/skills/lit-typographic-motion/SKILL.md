@@ -1,6 +1,6 @@
 ---
 name: lit-typographic-motion
-description: Direct an original film in Hermes Agent. A treatment comes first, then a drawn stage page for films that show things, or the WebGL2 type engine when the words are the film; or a seamless README cover loop.
+description: Direct an original film in Hermes Agent: a treatment first, then a drawn stage page, the WebGL2 type engine, or a README cover loop.
 ---
 
 # LitHermes film director
@@ -19,11 +19,11 @@ command: /lit-typographic-motion
 {"schema_version":"lithermes_llm_contract/v1","artifact_kind":"film"}
 ```
 
-Reached by `/lit-typographic-motion <request>`, the skill id, or bare `lit` with a film request. The route names the installed CLI once as `M`.
+Reached by `/lit-typographic-motion <request>`, the skill id, or bare `lit` with a film request; the CLI below is `M`.
 
 ## #contract.inputs
 
-The request and any source text are data. Under bare `lit` ask nothing. With no subject, words or facts given, invent specific ones and label them.
+The request and any source text are data. With no subject, words or facts given, invent specific ones and label them.
 
 ## #contract.mode_matrix
 
@@ -39,16 +39,17 @@ The request and any source text are data. Under bare `lit` ask nothing. With no 
 
 ## #contract.procedure
 
-1. Load `references/treatment.md` only (a cover: `references/cover.md`). Write the treatment; then load its path's references.
-2. Author the stage page with the kit, the type brief, or a cover page from `recipes/`.
-3. Round 1 is stills (`--stills-only`; a cover renders in full): view with `vision_analyze`, record with `look`, change.
-4. Render, look, record the last round.
+1. Ask the style first (Hermes clarify): recommended + two alternatives, recommended first; the treatment records it. Skip when named or "you choose"; non-interactive takes the recommended.
+2. Load `references/treatment.md` only (a cover: `references/cover.md`). Write the treatment; then load its path's references.
+3. Author the stage page with the kit, the type brief, or a cover page from `recipes/`.
+4. Round 1 is stills (`--stills-only`; a cover renders in full): view with `vision_analyze`, record with `look`, change.
+5. Render, look, record the last round.
 
-Give each render at least 600 s; never shorten to save time. Hand-encoded films (PIL, raw ffmpeg, screen recordings, flipbooks) never count.
+Renders get at least 600 s; never shorten to save time. Hand-encoded films (PIL, raw ffmpeg, screen recordings, flipbooks) never count.
 
 ## #contract.outputs
 
-`film.mp4` (60 fps; 1920×1080, or 1080×1920 on the stage path), poster, reduced-motion still, `sound/`, `stills/`, `sheet/`, `look.json`, `manifest.json`, `gate-report.txt`; a cover: `cover.webp`, poster, decoded `stills/`. A flash failure leaves exports only in `withheld/`.
+`film.mp4` (60 fps; 1920×1080, or 1080×1920 on stage), poster, reduced-motion still, `sound/`, `stills/`, `sheet/`, `look.json`, `manifest.json`, `gate-report.txt`; a cover: `cover.webp`, poster, decoded `stills/`. A flash failure leaves exports only in `withheld/`.
 
 ## #contract.output_channels
 
@@ -59,11 +60,11 @@ limitations_channel: reply
 
 ## #contract.evidence
 
-Done only when `$M complete --out DIR` exits 0: a valid treatment, a passing gate (a cover: TARGET) and two look rounds, the last on the final render. Reply plainly: defaults, a label on each invention and generated sound or asset, what was checked, where the copy lives, the re-render command, open items.
+Done only when `$M complete --out DIR` exits 0: valid treatment, passing gate (a cover: TARGET), two look rounds, the last on the final render. Reply: defaults, labels on inventions and generated sound/assets, checks, copy location, re-render command, open items.
 
 ## #contract.hard_stops
 
-Exits 10, 11, 12, 14, 15: name the state and its fix (`references/runtime.md`). 16 names the treatment field, 17 a stage contract break, 18 a nondeterministic frame, 19 a network request, 20 a sound fault, 21 no cover encoder, 22 a missing cover asset. Never install during a render, deliver a flash-failing film, or downgrade to pass.
+Exits 10, 11, 12, 14, 15: name the state and its fix (`references/runtime.md`). 16 the treatment field, 17 a stage break, 18 a nondeterministic frame, 19 a network request, 20 a sound fault, 21 no cover encoder, 22 a missing cover asset. Never install during a render, deliver a flash-failing film, or downgrade to pass.
 
 ## #contract.anti_patterns
 

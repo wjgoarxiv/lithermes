@@ -209,7 +209,7 @@ asking; a reference nobody can find does not exist.
 
 ### Rendered probe and mode loop
 
-Use the absolute installed probe command supplied by the route context or SKILL.md after a page is served locally. The driver verifies the pinned browser capability, opens seven isolated viewport passes, saves screenshots, and reports findings in report.json plus a review table. A missing or unverified browser exits 2 with `BLOCKED: browser unavailable`; source checks still run, but every rendered check remains not verified. Never install a browser or fetch a dependency during the session. The probe is product evidence; independent `visual-qa` acceptance remains a separate verdict.
+Use the absolute installed probe command supplied by the route context or SKILL.md after a page is served locally. The driver verifies the pinned browser capability, opens seven isolated viewport passes, saves screenshots, and reports findings in report.json plus a review table. A missing or unverified browser exits 2 with `BLOCKED: browser unavailable`; source checks still run, but every rendered check remains not verified. Never install a browser or fetch a dependency during the session. The probe is product evidence; independent `visual-qa` acceptance remains a separate verdict. For build, lock the look first: `scripts/design-lock.mjs init --family <landing|workspace|settings> --moment <kind> --moment-note "<what>" --dir <project> --scaffold`, then build from the kit layouts with only locked tokens; the probe enforces the lock from the page itself (DS-001/002/003/006/008 in `references/craft-floor.md`).
 
 Select the request's frontend mode before editing. build is the default and may author the requested UI. polish begins with a baseline probe and changes only the value of a flagged spacing, color, type, or motion rule; preserve structure and information architecture. audit runs the probe and reports, with zero source edits. harden tests only cue-backed axes: content length, content shape, quantity, container, state, and environment. For each axis record `Scenario | Observed | Owner`, or `not applicable: <reason>`. Repair only a defect the stress pass found. Explicit video, slides, or unrelated prose requests belong to their own routes.
 
@@ -463,7 +463,7 @@ enabled config: PASS
 
 $ hermes lithermes doctor
 [OK] plugin.yaml readable (version 1.0.29)
-[OK] skills bundled: 37
+[OK] skills bundled: 40
 [OK] litgoal durable runtime importable
 ```
 

@@ -1,0 +1,15 @@
+/* Locked tokens for the design-lock probe fixtures. The probe skips this
+   file by name; page styles must use only these var(--…) roles. */
+:root {
+  --font-text: "Pretendard Variable", system-ui, sans-serif;
+  --font-display: "Pretendard Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --c-ground: #f4f2ec;
+  --c-surface: #faf9f5;
+  --c-ink: #1a1a18;
+  --c-ink-muted: #5c5a54;
+  --c-line: #d8d5cc;
+  --c-accent: #2f5d3a;
+  --sp-2: 8px;
+  --sp-4: 16px;
+}

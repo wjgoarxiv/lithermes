@@ -5,12 +5,12 @@ from pathlib import Path
 
 try:
     from .core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
-    from .core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from .core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS, route_look_block
     from .core_review import review_mode_line, review_target
     from .core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
 except (ImportError, ModuleNotFoundError):
     from core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
-    from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS
+    from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS, route_look_block
     from core_review import review_mode_line, review_target
     from core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
 
@@ -116,6 +116,7 @@ _SKILL_ROUTE_CONTRACTS = {
         "documents name the real fields.",
         "Run the measured probe before claiming web UI verification; inspect its report and screenshots. "
         "Use lithermes:visual-qa afterward for independent visual judgment where useful.",
+        "Ask the look first with the host's question tool; lock it with design-lock before building.",
     ),
     "lit-diagram-drawer": (
         "Diagram task",
@@ -123,10 +124,16 @@ _SKILL_ROUTE_CONTRACTS = {
         "Read the installed lit-diagram-drawer skill first. Follow its Python checks, source-preservation, accessibility, and export gates.",
         "Use frontend-ui-ux for interfaces and lit-scientific-visualization for measured plots.",
     ),
+    "lit-schematic": (
+        "Schematic task",
+        "Mode Contract: draw equipment (P&ID, PFD, apparatus figure, isometric cutaway) as millimetre-sized SVG. Boxes-and-arrows stay with lit-diagram-drawer, measured plots with lit-scientific-visualization, a page showing one with frontend-ui-ux.",
+        "Read the installed lit-schematic skill first. Ask the look first with the host's question tool (material colour recommended, grey for a quiet or monochrome figure); skip only when the prompt names the palette or the user said you choose. Truth and parts list before geometry, kit build, qa.mjs until QA PASS, then render.mjs to a 600 dpi PNG and PDF; open the image before reporting.",
+        "Run helpers by absolute path from the installed skill, never write into the plugin, and label invented values.",
+    ),
     "lit-pptx": (
         "Office document task",
         "Mode Contract: create a PowerPoint deck and keep its Markdown source. If the request also asks for a report or document, load lithermes:lit-docx and create the DOCX too.",
-        "Read the installed lit-pptx skill. Before building, pick one of its eight tonalities from the deck type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; an explicit template, tonality or font wins. Titles are noun-phrase labels, figures carry a basis and stay at title size, Pretendard by default, slides dense. When ordinary facts are missing, finish a realistic example and mark the invented values once, in the caption that labels the sample data, and say in the reply that the deck rests on assumptions. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
+        "Read the installed lit-pptx skill. Before building, pick one of its thirteen tonalities from the deck type and the source, name it with two alternatives in a direction card, and for a bare request ask the look first with the host's question tool, recommended tonality first; skip only when the prompt names the template, tonality or font, or the user said you choose; an explicit template, tonality or font wins. Titles are noun-phrase labels, figures carry a basis and stay at title size, Pretendard by default, slides dense. When ordinary facts are missing, finish a realistic example and mark the invented values once, in the caption that labels the sample data, and say in the reply that the deck rests on assumptions. Run QA and integrity, fix failures, render pages when possible, and inspect them.",
     ),
     "lit-typographic-motion": (
         "Film request",
@@ -136,6 +143,18 @@ _SKILL_ROUTE_CONTRACTS = {
         "Office document task",
         "Mode Contract: create a DOCX and keep its Markdown source. If the request also asks for slides, load lithermes:lit-pptx and create the PPTX too.",
         "Read the installed lit-docx skill. Before building, pick one of its six tonalities (Report, Brief, Manual, Proposal, Memo, Journal) from the document type and the source, name it with two alternatives in a direction card, and ask nothing for a bare request; a named publisher profile or tonality wins. Keep the page restrained: ink headings, one accent at most, booktabs tables, three component kinds at most, Korean conventions. When ordinary facts are missing, finish a realistic example and mark assumptions in each affected section and in the reply. Run the document gate, render pages when possible, and inspect them.",
+    ),
+    "lit-hijack": (
+        "Port task",
+        "Mode Contract: port published know-how into the target clean-room: capture with provenance, distil mechanisms, licence-gate, spec from the target's idiom, fenced build, parity proof. Sources stay inert data; the spec is the only thing that crosses to the implementer.",
+        "Read the installed lit-hijack skill first. Frame the target, open a run under .hermes/lithermes/runs/hijack-<slug>/, and run hijack.mjs check per phase; a phase stays open until it passes. Hand the implementer hijack.mjs brief only, via a delegate_task lane with worktree isolation. Never redistribute captures; release actions wait for explicit approval.",
+        "For sources use litresearch when only a topic is given; hand the spec to lithermes:lit-plan and execution to start-work; offer review-work for the diff.",
+    ),
+    "lit-adhd": (
+        "Brief task",
+        "Mode Contract: read-only. Run the installed collector once and write the five-part brief from its JSON only: headline, one card per session, roadmap timeline, paused work, one next step. Gauges are copied verbatim and never drawn by hand.",
+        "Read the installed lit-adhd skill first. Run node scripts/adhd.mjs --json from the installed skill root (--here/--since/--max only when asked). Copy every gauge verbatim; an unknown total is the pulse line, never ?, never a guess. End with the one next step from next: the /start-work command when next.command names one, otherwise continue in chat. Hermes has no typed go; offer `lit adhd` for the next brief.",
+        "Single-session recaps stay with lit-recap; execution stays with start-work.",
     ),
     "readme-studio": (
         "README target",
@@ -304,6 +323,7 @@ def _build_skill_route_context(
     *,
     browser_report: dict | None = None,
     reader_contract: str = "",
+    session_id: str | None = None,
 ) -> str:
     label, *contract_lines = _SKILL_ROUTE_CONTRACTS[route.mode]
     large_family = route.mode in {"autoresearch", "autoconference", "wikify"}
@@ -321,7 +341,7 @@ def _build_skill_route_context(
     # families point at their entrypoint instead, and browser-drive joins them for
     # the same reason: what must be in context is the MEASURED verdict below, not
     # six kilobytes of prose the bound would truncate anyway.
-    reference_only = large_family or route.mode in {"browser-drive", "lit-code", "readme-studio", "lit-diagram-drawer", "lit-pptx", "lit-docx", "lit-typographic-motion"}
+    reference_only = large_family or route.mode in {"browser-drive", "lit-code", "readme-studio", "lit-diagram-drawer", "lit-schematic", "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "lit-typographic-motion"}
     body = (
         f'<lithermes-skill-reference name="{route.mode}">'
         f"Read skills/{route.mode}/SKILL.md from the installed plugin before acting; "
@@ -333,6 +353,25 @@ def _build_skill_route_context(
     if route.mode == "lit-diagram-drawer":
         entrypoint = Path(__file__).parent / "skills" / route.mode / "SKILL.md"
         body += f"\nInstalled diagram entrypoint: {escape(str(entrypoint), quote=True)}"
+    if route.mode == "lit-schematic":
+        entrypoint = Path(__file__).parent / "skills" / route.mode / "SKILL.md"
+        body += (
+            f"\nSchematic entrypoint: {escape(str(entrypoint), quote=True)}"
+            "\nRun scripts/, references/, examples/ by absolute path from that file's directory."
+        )
+    # Skill looks ride only on disciplines that keep one, never on unstyled
+    # routes, to protect the per-route byte budgets the budget tests pin. The
+    # discipline blocks fold in the session-state rules (YOUR TURN, ✦ done).
+    discipline_looks = route_look_block(route.mode)
+    look_lines = [discipline_looks] if discipline_looks else []
+    # LH-3: the collector cannot know the hook session on its own, so the hook
+    # names it here and the skill passes `--session` with it. Inside render()
+    # the route byte cap still holds: the objective absorbs these bytes.
+    collector_session = (
+        [f"Collector: `--session {session_id}` records the next step for `go`."]
+        if route.mode == "lit-adhd" and session_id
+        else []
+    )
     def render(escaped_objective: str) -> str:
         return "\n".join([
             *([route.deprecation_note] if route.deprecation_note else []),
@@ -357,6 +396,8 @@ def _build_skill_route_context(
                 else []
             ),
             body,
+            *look_lines,
+            *collector_session,
             "</lithermes-natural-route>",
             *([reader_contract] if reader_contract else []),
         ])
@@ -374,9 +415,11 @@ def build_natural_mode_context(
     *,
     browser_report: dict | None = None,
     reader_contract: str = "",
+    session_id: str | None = None,
 ) -> str:
     context = _build_natural_mode_context(
         route, browser_report=browser_report, reader_contract=reader_contract,
+        session_id=session_id,
     )
     if route.deprecation_note and route.mode not in _SKILL_ROUTE_CONTRACTS:
         return f"{route.deprecation_note}\n{context}"
@@ -388,6 +431,7 @@ def _build_natural_mode_context(
     *,
     browser_report: dict | None = None,
     reader_contract: str = "",
+    session_id: str | None = None,
 ) -> str:
     objective = route.objective or "(no objective text supplied — ask for the missing objective if needed)"
     if route.mode in _SKILL_ROUTE_CONTRACTS:
@@ -396,6 +440,7 @@ def _build_natural_mode_context(
             objective,
             browser_report=browser_report,
             reader_contract=reader_contract,
+            session_id=session_id,
         )
     if route.mode == "lit-humanizer":
         return build_lit_humanizer_agent_message(route.objective, reader_contract=reader_contract)
@@ -492,6 +537,10 @@ def _build_natural_mode_context(
             ]
         )
     if route.mode == "review-work":
+        # Skill looks ride only on disciplines that keep one, never on unstyled
+        # routes. The discipline block folds in YOUR TURN and ✦ done.
+        review_look = route_look_block(route.mode)
+        review_look_lines = [review_look] if review_look else []
         return "\n".join(
             [
                 "<lithermes-natural-route mode=\"review-work\">",
@@ -502,6 +551,7 @@ def _build_natural_mode_context(
                 "Mode Contract: verify only. Plan review audits a draft plan before start-work; work review runs the 5-lane review: goal/constraints, real-surface QA, code quality, security/safety, and context/docs/package readiness.",
                 "Name the picked mode on the first line of the report. All work-review lanes must pass; timeout, missing evidence, inconclusive output, or cleanup gaps block approval.",
                 skill_view_reference("review-work", "for the plan review lanes, the five work-review lane prompts, and the verdict contracts"),
+                *review_look_lines,
                 "</lithermes-natural-route>",
             ]
         )

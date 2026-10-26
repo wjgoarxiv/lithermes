@@ -51,11 +51,14 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `lit research <질문>` | `litresearch` | 출처 메모가 있는 조사 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | 검사를 거친, 편집 가능한 다이어그램 |
-| `/lit-pptx <brief>` | `lit-pptx` | 여덟 가지 디자인 방향 가운데 하나로 만든 PowerPoint 발표자료와 Markdown 원본 |
+| `/lit-schematic <brief>` | `lit-schematic` | QA 게이트를 거친 P&ID·장치도·아이소메트릭 단면도 |
+| `/lit-hijack <brief>` | `lit-hijack` | 라이선스 게이트와 parity 검증을 거친 공개 노하우의 클린룸 포팅 |
+| `/lit-adhd [--here] [--since 7d] [--max 12]` | `lit-adhd` | 게이지와 다음 한 단계로 최근 세션을 브리핑합니다. 읽기 전용입니다. |
+| `/lit-pptx <brief>` | `lit-pptx` | 열세 가지 디자인 방향 가운데 하나로 만든 PowerPoint 발표자료와 Markdown 원본 |
 | `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 37개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 39개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
 
 ## 확인, 업데이트, 삭제
 

@@ -276,6 +276,23 @@ class NaturalModeContracts(NaturalRoutingCase):
                 self.assertIn(f'<lithermes-skill-body name="{skill_name}">', context)
                 self.assertIn(_skill_body(skill_name), context)
                 self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
+    def test_bare_review_work_route_selects_the_lanes_look(self):
+        for message in ("review-work check this diff", "lit review this diff"):
+            with self.subTest(message=message):
+                out = self._hook(message, session=f"lanes-{abs(hash(message))}")
+                self.assertIsInstance(out, dict)
+                context = out["context"]
+                self.assertIn('mode="review-work"', context)
+                self.assertIn('name="lanes"', context)
+                self.assertIn("[lane[goal]", context)
+                self.assertIn("YOUR TURN", context)
+                self.assertIn("✦ done", context)
+
+    def test_bare_route_without_a_look_selects_none(self):
+        out = self._hook("lit plan a test plan", session="nolook-plan")
+        self.assertIsInstance(out, dict)
+        self.assertNotIn("<lithermes-look", out["context"])
+
     def test_lit_plan_and_litresearch_routes_defer_their_bodies_to_skill_view(self):
         # These bodies (28 KB, 45 KB, 21 KB and 26 KB) pushed every later-turn route past the
         # host's 10,000-character spill, so the model saw neither the body nor the

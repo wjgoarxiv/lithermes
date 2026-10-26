@@ -103,8 +103,12 @@ _BARE_SKILL_PREFIXES = (
     # reached by an ordinary English sentence; see the token-shape note below.
     ("frontend-ui-ux", "frontend-ui-ux"),
     ("lit-diagram-drawer", "lit-diagram-drawer"),
+    ("lit-schematic", "lit-schematic"),
     ("lit-pptx", "lit-pptx"),
     ("lit-docx", "lit-docx"),
+    ("lit-hijack", "lit-hijack"),
+    ("lit-adhd", "lit-adhd"),
+    ("lit-rewind", "lit-adhd"),
     ("lit-typographic-motion", "lit-typographic-motion"),
     ("readme-studio", "readme-studio"),
     ("visual-qa", "visual-qa"),
@@ -158,8 +162,20 @@ _LIT_SKILL_SUFFIXES = (
     ("rules", "rules"),
     ("frontend-ui-ux", "frontend-ui-ux"),
     ("lit-diagram-drawer", "lit-diagram-drawer"),
+    ("lit-schematic", "lit-schematic"),
     ("lit-pptx", "lit-pptx"),
     ("lit-docx", "lit-docx"),
+    ("lit-hijack", "lit-hijack"),
+    ("hijack", "lit-hijack"),
+    ("hijacking", "lit-hijack"),
+    ("lit-adhd", "lit-adhd"),
+    ("lit-rewind", "lit-adhd"),
+    ("adhd", "lit-adhd"),
+    ("rewind", "lit-adhd"),
+    # Korean hijack words are safe here: the user already typed `lit`, and neither
+    # opens an ordinary sentence without it.
+    ("하이재킹", "lit-hijack"),
+    ("하이잭", "lit-hijack"),
     ("lit-typographic-motion", "lit-typographic-motion"),
     ("readme-studio", "readme-studio"),
     ("visual-qa", "visual-qa"),
@@ -486,6 +502,84 @@ def detect_ui_mode(text: str) -> str | None:
     return "build" if detect_ui_intent(value) else None
 
 
+# SCHEMATIC route: drawings of real equipment (P&ID, PFD, apparatus figure,
+# isometric cutaway). It is reachable by name, and after an explicit `lit` by
+# intent. A STRONG noun names a drawing by itself (P&ID, 계장도, 모식도, 장치도,
+# 피앤아이디, 컷어웨이); a WEAK noun (schematic, isometric, apparatus, 도면)
+# also names documents and pictures of other things, so it needs a drawing or
+# making verb and no web container. Hangul terms are bare substrings for the
+# reason given at the UI route. Owners keep what is theirs: a report or deck
+# ABOUT a drawing goes to the office skills, a page that SHOWS one goes to
+# frontend-ui-ux, a chart or graph goes to the data-figure skill.
+SCHEMATIC_MODE = "lit-schematic"
+_SCHEMATIC_STRONG = re.compile(
+    r"\bp\s?&\s?i\s?ds?\b|\bpfds?\b|\bbfds?\b|piping\s+(?:and|&)\s+instrumentation|"
+    r"process\s+flow\s+(?:diagram|sheet)s?|block\s+flow\s+diagrams?|\bplot\s+plans?\b|equipment\s+layouts?|"
+    r"experimental\s+(?:set\s?up|apparatus)|\bcut\s?aways?\b|컷어웨이|배관\s?계장도|계장도|공정\s?흐름도|공정도|"
+    r"모식도|장치도|실험\s?장치|피앤아이디|배치도|계통도|단면도",
+    re.IGNORECASE,
+)
+# 도면 alone also names a document topic ("도면 번호 체계 정리"), so it needs a verb.
+_SCHEMATIC_WEAK = re.compile(r"\bschematics?\b|\bisometric\b|\bapparatus\b|사시도|개략도|아이소메트릭|도면", re.IGNORECASE)
+_SCHEMATIC_CHART = re.compile(r"차트|그래프|\b(?:charts?|graphs?|plots?(?!\s+plans?\b))\b", re.IGNORECASE)
+_SCHEMATIC_DRAW_VERB = re.compile(
+    r"\b(?:draw|drawing|drew|sketch|sketching|illustrate|illustrating|render|rendering|redraw)\b|그려|그리|그림|도식|작도",
+    re.IGNORECASE,
+)
+_SCHEMATIC_MAKE_VERB = re.compile(r"\b(?:make|making|create|creating|design|designing|build|lay\s?out)\b|만들|만드", re.IGNORECASE)
+# Whole interfaces a schematic can sit inside. 레이아웃/layout stay out: an
+# equipment layout is a drawing.
+_SCHEMATIC_INTERFACE = re.compile(
+    r"\b(?:dashboards?|landing\s?pages?|web\s?pages?|websites?|homepages?|web\s?apps?|apps?|screens?|"
+    r"admin\s?(?:panel|console)|user\s?interface|ui)\b|대시보드|웹사이트|랜딩|페이지|화면|앱",
+    re.IGNORECASE,
+)
+_SCHEMATIC_WEB_CONTAINER = re.compile(
+    r"페이지|웹사이트|랜딩|화면|컴포넌트|버튼|\b(?:page|pages|website|landing|screen|component|button)\b", re.IGNORECASE
+)
+_SCHEMATIC_AUTHORING = re.compile(
+    r"만들|작성|써\s*줘|써줘|제작|생성|정리|(?:^|[^A-Za-z])(?:make|create|write|draft|prepare|build|produce|generate)(?![A-Za-z])",
+    re.IGNORECASE,
+)
+_SCHEMATIC_OFFICE = re.compile(
+    r"발표자료|발표|슬라이드|피피티|보고서|리포트|기획서|제안서|문서|워드|"
+    r"(?:^|[^A-Za-z])(?:slides?|deck|presentation|pptx?|report|docx?|word)(?![A-Za-z])",
+    re.IGNORECASE,
+)
+# Code, tooling and software contexts a schematic never owns: a parser, a
+# regression, an app or widget is built or fixed elsewhere, so a request that
+# names one without a drawing verb keeps its owner's route.
+_SCHEMATIC_CODE = re.compile(
+    r"\b(?:fix|fixed|fixing|parser|regression|bug|error|refactor|tests?|editor|apps?|widgets?|tools?|apis?|components?|plugins?)\b|파서|회귀|버그|에러|테스트|편집기",
+    re.IGNORECASE,
+)
+
+
+def detect_schematic_intent(text: str) -> bool:
+    """True when a request after `lit` asks for a drawing of real equipment."""
+    value = str(text or "")
+    strong = _SCHEMATIC_STRONG.search(value)
+    # A cutaway or P&ID asked for as a film stays here: this skill draws the
+    # equipment and renders its own loop; a film about anything else is the motion skill's.
+    if strong and detect_motion_video_intent(value):
+        return True
+    if not strong and not (
+        _SCHEMATIC_WEAK.search(value)
+        and (_SCHEMATIC_DRAW_VERB.search(value) or _SCHEMATIC_MAKE_VERB.search(value))
+        and not _SCHEMATIC_WEB_CONTAINER.search(value)
+    ):
+        return False
+    if _SCHEMATIC_CHART.search(value):
+        return False
+    draws = bool(_SCHEMATIC_DRAW_VERB.search(value))
+    if not draws and _SCHEMATIC_CODE.search(value):
+        return False
+    if detect_ui_mode(value) is not None and _SCHEMATIC_INTERFACE.search(value) and not draws:
+        return False
+    office = bool(_SCHEMATIC_AUTHORING.search(value) and _SCHEMATIC_OFFICE.search(value))
+    return draws or not office
+
+
 # MO-C-18..20: the motion trigger is a creation verb plus a compound
 # motion-video noun, or plus a bare video noun, with none of five exclusions.
 # The verb half reuses this product's office/UI creation verbs and adds a small
@@ -524,6 +618,12 @@ _MOTION_EMBED = re.compile(r"넣|삽입|(?<![A-Za-z])(?:embed\w*|insert\w*)(?![A
 _MOTION_BACKGROUND = re.compile(r"배경\s*영상|(?<![A-Za-z])background\s+videos?(?![A-Za-z])", re.IGNORECASE)
 # (iii) an office deliverable other than a bare 발표, with an embed/insert verb
 _MOTION_SLIDES = re.compile(r"발표\s*자료|슬라이드|피피티|덱|(?<![A-Za-z])(?:pptx?|slides?|decks?)(?![A-Za-z])", re.IGNORECASE)
+# A slide count next to a slide noun ("덱 10장", "10-slide deck").
+_SLIDE_COUNT = re.compile(
+    r"\d+\s*장\s*(?:덱|슬라이드|피피티|발표)|(?:덱|슬라이드|피피티|발표\s*자료|발표)\s*\d+\s*장|"
+    r"(?<![A-Za-z])\d+\s*-\s*slide\s+decks?(?![A-Za-z])|(?<![A-Za-z])\d+\s+slides?(?![A-Za-z])",
+    re.IGNORECASE,
+)
 _MOTION_DOCS = re.compile(r"보고서|문서|(?<![A-Za-z])(?:reports?|documents?)(?![A-Za-z])", re.IGNORECASE)
 # (iv) a text or image artifact about a video
 _MOTION_ABOUT = re.compile(
@@ -648,11 +748,21 @@ def _bare_lit_mode(objective: str) -> str:
     slide = re.search(r"발표자료|발표|슬라이드|피피티|(?:^|[^A-Za-z])(?:slides?|deck|presentation|pptx?)(?![A-Za-z])", first, re.IGNORECASE)
     document = re.search(r"보고서|리포트|기획서|제안서|문서|워드|(?:^|[^A-Za-z])(?:report|docx?|word)(?![A-Za-z])", first, re.IGNORECASE)
     authoring = re.search(r"만들|작성|써\s*줘|써줘|제작|생성|정리|(?:^|[^A-Za-z])(?:make|create|write|draft|prepare|build|produce|generate)(?![A-Za-z])", first, re.IGNORECASE)
+    # A drawing of real equipment is decided before motion and office, with the
+    # owner exclusions inside detect_schematic_intent, so "P&ID 그려줘" is a
+    # drawing while "P&ID 설명 보고서 작성" stays a document.
+    if detect_schematic_intent(first):
+        return SCHEMATIC_MODE
     # The motion check runs before the office and UI checks (MO-C-18), so a
     # video noun beside a bare 발표 or 타이포그래피 still reaches motion.
     motion = motion_route(first)
     if motion is not None:
         return motion
+    # A slide count beside a slide noun is deck intent even without a making
+    # verb ("신규 서비스 투자 피칭 덱 10장, 네오 브루탈리즘 스타일로"). A bare
+    # photo count ("사진 10장 보정") names no slide noun and stays out.
+    if _SLIDE_COUNT.search(first):
+        return "lit-pptx"
     if authoring and slide:
         return "lit-pptx"
     if authoring and document:
@@ -782,6 +892,18 @@ def detect_lit_mode(message: str) -> NaturalLitRoute | None:
                 block_message=block,
             )
 
+        # Hijack words sit ahead of plan/review/research: "lit hijack this plan"
+        # ports a plan, it does not plan.
+        for word in ("lit-hijack", "hijack", "hijacking", "하이재킹", "하이잭"):
+            rest = _after_mode_word(after, word)
+            if rest is not None:
+                return NaturalLitRoute(mode="lit-hijack", objective=_clamp_task(rest), visible_message=visible)
+        # ADHD words sit ahead of plan/review/research the same way: "lit adhd
+        # this plan" is a brief over the plan, it does not plan.
+        for word in ("lit-adhd", "lit-rewind", "adhd", "rewind"):
+            rest = _after_mode_word(after, word)
+            if rest is not None:
+                return NaturalLitRoute(mode="lit-adhd", objective=_clamp_task(rest), visible_message=visible)
         for word, mode in (
             ("plan", "lit-plan"),
             ("review", "review-work"),
@@ -794,6 +916,10 @@ def detect_lit_mode(message: str) -> NaturalLitRoute | None:
             if rest is not None:
                 return NaturalLitRoute(mode=mode, objective=_clamp_task(rest), visible_message=visible)
 
+        # After the named routes and before the motion and `design` checks: a
+        # cutaway or P&ID asked for as a film or a design stays a drawing.
+        if detect_schematic_intent(_first_sentence(after)):
+            return NaturalLitRoute(mode=SCHEMATIC_MODE, objective=_clamp_task(after), visible_message=visible)
         # After the named routes and before `design` (which names the UI skill):
         # "lit design a lyric video" is a film request (MO-C-18).
         if detect_motion_video_intent(_first_sentence(after)):

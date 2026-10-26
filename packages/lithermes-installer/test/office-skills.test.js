@@ -95,7 +95,7 @@ test('Office skills choose a named direction and ship its packs, references and 
   for (const check of ['notice.dash', 'page.spill', 'list.split', 'heading.apart']) assert.match(docContract, new RegExp('`' + check.replace('.', '\\.') + '`'));
   assert.match(docContract, /office\.mjs gate|`office\.mjs gate`/);
   const contexts = fs.readFileSync(path.join(plugin, 'core_contexts.py'), 'utf8');
-  assert.match(contexts, /eight tonalities[\s\S]*two alternatives/);
+  assert.match(contexts, /thirteen tonalities[\s\S]*two alternatives/);
   assert.match(contexts, /six tonalities[\s\S]*two alternatives/);
   assert.doesNotMatch(contexts, /Default to AZURE-PRO/);
 });

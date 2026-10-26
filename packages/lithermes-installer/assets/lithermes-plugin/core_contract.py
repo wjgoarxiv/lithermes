@@ -7,9 +7,9 @@ import shlex
 from pathlib import Path, PurePosixPath
 
 try:
-    from .lit_mark import acknowledgement, acknowledge_reply, probe_contract, probe_line, discipline, configure_welcome_skin
+    from .lit_mark import acknowledgement, acknowledge_reply, probe_contract, probe_line, discipline, configure_welcome_skin, route_look_block
 except ImportError:
-    from lit_mark import acknowledgement, acknowledge_reply, probe_contract, probe_line, discipline, configure_welcome_skin
+    from lit_mark import acknowledgement, acknowledge_reply, probe_contract, probe_line, discipline, configure_welcome_skin, route_look_block
 
 # Model-only probe; the harness acknowledgement is rendered independently.
 LIT_PROBE_LINE = probe_line("litwork")

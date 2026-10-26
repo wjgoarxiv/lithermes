@@ -52,7 +52,8 @@ SLASH_COMMANDS = (
     "lit-recap", "lit-handoff",
     "lit-scientific-visualization",
     "lit-diagram-drawer",
-    "lit-pptx", "lit-docx", "lit-typographic-motion",
+    "lit-schematic",
+    "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "lit-typographic-motion",
 )
 GOAL_TOOLS = (
     "goal_set", "goal_status", "goal_add_criterion", "goal_evidence",
@@ -538,7 +539,7 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     else:
         lines.append("[WARN] lit-diagram-drawer entrypoint missing")
         healthy = False
-    for name in ("lit-pptx", "lit-docx", "lit-typographic-motion"):
+    for name in ("lit-schematic", "lit-pptx", "lit-docx", "lit-typographic-motion"):
         entrypoint = PLUGIN_ROOT / "skills" / name / "SKILL.md"
         if entrypoint.is_file():
             lines.append(f"[OK] {name} entrypoint present")

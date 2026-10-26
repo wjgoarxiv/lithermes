@@ -261,6 +261,42 @@ layout: references-appendix
         self.assertTrue(any(f["slide"] == 1 and f["severity"] == "HIGH" and "bottom title" in str(f["value"]) for f in self.findings(up, "OF-115")),
                         self.findings(up, "OF-115"))
 
+    def test_bottom_anchored_table_takeaways_read_below_the_title_while_a_top_title_column_still_fails(self):
+        # The CB engineering-review table slide keeps the source arrangement: a full-width table
+        # with its takeaways under it and the title on the floor. Like the source gate, the body is
+        # read below a bottom title, so no column stands short of another; under a top title the
+        # strict read stays, and a shortened column still fails.
+        table = ("| 엔드포인트 | 호출 비중 | p50 (ms) | p99 (ms) | 오류율 | v2 대비 p99 |\n"
+                 "|---|---|---|---|---|---|\n"
+                 "| GET /orders | 38% | 21 | 142 | 0.03% | ▼ −61% |\n"
+                 "| POST /orders | 17% | 48 | 231 | 0.11% | ▼ −52% |\n"
+                 "| GET /tracking | 29% | 18 | 120 | 0.02% | ▼ −64% |\n"
+                 "| POST /auth/token | 9% | 35 | 264 | 0.19% | ▼ −38% |\n"
+                 "| 기타 14개 | 7% | 30 | 198 | 0.08% | ▼ −49% |")
+        points = ("- 토큰 발급만 오류율이 SLO 근처다: 외부 인증 서버 타임아웃이 원인이다\n"
+                  "- 인증 서버 증설 전까지 토큰 캐시 TTL을 5분에서 15분으로 늘린다\n"
+                  "- 호출의 67%를 차지하는 두 조회 경로는 p99가 150 ms 아래다\n"
+                  "- 주문 생성은 재고 서비스 호출 때문에 조회보다 p99가 1.6배 길다")
+        bottom, _ = self.one("eb", "computational-brutalism",
+                             "layout: table-insight\ntitle: bottom-anchor\n\n## 엔드포인트별 지연과 오류, 10월 2주\n\n"
+                             + table + "\n\n> 표 1. 엔드포인트별 지연과 오류율, 2026년 10월 2주 (예시)\n\n" + points)
+        self.assertEqual(self.findings(bottom, "OF-115"), [])
+        top, _ = self.one("eb-top", "computational-brutalism",
+                          "layout: table-insight\ntitle: top-rule\n\n## 엔드포인트별 지연과 오류, 10월 2주\n\n"
+                          + table + "\n\n> 표 1. 엔드포인트별 지연과 오류율, 2026년 10월 2주 (예시)\n\n" + points)
+        self.assertEqual(self.findings(top, "OF-115"), [])
+
+        def sink(prs):
+            k = 0
+            for shape in prs.slides[0].shapes:
+                if shape.has_text_frame and any(mark in shape.text_frame.text for mark in
+                                                ("토큰 발급만", "인증 서버 증설", "호출의 67%", "주문 생성은")):
+                    shape.top = Pt(360 + 26 * k)
+                    k += 1
+        planted = self.plant(top, self.tmp / "eb-short.pptx", sink)
+        self.assertTrue(any("column beside a longer one" in str(f["value"]) for f in self.findings(planted, "OF-115")),
+                        self.findings(planted, "OF-115"))
+
     def test_side_rail_carries_criteria_takeaways_and_source_and_the_gate_fails_an_empty_rail(self):
         out, shapes = self.one("c", "ledger", """layout: comparison
 title: side-rail

@@ -14,6 +14,9 @@ const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const PPTX_ALLOWED = {
   // Notes for whoever writes the deck; references/tonalities/<id>.md carries the same list under "Avoid".
   avoid: 'authoring notes, not a rendering setting',
+  // Gate-floor allowances a pack claims for itself; enforced by scripts/craft_extras.py
+  // (OF-101 accent families, OF-120 offset shadows) and range-checked by template-registry.js.
+  qa: 'pack-claimed gate allowances, read by the Python gate, not the JS renderer',
 };
 const DOCX_ALLOWED = {
   schema_version: 'the pack format version, for readers of the file',
@@ -30,6 +33,7 @@ const PPTX_GROUPS = {
   chart: { holder: 'chart', binding: /const chart = S\.pack\.chart\b/ },
   image: { holder: 'S\\.pack\\.image', binding: /S\.pack\.image\b/ },
   display: { holder: 'display', binding: /S\.pack\.display\b/ },
+  shadow: { holder: 'S.pack.shadow', binding: /S\.pack\.shadow\b/ },
 };
 
 function pptxEngine() {

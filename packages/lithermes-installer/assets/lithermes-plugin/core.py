@@ -111,6 +111,11 @@ try:
 except (ImportError, ModuleNotFoundError):
     import lit_reentry as _lit_reentry
 
+try:
+    from . import adhd_stack as _adhd_stack
+except (ImportError, ModuleNotFoundError):
+    import adhd_stack as _adhd_stack
+
 # Current-turn state stays in the compatibility facade because tests and the
 # plugin register surface intentionally inspect it directly.
 _PENDING_IGNITE: set[str] = set()
@@ -272,13 +277,18 @@ def release_rules_session(session_id: Any) -> None:
 def ignite(result: str | dict[str, str], route: str = "litwork") -> str | dict[str, str]:
     """Draw a command acknowledgement and require a separate model probe."""
     mark = acknowledgement(route, color=True)
+    # Skill looks ride only on disciplines that keep one, never on unstyled
+    # routes, to protect the per-route byte budgets the budget tests pin. The
+    # discipline block folds in the session-state rules (YOUR TURN, ✦ done).
+    discipline_looks = route_look_block(route)
+    looks_suffix = f"\n\n{discipline_looks}" if discipline_looks else ""
     if isinstance(result, dict):
         updated = dict(result)
         display = result.get("display")
         if display and not str(display).startswith(mark):
             updated["display"] = f"{mark}\n{display}"
         if result.get("agent_message"):
-            updated["agent_message"] = f"{probe_contract(route)}\n\n{result['agent_message']}"
+            updated["agent_message"] = f"{probe_contract(route)}\n\n{result['agent_message']}{looks_suffix}"
         return updated
     if isinstance(result, str) and result.strip() and not result.startswith(mark):
         return f"{mark}\n{result}"
@@ -1685,6 +1695,18 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     bind_obj = _extract_bind_goal(user_message)
     if bind_obj:
         return None
+    # A bare `go` continues the step the last brief offered. The hook consumes
+    # the word and injects the next-step record; it never runs a command.
+    # Hermes has no typed `go`, so nothing else can collide with this match.
+    if _adhd_stack.match_go_word(user_message):
+        try:
+            note = _adhd_stack.go_note(Path.cwd().resolve(), session_id)
+        except Exception:
+            note = (
+                "The user typed `go` but the next-step record could not be read. "
+                "Offer `lit adhd` for a fresh brief instead of inventing a step."
+            )
+        return {"context": note}
     # /lit and /lit-loop inject a run-context message. Durable run state already
     # exists, so skip re-injecting context without touching native /goal state.
     if "<lithermes-run-context>" in user_message:
@@ -1729,7 +1751,7 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         if session_id:
             _PENDING_BLOCK[session_id] = route.block_message
             _evict_pending_browser_state()
-        return with_reader_contract(build_natural_mode_context(route), compact=True)
+        return with_reader_contract(build_natural_mode_context(route, session_id=session_id), compact=True)
 
     active = discipline(route.mode) if session_id else ""
     compacted = _rules.compaction_stamp(kwargs.get("conversation_history"))
@@ -1762,13 +1784,15 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     if route.mode == "lit-plan" and route.objective:
         planned = command_lit_plan(shlex.quote(route.objective))
         _lit_reentry.remember(session_id, active, plan=planned["plan"], compacted=compacted)
+        _adhd_stack.push(Path.cwd().resolve(), session_id, active)
         return with_reader_contract(
-                f"{build_natural_mode_context(route)}\n\n"
+                f"{build_natural_mode_context(route, session_id=session_id)}\n\n"
                 f"Durable plan: {planned['plan']}",
                 compact=True,
         )
     if route.mode != "litwork":
         _lit_reentry.remember(session_id, active, compacted=compacted)
+        _adhd_stack.push(Path.cwd().resolve(), session_id, active)
         if route.mode in _SKILL_ROUTE_CONTRACTS:
             compact_contract = reader_facing_contract_block(
                 requested_reader_mode,
@@ -1782,10 +1806,11 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
                     route,
                     browser_report=browser_report,
                     reader_contract=compact_contract,
+                    session_id=session_id,
                 )
             }
         return with_reader_contract(
-            build_natural_mode_context(route, browser_report=browser_report),
+            build_natural_mode_context(route, browser_report=browser_report, session_id=session_id),
             compact=True,
         )
 
@@ -1802,6 +1827,7 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
             )
             run_binding = build_run_binding(load_run_state(run_dir))
             _lit_reentry.remember(session_id, active, run=str(run_dir), compacted=compacted)
+            _adhd_stack.push(workspace, session_id, active)
     ui_handoff = litwork_ui_handoff(route.objective)
     # A bare `lit` with nothing active asks what to start; every other activation is unchanged.
     idle_note = f"\n\n{_lit_reentry.IDLE_NOTE}" if not run_binding and step.idle else ""

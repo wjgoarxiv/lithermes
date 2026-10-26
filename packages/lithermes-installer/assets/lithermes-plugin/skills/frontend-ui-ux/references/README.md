@@ -23,9 +23,7 @@ This index is the read map for `SKILL.md`. Load the short, task-specific referen
 | [adaptive-layout.md](adaptive-layout.md) | Viewport, container, zoom, locale, or input mode changes layout. |
 | [system-foundations.md](system-foundations.md) | Tokens, primitives, variants, or theme boundaries are changing. |
 | [visual-language.md](visual-language.md) | Type, color, imagery, icons, depth, or chart choices need rules. |
-| [brand-and-imagery.md](brand-and-imagery.md) | Brand authority, reference images, or shipped assets are involved. |
-
-## Interaction, motion, and review
+| [brand-and-imagery.md](brand-and-imagery.md) | Brand authority, reference images, or shipped assets are involved. |## Interaction, motion, and review
 
 | Reference | Use when |
 | --- | --- |
@@ -36,7 +34,7 @@ This index is the read map for `SKILL.md`. Load the short, task-specific referen
 | [evidence-review.md](evidence-review.md) | An independent review, findings, or evidence handoff is requested. |
 | [complete-contract.md](complete-contract.md) | Full Design Contract schemas, field guidance, and evidence helpers are required. |
 | [taste-direction.md](taste-direction.md) | Additional visual direction and variance guidance is needed. |
-| [craft-floor.md](craft-floor.md) | Numbered craft checks, responsive passes, and thresholds guide implementation or review. |
+| [craft-floor.md](craft-floor.md) | Numbered craft checks, responsive passes, and thresholds — including the DS-001..008 design-lock rules — guide implementation or review. |
 | [slop-register.md](slop-register.md) | Detectable generic patterns and reviewer prompts guide the cheaper fix. |
 
 ## Worked-example slot

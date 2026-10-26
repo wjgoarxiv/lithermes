@@ -16,6 +16,11 @@ The commands emit JSON with issue codes and return nonzero when a check fails. `
 
 `verify-motion.py` detects source patterns such as SMIL animation, unbounded CSS/JavaScript motion, and missing reduced-motion markers. It cannot prove that the static composition is complete or that controls are accessible, so review those properties separately. `check-visible-text.py` extracts visible SVG/document text before applying the exact installed LitHumanizer rules; it does not treat CSS or markup as prose.
 
+## Craft-floor notes
+
+- **Accent count (OF-202):** node fills use six or more saturated hue families. Three to five families is the default palette and passes; bind each to one role, name it in the legend, and pair it with a label, icon or line style. Reduce the families by merging roles, not by greying out the drawing.
+- **Cluster gap ratio (OF-201), label case (OF-203, advisory) and label overflow (OF-204)** keep their earlier thresholds.
+
 ## Corpus review
 
 ~~~sh
