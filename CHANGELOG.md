@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.29] - 2026-10-26
+
+- The README studio's HyperFrames and Remotion templates pin newer `hono` and `fast-uri` in their lockfiles, picking up upstream fixes. A fresh template setup installs these versions; nothing else about how the skills run changes.
+
 ## [1.0.28] - 2026-10-22
 
 - Typing `lit` again in the same session now continues the active mode instead of starting over. The first `lit` still sends the full activation; the next ones send a note under 600 bytes and open no new run, plan file or goal. `lit plan` while a loop runs switches with the full plan activation, a bare `lit` continues the active mode, or with none active resumes an unfinished start-work run or bounded work, and `lit new ...` or `lit restart ...` starts fresh. A bare `lit` with nothing active now asks what to start. After a context compaction the full activation is sent again.
