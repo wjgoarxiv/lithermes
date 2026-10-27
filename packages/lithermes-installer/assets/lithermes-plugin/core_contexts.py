@@ -152,7 +152,7 @@ _SKILL_ROUTE_CONTRACTS = {
     ),
     "lit-adhd": (
         "Brief task",
-        "Mode Contract: read-only. Run the installed collector once and write the five-part brief from its JSON only: headline, one card per session, roadmap timeline, paused work, one next step. Gauges are copied verbatim and never drawn by hand.",
+        "Mode Contract: read-only. Run the installed collector once and write the five-part brief from its JSON only, after the Done so far/Doing now/Next opener: headline, one card per session, roadmap timeline, paused work, one next step. Gauges are copied verbatim and never drawn by hand.",
         "Read the installed lit-adhd skill first. Run node scripts/adhd.mjs --json from the installed skill root (--here/--since/--max only when asked). Copy every gauge verbatim; an unknown total is the pulse line, never ?, never a guess. End with the one next step from next: the /start-work command when next.command names one, otherwise continue in chat. Hermes has no typed go; offer `lit adhd` for the next brief.",
         "Single-session recaps stay with lit-recap; execution stays with start-work.",
     ),

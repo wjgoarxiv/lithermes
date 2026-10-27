@@ -304,3 +304,125 @@ test("the collector records the next step beside cwd, not at the outermost git r
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+function roundThreeWs({ openPlan = true } = {}) {
+  const ws = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-round3-")));
+  fs.mkdirSync(path.join(ws, "plans"));
+  fs.writeFileSync(path.join(ws, "plans", "done.md"), "# Done\n\n## Todos\n- [x] 1. Port the collector\n- [x] 2. Run the gates\n");
+  const stale = path.join(ws, "plans", "stale.md");
+  fs.writeFileSync(stale, "# Stale\n\n## Todos\n- [ ] 1. Old abandoned step\n");
+  const tenDaysAgo = (Date.now() - 10 * 86_400_000) / 1000;
+  fs.utimesSync(stale, tenDaysAgo, tenDaysAgo);
+  if (openPlan) fs.writeFileSync(path.join(ws, "plans", "open.md"), "# Open\n\n## Todos\n- [x] 1. First\n- [ ] 2. Second step\n");
+  const run = path.join(ws, ".hermes", "lithermes", "runs", "run-1");
+  fs.mkdirSync(run, { recursive: true });
+  fs.writeFileSync(path.join(run, "state.json"), JSON.stringify({
+    run_id: "run-1", command: "start-work", created_at: new Date().toISOString(), plan: path.join(ws, "plans", "done.md"),
+  }));
+  fs.writeFileSync(path.join(ws, "HANDOFF.md"), "# Handoff\n\n## State\n\nall green\n\n## Next\n\n- Ship the port to main\n- Then rest\n");
+  return ws;
+}
+
+async function collectQuiet(ws) {
+  const { collectAdhd, renderAdhd } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/collect.mjs");
+  const env = { ...process.env, HERMES_SESSION_STORE: path.join(ws, "no-store.db") };
+  delete env.HERDR_ENV;
+  const exec = () => {
+    throw new Error("no git here");
+  };
+  const data = collectAdhd({ cwd: ws, here: true, exec, env, record: false });
+  return { data, text: renderAdhd(data, 120) };
+}
+
+test("the brief opens with done, doing and next; finished plans count as done", async () => {
+  const ws = roundThreeWs();
+  try {
+    const { data, text } = await collectQuiet(ws);
+    assert.deepEqual(data.roadmap.plans.map((plan) => plan.plan), ["plans/open.md"], "stale and finished plans stay off the roadmap");
+    assert.deepEqual(data.finished.plans.map((plan) => plan.plan), ["plans/done.md"]);
+    assert.equal(data.finished.runs.length, 1);
+    assert.equal(data.startWork[0].status, "done");
+    const [done, doing, next] = text.split("\n");
+    assert.match(done, /^Done so far: .*plans\/done\.md \(start-work complete\)/u);
+    assert.equal(doing, "Doing now: nothing running");
+    assert.match(next, /^Next: start plan: plans\/open\.md \(run \/start-work plans\/open\.md\)$/u);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("HANDOFF.md Next is the fallback and a stale or finished plan is never suggested", async () => {
+  const ws = roundThreeWs({ openPlan: false });
+  try {
+    const { data, text } = await collectQuiet(ws);
+    assert.equal(data.next.kind, "none");
+    assert.equal(data.handoffs.find((handoff) => handoff.file === "HANDOFF.md").next, "Ship the port to main");
+    assert.match(text.split("\n")[2], /^Next: HANDOFF\.md Next: Ship the port to main/u);
+    assert.match(text, /-- next --\n> HANDOFF\.md Next: Ship the port to main/u);
+    assert.doesNotMatch(text, /stale\.md|Old abandoned step/u);
+    assert.doesNotMatch(text, /Next in plans\/done\.md/u);
+
+    const work = path.join(ws, ".hermes", "lithermes", "work", "work-9");
+    fs.mkdirSync(work, { recursive: true });
+    fs.writeFileSync(path.join(work, "state.json"), JSON.stringify({
+      work_id: "work-9", status: "active", plan: path.join(ws, "plans", "stale.md"), active_session_id: "someone-else",
+      updated_at: new Date().toISOString(), progress: [{ id: "1", status: "pass" }, { id: "2", status: "pending" }],
+    }));
+    const running = await collectQuiet(ws);
+    assert.match(running.text.split("\n")[1], /^Doing now: start-work .*stale\.md \[▉░\] 1\/2 \(another session\)$/u);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("plans past the read budget are counted and reported", async () => {
+  const ws = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-budget-")));
+  try {
+    fs.mkdirSync(path.join(ws, "plans"));
+    const pad = `${"x".repeat(1024 * 1024)}\n`;
+    for (let index = 0; index < 10; index += 1) {
+      fs.writeFileSync(path.join(ws, "plans", `p${index}.md`), `- [ ] 1. Step ${index}\n${pad}`);
+    }
+    const { data, text } = await collectQuiet(ws);
+    assert.equal(data.roadmap.plansSkipped, 2);
+    assert.match(text, /2 plans were not read \(read budget used up\)/u);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("a linked worktree nested in a checkout is its own state root", async () => {
+  const { collectAdhd } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/collect.mjs");
+  const outer = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-nested-")));
+  try {
+    fs.mkdirSync(path.join(outer, ".git"));
+    fs.mkdirSync(path.join(outer, "plans"));
+    fs.writeFileSync(path.join(outer, "plans", "stale.md"), "# Stale\n\n- [ ] 1. Left over in the main checkout\n");
+    const lane = path.join(outer, ".worktrees", "lane");
+    fs.mkdirSync(path.join(lane, "plans"), { recursive: true });
+    fs.writeFileSync(path.join(lane, ".git"), "gitdir: ../../.git/worktrees/lane\n");
+    fs.writeFileSync(path.join(lane, "plans", "now.md"), "# Now\n\n- [ ] 1. The lane's own step\n");
+    const exec = () => {
+      throw new Error("no git here");
+    };
+    const env = { ...process.env, HERMES_SESSION_STORE: path.join(lane, "no-store.db") };
+    delete env.HERDR_ENV;
+    const data = collectAdhd({ cwd: lane, exec, env, record: false });
+    assert.deepEqual(data.scope.worktrees, [lane]);
+    assert.deepEqual(data.roadmap.plans.map((plan) => plan.plan), ["plans/now.md"]);
+    assert.equal(data.roadmap.plans[0].local, true);
+
+    const bare = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-nogit-")));
+    try {
+      fs.mkdirSync(path.join(bare, "plans"));
+      fs.writeFileSync(path.join(bare, "plans", "a.md"), "# A\n\n- [ ] 1. Git-less step\n");
+      const loose = collectAdhd({ cwd: bare, exec, env, record: false });
+      assert.deepEqual(loose.scope.worktrees, [bare]);
+      assert.equal(loose.roadmap.plans[0].local, true);
+    } finally {
+      fs.rmSync(bare, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});

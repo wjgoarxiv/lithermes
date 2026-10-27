@@ -553,6 +553,57 @@ class HermesNativeLoop(unittest.TestCase):
             )
             self.assertEqual(blocked["action"], "block")
 
+    def test_unbound_gateway_session_may_observe_but_never_mutate(self):
+        self._activate()
+
+        def decide(command, session):
+            return self.pkg._pre_tool_call(
+                tool_name="terminal",
+                args={"command": command, "workdir": str(self.ws)},
+                session_id=session,
+            )
+
+        for command in (
+            "herdr pane list",
+            "herdr pane read w1-2 --lines 40",
+            "herdr agent get lane-a",
+            "herdr tab list",
+            "herdr workspace list",
+            "grep -n T001 plans/approved.md",
+            "rg -n 'bounded work' plans",
+            "herdr pane read w1-2 | grep -i error | tail -n 5",
+        ):
+            with self.subTest(allowed=command):
+                self.assertIsNone(decide(command, "observer"))
+        for command in (
+            "touch x",
+            "herdr agent prompt lane-a go",
+            "herdr pane send w1-2 ls",
+            "grep x > f",
+            "grep x plans/approved.md | tee copy",
+            "grep $(whoami) plans/approved.md",
+            "rg --pre ./run.sh x",
+            "herdr pane list; touch x",
+            "herdr pane list || touch x",
+            "herdr pane list && touch x",
+            "",
+        ):
+            with self.subTest(refused=command):
+                blocked = decide(command, "observer")
+                self.assertEqual(blocked["action"], "block")
+                self.assertIn("not bound", blocked["message"])
+        self.assertEqual(
+            self.pkg._pre_tool_call(
+                tool_name="write_file",
+                args={"path": str(self.ws / "x.txt"), "content": "x"},
+                session_id="observer",
+            )["action"],
+            "block",
+        )
+        bound = decide("herdr pane list", "session-a")
+        self.assertEqual(bound["action"], "block")
+        self.assertIn("unsupported", bound["message"])
+
     def test_subagent_activation_is_rejected_before_envelope_consumption(self):
         result = self.pkg.core.command_lit_loop(
             f'init approved --worktree "{self.ws}" --grant write@.'

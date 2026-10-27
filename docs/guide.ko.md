@@ -174,6 +174,8 @@ flowchart LR
 
 Natural routing은 standalone lit 또는 litwork, 그리고 정확한 `lit`, `lit plan`, `lit review`, `lit research`, `lit goal`, `lit workflow`, `lit kanban`, `lit team` 의도를 대응 mode로 보냅니다. code span, fenced code, substring, compound token, path, 실제 slash-command mention은 일반 task text로 둡니다. `lit start work`는 `BLOCKED`이며 `/start-work <approved-plan>`을 직접 호출해야 합니다.
 
+`lit-plan`이 `plans/` 아래에 계획을 저장한 뒤, 같은 세션에서 30분 안에 `go`만 입력하면 그 계획의 `/start-work` 명령을 보여 주고, 실행은 사용자가 그 명령으로 시작합니다. todo가 프로젝트 밖 폴더를 가리키는 계획에는 `Scope roots: <path> (<actions>)` 줄을 넣습니다. `/start-work`는 이 줄이 덮지 못한 폴더를 참고 목록으로 보여 주고 실행은 그대로 진행합니다. bounded work의 권한은 자기 worktree 안에서만 유효하므로 이 확인은 참고용입니다.
+
 `lit research`에는 Public retrieval hardening이 적용됩니다. public endpoint/feed 우선, structured Attempt/Verdict trace, route taxonomy, HTTP 200 이상의 검증, login/paywall/CAPTCHA 및 private/loopback 거부, bounded retry, untried safe routes / `not_exhausted`, actionable diagnostics, A/B check, claim/source/confidence/uncertainty graph를 사용합니다. no bundled standalone crawler/browser engine 원칙을 지킵니다.
 
 ### Bounded work
@@ -188,7 +190,7 @@ bounded work schema 3의 lifecycle은 다음과 같습니다.
 /lit-loop complete
 ```
 
-`pre_tool_call`은 Hermes session, work id, revision, replay id, action/root grant를 확인한 뒤 mutation을 허용합니다. 새로운 boundary를 재개할 수 있는 one-use grant는 trusted explicit user resume만 만들 수 있습니다. paused work는 complete할 수 없고, commit, publish, push, release, tag, install, host-config, credential, destructive equivalent는 영구 거부됩니다.
+`pre_tool_call`은 Hermes session, work id, revision, replay id, action/root grant를 확인한 뒤 mutation을 허용합니다. 새로운 boundary를 재개할 수 있는 one-use grant는 trusted explicit user resume만 만들 수 있습니다. 여러 세션을 띄운 gateway에서는 work를 소유하지 않은 세션도 읽기 전용 terminal 명령으로 진행 상황을 볼 수 있습니다. herdr 읽기(`pane list|read|get|layout`, `agent list|get|read`, `tab list`, `workspace list`)와 `grep`, `rg`, `head`, `tail`, `wc`로 이어지는 `grep`/`rg` pipeline이 여기에 해당합니다. redirect, chaining, substitution과 그 밖의 tool call은 계속 막히고, owner 세션의 검사도 그대로입니다. paused work는 complete할 수 없고, commit, publish, push, release, tag, install, host-config, credential, destructive equivalent는 영구 거부됩니다.
 
 비동기 위임은 child별 `per-child re-entry receipt`를 사용합니다. 통합 대기는
 없으며, parent가 merge 또는 batch completion을 직접 추적하고 기록합니다.

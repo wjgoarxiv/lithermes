@@ -235,6 +235,81 @@ class AdhdGoContinuation(unittest.TestCase):
         self.assertIsNone(out)
 
 
+class AdhdPlanGo(NaturalRoutingCase):
+    """A plan saved in a lit-plan turn arms `go` with its start-work command."""
+
+    def setUp(self):
+        super().setUp()
+        self.project = tempfile.TemporaryDirectory(prefix="lithermes-plan-go-")
+        self.addCleanup(self.project.cleanup)
+        self.root = Path(self.project.name).resolve()
+        previous = os.getcwd()
+        os.chdir(self.root)
+        self.addCleanup(os.chdir, previous)
+
+    def _save(self, session, path="plans/widget.md", tool="write_file"):
+        self.pkg._post_tool_call(
+            tool_name=tool, args={"path": path, "content": "# Widget\n"}, session_id=session, status="ok"
+        )
+
+    def test_a_saved_plan_arms_go_for_this_session_only(self):
+        self._hook("lit plan add a widget", session="planner", isolated=False)
+        self._save("planner")
+        record = adhd_stack.read_next_step(self.root, "planner")
+        self.assertEqual(record["kind"], "start-plan")
+        self.assertEqual(record["target"], {"plan": "plans/widget.md"})
+        out = self._hook("go", session="planner", isolated=False)
+        self.assertIn("/start-work plans/widget.md", out["context"])
+        self.assertIn("do not run it", out["context"])
+        other = self._hook("go", session="someone-else", isolated=False)
+        self.assertNotIn("plans/widget.md", other["context"])
+        self.assertIn("lit adhd", other["context"])
+        late = adhd_stack.go_note(self.root, "planner", now=time.time() + 31 * 60)
+        self.assertIn("expired", late)
+        self.assertNotIn("/start-work", late)
+
+    def test_the_slash_route_arms_go_the_same_way(self):
+        message = self.pkg.core.command_lit_plan("add a gadget")["agent_message"]
+        self._hook(message, session="slash-planner", isolated=False)
+        self._save("slash-planner", path=str(self.root / "plans" / "gadget.md"))
+        record = adhd_stack.read_next_step(self.root, "slash-planner")
+        self.assertEqual(record["target"], {"plan": "plans/gadget.md"})
+
+    def test_other_writes_and_other_disciplines_do_not_arm_go(self):
+        self._hook("lit plan add a widget", session="planner", isolated=False)
+        for path in ("notes/widget.md", "plans/deep/widget.md", "plans/widget.txt", "../plans/widget.md"):
+            with self.subTest(path=path):
+                self._save("planner", path=path)
+                self.assertIsNone(adhd_stack.read_next_step(self.root, "planner"))
+        self.pkg._post_tool_call(
+            tool_name="write_file", args={"path": "plans/widget.md"}, session_id="planner", status="error"
+        )
+        self.assertIsNone(adhd_stack.read_next_step(self.root, "planner"))
+        self._hook("lit loop ship the widget", session="looper", isolated=False)
+        self._save("looper")
+        self.assertIsNone(adhd_stack.read_next_step(self.root, "looper"))
+        self._save("no-route")
+        self.assertIsNone(adhd_stack.read_next_step(self.root, "no-route"))
+
+    def test_the_record_write_refuses_a_symlinked_state_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            outside = Path(tmp) / "outside"
+            outside.mkdir()
+            ws = Path(tmp) / "ws"
+            ws.mkdir()
+            (ws / ".hermes").symlink_to(outside, target_is_directory=True)
+            self.assertFalse(
+                adhd_stack.write_next_step(ws, "s-link", "start-plan", {"plan": "plans/a.md"})
+            )
+            self.assertEqual(list(outside.iterdir()), [])
+        self.assertTrue(adhd_stack.write_next_step(self.root, "s-ok", "start-plan", {"plan": "plans/a.md"}))
+        self.assertIn("/start-work plans/a.md", adhd_stack.go_note(self.root, "s-ok"))
+
+    def test_the_lit_plan_skill_closes_with_go(self):
+        body = (_PLUGIN / "skills" / "lit-plan" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertTrue("type `go` within 30 minutes" in body, "lit-plan closing must offer `go`")
+
+
 class AdhdStack(NaturalRoutingCase):
     def test_route_activation_pushes_a_frame_and_adhd_stays_read_only(self):
         with tempfile.TemporaryDirectory(prefix="lithermes-adhd-stack-") as tmp:

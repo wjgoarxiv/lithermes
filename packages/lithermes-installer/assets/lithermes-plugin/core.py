@@ -149,6 +149,7 @@ def post_tool_call(**kwargs: Any) -> None:
     )
     if not paths:
         return None
+    _arm_plan_go(str(kwargs.get("session_id") or ""), paths)
     key = str(kwargs.get("session_id") or "") or str(kwargs.get("task_id") or "")
     if not key:
         return None
@@ -166,6 +167,24 @@ def post_tool_call(**kwargs: Any) -> None:
     while len(_PENDING_POST_EDIT) > _MAX_POST_EDIT_SESSIONS:
         _PENDING_POST_EDIT.pop(next(iter(_PENDING_POST_EDIT)), None)
     return None
+
+
+def _arm_plan_go(session_id: str, paths: list[str]) -> None:
+    """After a lit-plan turn writes ``plans/<name>.md``, record it as this session's `go` step."""
+    if not session_id:
+        return
+    try:
+        workspace = Path.cwd().resolve()
+        if _adhd_stack.active_skill(workspace, session_id) != "lit-plan":
+            return
+        for raw in reversed(paths):
+            target = Path(raw).expanduser()
+            target = (target if target.is_absolute() else workspace / target).resolve()
+            if target.parent == workspace / "plans" and target.suffix == ".md":
+                _adhd_stack.write_next_step(workspace, session_id, "start-plan", {"plan": f"plans/{target.name}"})
+                return
+    except (OSError, RuntimeError, ValueError):
+        return
 
 
 def post_api_request(**kwargs: Any) -> None:
@@ -1694,6 +1713,10 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     # route envelope only; native /goal is user-managed and never mutated here.
     bind_obj = _extract_bind_goal(user_message)
     if bind_obj:
+        # The /lit-plan envelope marks this session's lit-plan frame, so the plan
+        # it saves arms `go` the same way a natural `lit plan` turn does.
+        if session_id and "<lithermes-plan-context>" in user_message:
+            _adhd_stack.push(Path.cwd().resolve(), session_id, "lit-plan")
         return None
     # A bare `go` continues the step the last brief offered. The hook consumes
     # the word and injects the next-step record; it never runs a command.

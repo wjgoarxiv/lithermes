@@ -14,6 +14,22 @@ with the words below and never invents a fifth.
 
 Order in the brief: waiting sessions first, then active, ended and unknown; newest first inside each group.
 
+## Start-work statuses
+
+`startWork[].status` describes a run, not a session:
+
+| Status | Set when |
+| --- | --- |
+| `active` | A start-work run whose plan still has an unticked row, or bounded work in progress |
+| `paused` | Bounded work stopped at a boundary that waits on a chat answer |
+| `done` | A start-work run whose plan has every row ticked |
+| `completed` | Bounded work the owner completed |
+
+A `done` or `completed` run inside the window is listed in `finished.runs` and named on the
+opener's `Done so far:` line. A session itself never reads `done` on Hermes: a start-work run
+record carries no session id, and completed bounded work clears its owner, so no record ties a
+finished run to the session that ran it. Sessions keep the four statuses above.
+
 ## Sources
 
 Each entry of `sources` is `ok` or `unknown`. An `unknown` source is named once on the brief's last
@@ -24,7 +40,7 @@ line and never filled in from memory.
 | `sessions` | Hermes `state.db` sessions |
 | `plans` | `plans/*.md` checkbox rows |
 | `litgoal` | `.hermes/lithermes/litgoal/*/goals.json` |
-| `handoffs` | `HANDOFF*.md` and `.handoff/HANDOFF.md` headings |
+| `handoffs` | `HANDOFF*.md` and `.handoff/HANDOFF.md` headings, plus the first `## Next` item of this worktree's own |
 | `git` | `git log --since` |
 | `workflowStack` | `.hermes/lithermes/adhd/stack.json` |
 | `startWork` | start-work runs and bounded-work states |

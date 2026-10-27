@@ -221,4 +221,6 @@ If LitHermes has saved you from explaining a project all over again to a fresh s
 
 Bug reports and pull requests are welcome. Start with [Contributing](./CONTRIBUTING.md), and see [Security](./SECURITY.md), [Conduct](./CODE_OF_CONDUCT.md) and [Support](./SUPPORT.md).
 
+The LitHermes and LitFamily names and logos are covered by the [trademark policy](./TRADEMARK.md), not by the MIT License.
+
 <a href="./LICENSE"><img src="./docs/assets/readme/lucide-shield-check.svg" width="16" alt="" /> MIT License</a>

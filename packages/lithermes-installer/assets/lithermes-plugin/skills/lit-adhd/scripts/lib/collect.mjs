@@ -68,14 +68,15 @@ const entries = (directory) => {
 
 const defaultExec = (file, args, options) => execFileSync(file, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], ...options });
 
-const outermostRoot = (startDir) => {
+// The nearest `.git` (a directory, or the file a linked worktree carries) bounds the state root,
+// so a worktree nested inside another checkout never reads that checkout's stale plans.
+const nearestRoot = (startDir) => {
   const start = resolve(startDir);
-  let root = null;
   let current = start;
   for (;;) {
-    if (existsSync(join(current, '.git'))) root = current;
+    if (existsSync(join(current, '.git'))) return current;
     const parent = dirname(current);
-    if (parent === current) return root ?? start;
+    if (parent === current) return start;
     current = parent;
   }
 };
@@ -90,25 +91,41 @@ const worktreesOf = (cwd, exec) => {
   }
 };
 
-const plansIn = (root, budget, redact, local) => {
+const mtimeOf = (path) => {
+  try {
+    return lstatSync(path).mtimeMs;
+  } catch {
+    return null;
+  }
+};
+
+// A plan met once the read budget is spent is counted in `skipped.count`, so the brief can say so.
+const plansIn = (root, budget, redact, local, skipped) => {
   const list = entries(join(root, 'plans'));
   if (!list) return null;
   return list.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
-    const text = readSmallFile(join(root, 'plans', entry.name), budget);
+    if (budget.used >= budget.limit) {
+      skipped.count += 1;
+      return [];
+    }
+    const path = join(root, 'plans', entry.name);
+    const text = readSmallFile(path, budget);
     if (text === null) return [];
     // Column-zero `- [ ] N. title` and `- [ ] FN. title` rows; a non-numbered checkbox row
     // still counts, the same way the source collector counts every checkbox row.
     const rows = parsePlanTaskRows(text);
     if (!rows.length) return [];
     const open = rows.filter((row) => !row.checked);
-    if (!open.length) return [];
     const done = rows.length - open.length;
+    // Every row ticked: kept and marked complete, as finished work for the opener, never roadmap.
     return [{
       worktree: redact(root),
       plan: `plans/${entry.name}`,
       local,
+      complete: open.length === 0,
+      changedMs: mtimeOf(path),
       rows: rows.map((row) => ({ checked: row.checked, title: clipToWidth(redact(row.text), NAME_MAX) })),
-      current: clipToWidth(redact(open[0].text), NAME_MAX),
+      current: open.length ? clipToWidth(redact(open[0].text), NAME_MAX) : null,
       progress: progressOf(done, rows.length, open.map((row) => clipToWidth(redact(row.text), NAME_MAX))),
     }];
   });
@@ -147,7 +164,23 @@ const goalsOf = (root, budget, redact) => {
   });
 };
 
-const handoffsOf = (root, budget, redact) => {
+// The first item under a `## Next` (or `## Next steps`) heading, its list marker removed.
+const nextItemOf = (text) => {
+  let inside = false;
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (/^#{1,6}\s/u.test(line)) {
+      if (inside) return null;
+      inside = /^#{1,6}\s+next(?:\s+steps?)?$/iu.test(line);
+    } else if (inside && line) {
+      return line.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/u, '');
+    }
+  }
+  return null;
+};
+
+// Only this worktree's own handoff offers a `next`; another worktree's never does.
+const handoffsOf = (root, budget, redact, local) => {
   const files = (entries(root) ?? [])
     .filter((entry) => entry.isFile() && /^HANDOFF.*\.md$/u.test(entry.name))
     .map((entry) => join(root, entry.name));
@@ -156,7 +189,8 @@ const handoffsOf = (root, budget, redact) => {
   return files.map((path) => {
     const text = readSmallFile(path, budget) ?? '';
     const headings = text.split('\n').slice(0, 40).filter((line) => /^#{1,3} /u.test(line)).map((line) => clipToWidth(redact(line), 100));
-    return { worktree: redact(root), file: basename(path), headings };
+    const next = local ? nextItemOf(text) : null;
+    return { worktree: redact(root), file: basename(path), headings, local, next: next ? clipToWidth(redact(next), 120) : null };
   });
 };
 
@@ -197,7 +231,7 @@ const stacksOf = (root, budget, redact) => {
 };
 
 // Hermes start-work state: newest `runs/*/state.json` with `command: start-work` (a run has no
-// status field, so an unfinished plan reads active and a finished plan reads ended), plus
+// status field, so an unfinished plan reads active and a finished plan reads done), plus
 // bounded-work `work/*/state.json` records, which carry a real status and a pending boundary.
 const startWorkOf = (root, budget, redact, sessionId) => {
   const items = [];
@@ -218,7 +252,8 @@ const startWorkOf = (root, budget, redact, sessionId) => {
       worktree: redact(root),
       workId: `run-${String(newestRun.run_id ?? 'unknown').slice(0, 16)}`,
       plan: plan ? redact(plan) : 'unknown',
-      status: rows.length && !open.length ? 'ended' : 'active',
+      status: rows.length && !open.length ? 'done' : 'active',
+      atMs: Date.parse(String(newestRun.created_at ?? '')),
       sessionId: sessionId ?? null,
       id8: sessionId ? String(sessionId).slice(0, 8) : 'unknown',
       progress: rows.length
@@ -246,6 +281,7 @@ const startWorkOf = (root, budget, redact, sessionId) => {
       workId: typeof state.work_id === 'string' ? state.work_id : entry.name,
       plan: plan ? redact(plan) : 'unknown',
       status,
+      atMs: Date.parse(String(state.updated_at ?? state.created_at ?? '')),
       sessionId: owner,
       id8: owner ? owner.slice(0, 8) : 'unknown',
       ...(boundary ? { pendingBoundary: { boundary: clipToWidth(redact(String(boundary.id ?? 'unknown')), NAME_MAX) } } : {}),
@@ -270,6 +306,8 @@ const herdrOf = (env, exec, redact) => {
 };
 
 const known = (list) => (list === null ? 'unknown' : 'ok');
+// A run records its plan as an absolute path; inside its own worktree it reads `plans/<f>.md`.
+const planInWorktree = (worktree, plan) => (plan.startsWith(`${worktree}/`) ? plan.slice(worktree.length + 1) : plan);
 const statusRank = { 'waiting-on-user': 0, active: 1, ended: 2, unknown: 3 };
 
 /**
@@ -293,9 +331,26 @@ export const collectAdhd = ({
   const sinceMs = parseSince(since) ?? parseSince(DEFAULT_SINCE);
   const limit = Number.isInteger(max) && max > 0 ? Math.min(max, 50) : DEFAULT_MAX;
   const start = normalizeRoot(resolve(cwd));
-  const stateRoot = outermostRoot(start);
+  const stateRoot = nearestRoot(start);
   const listed = here ? null : worktreesOf(start, exec);
   const roots = [...new Set([start, ...(here ? [] : listed ?? [stateRoot])])];
+
+  // The small on-disk records first, so the session transcripts read after them cannot spend
+  // the budget a plan or handoff needs.
+  const collectEach = (read) => {
+    const results = roots.map(read);
+    return results.every((value) => value === null) ? null : results.flatMap((value) => value ?? []);
+  };
+  const isLocal = (root) => resolve(root) === stateRoot || resolve(root) === start;
+  const plansSkipped = { count: 0 };
+  const plans = collectEach((root) => plansIn(root, budget, redact, isLocal(root), plansSkipped));
+  const litgoal = collectEach((root) => {
+    const goals = goalsOf(root, budget, redact);
+    return goals ? goals.map((goal) => ({ ...goal, local: isLocal(root) })) : null;
+  });
+  const handoffs = roots.flatMap((root) => handoffsOf(root, budget, redact, resolve(root) === start));
+  const workflows = collectEach((root) => stacksOf(root, budget, redact));
+  const startWork = collectEach((root) => startWorkOf(root, budget, redact, sessionId));
 
   const found = findHermesSessions(hermesStorePath(env), roots, { exec });
   const sessions = [];
@@ -308,19 +363,7 @@ export const collectAdhd = ({
     sessions.push(session);
   }
 
-  const collectEach = (read) => {
-    const results = roots.map(read);
-    return results.every((value) => value === null) ? null : results.flatMap((value) => value ?? []);
-  };
-  const plans = collectEach((root) => plansIn(root, budget, redact, resolve(root) === stateRoot || resolve(root) === start));
-  const litgoal = collectEach((root) => {
-    const goals = goalsOf(root, budget, redact);
-    return goals ? goals.map((goal) => ({ ...goal, local: resolve(root) === stateRoot || resolve(root) === start })) : null;
-  });
-  const handoffs = roots.flatMap((root) => handoffsOf(root, budget, redact));
   const commits = collectEach((root) => commitsOf(root, sinceMs, now, exec, redact));
-  const workflows = collectEach((root) => stacksOf(root, budget, redact));
-  const startWork = collectEach((root) => startWorkOf(root, budget, redact, sessionId));
   const herdr = herdrOf(env, exec, redact);
 
   // A session waits on the user when it asked something, or holds a paused boundary.
@@ -340,9 +383,13 @@ export const collectAdhd = ({
   }
   sessions.sort((a, b) => statusRank[a.status] - statusRank[b.status] || (b.lastMs ?? 0) - (a.lastMs ?? 0));
 
-  // Every worktree's open plans are listed, this one's first, up to a short cap; the roadmap gauge
+  // Open plans changed inside the window are listed, this worktree's first, then the most recently
+  // changed, up to a short cap; a stale plan is left out here and elsewhere. The roadmap gauge
   // counts this worktree only, since a sum over unrelated branches measures nothing.
-  const orderedPlans = [...(plans ?? [])].sort((a, b) => Number(b.local) - Number(a.local));
+  const recent = (plan) => plan.changedMs !== null && now - plan.changedMs <= sinceMs;
+  const orderedPlans = (plans ?? [])
+    .filter((plan) => !plan.complete && recent(plan))
+    .sort((a, b) => Number(b.local) - Number(a.local) || (b.changedMs ?? 0) - (a.changedMs ?? 0));
   const shownPlans = orderedPlans.slice(0, PLAN_LIMIT);
   const localGoals = (litgoal ?? []).filter((goal) => goal.local);
   const roadmapItems = [...orderedPlans.filter((plan) => plan.local).map((plan) => plan.progress), ...localGoals.map((goal) => goal.progress)];
@@ -370,8 +417,17 @@ export const collectAdhd = ({
     roadmap: {
       plans: shownPlans,
       plansOmitted: orderedPlans.length - shownPlans.length,
+      plansSkipped: plansSkipped.count,
       litgoal: litgoal ?? [],
       progress: roadmapItems.length ? aggregateProgress(roadmapItems) : progressOf(null, null),
+    },
+    // Finished inside the window: start-work runs whose plan is fully ticked, completed bounded
+    // work, and plans with every row ticked.
+    finished: {
+      runs: (startWork ?? [])
+        .filter((work) => ['done', 'completed'].includes(work.status) && Number.isFinite(work.atMs) && now - work.atMs <= sinceMs)
+        .map(({ worktree, plan, workId }) => ({ worktree, plan: planInWorktree(worktree, plan), workId })),
+      plans: (plans ?? []).filter((plan) => plan.complete && recent(plan)).map(({ worktree, plan, local, progress }) => ({ worktree, plan, local, gauge: progress.gauge })),
     },
     workflows: (workflows ?? []).map((frame) => ({ ...frame, self: Boolean(sessionId) && frame.sessionId === sessionId })),
     startWork: startWork ?? [],
@@ -385,7 +441,7 @@ export const collectAdhd = ({
   if (record && sessionId) {
     try {
       // The record lives beside the working directory the hook reads (`go`
-      // uses `Path.cwd()`), not at the outermost git root: a brief run from a
+      // uses `Path.cwd()`), not at the git root: a brief run from a
       // subdirectory must be continued from that same directory.
       writeNextStep(start, sessionId, next, new Date(now));
       data.nextRecorded = true;
@@ -394,7 +450,11 @@ export const collectAdhd = ({
     }
   }
   for (const frame of data.workflows) delete frame.sessionId;
-  for (const work of data.startWork) delete work.sessionId;
+  for (const work of data.startWork) {
+    work.self = Boolean(sessionId) && work.sessionId === sessionId;
+    delete work.sessionId;
+    delete work.atMs;
+  }
   return data;
 };
 
@@ -474,15 +534,56 @@ const endedTable = (sessions, nowMs) => {
   return ['| id | where | goal | ago | done |', '|---|---|---|---|---|', ...rows, ...more];
 };
 
-/** Plain-text brief: headline, cards for live sessions, ended table, roadmap, one next step in a box. */
+/**
+ * The three opening lines, from records only. Done: this worktree's newest commits in the window
+ * (two at most), then its finished start-work runs and fully ticked plans (three items in all).
+ * Doing: this session's active frame, else its own running start-work, else the newest active
+ * session's goal, else another session's running start-work. Next: the same step the box names.
+ */
+const openerLines = (data, nextText) => {
+  const local = data.scope.worktrees[0];
+  const runs = (data.finished?.runs ?? []).filter((run) => run.worktree === local);
+  const runPlans = new Set(runs.map((run) => run.plan));
+  const finished = [
+    ...(data.commits ?? []).filter((commit) => commit.worktree === local).slice(0, 2).map((commit) => commit.subject),
+    ...runs.map((run) => `${run.plan} (start-work complete)`),
+    ...(data.finished?.plans ?? []).filter((plan) => plan.worktree === local && !runPlans.has(plan.plan)).map((plan) => `${plan.plan} ${plan.gauge}`),
+  ];
+  const done = [...new Set(finished)].slice(0, 3).join('; ') || 'nothing finished in this window';
+  const frame = (data.workflows ?? []).filter((item) => item.self && item.status === 'active').at(-1);
+  const running = (data.startWork ?? []).filter((item) => item.status === 'active');
+  const work = running.find((item) => item.self);
+  const active = (data.sessions ?? []).find((session) => session.status === 'active');
+  const doing = frame
+    ? [frame.skill, frame.stage].filter((part) => part && part !== 'unknown').join(' · ')
+    : work
+      ? `start-work ${planInWorktree(work.worktree, work.plan)} ${work.progress.gauge}`
+      : active
+        ? clipToWidth(goalOf(active), 80)
+        : running[0]
+          ? `start-work ${planInWorktree(running[0].worktree, running[0].plan)} ${running[0].progress.gauge} (another session)`
+          : 'nothing running';
+  return [`Done so far: ${done}`, `Doing now: ${doing}`, `Next: ${nextText}`];
+};
+
+/** Plain-text brief: opener, headline, cards for live sessions, ended table, roadmap, one next step in a box. */
 export const renderAdhd = (data, width = 100, sessionId = null) => {
   const out = [];
   const push = (text) => out.push(line(text, width));
   const recorded = data.next.kind !== 'none';
-  const step = recorded ? data.next : suggestNext(data, sessionId);
+  // With no step on record, this worktree's HANDOFF.md `## Next` item comes before any suggestion.
+  const handoffNext = (data.handoffs ?? []).find((handoff) => handoff.local && handoff.next)?.next;
+  const step = recorded
+    ? data.next
+    : handoffNext
+      ? { kind: 'suggest', label: 'handoff next', say: `HANDOFF.md Next: ${handoffNext}`, command: null }
+      : suggestNext(data, sessionId);
   const stepName = recorded ? data.next.kind.replace(/-/gu, ' ') : step.label;
   const stepSay = recorded && data.next.say ? ` (say "${data.next.say}")` : '';
   const stepRun = step.command ? ` (run ${step.command})` : recorded ? '' : ' (continue in chat)';
+  const target = recorded ? data.next.target?.plan ?? data.next.target?.workId ?? '' : '';
+  const nextText = recorded ? `${stepName}${target ? `: ${target}` : ''}${stepSay}${stepRun}` : `${step.say}${stepRun}`;
+  for (const opener of openerLines(data, nextText)) push(opener);
   push(`lit-adhd: ${data.summary.sessions} session(s) · ${data.summary.waitingOnUser} waiting on you · next: ${stepName}${stepSay}${stepRun}`);
   const live = data.sessions.filter((session) => session.status !== 'ended');
   const ended = data.sessions.filter((session) => session.status === 'ended');
@@ -512,16 +613,11 @@ export const renderAdhd = (data, width = 100, sessionId = null) => {
     for (const goal of data.roadmap.litgoal) push(`○ litgoal ${goal.progress.gauge} ${goal.objective}`);
     for (const commit of data.commits.slice(0, 5)) push(`✓ ${commit.hash} ${commit.at.slice(0, 10)} ${commit.subject}`);
   }
-  {
-    if (recorded) {
-      const target = data.next.target?.plan ?? data.next.target?.workId ?? '';
-      push(`-- next --\n> ${data.next.kind.replace(/-/gu, ' ')}${target ? `: ${target}` : ''}${stepSay}${stepRun}.`);
-    } else {
-      push(`-- next --\n> ${step.say}${stepRun}.`);
-    }
-  }
+  push(`-- next --\n> ${nextText}.`);
   const unknownSources = Object.entries(data.sources).filter(([, status]) => status !== 'ok').map(([name]) => name);
   if (unknownSources.length) push(`unknown: ${unknownSources.join(', ')}`);
+  const skipped = data.roadmap.plansSkipped ?? 0;
+  if (skipped) push(`${skipped} ${skipped === 1 ? 'plan was' : 'plans were'} not read (read budget used up)`);
   return `${out.join('\n')}\n`;
 };
 

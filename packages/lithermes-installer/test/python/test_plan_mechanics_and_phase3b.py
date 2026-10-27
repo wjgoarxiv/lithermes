@@ -166,6 +166,74 @@ class RowGrammar(PlanMechanicsTestCase):
         self.core.assert_plan_structure(plan.read_text(encoding="utf-8"))
 
 
+class ScopeRoots(PlanMechanicsTestCase):
+    """Advisory: a todo that names a folder outside the project wants a Scope roots line."""
+
+    def setUp(self):
+        super().setUp()
+        self.outside = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(lambda: __import__("shutil").rmtree(self.outside, ignore_errors=True))
+        (self.outside / "data").mkdir()
+
+    def _plan(self, todo_lines, header=""):
+        return (
+            f"# Plan\n\n{header}\n## Todos\n\n- [ ] 1. Do it\n{todo_lines}\n\n"
+            "## Final verification\n- [ ] F1. Check it\n"
+        )
+
+    def test_an_uncovered_outside_path_is_named_with_the_line_to_add(self):
+        issues = self.core.scope_root_issues(
+            self._plan(f"  Read `{self.outside}/data/rows.csv` before step 2.\n"), self.ws
+        )
+        self.assertEqual(len(issues), 1)
+        self.assertIn(f"{self.outside}/data/rows.csv", issues[0])
+        self.assertIn(f"Scope roots: {self.outside}/data (read)", issues[0])
+
+    def test_a_scope_roots_line_or_the_project_covers_the_path(self):
+        todo = f"  Read `{self.outside}/data/rows.csv`; write `{self.ws}/out/table.md`.\n"
+        covered = self._plan(todo, header=f"Scope roots: {self.outside} (read)\n")
+        self.assertEqual(self.core.scope_root_issues(covered, self.ws), [])
+        self.assertEqual(len(self.core.scope_root_issues(self._plan(todo), self.ws)), 1)
+
+    def test_fenced_lines_command_spans_and_other_sections_do_not_count(self):
+        markdown = (
+            f"# Plan\n\nContext lives in {self.outside}/data.\n\n## Todos\n\n- [ ] 1. Do it\n"
+            f"  Run `cat {self.outside}/data/rows.csv` to compare.\n"
+            f"```\nls {self.outside}/data\n```\n\n"
+            f"## Final verification\n- [ ] F1. Diff against {self.outside}/data\n"
+        )
+        self.assertEqual(self.core.scope_root_issues(markdown, self.ws), [])
+
+    def test_the_filesystem_root_and_a_bare_home_never_cover(self):
+        under_home = Path(tempfile.mkdtemp(dir=Path.home())).resolve()
+        self.addCleanup(lambda: __import__("shutil").rmtree(under_home, ignore_errors=True))
+        todo = f"  Read {under_home}/rows.csv.\n"
+        for header in ("Scope roots: / (read)\n", f"Scope roots: {Path.home()} (read)\n"):
+            with self.subTest(header=header):
+                issues = self.core.scope_root_issues(self._plan(todo, header=header), self.ws)
+                self.assertEqual(len(issues), 1)
+        broad = self.core.scope_root_issues(self._plan("  Read /lithermes-absent-top/rows.csv.\n"), self.ws)
+        self.assertEqual(len(broad), 1)
+        self.assertIn("narrower", broad[0])
+        self.assertNotIn("Scope roots: / (read)", broad[0])
+
+    def test_start_work_reports_the_advisory_without_blocking(self):
+        plans = self.ws / "plans"
+        plans.mkdir()
+        (plans / "outside.md").write_text(
+            self._plan(f"  Read `{self.outside}/data/rows.csv`.\n"), encoding="utf-8"
+        )
+        preview = self.core.command_start_work(f'outside --worktree "{self.ws}" --dry-run')
+        self.assertIn("Scope roots advisory", preview)
+        self.assertIn(f"Scope roots: {self.outside}/data (read)", preview)
+        self.assertNotIn("BLOCKED", preview)
+
+    def test_the_lit_plan_skill_asks_for_the_line(self):
+        body = (Path(_ASSET_DIR) / "skills" / "lit-plan" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertTrue("Scope roots: <path> (<actions>)" in body, "lit-plan must name the Scope roots line")
+        self.assertTrue("advisory" in body, "lit-plan must say the check is advisory on Hermes")
+
+
 class HighAccuracyReviewGate(PlanMechanicsTestCase):
     def test_review_modifiers_are_detected_in_any_phrasing(self):
         for text in [

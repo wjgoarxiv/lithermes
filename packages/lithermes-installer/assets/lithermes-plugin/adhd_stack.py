@@ -11,7 +11,8 @@ the loop exactly where it was.
 A bare ``go`` (also ``lit go``, ``ㄱㄱ``, ``고``, ``진행``, as the whole prompt) continues the
 step the last brief offered: the hook reads the next-step record the collector wrote for this
 session (``.hermes/lithermes/adhd/next-<session>.json``) and returns a short context note for
-the model. A record older than 30 minutes, or no record at all, reads as no next step on
+the model. A plan saved under ``plans/`` during a lit-plan turn writes the same record
+(``start-plan``), so ``go`` right after planning shows that plan's ``/start-work`` command. A record older than 30 minutes, or no record at all, reads as no next step on
 record. Hermes has no typed ``go`` command; ``go`` is a word the hook consumes.
 """
 from __future__ import annotations
@@ -155,6 +156,49 @@ def finish(workspace: Path | str, session_id: Any, skill: str = "") -> bool:
         sessions[key] = {"frames": frames[-MAX_FRAMES_PER_SESSION:]}
         return _write_stack(workspace, data)
     except (OSError, ValueError):
+        return False
+
+
+def active_skill(workspace: Path | str, session_id: Any) -> str:
+    """The skill of this session's latest active frame, or "" when none is active."""
+    for frame in reversed(_frames(read_stack(workspace), str(session_id or ""))):
+        if frame.get("status") == "active":
+            return str(frame.get("skill") or "")
+    return ""
+
+
+def write_next_step(
+    workspace: Path | str, session_id: Any, kind: str, target: dict[str, Any], *, now: float | None = None
+) -> bool:
+    """Write this session's `{kind, target, at}` record, the shape the collector writes.
+
+    Refuses a symlinked adhd or ``.hermes`` directory and stages through an exclusive,
+    no-follow, pid-unique file, so a planted link is never written through. Never raises.
+    """
+    import time as _time
+    from datetime import datetime, timezone
+
+    try:
+        directory = adhd_dir(workspace)
+        for probe in (directory, Path(workspace) / ".hermes"):
+            if probe.is_symlink():
+                return False
+        directory.mkdir(parents=True, exist_ok=True)
+        at = datetime.fromtimestamp(now if now is not None else _time.time(), tz=timezone.utc)
+        payload = {"kind": kind, "target": target, "at": at.isoformat(timespec="milliseconds").replace("+00:00", "Z")}
+        path = next_step_path(workspace, session_id)
+        staging = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0)
+        fd = os.open(staging, flags, 0o600)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload) + "\n")
+            os.replace(staging, path)
+        except BaseException:
+            staging.unlink(missing_ok=True)
+            raise
+        return True
+    except (OSError, ValueError, TypeError):
         return False
 
 

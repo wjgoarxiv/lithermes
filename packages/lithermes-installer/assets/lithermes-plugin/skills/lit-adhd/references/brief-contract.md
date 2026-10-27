@@ -1,7 +1,23 @@
 # lit-adhd brief contract
 
-The brief the model writes from one collector run. Five parts, in order: headline, one card per
-session, roadmap timeline, paused work, one next step. Dense, pretty, plain words.
+The brief the model writes from one collector run. Three opener lines, then five parts, in order:
+headline, one card per session, roadmap timeline, paused work, one next step. Dense, pretty,
+plain words.
+
+## The opener
+
+Three lines before the headline, each from records only:
+
+- `Done so far:` (`지금까지:`) — this worktree's newest commits in the window (two at most), then
+  its finished start-work runs (`plans/<f>.md (start-work complete)`) and its plans with every
+  row ticked, three items in all. With none: "nothing finished in this window".
+- `Doing now:` (`지금:`) — this session's active discipline frame, else its own running
+  start-work with the gauge, else the newest active session's goal, else another session's
+  running start-work marked `(another session)`. With none: "nothing running".
+- `Next:` (`다음:`) — the same one step the box at the end names, with its slash command.
+
+The plain-text render prints the three lines as they are; Hermes shows them as plain text, so no
+fence or tag wraps them.
 
 ## Forbidden glyphs (A)
 
@@ -27,17 +43,21 @@ surfaces; a session id with no recorded value reads `unknown`.
    age in the largest unit under an `ago` header, done as commit count or tools used; more
    ended sessions than fit read `…(+N more ended)`. Hermes records no changed-file list,
    so the table never shows one.
-3. **Roadmap timeline.** `✓` finished plans and landed commits with dates, `▶` the current item
-   of each open plan with its gauge, `○` remaining names, then litgoal objectives with gauges.
-   Other worktrees' plans carry their worktree name. `plansOmitted` above zero is stated.
+3. **Roadmap timeline.** `✓` landed commits with dates, `▶` the current item of each open plan
+   with its gauge, `○` remaining names, then litgoal objectives with gauges. Other worktrees'
+   plans carry their worktree name. `plansOmitted` above zero is stated. Only plans changed
+   inside the window are listed, this worktree's included: a stale plan is left out. A plan
+   with every row ticked is finished work (`finished.plans`, named in the opener), never roadmap.
 4. **Paused work.** Each paused bounded-work run with its gauge and an approval offer in words.
    Approval stays with the user: a chat answer approves or denies, and only the bounded-work
    grant settles it. The brief never starts, approves, or denies anything itself.
 5. **One next step in a box.** Exactly the `next` record: what it does, then the slash command
    (`/start-work plans/<f>.md`) when `next.command` names one, otherwise "continue in chat".
-   When `next` is `none`, the box shows the suggestion instead — a waiting session to
-   answer, an open plan item, another active session to check, another ended one to pick
-   up — and the headline names it; the suggestion is shown, never recorded. Never a second
+   When `next` is `none`, the first item under `## Next` in this worktree's own HANDOFF.md
+   (`handoffs[].next`, `local: true`) comes first (`HANDOFF.md Next: <item>`); without one the
+   box shows the suggestion — a waiting session to answer, an open plan item, another active
+   session to check, another ended one to pick up — and the headline names it; it is shown,
+   never recorded. Another worktree's handoff never supplies the step. Never a second
    candidate, never a `go` to type: Hermes has no typed `go` command.
 
 ## Surface notes (C, D)
@@ -51,5 +71,8 @@ surfaces; a session id with no recorded value reads `unknown`.
 
 - Name every `unknown` source once on the last line (`unknown: herdr, git`).
 - Say "older sessions were not read" when `budget.exhausted` is true.
+- Say "N plans were not read (read budget used up)" when `roadmap.plansSkipped` is above zero.
+  Plans are read before session transcripts, so this happens only when the plans themselves
+  fill the 8 MiB budget.
 - Name the collector failure and stop with `BLOCKED:` when the collector fails; never rebuild
   the brief from memory, from the session store, or from a guess.

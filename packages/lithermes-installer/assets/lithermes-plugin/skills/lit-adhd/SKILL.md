@@ -51,17 +51,23 @@ verdicts: [PASS, FAIL, BLOCKED]
 
 ## #contract.outputs
 
-The brief has five parts, in this order:
+The brief opens with three lines, each from records only (`references/brief-contract.md`, "The opener"):
+
+- `Done so far:` / `지금까지:` — this worktree's newest commits in the window (two at most), then its finished start-work runs (`finished.runs`, written `plans/<f>.md (start-work complete)`) and fully ticked plans (`finished.plans`), three items in all; with none, "nothing finished in this window".
+- `Doing now:` / `지금:` — this session's active frame from `workflows`, else its own active `startWork` run with the gauge, else the newest active session's goal, else another session's active run marked `(another session)`; with none, "nothing running".
+- `Next:` / `다음:` — the same one step the box at the end names.
+
+Then the brief has five parts, in this order:
 
 1. **Headline.** Sessions found, how many wait on the user, the one next step: `3 sessions · 1 waiting on you · next: start plan (run /start-work plans/<plan>.md)` / `세션 3개 · 나를 기다리는 것 1 · 다음: start plan (/start-work plans/<plan>.md 실행)`. The headline doubles as the counts-only status line: session counts first, then plan and goal gauges, each a real `k/n` from the first source that knows it, never `?`, never `k/?`.
 2. **A full card per live session, a table for ended ones.** Waiting, active and unknown sessions get a full card: a status badge (`● waiting on you`, `▶ active`, `○ unknown`, in the user's language), the goal in plain words (the first ask, clipped), a real gauge or the known-facts line, `now:` naming the last tool call on active sessions, what was done (tools used and commits), what is next. Group cards under their worktree when sessions span more than one. Ended sessions collapse to one table row each (id, folder, goal, age, done; at most eight, newest first).
-3. **Roadmap timeline.** Done `✓` (finished plans and landed commits with dates), now `▶` (the current item of each open plan), later `○` (remaining names), then litgoal objectives with their gauges. Plans from other worktrees carry their worktree name. When `plansOmitted` is above zero, say how many more open plans exist.
+3. **Roadmap timeline.** Done `✓` (landed commits with dates), now `▶` (the current item of each open plan), later `○` (remaining names), then litgoal objectives with their gauges. Plans from other worktrees carry their worktree name. When `plansOmitted` is above zero, say how many more open plans exist. Only plans changed inside the window are listed, this worktree's too; a fully ticked plan is finished work for the opener, never a roadmap row.
 4. **Paused work.** Each paused bounded-work run from `startWork` with its gauge and an approval offer: `answer in chat to approve or deny the boundary`. Approval stays with the user in words; the grant settles it. Never start or approve it yourself.
-5. **One next step in a box.** Exactly one, from `next`: what it does, then the slash command when `next.command` names one, otherwise "continue in chat". When `next` is `none`, show the suggestion the collector printed instead; it is shown, never a second candidate.
+5. **One next step in a box.** Exactly one, from `next`: what it does, then the slash command when `next.command` names one, otherwise "continue in chat". When `next` is `none`, the first `## Next` item of this worktree's own HANDOFF.md (`handoffs[].next` with `local: true`) is the step (`HANDOFF.md Next: <item>`); without one, show the suggestion the collector printed. Either is shown, never recorded, and never a second candidate.
 
 **Progress gauges (D9), required.** One real gauge per session and per plan, each copied verbatim from the collector, in the form `[▉▉▉░░] 3/5` (filled `▉` done, light `░` remaining, then done/total). The remaining items are listed by name under each gauge, from its `remaining` array, clipped by the collector to fit. A gauge renders only when both numbers are real: an unknown total is the known-facts line (`… 3 steps`, or `… running` when nothing is counted), never `?`, never a guess, never an estimate, never a gauge of your own.
 
-Reader mode is the default conversational projection: the five parts above are the result, so give them and nothing more. Open the brief with the label `REWIND <<` on its own line (the rewind look; Hermes shows no colour or animation, so the label and badges are the whole look). Keep collector metadata such as byte budgets, source maps and file paths internal unless the user asks; technical or audit detail appears only when the current request asks for it. A material failure, risk or uncertainty stays visible: a source that read `unknown` is named in one line at the end (`모름: herdr, git` / `unknown: herdr, git`), and a truncated read (`budget.exhausted`) is stated as "older sessions were not read".
+Reader mode is the default conversational projection: the opener and the five parts above are the result, so give them and nothing more. Open the brief with the label `REWIND <<` on its own line (the rewind look; Hermes shows no colour or animation, so the label and badges are the whole look), then the three opener lines. Keep collector metadata such as byte budgets, source maps and file paths internal unless the user asks; technical or audit detail appears only when the current request asks for it. A material failure, risk or uncertainty stays visible: a source that read `unknown` is named in one line at the end (`모름: herdr, git` / `unknown: herdr, git`), and a truncated read (`budget.exhausted`) is stated as "older sessions were not read". Plans are read before session records; when the plans alone fill the budget, `roadmap.plansSkipped` says how many were not read, and the brief says so ("2 plans were not read (read budget used up)").
 
 The Hermes chat surface is not animated and carries no colour, so the psychedelic look does not port: the brief is plain text with no colour codes, and no colour escape ever enters the collector JSON. This skill asks no theme or preset, so the ask-first rule does not apply to it.
 
@@ -74,7 +80,7 @@ limitations_channel: inline
 
 ## #contract.evidence
 
-- The collector JSON is the evidence. Every claim in the brief maps to a field in it: `sessions[].asked`, `done.tools`, `done.commits`, `status`, `roadmap`, `workflows`, `startWork`, `next`.
+- The collector JSON is the evidence. Every claim in the brief maps to a field in it: `sessions[].asked`, `done.tools`, `done.commits`, `status`, `roadmap`, `finished`, `handoffs[].next`, `workflows`, `startWork`, `next`.
 - A session's "what that means" is a one-clause reading of its `asked`, `done.tools` and `done.commits` only. When all are empty, say what is known (elapsed time, last action) and mark nothing as done.
 - Real-surface proof for this skill lives in the repo's tests (`test/lit-adhd.test.js`, `test/python/test_lit_adhd.py`) and in recorded real-session briefs; detailed evidence stays internal to the run.
 
@@ -123,15 +129,15 @@ The collector (`skills/lit-adhd/scripts/lib/collect.mjs`, served as `scripts/adh
 | Source | What it gives | Missing reads |
 | --- | --- | --- |
 | Hermes sessions, `~/.hermes/state.db` read-only (`HERMES_SESSION_STORE` overrides it) | per session: title, first and last ask, tools used, status | `sessions: unknown` |
-| `plans/*.md` checkbox rows | open plans, current item, done/total, remaining names | `plans: unknown` |
+| `plans/*.md` checkbox rows | open plans changed in the window (current item, done/total, remaining names) and fully ticked ones as finished work | `plans: unknown` |
 | `.hermes/lithermes/litgoal/*/goals.json` | objective and passed/total criteria per goal | `litgoal: unknown` |
-| `HANDOFF*.md` and the `.handoff/` directory | headings from the first 40 lines only | `handoffs: unknown` |
+| `HANDOFF*.md` and the `.handoff/` directory | headings from the first 40 lines; for this worktree's own, the first `## Next` item | `handoffs: unknown` |
 | `git log --since` | commits in the window, matched to sessions by time and branch | `git: unknown` |
 | `.hermes/lithermes/adhd/stack.json` | active disciplines per session from the prompt hook | `workflowStack: unknown` |
-| start-work runs and bounded-work states | live runs and their plans, paused boundaries with progress | `startWork: unknown` |
+| start-work runs and bounded-work states | live and finished runs (`done`, `completed`) and their plans, paused boundaries with progress | `startWork: unknown` |
 | `herdr agent list` (only when `HERDR_ENV=1`) | agent panes | `herdr: unknown` |
 
-Sessions are read newest first under one 8 MiB budget for the whole run; a session belongs to a worktree when the repo root or cwd its record carries sits inside it. Archived and hidden sessions are skipped. Every string is redacted before it leaves the collector: credential shapes, `NAME=value` with a secret-like name, URI userinfo, any current environment value of eight or more characters, and the home directory (shown as `~`). Assistant text and changed files are not session records on this host, so the brief shows commits and tool names instead.
+Plans, goals, handoffs, the stack and start-work states are read first; sessions are read after them, newest first, under one 8 MiB budget for the whole run; a session belongs to a worktree when the repo root or cwd its record carries sits inside it. Archived and hidden sessions are skipped. Every string is redacted before it leaves the collector: credential shapes, `NAME=value` with a secret-like name, URI userinfo, any current environment value of eight or more characters, and the home directory (shown as `~`). Assistant text and changed files are not session records on this host, so the brief shows commits and tool names instead.
 
 ## Status taxonomy
 
@@ -141,6 +147,8 @@ Sessions are read newest first under one 8 MiB budget for the whole run; a sessi
 - `unknown`: the record held no timestamp.
 
 Sessions waiting on the user come first, then active ones, newest first.
+
+A start-work run whose plan has every row ticked reads `done`, and completed bounded work reads `completed`; both are finished work on the opener's `Done so far:` line. A session never reads `done` on Hermes: run records carry no session id and completed bounded work clears its owner, so nothing ties a finished run to the session that ran it (`references/status-taxonomy.md`).
 
 ## The next step
 
@@ -153,7 +161,7 @@ Sessions waiting on the user come first, then active ones, newest first.
 
 ## Continuing after the brief
 
-After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a paused boundary is shown for a chat answer, an active run continues in chat, a single open plan starts through `/start-work`. Anything else typed after the brief is an ordinary prompt. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
+After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a paused boundary is shown for a chat answer, an active run continues in chat, a single open plan starts through `/start-work`. Anything else typed after the brief is an ordinary prompt. A plan saved under `plans/` in a lit-plan turn writes the same record (`start-plan`), so `go` right after planning shows that plan's `/start-work` command too. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
 
 ## Relation to lit-recap
 
@@ -178,7 +186,7 @@ The prompt hook records each lit route activation as a frame in the adhd stack f
 ## Stop and report
 
 - Stop with `BLOCKED: lit-adhd collector unavailable (<reason>)` when the collector exits non-zero or is not found; never rebuild the brief from memory.
-- The reply is the five-part brief (summary, session cards, roadmap, paused work, one next step) and nothing more. Name every `unknown` source once on the last line.
+- The reply is the three opener lines and the five-part brief (summary, session cards, roadmap, paused work, one next step) and nothing more. Name every `unknown` source once on the last line.
 - Start nothing: the user's next reply starts the next step, not this turn.
 
 ## Pitfalls

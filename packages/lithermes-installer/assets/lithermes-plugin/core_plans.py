@@ -408,6 +408,86 @@ def plan_structure_issues(markdown: str) -> list[str]:
     return issues
 
 
+# `Scope roots: <path> (<actions>)` names a folder outside the project that the work
+# reaches. Hermes bounded work grants only inside its worktree, so the line is advisory:
+# it tells the reviewer and the user, before execution, what the todos will touch.
+SCOPE_ROOT_LINE = re.compile(r"^Scope roots?:[ \t]*(\S+)[ \t]*\(([a-z, -]+)\)[ \t]*$")
+_ABSOLUTE_PATH = re.compile(r"(?<![\w.~/-])/[\w.@+%,=~-]+(?:/[\w.@+%,=~-]+)+/?")
+_CODE_SPAN = re.compile(r"`([^`]*)`")
+
+
+def _path_mentions(line: str) -> list[str]:
+    # A code span holding whitespace is a quoted command, not a folder; a span that
+    # is one bare path still counts.
+    def unquote(match: re.Match[str]) -> str:
+        span = match.group(1).strip()
+        return " " if re.search(r"\s", span) else f" {span} "
+
+    return _ABSOLUTE_PATH.findall(_CODE_SPAN.sub(unquote, line))
+
+
+def _nearest_directory(path: Path) -> Path:
+    for candidate in (path, *path.parents):
+        if candidate.is_dir():
+            return candidate.resolve()
+    return Path(path.anchor or "/")
+
+
+def _too_broad(directory: Path) -> bool:
+    return len(directory.parents) <= 1 or directory == Path.home().resolve()
+
+
+def _covers(root: Path, path: Path) -> bool:
+    return path == root or root in path.parents
+
+
+def scope_root_issues(markdown: str, workspace: Path | str) -> list[str]:
+    """Advisory: absolute paths under '## Todos' outside the project and every Scope roots line.
+
+    Fenced lines, command spans and other sections do not count. A root that is the
+    filesystem root, a top-level folder or the bare home folder never covers anything.
+    One message per folder, naming the line to add or asking for a narrower folder.
+    """
+    project = Path(workspace).resolve()
+    lines = list(_outside_fence_lines(markdown))
+    roots = []
+    for _, raw in lines:
+        match = SCOPE_ROOT_LINE.match(raw)
+        if match:
+            root = Path(match.group(1)).expanduser()
+            root = (root if root.is_absolute() else project / root).resolve()
+            if not _too_broad(root):
+                roots.append(root)
+    issues: list[str] = []
+    seen: set[Path] = set()
+    section = ""
+    for _, raw in lines:
+        if raw.startswith("## "):
+            section = raw.strip()
+            continue
+        if section != _TODOS_HEADING:
+            continue
+        for mention in _path_mentions(raw):
+            path = mention.rstrip(".,:;)")
+            directory = _nearest_directory(Path(path))
+            resolved = Path(path).resolve()
+            if any(_covers(root, candidate) for root in (project, *roots) for candidate in (resolved, directory)):
+                continue
+            if directory in seen:
+                continue
+            seen.add(directory)
+            if _too_broad(directory):
+                issues.append(
+                    f"{path} is outside the project; name a narrower existing folder on a Scope roots line"
+                )
+            else:
+                issues.append(
+                    f"{path} is outside the project and no Scope roots line covers it; "
+                    f"add: Scope roots: {directory} (read)"
+                )
+    return issues
+
+
 def assert_plan_structure(markdown: str) -> None:
     """Raise unless the plan satisfies the row grammar. Use before handoff."""
     issues = plan_structure_issues(markdown)

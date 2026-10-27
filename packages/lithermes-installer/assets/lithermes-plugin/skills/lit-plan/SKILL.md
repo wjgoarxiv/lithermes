@@ -446,6 +446,30 @@ must carry an **action / output / verification** contract:
 7. **Commit, when approved and in scope**: a Conventional Commit message in
    the form `<type>(<scope>): <imperative>`.
 
+### Scope Roots For Outside Folders
+
+When a todo names an absolute path outside the project (a sibling checkout, a
+shared data folder, a scratch directory), add one column-zero line per folder
+near the top of the plan, before you save it:
+
+```
+Scope roots: <path> (<actions>)
+Scope roots: /srv/shared/fixtures (read)
+```
+
+`<actions>` is a comma list such as `read`, `write`, `execute`. Name the
+narrowest existing folder: the filesystem root, a top-level folder and the bare
+home folder never count as cover. Paths inside fenced blocks, inline code spans
+that hold a whole command, and sections other than `## Todos` are not checked.
+
+On Hermes this is **advisory**. Bounded work (`/lit-loop init --grant
+ACTION@ROOT`) only grants roots inside its own worktree, so a Scope roots line
+cannot become a grant. It tells the reviewer and the user, before execution,
+which outside folders the todos will touch. `/start-work` (and its `--dry-run`)
+runs the same check and lists every todo path no line covers, with the line to
+add, under "Scope roots advisory"; it does not block the run. Settle those
+folders with the user before the todo that reaches them.
+
 ### Failure And Decision Branches
 
 Add **failure and decision branches** only where outcomes genuinely change the
@@ -534,9 +558,17 @@ Once both passes clear, output:
 4. The handoff line — this bridges to the execution loop:
 
 ```
-Plan is ready. Use /lit-loop "<brief>" or /start-work <slug> to begin execution.
+Plan is ready: plans/<slug>.md. To start it, type `go` within 30 minutes
+(I will show the /start-work command), or run /start-work plans/<slug>.md yourself.
 The plan path will appear in each execution commit footer: Plan: plans/<slug>.md
 ```
+
+Saving `plans/<slug>.md` in this lit-plan turn is what arms `go`: the
+`post_tool_call` hook records a `start-plan` next step for this session only
+(`.hermes/lithermes/adhd/next-<session>.json`). A `go` from another session, or
+more than 30 minutes later, finds nothing to continue. `go` only presents the
+`/start-work` command for the user to run; it never starts execution, so the
+approval gate above still holds. Save the plan only after the gate clears.
 
 Do **not** reproduce the full plan in the chat output — it is already written to
 disk. If the user wants to read it, they can open `plans/<slug>.md`.

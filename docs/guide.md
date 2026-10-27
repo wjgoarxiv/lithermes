@@ -171,6 +171,8 @@ flowchart LR
 
 Natural routing sends a standalone lit or litwork, and exact intents such as `lit plan`, `lit review`, `lit research`, `lit goal`, `lit workflow`, `lit kanban`, and `lit team` to their matching modes. Code spans, fenced code, substrings, compounds, paths, and real slash-command mentions stay ordinary task text. `lit start work` is `BLOCKED`; invoke `/start-work <approved-plan>` explicitly.
 
+After `lit-plan` saves a plan under `plans/`, a bare `go` in the same session within 30 minutes shows that plan's `/start-work` command; it never starts the run. A plan whose todos name a folder outside the project carries a `Scope roots: <path> (<actions>)` line; `/start-work` lists any such folder no line covers, as advice only, because bounded work grants nothing outside its worktree.
+
 `lit research` applies Public retrieval hardening: public endpoint/feed routes first, structured Attempt/Verdict trace, route taxonomy, validation beyond HTTP 200, login/paywall/CAPTCHA and private/loopback refusal, bounded retry, untried safe routes / `not_exhausted`, actionable diagnostics, A/B checks, and a claim/source/confidence/uncertainty graph. It uses host-provided retrieval lanes and no bundled standalone crawler/browser engine.
 
 ### Bounded work
@@ -185,7 +187,7 @@ This is bounded work schema 3 with one explicit lifecycle:
 /lit-loop complete
 ```
 
-`pre_tool_call` checks the Hermes session, work id, revision, replay id, and action/root grant before mutation. Only a trusted explicit user resume can mint a one-use grant for a new boundary. Paused work cannot complete. Commit, publish, push, release, tag, install, host-config, credential, and destructive equivalents are permanently rejected.
+`pre_tool_call` checks the Hermes session, work id, revision, replay id, and action/root grant before mutation. Only a trusted explicit user resume can mint a one-use grant for a new boundary. In a gateway that hosts several sessions, a session that does not own the work may still observe it with read-only terminal commands: herdr reads (`pane list|read|get|layout`, `agent list|get|read`, `tab list`, `workspace list`) and `grep`/`rg` pipelines ending in `grep`, `rg`, `head`, `tail` or `wc`. Redirects, chaining and substitution are still refused, every other tool call from it is blocked, and the owner's own checks are unchanged. Paused work cannot complete. Commit, publish, push, release, tag, install, host-config, credential, and destructive equivalents are permanently rejected.
 
 Async delegation uses per-child re-entry receipts. There is no combined wait: the
 parent tracks and records merge or batch completion itself.

@@ -12,6 +12,8 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
     { "id8": "2fad84a7", "title": "schematic lane", "asked": ["render the figure"], "done": { "tools": { "bash": 4 }, "commits": [] }, "status": "ended", "progress": { "gauge": "[▉▉▉] 3/3", "remaining": [] } }
   ],
   "roadmap": { "progress": { "gauge": "[▉▉▉▉░░░░░░] 10/20" }, "plans": [{ "plan": "plans/lit-adhd.md", "local": true, "current": "11. Skill lit-adhd", "progress": { "gauge": "[▉▉▉▉░░░░░░] 10/19" } }], "plansOmitted": 0 },
+  "finished": { "runs": [], "plans": [] },
+  "commits": [{ "hash": "bdea372", "at": "2026-10-25T09:12:00Z", "subject": "feat(adhd): collect cross-session records" }],
   "startWork": [{ "id8": "f06fb727", "workId": "work-abc", "status": "paused", "pendingBoundary": { "boundary": "b-1" } }],
   "next": { "kind": "approve-boundary", "target": { "workId": "work-abc" }, "say": null },
   "sources": { "herdr": "unknown" }
@@ -20,6 +22,10 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 
 ## English
 
+> Done so far: feat(adhd): collect cross-session records
+> Doing now: pptx lane
+> Next: approve boundary: work-abc. Answer in chat.
+>
 > lit-adhd: 3 session(s) · 1 waiting on you · next: approve boundary
 >
 > == ● waiting on you · 655f39d3 · ADHD lane
@@ -50,6 +56,10 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 
 ## 한국어
 
+> 지금까지: feat(adhd): collect cross-session records
+> 지금: pptx lane
+> 다음: approve boundary: work-abc. 채팅으로 답하세요.
+>
 > lit-adhd: 세션 3개 · 나를 기다리는 것 1 · 다음: approve boundary
 >
 > == ● 나를 기다림 · 655f39d3 · ADHD lane
@@ -82,5 +92,6 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 
 - They do not estimate the pptx lane's progress: with no count it reads `[…] running`, copied as is.
 - They do not describe work the records do not show: the pptx lane's "did" line names tools and commits only.
-- They offer one next step only, and do not start it.
+- They offer one next step only, and do not start it; the opener's `Next:` line and the box name the same step.
+- Their `Done so far:` line holds only records: commits, finished start-work runs and fully ticked plans. With none, it reads "nothing finished in this window".
 - They never show `?`, `?/?`, `[???]` or `k/?`: an unknown total is the pulse line, and the examples carry none of the four.

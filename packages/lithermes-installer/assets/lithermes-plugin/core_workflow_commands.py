@@ -6,7 +6,7 @@ try:
         LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
         reader_facing_contract_block,
     )
-    from .core_plans import plan_structure_issues, unchecked_items
+    from .core_plans import plan_structure_issues, scope_root_issues, unchecked_items
     from .core_reader_args import parse_reader_facing_command_args
     from .core_routing import bind_goal_marker
     from .core_runs import build_run_agent_message, find_plan, latest_start_work_run, load_run_state, write_run_state
@@ -17,7 +17,7 @@ except (ImportError, ModuleNotFoundError):
         LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
         reader_facing_contract_block,
     )
-    from core_plans import plan_structure_issues, unchecked_items
+    from core_plans import plan_structure_issues, scope_root_issues, unchecked_items
     from core_reader_args import parse_reader_facing_command_args
     from core_routing import bind_goal_marker
     from core_runs import build_run_agent_message, find_plan, latest_start_work_run, load_run_state, write_run_state
@@ -144,14 +144,20 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
         raise ValueError(msg)
     conditional_uiux = conditional_uiux_skill_blocks(text)
     open_items = unchecked_items(text)
+    outside = scope_root_issues(text, workspace)
+    scope_note = (
+        "\nScope roots advisory (Hermes grants nothing outside the worktree; settle these "
+        "with the user before the todos reach them):\n" + "\n".join(f"- {issue}" for issue in outside[:8])
+        if outside else ""
+    )
     if dry_run:
         preview = "\n".join(f"- {item}" for item in open_items[:8]) or "- no unchecked items found"
         if resume:
             run_dir = latest_start_work_run(workspace, plan)
             if not run_dir:
                 return f"BLOCKED: /start-work --resume found no prior run for {plan}."
-            return f"LitHermes resume dry-run for {plan}: would resume {run_dir}\n{preview}"
-        return f"LitHermes dry-run for {plan}:\n{preview}"
+            return f"LitHermes resume dry-run for {plan}: would resume {run_dir}\n{preview}{scope_note}"
+        return f"LitHermes dry-run for {plan}:\n{preview}{scope_note}"
 
     if resume:
         run_dir = latest_start_work_run(workspace, plan)
@@ -189,7 +195,7 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
     display = (
         f"Started LitHermes work run from approved plan: {run_dir}\n"
         f"Plan: {plan}\n"
-        f"Open items:\n{first_items}"
+        f"Open items:\n{first_items}{scope_note}"
     )
     return {
         "display": display,

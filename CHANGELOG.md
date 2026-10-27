@@ -6,6 +6,11 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- `lit-plan` now ends with a one-word `go`: once the plan is saved under `plans/`, type `go` in the same session within 30 minutes and Hermes shows the `/start-work` command for that plan. It never starts the work itself.
+- `lit-plan` asks for a `Scope roots: <path> (<actions>)` line when a todo names a folder outside the project, and `/start-work` lists any such folder no line covers. On Hermes this is advisory: bounded work grants only inside its own worktree.
+- While one session owns bounded work in a gateway, other sessions there may run read-only commands (herdr reads such as `herdr pane list`, and `grep` or `rg` pipelines). Every mutation from them is still refused, and the owner's rules are unchanged.
+- The `lit-adhd` brief opens with three lines (done so far, doing now, next). Plans with every box ticked and finished start-work runs count as done, plans are read before session records and must have changed inside the window, plans the read budget skipped are reported, and this worktree's HANDOFF.md `## Next` item is the fallback step. In a linked worktree inside another checkout, the brief reads that worktree's own state, not the outer checkout's.
+
 ## [1.0.30] - 2026-10-27
 
 - New `lit-schematic` skill for drawings of real equipment: detailed P&IDs with ISA tags and control loops, PFDs and layouts, apparatus figures for papers and isometric cutaways, saved as editable SVG with PDF and a 600 dpi PNG and checked by a QA gate before delivery. Ask for one by name, with `/lit-schematic <brief>`, or in a `lit` request. Abstract boxes-and-arrows stay with `lit-diagram-drawer`, and plots of measured data stay with `lit-scientific-visualization`.

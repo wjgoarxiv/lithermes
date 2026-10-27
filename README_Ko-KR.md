@@ -212,4 +212,6 @@ LitHermes는 같은 `lit` 작업 방식을 코딩 에이전트 일곱 곳에 옮
 
 버그 제보와 풀 리퀘스트를 환영합니다. [기여 안내](./CONTRIBUTING.md)부터 읽어 주시고, [보안](./SECURITY.md), [행동 강령](./CODE_OF_CONDUCT.md), [지원](./SUPPORT.md)도 참고하세요.
 
+LitHermes와 LitFamily의 이름과 로고는 MIT License가 아니라 [상표 정책](./TRADEMARK.md)을 따릅니다.
+
 <a href="./LICENSE"><img src="./docs/assets/readme/lucide-shield-check.svg" width="16" alt="" /> MIT License</a>

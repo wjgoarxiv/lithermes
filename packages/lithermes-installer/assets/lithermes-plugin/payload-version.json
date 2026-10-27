@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-26T21:40:45.035Z",
+  "syncedAt": "2026-10-27T15:34:33.950Z",
   "source": "bundled-payload",
-  "sourceHash": "bca2bacc6e77a46a4cea81a3e04b4bffa340b6a2e7e431e867e58e03ca2a818d",
+  "sourceHash": "f903d03b8c007d571c01038f951e7f208ecb5aadd2b95467fcd4726055d8f920",
   "files": [
     {
       "path": "NOTICE.md",
@@ -17,7 +17,7 @@
     },
     {
       "path": "adhd_stack.py",
-      "sha256": "14597ea1f5aaed802613b947e384239a5f1e3129c2616c7600c45b15188def35"
+      "sha256": "0a1e3e45f6697918758b1454a53f034a61658f3980430c5c1a15c149a9ba7012"
     },
     {
       "path": "auto_handoff.py",
@@ -29,7 +29,7 @@
     },
     {
       "path": "bounded_work.py",
-      "sha256": "57ce1eab813a0363a819a64da58a87de5889c29234b656306faee1f0cba9e660"
+      "sha256": "12159eed9ea3ca71d1de7b10c12b4dea5cb273d9abe7b1b52dddad1738cbeb04"
     },
     {
       "path": "bounded_work_tools.py",
@@ -37,7 +37,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "c23c4ea051087b9f8a0a5b601ab75e72a2abc9629a52436ab1e3481dc60d7eed"
+      "sha256": "68641a92c3cc389c46bc1c1dc8bfab7e72fed16c10769a0f5ad7a6327258178e"
     },
     {
       "path": "core_commands.py",
@@ -45,7 +45,7 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "5f03a2cce9f8a50fbc06f40aef4d4c9098b9b2a89d251207b28b81a66fb169bb"
+      "sha256": "4b8ab6c18ac58c1b9472547c6f4c50aa64b40878f86f848e6e1ca5a5dc800640"
     },
     {
       "path": "core_contract.py",
@@ -53,7 +53,7 @@
     },
     {
       "path": "core_plans.py",
-      "sha256": "2f53c04e6c2d7ef3bc7a2cabfea8fb0a2d3967a06a65aa9195a85338ee3898a4"
+      "sha256": "e1f138375a88a5098ac091444fbf528eeb8e83d750c68a4ced5072c779b1c2e4"
     },
     {
       "path": "core_reader_args.py",
@@ -85,7 +85,7 @@
     },
     {
       "path": "core_workflow_commands.py",
-      "sha256": "e8ca7656e1a66149b11c6e9ce982becf8fca700a9cd9d614c89fb349c4811e0f"
+      "sha256": "734133dbfac98d98fff445c5787fab49899c94a9f72f5aace27665798765ee37"
     },
     {
       "path": "deliverable_hedge_guard.py",
@@ -1489,19 +1489,19 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "30805f92fbdbcb63a9c9b38e070729ac271390d765274cd2bfb07a7752963788"
+      "sha256": "5c7b769bbca2e534874425e755d0b8d01a57f3b042a7368ba7575cceea0a7c76"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
-      "sha256": "3d10bb1f01629dcc63d8eba79006b0810a8dd75c2373c883ef5aa71fbc709cd3"
+      "sha256": "e7ee488082297403e1ff5796f7a117fe69e7e62fbae749c547ec41dd1b70bfc4"
     },
     {
       "path": "skills/lit-adhd/references/card-examples.md",
-      "sha256": "08675a2a8225b5a1a57f6a1a162b7e4860b7f630456bbbc394b60ed87debf550"
+      "sha256": "b077110d4eb04ce96640646280544dd4eb5ca287d0492356dd62b376aa162129"
     },
     {
       "path": "skills/lit-adhd/references/status-taxonomy.md",
-      "sha256": "843512db99743ac2121936f77c24acb517b2bf6a3416634cc266b7cddd56c061"
+      "sha256": "3f18ce0e1509d0c3e8d48730fb29625883d52eb05cc7bdf4dbac35c5df77291d"
     },
     {
       "path": "skills/lit-adhd/scripts/adhd.mjs",
@@ -1509,7 +1509,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "91ab388060b2324fc617e9de7929a94ed27ae27cc43c0c508f8beca8c51867f0"
+      "sha256": "ca056223c8dba8008543ba900a45f4bbea5859119215ad6a2a35cf0fb34ed68f"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -3677,7 +3677,7 @@
     },
     {
       "path": "skills/lit-plan/SKILL.md",
-      "sha256": "8309c86e23dec6e8f5000f887eb7484875544772bc7c6575691d874a80aa07ce"
+      "sha256": "8325532a4394f033feeb5a55d64938967458a87324dd688b4783050858195014"
     },
     {
       "path": "skills/lit-pptx/FORBIDDEN_TERMS.json",

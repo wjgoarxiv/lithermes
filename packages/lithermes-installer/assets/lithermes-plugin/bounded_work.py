@@ -801,6 +801,45 @@ def _terminal_requirement(args: dict[str, Any]) -> tuple[str, list[Path]] | None
     return action, [_canonical_tool_path(args.get("workdir") or Path.cwd())]
 
 
+_OBSERVER_HERDR_READS = {
+    "pane": {"list", "read", "get", "layout"},
+    "agent": {"list", "get", "read"},
+    "tab": {"list"},
+    "workspace": {"list"},
+}
+_OBSERVER_FILTERS = {"grep", "rg", "head", "tail", "wc"}
+
+
+def classify_observation(command: Any) -> bool:
+    """True when a terminal command only reads: a herdr read or a grep/rg pipeline.
+
+    Pipes are the only shell control admitted; redirects, chaining, command
+    substitution and newlines still refuse, as in ``_terminal_requirement``.
+    """
+    text = str(command or "").strip()
+    if not text or _SHELL_CONTROL_RE.search(text.replace("|", "")):
+        return False
+    segments = text.split("|")
+    for index, segment in enumerate(segments):
+        try:
+            words = shlex.split(segment)
+        except ValueError:
+            return False
+        if not words:
+            return False
+        executable = Path(words[0]).name
+        if executable == "rg" and any(word.startswith("--pre") for word in words):
+            return False
+        if index == 0 and executable == "herdr":
+            if len(words) < 3 or words[2] not in _OBSERVER_HERDR_READS.get(words[1], set()):
+                return False
+        elif index == 0 and executable not in {"grep", "rg"}:
+            return False
+        elif index > 0 and executable not in _OBSERVER_FILTERS:
+            return False
+    return True
+
+
 def _tool_requirement(tool_name: str, args: dict[str, Any]) -> tuple[str, list[Path]] | None:
     if tool_name in _READ_ONLY_TOOLS:
         return None
@@ -866,6 +905,8 @@ def enforce_tool_authority(tool_name: Any, args: Any, session_id: Any) -> dict[s
     exact_session = str(session_id or "")
     bound = [state for state in states if state.get("active_session_id") == exact_session]
     if not exact_session or not bound:
+        if name == "terminal" and classify_observation(payload.get("command")):
+            return None
         return _block_tool("Bounded work mutation blocked: the exact Hermes session is not bound.")
     if any(state.get("status") == "paused" for state in bound):
         return _block_tool("Bounded work mutation blocked: this Hermes session has paused work.")
