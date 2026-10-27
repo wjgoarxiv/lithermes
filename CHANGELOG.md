@@ -6,10 +6,13 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
-- `lit-plan` now ends with a one-word `go`: once the plan is saved under `plans/`, type `go` in the same session within 30 minutes and Hermes shows the `/start-work` command for that plan. It never starts the work itself.
-- `lit-plan` asks for a `Scope roots: <path> (<actions>)` line when a todo names a folder outside the project, and `/start-work` lists any such folder no line covers. On Hermes this is advisory: bounded work grants only inside its own worktree.
-- While one session owns bounded work in a gateway, other sessions there may run read-only commands (herdr reads such as `herdr pane list`, and `grep` or `rg` pipelines). Every mutation from them is still refused, and the owner's rules are unchanged.
-- The `lit-adhd` brief opens with three lines (done so far, doing now, next). Plans with every box ticked and finished start-work runs count as done, plans are read before session records and must have changed inside the window, plans the read budget skipped are reported, and this worktree's HANDOFF.md `## Next` item is the fallback step. In a linked worktree inside another checkout, the brief reads that worktree's own state, not the outer checkout's.
+## [1.0.31] - 2026-10-28
+
+- After `lit-plan` saves a plan, type `go` in the same session within 30 minutes and Hermes shows the `/start-work` command for that plan. It only shows the command; it never starts the work for you.
+- When a plan step touches a folder outside the project, `lit-plan` asks for a `Scope roots: <path> (<actions>)` line, and `/start-work` lists any outside folder no line covers. On Hermes this is a reminder only: bounded work still writes only inside its own worktree.
+- While one session owns bounded work in a gateway, other sessions there can now run read-only commands, such as `herdr pane list` or `grep` and `rg` searches. Anything that changes files is still refused for them.
+- The `lit-adhd` brief now opens with three lines: what is done, what is in progress, and what comes next. Plans with every box ticked and finished start-work runs count as done, only plans changed inside the time window are read, skipped plans are named, and the `## Next` item in this worktree's HANDOFF.md is used when nothing else suggests a step. In a linked worktree, the brief reads that worktree's own state.
+- The repository now has a short `TRADEMARK.md`: the code is MIT, while the LitHermes and LitFamily names and logos are not part of that licence.
 
 ## [1.0.30] - 2026-10-27
 
