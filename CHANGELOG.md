@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- The prepublish guard now works under npm trusted publishing. In a GitHub Actions job that can request an OIDC token, it skips `npm whoami`, because npm signs in during the publish step itself. Every other check still runs: the branch must be `main`, HEAD must equal live `origin/main`, and the tests and scanners must pass.
+
 ## [1.0.31] - 2026-10-28
 
 - After `lit-plan` saves a plan, type `go` in the same session within 30 minutes and Hermes shows the `/start-work` command for that plan. It only shows the command; it never starts the work for you.

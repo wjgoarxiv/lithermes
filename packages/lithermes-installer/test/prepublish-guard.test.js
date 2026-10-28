@@ -3,6 +3,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const { test } = require("node:test");
 
 const packageRoot = path.resolve(__dirname, "..");
@@ -120,6 +121,8 @@ function createHarness(overrides = {}) {
   }
 
   const dependencies = {
+    // Explicit so a run inside GitHub Actions cannot switch the harness into trusted-publishing mode.
+    env: overrides.env || {},
     packageRoot,
     runCommand,
     makeTempWorkspace() {
@@ -377,4 +380,90 @@ test("interruption and repeated runs remove every private workspace", async (t) 
   assert.equal(repeated.workspaces.length, 2);
   assert.notEqual(repeated.workspaces[0], repeated.workspaces[1]);
   assert.ok(repeated.workspaces.every((workspace) => !fs.existsSync(workspace)));
+});
+
+const trustedPublishingEnv = {
+  GITHUB_ACTIONS: "true",
+  ACTIONS_ID_TOKEN_REQUEST_URL: "https://token.actions.example.invalid/oidc",
+};
+
+test("a GitHub Actions job with an OIDC token endpoint skips only npm whoami", async (t) => {
+  const local = await runWithHarness(t);
+  const ci = await runWithHarness(t, { env: trustedPublishingEnv, authFailure: true });
+  // Each harness packs into its own temporary workspace; compare everything except that path.
+  const withoutWorkspace = (harness) => harness.calls.map(commandText).map(
+    (command) => harness.workspaces.reduce((text, workspace) => text.split(workspace).join("<workspace>"), command),
+  );
+  const localCommands = withoutWorkspace(local);
+  const ciCommands = withoutWorkspace(ci);
+  assert.equal(ciCommands.filter((command) => command.startsWith("npm whoami ")).length, 0);
+  assert.deepEqual(ciCommands, localCommands.filter((command) => !command.startsWith("npm whoami ")));
+  assert.equal(ci.receipt.ok, true);
+});
+
+test("npm whoami stays required unless both trusted-publishing variables are present", async (t) => {
+  for (const env of [
+    {},
+    { GITHUB_ACTIONS: "true" },
+    { ACTIONS_ID_TOKEN_REQUEST_URL: trustedPublishingEnv.ACTIONS_ID_TOKEN_REQUEST_URL },
+    { ...trustedPublishingEnv, GITHUB_ACTIONS: "1" },
+    { ...trustedPublishingEnv, ACTIONS_ID_TOKEN_REQUEST_URL: "" },
+  ]) {
+    const harness = createHarness({ env, authFailure: true });
+    t.after(() => harness.cleanup());
+    await assert.rejects(
+      async () => loadGuard().runPrepublishGuard(harness.dependencies),
+      /authentication/i,
+      JSON.stringify(env),
+    );
+  }
+});
+
+test("trusted-publishing mode still refuses a non-main branch, stale origin/main and late changes", async (t) => {
+  for (const [overrides, message] of [
+    [{ branch: "release" }, /main branch/i],
+    [{ originHead: "b".repeat(40) }, /origin\/main/i],
+    [{ dirty: " M package.json\n" }, /worktree.*clean/i],
+    [{ registry: "https://registry.example.invalid/" }, /registry/i],
+    [{ versionExists: true }, /already exists/i],
+    [{ finalInvalid: "remote" }, /live origin\/main/i],
+    [{ lateInvalid: "head" }, /local HEAD changed/i],
+  ]) {
+    const harness = createHarness({ ...overrides, env: trustedPublishingEnv });
+    t.after(() => harness.cleanup());
+    await assert.rejects(async () => loadGuard().runPrepublishGuard(harness.dependencies), message);
+  }
+});
+
+test("the branch check passes on an actions/checkout clone of main and refuses a detached checkout", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-checkout-shape."));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: "pipe" });
+  const identity = ["-c", "user.name=guard-test", "-c", "user.email=guard-test@example.invalid"];
+  const remote = path.join(root, "remote.git");
+  const seed = path.join(root, "seed");
+  git(root, "init", "--quiet", "--bare", remote);
+  git(root, "init", "--quiet", "--initial-branch=main", seed);
+  git(seed, ...identity, "commit", "--quiet", "--allow-empty", "-m", "seed");
+  git(seed, "push", "--quiet", remote, "main");
+
+  // The same git calls actions/checkout makes for a workflow_dispatch on refs/heads/main.
+  const checkout = path.join(root, "checkout");
+  fs.mkdirSync(checkout);
+  git(checkout, "init", "--quiet");
+  git(checkout, "remote", "add", "origin", remote);
+  git(checkout, "fetch", "--quiet", "--no-tags", "--depth=1", "origin", "+refs/heads/main:refs/remotes/origin/main");
+  git(checkout, "checkout", "--quiet", "--force", "-B", "main", "refs/remotes/origin/main");
+
+  const { createCommandRunner, runLocalSnapshot } = loadGuard();
+  const runner = createCommandRunner({ env: { PATH: process.env.PATH } });
+  t.after(() => runner.dispose());
+  const { head } = await runLocalSnapshot({ packageRoot: checkout, runCommand: runner.runCommand });
+  assert.equal(head, git(seed, "rev-parse", "HEAD").trim());
+
+  git(checkout, "checkout", "--quiet", "--detach");
+  await assert.rejects(
+    async () => runLocalSnapshot({ packageRoot: checkout, runCommand: runner.runCommand }),
+    /main branch/i,
+  );
 });

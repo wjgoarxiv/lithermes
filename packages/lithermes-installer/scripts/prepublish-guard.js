@@ -390,7 +390,13 @@ async function runLocalSnapshot({ expectedHead, packageRoot, runCommand }) {
   return { head };
 }
 
-async function runAuthoritativeGuards({ packageMetadata, packageRoot, runCommand }) {
+// Trusted publishing exchanges the job's OIDC token for npm credentials inside the publish
+// command itself, so no npm identity exists while this guard runs. Only npm whoami is skipped.
+function isTrustedPublishingJob(env) {
+  return env.GITHUB_ACTIONS === "true" && Boolean(env.ACTIONS_ID_TOKEN_REQUEST_URL);
+}
+
+async function runAuthoritativeGuards({ packageMetadata, packageRoot, runCommand, trustedPublishing = false }) {
   const local = await runLocalSnapshot({ packageRoot, runCommand });
   const remote = output(await run(
     runCommand,
@@ -417,16 +423,18 @@ async function runAuthoritativeGuards({ packageMetadata, packageRoot, runCommand
   ), "stdout").trim();
   if (configuredRegistry !== PUBLIC_REGISTRY) throw new Error("npm registry must be exactly the public registry");
 
-  const identity = await run(
-    runCommand,
-    packageRoot,
-    "npm",
-    ["whoami", `--registry=${PUBLIC_REGISTRY}`],
-    true,
-    "npm authentication",
-    SHORT_DEADLINE_MS,
-  );
-  if (!output(identity, "stdout").trim()) throw new Error("npm authentication returned no identity");
+  if (!trustedPublishing) {
+    const identity = await run(
+      runCommand,
+      packageRoot,
+      "npm",
+      ["whoami", `--registry=${PUBLIC_REGISTRY}`],
+      true,
+      "npm authentication",
+      SHORT_DEADLINE_MS,
+    );
+    if (!output(identity, "stdout").trim()) throw new Error("npm authentication returned no identity");
+  }
 
   const packageSpec = `${packageMetadata.name}@${packageMetadata.version}`;
   const versionResult = await runCommand(
@@ -453,7 +461,8 @@ async function runPrepublishGuard(dependencies = {}) {
     || ((workspace) => fs.rmSync(workspace, { recursive: true, force: true }));
 
   try {
-    const guardInputs = { packageMetadata, packageRoot, runCommand };
+    const trustedPublishing = isTrustedPublishingJob(dependencies.env || process.env);
+    const guardInputs = { packageMetadata, packageRoot, runCommand, trustedPublishing };
     await runAuthoritativeGuards(guardInputs);
 
     for (const [command, args, label] of [
@@ -530,6 +539,7 @@ module.exports = {
   PUBLIC_REGISTRY,
   SHORT_DEADLINE_MS,
   createCommandRunner,
+  isTrustedPublishingJob,
   parseScanReceipt,
   requireCompleted,
   requireStructuredAbsence,
