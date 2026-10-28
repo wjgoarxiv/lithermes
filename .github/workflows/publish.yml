@@ -1,0 +1,95 @@
+# Ships @litfamily/lithermes from GitHub through npm trusted publishing, so each release carries
+# provenance tying the tarball to this repository and commit. Start it by hand on main. Left at the
+# default it is a dry run: every gate plus a pack listing. With stage on, it uploads a staged version
+# that stays unpublished until the maintainer approves it on npmjs.com with two-factor authentication.
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Upload a staged version to npm (off = gates and pack listing only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/lithermes-installer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: npm with staged publishing
+        run: npm install -g npm@11.21.1
+
+      # The motion cover tests check for a WebP encoder before they reach the gate they assert on.
+      - name: libwebp for the motion cover tests
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends webp
+
+      - name: Install Python test dependencies
+        run: python -m pip install PyYAML==6.0.3 jsonschema==4.26.0
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Version lockstep
+        run: npm run check:version
+
+      - name: Scanner — tracked surfaces
+        run: node test/scripts/scan-forbidden-tokens.js --tracked
+
+      - name: Scanner — package root
+        run: node test/scripts/scan-forbidden-tokens.js --package-root
+
+      - name: Pack listing
+        run: npm run pack:dry
+
+      # prepublishOnly (scripts/prepublish-guard.js) runs these suites again inside npm stage publish,
+      # so they run as their own steps only on a dry run.
+      - name: Test (JS suite)
+        if: ${{ !inputs.stage }}
+        run: npm test
+
+      - name: Test (Python suite)
+        if: ${{ !inputs.stage }}
+        run: npm run test:python
+        env:
+          HOME: ${{ runner.temp }}/lithermes-python-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-python-hermes-home
+
+      - name: QA — real-surface sequence
+        if: ${{ !inputs.stage }}
+        run: npm run qa:real-surface
+        env:
+          HOME: ${{ runner.temp }}/lithermes-qa-real-surface-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-qa-real-surface-hermes-home
+
+      # The guard skips npm whoami here because this job can request an OIDC token; npm signs in
+      # during the upload. Branch, origin/main, suites, scanners and the packed-artifact scan still run.
+      - name: Stage on npm (runs the prepublish guard first)
+        if: inputs.stage
+        run: npm stage publish
+        env:
+          HOME: ${{ runner.temp }}/lithermes-publish-home
+          HERMES_HOME: ${{ runner.temp }}/lithermes-publish-hermes-home

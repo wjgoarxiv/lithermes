@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
+const YAML = require("yaml");
 const { findDirectNpmPublishCommands } = require("./documentation-commands");
 
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
@@ -319,6 +320,7 @@ test("RELEASE_CHECKLIST requires isolated QA evidence without claiming a live ev
 test("CI bootstraps dependencies before complete test gates", () => {
   const workflows = [
     [".github/workflows/ci.yml", read(".github/workflows/ci.yml")],
+    [".github/workflows/publish.yml", read(".github/workflows/publish.yml")],
   ];
   for (const [label, text] of workflows) {
     assert.match(
@@ -341,15 +343,69 @@ test("CI bootstraps dependencies before complete test gates", () => {
   }
 });
 
-test("no tracked workflow publishes to npm or reads a publish secret", () => {
-  const directory = path.join(repoRoot, ".github", "workflows");
-  const names = fs.readdirSync(directory);
-  assert.deepEqual(names.filter((name) => /publish|release/i.test(name)), [], "releases are published by hand");
-  for (const name of names) {
-    const text = fs.readFileSync(path.join(directory, name), "utf8");
-    assert.doesNotMatch(text, /npm publish|NPM_TOKEN|NODE_AUTH_TOKEN|secrets\./, `${name} must not publish or read a publish secret`);
+// publish.yml is the one workflow allowed to stage a release, through npm trusted publishing.
+// Returns every reason the workflow set breaks that rule; an empty list means it is acceptable.
+function publishWorkflowViolations(workflows) {
+  const violations = [];
+  for (const [name, text] of Object.entries(workflows)) {
+    if (/publish|release/i.test(name) && name !== "publish.yml") violations.push(`${name}: only publish.yml may publish`);
+    if (/npm publish|NPM_TOKEN|NODE_AUTH_TOKEN|secrets\.|--access public|git push|git tag/.test(text)) {
+      violations.push(`${name}: must not publish directly, read a publish secret, push or tag`);
+    }
+    if (name !== "publish.yml" && /id-token|npm stage publish/.test(text)) {
+      violations.push(`${name}: only publish.yml may request an OIDC token or stage a release`);
+    }
   }
+  const text = workflows["publish.yml"];
+  if (text === undefined) return violations;
+  const workflow = YAML.parse(text);
+  const job = workflow.jobs?.publish;
+  const triggers = typeof workflow.on === "string" ? [workflow.on] : Object.keys(workflow.on || {});
+  if (triggers.join() !== "workflow_dispatch") violations.push("publish.yml: workflow_dispatch must be its only trigger");
+  if (workflow.on?.workflow_dispatch?.inputs?.stage?.default !== false) {
+    violations.push("publish.yml: the stage input must default to false");
+  }
+  if (JSON.stringify(workflow.permissions) !== JSON.stringify({ contents: "read" })) {
+    violations.push("publish.yml: top-level permissions must be contents: read");
+  }
+  if (Object.keys(workflow.jobs || {}).join() !== "publish" || job?.if !== "github.ref == 'refs/heads/main'") {
+    violations.push("publish.yml: one publish job, limited to main");
+  }
+  const stageSteps = (job?.steps || []).filter((step) => /npm stage publish/.test(step.run || ""));
+  if (stageSteps.length !== 1 || stageSteps[0].run.trim() !== "npm stage publish" || stageSteps[0].if !== "inputs.stage") {
+    violations.push("publish.yml: exactly one npm stage publish step, gated on inputs.stage");
+  }
+  return violations;
+}
+
+test("only publish.yml stages a release, and no workflow publishes directly or reads a publish secret", () => {
+  const directory = path.join(repoRoot, ".github", "workflows");
+  const workflows = Object.fromEntries(
+    fs.readdirSync(directory).map((name) => [name, fs.readFileSync(path.join(directory, name), "utf8")]),
+  );
+  assert.deepEqual(publishWorkflowViolations(workflows), []);
   assert.doesNotMatch(read("RELEASE_CHECKLIST.md"), /gh workflow run/, "the checklist must not dispatch a publish workflow");
+});
+
+test("the publish workflow rule refuses tokens, direct publish, other triggers and other workflows", () => {
+  const good = read(".github/workflows/publish.yml");
+  const ci = read(".github/workflows/ci.yml");
+  const cases = [
+    [{ "release.yml": good }, /only publish\.yml may publish/],
+    [{ "publish.yml": good.replace("run: npm stage publish", "run: npm publish") }, /publish directly/],
+    [{ "publish.yml": `${good}\n# NODE_AUTH_TOKEN: \${{ secrets.NPM_TOKEN }}\n` }, /publish secret/],
+    [{ "publish.yml": good.replace("run: npm stage publish", "run: npm stage publish && git push") }, /push or tag/],
+    [{ "publish.yml": good.replace("  workflow_dispatch:", "  push:\n  workflow_dispatch:") }, /only trigger/],
+    [{ "publish.yml": good.replace("default: false", "default: true") }, /default to false/],
+    [{ "publish.yml": good.replace("if: github.ref == 'refs/heads/main'", "if: true") }, /limited to main/],
+    [{ "publish.yml": good.replace("if: inputs.stage", "if: true") }, /gated on inputs\.stage/],
+    [{ "ci.yml": `${ci}\n    permissions:\n      id-token: write\n` }, /only publish\.yml may request an OIDC token/],
+    [{ "ci.yml": `${ci}\n      - run: npm stage publish\n` }, /only publish\.yml may request an OIDC token or stage/],
+  ];
+  for (const [workflows, message] of cases) {
+    const violations = publishWorkflowViolations(workflows);
+    assert.ok(violations.some((violation) => message.test(violation)), `${message}: ${violations.join("; ")}`);
+  }
 });
 
 test("the release checklist retains the guarded local path", () => {
