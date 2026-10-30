@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-28T14:17:34.226Z",
+  "syncedAt": "2026-10-30T01:21:04.862Z",
   "source": "bundled-payload",
-  "sourceHash": "4b34138dc5258862c601aff0cb5ef841a2ca102319a24a6316c6c5977b099639",
+  "sourceHash": "67191a03708eca8d223dc72156886012d3707dcdc29c6546a821ccd344ae54b7",
   "files": [
     {
       "path": "NOTICE.md",
@@ -4893,11 +4893,11 @@
     },
     {
       "path": "skills/readme-studio/templates/remotion/package-lock.json",
-      "sha256": "6d11743275bad840924a50e5ba03f11b89048417ebe8eed382ef523992cdb4c2"
+      "sha256": "e045d4aa92e321e86ce40f6ca3c545cc147be4e14141134176513744d96dc946"
     },
     {
       "path": "skills/readme-studio/templates/remotion/package.json",
-      "sha256": "2cb155200ddbcf5d60066500f1bf2dd0b4951b862e8417c17eae186e333c4cbb"
+      "sha256": "51a55a9b47b179bebd817640c1df02067f72fdbe2187eb42bdb27636683277eb"
     },
     {
       "path": "skills/readme-studio/templates/remotion/src/index.tsx",
