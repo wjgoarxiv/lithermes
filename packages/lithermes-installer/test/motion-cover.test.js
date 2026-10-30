@@ -523,12 +523,23 @@ test("the painted recipe declares one regression, feather-150, that must fail th
 });
 
 // The cover recipe QA proves a negative only by the gates it declares. These run without Chrome: the
-// motion cache is an empty directory, so every cover render blocks at once (exit 14).
+// motion cache is an empty directory, so every cover render blocks at the pre-warm check (exit 14).
+// The cover command probes the encoder before that check, so a host with no img2webp, dwebp or gifski
+// would stop at exit 21 and never reach the crash this test stages. Inert names on a private PATH
+// satisfy the probe (it only checks that the names exist) and are never executed.
 const qaScript = path.join(packageRoot, "qa", "cover-recipes.js");
 const qa = (args) => {
   const home = tmp("cover-qa-home-");
-  const { LITHERMES_MOTION_TEST_XDG, HERMES_HOME, ...rest } = process.env;
-  return spawnSync(process.execPath, [qaScript, ...args], { encoding: "utf8", timeout: 300000, env: { ...rest, HOME: home, XDG_CACHE_HOME: path.join(home, "none") } });
+  const bin = path.join(home, "bin");
+  fs.mkdirSync(bin);
+  for (const name of ["img2webp", "dwebp"]) fs.writeFileSync(path.join(bin, name), "");
+  const { LITHERMES_MOTION_TEST_XDG, HERMES_HOME, PATH, Path, ...rest } = process.env;
+  const hidden = ["img2webp", "dwebp", "gifski"];
+  const kept = String(PATH || Path || "").split(path.delimiter).filter((dir) => dir && !hidden.some((name) => {
+    try { return fs.existsSync(path.join(dir, name)); } catch { return false; }
+  }));
+  const pathEnv = [...new Set([bin, ...kept, "/usr/bin", "/bin"].filter((dir) => fs.existsSync(dir)))].join(path.delimiter);
+  return spawnSync(process.execPath, [qaScript, ...args], { encoding: "utf8", timeout: 300000, env: { ...rest, HOME: home, XDG_CACHE_HOME: path.join(home, "none"), PATH: pathEnv } });
 };
 
 test("qa: a crashed render is never a caught negative or regression", () => {
