@@ -63,7 +63,7 @@ Then the brief has five parts, in this order:
 2. **A full card per live session, a table for ended ones.** Waiting, active and unknown sessions get a full card: a status badge (`● waiting on you`, `▶ active`, `○ unknown`, in the user's language), the goal in plain words (the first ask, clipped), a real gauge or the known-facts line, `now:` naming the last tool call on active sessions, what was done (tools used and commits), what is next. Group cards under their worktree when sessions span more than one. Ended sessions collapse to one table row each (id, folder, goal, age, done; at most eight, newest first).
 3. **Roadmap timeline.** Done `✓` (landed commits with dates), now `▶` (the current item of each open plan), later `○` (remaining names), then litgoal objectives with their gauges. Plans from other worktrees carry their worktree name. When `plansOmitted` is above zero, say how many more open plans exist. Only plans changed inside the window are listed, this worktree's too; a fully ticked plan is finished work for the opener, never a roadmap row.
 4. **Paused work.** Each paused bounded-work run from `startWork` with its gauge and an approval offer: `answer in chat to approve or deny the boundary`. Approval stays with the user in words; the grant settles it. Never start or approve it yourself.
-5. **One next step in a box.** Exactly one, from `next`: what it does, then the slash command when `next.command` names one, otherwise "continue in chat". When `next` is `none`, the first `## Next` item of this worktree's own HANDOFF.md (`handoffs[].next` with `local: true`) is the step (`HANDOFF.md Next: <item>`); without one, show the suggestion the collector printed. Either is shown, never recorded, and never a second candidate.
+5. **One next step in a box.** Exactly one, from `next`: what it does, then the slash command when `next.command` names one, otherwise "continue in chat". When `next` is `wait-lanes`, other lanes of this repo are at work (`lanes.count`: other live sessions plus herdr agents working or blocked here, each counted once): the box says to wait for them, or to answer the one waiting on the user (`lanes.waiting`), names no command, and the brief's last line is `Do not type \`go\` until they finish.` / `지금은 \`go\`는 입력하지 마세요.` When `next` is `none`, show the suggestion the collector printed. It ranks live signals first (a session waiting on the user, then lanes at work, with the same last line), then the current item of an open plan, then the first open `## Next` item of this worktree's newest HANDOFF file (`handoffs[].next` with `local: true`, written `HANDOFF.md Next: <item>`; items marked ✅, ✓, `[x]`, ~~struck~~, DONE or SHIPPED are skipped), then other sessions. It is shown, never recorded, and never a second candidate.
 
 **Progress gauges (D9), required.** One real gauge per session and per plan, each copied verbatim from the collector, in the form `[▉▉▉░░] 3/5` (filled `▉` done, light `░` remaining, then done/total). The remaining items are listed by name under each gauge, from its `remaining` array, clipped by the collector to fit. A gauge renders only when both numbers are real: an unknown total is the known-facts line (`… 3 steps`, or `… running` when nothing is counted), never `?`, never a guess, never an estimate, never a gauge of your own.
 
@@ -131,11 +131,11 @@ The collector (`skills/lit-adhd/scripts/lib/collect.mjs`, served as `scripts/adh
 | Hermes sessions, `~/.hermes/state.db` read-only (`HERMES_SESSION_STORE` overrides it) | per session: title, first and last ask, tools used, status | `sessions: unknown` |
 | `plans/*.md` checkbox rows | open plans changed in the window (current item, done/total, remaining names) and fully ticked ones as finished work | `plans: unknown` |
 | `.hermes/lithermes/litgoal/*/goals.json` | objective and passed/total criteria per goal | `litgoal: unknown` |
-| `HANDOFF*.md` and the `.handoff/` directory | headings from the first 40 lines; for this worktree's own, the first `## Next` item | `handoffs: unknown` |
+| `HANDOFF*.md` and the `.handoff/` directory | headings from the first 40 lines; for this worktree's own newest file by mtime (the `.handoff/` file wins a tie), the first `## Next` item not marked done | `handoffs: unknown` |
 | `git log --since` | commits in the window, matched to sessions by time and branch | `git: unknown` |
 | `.hermes/lithermes/adhd/stack.json` | active disciplines per session from the prompt hook | `workflowStack: unknown` |
 | start-work runs and bounded-work states | live and finished runs (`done`, `completed`) and their plans, paused boundaries with progress | `startWork: unknown` |
-| `herdr agent list` (only when `HERDR_ENV=1`) | agent panes | `herdr: unknown` |
+| `herdr agent list` (only when `HERDR_ENV=1`, 2 s limit) | agent panes; one working or blocked in this herdr workspace or inside this repo, other than this pane, is a lane | `herdr: unknown` |
 
 Plans, goals, handoffs, the stack and start-work states are read first; sessions are read after them, newest first, under one 8 MiB budget for the whole run; a session belongs to a worktree when the repo root or cwd its record carries sits inside it. Archived and hidden sessions are skipped. Every string is redacted before it leaves the collector: credential shapes, `NAME=value` with a secret-like name, URI userinfo, any current environment value of eight or more characters, and the home directory (shown as `~`). Assistant text and changed files are not session records on this host, so the brief shows commits and tool names instead.
 
@@ -155,13 +155,13 @@ A start-work run whose plan has every row ticked reads `done`, and completed bou
 `next` is chosen by code, in this priority order, and the brief offers exactly that one:
 
 1. A bounded-work run paused at a boundary: show what it wants to reach. Answer in chat to approve or deny; this is never automatic and never starts work by itself.
-2. This session's own active run or bounded work: keep going in chat.
-3. Exactly one open plan in this worktree and no work running: start it with `/start-work plans/<plan>.md`.
-4. Otherwise `none`: say so.
+2. This session's own active bounded work: keep going in chat. Another session's run, or a start-work run that records no session, is never this session's to continue.
+3. Exactly one open plan in this worktree and no work running: start it with `/start-work plans/<plan>.md`. While other lanes are at work (`lanes.count` above zero) the step is `wait-lanes` instead: wait for them, or answer the one waiting on the user, and do not type `go` until they finish.
+4. Otherwise `none`: show the collector's suggestion, which puts live signals ahead of plan items and the HANDOFF Next item.
 
 ## Continuing after the brief
 
-After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a paused boundary is shown for a chat answer, an active run continues in chat, a single open plan starts through `/start-work`. Anything else typed after the brief is an ordinary prompt. A plan saved under `plans/` in a lit-plan turn writes the same record (`start-plan`), so `go` right after planning shows that plan's `/start-work` command too. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
+After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a paused boundary is shown for a chat answer, an active run continues in chat, a single open plan starts through `/start-work`. Before continuing a run, the hook re-reads its state: when the run is no longer active or no longer bound to this session it says the step no longer holds and starts nothing. A `wait-lanes` record starts nothing either. Anything else typed after the brief is an ordinary prompt. A plan saved under `plans/` in a lit-plan turn writes the same record (`start-plan`), so `go` right after planning shows that plan's `/start-work` command too. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
 
 ## Relation to lit-recap
 
@@ -186,7 +186,7 @@ The prompt hook records each lit route activation as a frame in the adhd stack f
 ## Stop and report
 
 - Stop with `BLOCKED: lit-adhd collector unavailable (<reason>)` when the collector exits non-zero or is not found; never rebuild the brief from memory.
-- The reply is the three opener lines and the five-part brief (summary, session cards, roadmap, paused work, one next step) and nothing more. Name every `unknown` source once on the last line.
+- The reply is the three opener lines and the five-part brief (summary, session cards, roadmap, paused work, one next step) and nothing more. Name every `unknown` source once, on the last line or just above the no-`go` line while lanes work.
 - Start nothing: the user's next reply starts the next step, not this turn.
 
 ## Pitfalls

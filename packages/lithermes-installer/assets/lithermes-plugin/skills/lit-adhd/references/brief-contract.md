@@ -53,12 +53,16 @@ surfaces; a session id with no recorded value reads `unknown`.
    grant settles it. The brief never starts, approves, or denies anything itself.
 5. **One next step in a box.** Exactly the `next` record: what it does, then the slash command
    (`/start-work plans/<f>.md`) when `next.command` names one, otherwise "continue in chat".
-   When `next` is `none`, the first item under `## Next` in this worktree's own HANDOFF.md
-   (`handoffs[].next`, `local: true`) comes first (`HANDOFF.md Next: <item>`); without one the
-   box shows the suggestion — a waiting session to answer, an open plan item, another active
-   session to check, another ended one to pick up — and the headline names it; it is shown,
-   never recorded. Another worktree's handoff never supplies the step. Never a second
-   candidate, never a `go` to type: Hermes has no typed `go` command.
+   When `next` is `wait-lanes`, other lanes are at work (`lanes.count`): the box says to wait
+   for them or to answer the one waiting on the user, names no command, and the last line is
+   `Do not type \`go\` until they finish.` (`지금은 \`go\`는 입력하지 마세요.`).
+   When `next` is `none`, the box shows the suggestion, in this order — a waiting session to
+   answer, lanes at work to wait for (same last line), an open plan item, the first open item
+   under `## Next` in this worktree's newest HANDOFF file (`HANDOFF.md Next: <item>`; items
+   marked ✅, ✓, `[x]`, ~~struck~~, DONE or SHIPPED are skipped), another active session to
+   check, another ended one to pick up — and the headline names it; it is shown, never
+   recorded. Another worktree's handoff never supplies the step. Never a second candidate,
+   never a `go` to type: Hermes has no typed `go` command.
 
 ## Surface notes (C, D)
 
@@ -69,7 +73,8 @@ surfaces; a session id with no recorded value reads `unknown`.
 
 ## Closing lines
 
-- Name every `unknown` source once on the last line (`unknown: herdr, git`).
+- Name every `unknown` source once on the last line (`unknown: herdr, git`); while lanes work,
+  the no-`go` line follows it as the very last line.
 - Say "older sessions were not read" when `budget.exhausted` is true.
 - Say "N plans were not read (read budget used up)" when `roadmap.plansSkipped` is above zero.
   Plans are read before session transcripts, so this happens only when the plans themselves

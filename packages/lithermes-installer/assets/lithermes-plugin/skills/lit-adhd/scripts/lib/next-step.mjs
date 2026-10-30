@@ -6,7 +6,8 @@
 //
 //   1. a bounded-work run paused at a boundary -> approve-boundary (shown, never started)
 //   2. this session's own active run or bounded work  -> continue-work (continue in chat)
-//   3. a single open plan with no work running        -> start-plan (`/start-work plans/<f>.md`)
+//   3. a single open plan with no work running        -> start-plan (`/start-work plans/<f>.md`),
+//      or wait-lanes while other lanes are at work (no command, and no `go` until they finish)
 //   4. otherwise                                     -> none
 import { closeSync, constants, lstatSync, mkdirSync, openSync, renameSync, writeSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -29,15 +30,27 @@ export const chooseNextStep = (data, sessionId) => {
   const running = (data.startWork ?? []).some((work) => ['active', 'paused'].includes(work.status));
   const open = data.roadmap.plans.filter((plan) => plan.local && plan.progress.total !== null && plan.progress.done < plan.progress.total);
   if (!running && open.length === 1) {
+    // Other lanes at work hold the plan back: the step is to wait (or answer the one waiting).
+    const lanes = data.lanes?.count ?? 0;
+    if (lanes > 0) {
+      return { kind: 'wait-lanes', target: { lanes, waiting: data.lanes.waiting ?? null, plan: open[0].plan }, say: null };
+    }
     return { kind: 'start-plan', target: { plan: open[0].plan }, say: null, command: `/start-work ${open[0].plan}` };
   }
   return { kind: 'none', target: null };
 };
 
+const lanesText = (count) => `${count} lane${count === 1 ? '' : 's'}`;
+
+/** The box text for a lanes wait: answer the lane waiting on the user, else wait for the rest. */
+export const waitText = (lanes, waiting) =>
+  waiting ? `answer ${waiting} in chat (${lanesText(lanes)} at work)` : `wait for ${lanesText(lanes)} to finish`;
+
 // Shown, never recorded: when no step can run, the brief still recommends one from what
-// it read — a session that waits on the user, the next item of an open plan, the most
-// recent other active session, the most recent other ended one. Hermes has no typed `go`,
-// so every suggestion continues in chat except a plan item, which names its command.
+// it read — a session that waits on the user, other lanes at work, the next item of an open
+// plan, this worktree's newest HANDOFF Next item, the most recent other active session, the
+// most recent other ended one. Live signals come first, so an old HANDOFF line never outranks
+// them. Every suggestion continues in chat except a plan item, which names its command.
 export const suggestNext = (data, sessionId) => {
   const sessions = data.sessions ?? [];
   const waiting = sessions.filter((session) => session.status === 'waiting-on-user');
@@ -47,11 +60,17 @@ export const suggestNext = (data, sessionId) => {
     const clipped = question ? clipToWidth(bare1(question), 90) : null;
     return { kind: 'suggest', label: `answer ${first.id8}`, say: `Answer ${first.id8} in chat${clipped ? `: "${clipped}"` : ''}`, command: null };
   }
+  const lanes = data.lanes?.count ?? 0;
+  if (lanes > 0) {
+    return { kind: 'suggest', label: 'wait for lanes', say: waitText(lanes, null), command: null };
+  }
   const open = (data.roadmap?.plans ?? []).filter((plan) => plan.current);
   const plan = open.find((item) => item.local) ?? open[0];
   if (plan) {
     return { kind: 'suggest', label: `start ${plan.plan}`, say: `Next in ${plan.plan}: ${clipToWidth(bare1(plan.current), 60)}`, command: `/start-work ${plan.plan}` };
   }
+  const handoffNext = (data.handoffs ?? []).find((handoff) => handoff.local && handoff.next)?.next;
+  if (handoffNext) return { kind: 'suggest', label: 'handoff next', say: `HANDOFF.md Next: ${handoffNext}`, command: null };
   const others = sessions.filter((session) => session.sessionId !== sessionId);
   const active = others.find((session) => session.status === 'active');
   if (active) {

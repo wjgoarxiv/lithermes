@@ -16,6 +16,7 @@ import re
 import secrets
 import shlex
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
@@ -38,6 +39,7 @@ MAX_HISTORY = 64
 MAX_LEDGER_EVENTS = 96
 MAX_IDENTIFIER = 96
 MAX_SESSION = 256
+PROMPT_LOCK_WAIT_SECONDS = 2.0
 TERMINAL_STATUSES = {"cancelled", "completed"}
 PROGRESS_STATUSES = {"pending", "in_progress", "blocked", "pass", "fail"}
 _FORBIDDEN_ACTION_TOKENS = {
@@ -202,15 +204,32 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             pass
 
 
+class BoundedWorkBusy(OSError):
+    """The run lock stayed held past the caller's wait limit."""
+
+
 @contextmanager
-def _locked(run_dir: Path) -> Iterator[None]:
+def _locked(run_dir: Path, wait_seconds: float | None = None) -> Iterator[None]:
     run_dir.mkdir(parents=True, exist_ok=True)
     lock_path = run_dir / ".lock"
     with lock_path.open("a+", encoding="utf-8") as handle:
         try:
             import fcntl
 
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            if wait_seconds is None:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            else:
+                # Prompt-path callers retry a non-blocking lock until the limit,
+                # so a stuck holder cannot stall the user's turn.
+                deadline = time.monotonic() + wait_seconds
+                while True:
+                    try:
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        break
+                    except BlockingIOError:
+                        if time.monotonic() >= deadline:
+                            raise BoundedWorkBusy(f"bounded work lock is busy: {run_dir}") from None
+                        time.sleep(0.05)
             yield
         finally:
             try:
@@ -430,12 +449,13 @@ def bind_bounded_work(
     activation_token: str,
     *,
     session_id: str,
+    wait_seconds: float | None = None,
 ) -> dict[str, Any] | None:
     root = _canonical_worktree(worktree)
     if not session_id or len(session_id) > MAX_SESSION or len(activation_token) > 256:
         return None
     run_dir = _work_dir(root, work_id)
-    with _locked(run_dir):
+    with _locked(run_dir, wait_seconds):
         state = _reconcile_locked(run_dir)
         if state["status"] != "active":
             return None
@@ -1018,6 +1038,16 @@ def consume_activation_message(message: str, *, session_id: str) -> str | None:
             payload["work_id"],
             payload["token"],
             session_id=session_id,
+            wait_seconds=PROMPT_LOCK_WAIT_SECONDS,
+        )
+    except BoundedWorkBusy:
+        return "\n".join(
+            [
+                '<lithermes-bounded-work schema="3" status="busy">',
+                "The bounded work run is busy: another LitHermes call holds its lock, so this activation was not bound.",
+                "Tell the user the run is busy and to send it again in a moment. No authority is active for this turn.",
+                "</lithermes-bounded-work>",
+            ]
         )
     except (OSError, ValueError):
         return None

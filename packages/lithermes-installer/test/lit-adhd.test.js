@@ -116,7 +116,8 @@ test("the text brief carries the next command and names unknown sources once", {
     const db = path.join(ws, "state.db");
     writeFixtureDb(db, ws);
     const env = baseEnv({ HERMES_SESSION_STORE: db });
-    const brief = runCLI(["--here", "--width", "100"], { cwd: ws, env });
+    // The brief runs as the fixture's live session, so no other lane holds the plan back.
+    const brief = runCLI(["--here", "--width", "100", "--session", "sess-active-1"], { cwd: ws, env });
     assert.equal(brief.status, 0, brief.stderr);
     assert.match(brief.stdout, /lit-adhd: 1 session\(s\) · 0 waiting on you · next: start plan/);
     assert.match(brief.stdout, /\(run \/start-work plans\/a\.md\)/);
@@ -148,7 +149,9 @@ test("ended sessions fold to a table and a missing step becomes a suggestion", {
     const env = baseEnv({ HERMES_SESSION_STORE: db });
     const brief = runCLI(["--here", "--width", "160"], { cwd: ws, env });
     assert.equal(brief.status, 0, brief.stderr);
-    assert.match(brief.stdout, /next: check sess-act/);
+    // The other live session is a lane at work, which outranks every other suggestion.
+    assert.match(brief.stdout, /next: wait for lanes/);
+    assert.match(brief.stdout, /-- next --\n> wait for 1 lane to finish/);
     assert.match(brief.stdout, /-- ended · 1 --/);
     assert.match(brief.stdout, /\| id \| where \| goal \| ago \| done \|/);
     assert.match(brief.stdout, /now: edit_file "wrote the file"/);
@@ -424,5 +427,171 @@ test("a linked worktree nested in a checkout is its own state root", async () =>
     }
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+// Lanes, ownership and HANDOFF ordering for the one next step.
+const { execFileSync } = require("node:child_process");
+
+function herdrJson(agents) {
+  return JSON.stringify({ result: { agents } });
+}
+
+async function collectWith(ws, { herdr = null, sessionId = null, store = null } = {}) {
+  const { collectAdhd, renderAdhd } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/collect.mjs");
+  const env = { ...process.env, HERMES_SESSION_STORE: store ?? path.join(ws, "no-store.db") };
+  for (const key of ["HERDR_ENV", "HERDR_WORKSPACE_ID", "HERDR_PANE_ID"]) delete env[key];
+  if (herdr !== null) Object.assign(env, { HERDR_ENV: "1", HERDR_WORKSPACE_ID: "w1", HERDR_PANE_ID: "w1:p1" });
+  const exec = (file, args, options) => {
+    if (file === "herdr") {
+      if (herdr instanceof Error) throw herdr;
+      return herdr;
+    }
+    if (file === "sqlite3") return execFileSync(file, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], ...options });
+    throw new Error("no git here");
+  };
+  const data = collectAdhd({ cwd: ws, here: true, exec, env, sessionId, record: false });
+  return { data, text: renderAdhd(data, 160, sessionId) };
+}
+
+const lastLine = (text) => text.trimEnd().split("\n").at(-1);
+const nextBox = (text) => /-- next --\n> (.*)/u.exec(text)?.[1] ?? "";
+
+test("herdr lanes at work turn a start-plan step into a wait with no go", async () => {
+  const ws = roundThreeWs();
+  try {
+    const agents = [
+      { agent: "claude", agent_status: "working", pane_id: "w1:p1", workspace_id: "w1", cwd: "/elsewhere" },
+      { agent: "claude", agent_status: "working", pane_id: "w1:p2", workspace_id: "w1", cwd: "/elsewhere" },
+      { agent: "hermes", agent_status: "blocked", pane_id: "w2:p3", workspace_id: "w2", cwd: "/x", foreground_cwd: path.join(ws, "sub") },
+      { agent: "claude", agent_status: "idle", pane_id: "w1:p4", workspace_id: "w1", cwd: ws },
+      { agent: "claude", agent_status: "done", pane_id: "w1:p7", workspace_id: "w1", cwd: ws },
+      { agent: "claude", agent_status: "working", pane_id: "w3:p5", workspace_id: "w3", cwd: "/elsewhere" },
+      { agent: "claude", agent_status: "working", pane_id: "w9:p9", workspace_id: "w9", cwd: `${ws}-sibling` },
+    ];
+    const { data, text } = await collectWith(ws, { herdr: herdrJson(agents) });
+    assert.equal(data.sources.herdr, "ok");
+    assert.equal(data.lanes.count, 2);
+    assert.equal(data.next.kind, "wait-lanes");
+    assert.match(nextBox(text), /wait for 2 lanes/u);
+    assert.doesNotMatch(nextBox(text), /\/start-work/u);
+    assert.equal(lastLine(text), "Do not type `go` until they finish.");
+
+    for (const broken of [new Error("herdr timed out"), "not json", herdrJson("nope")]) {
+      const quiet = await collectWith(ws, { herdr: broken });
+      assert.equal(quiet.data.sources.herdr, "unknown");
+      assert.equal(quiet.data.lanes.count, 0);
+      assert.equal(quiet.data.next.kind, "start-plan");
+      assert.doesNotMatch(quiet.text, /Do not type `go`/u);
+    }
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("another live session is a lane, counted once when herdr sees it too", { skip: !hasSqlite3() }, async () => {
+  const ws = fixtureWs();
+  try {
+    const db = path.join(ws, "state.db");
+    writeFixtureDb(db, ws);
+    const own = await collectWith(ws, { store: db, sessionId: "sess-active-1" });
+    assert.equal(own.data.lanes.count, 0, "this session is never its own lane");
+    assert.equal(own.data.next.kind, "start-plan");
+
+    const agents = [
+      { agent: "hermes", agent_status: "working", pane_id: "w1:p2", workspace_id: "w1", cwd: ws, agent_session: { value: "sess-active-1" } },
+      { agent: "claude", agent_status: "working", pane_id: "w1:p3", workspace_id: "w1", cwd: ws, agent_session: { value: "someone-else" } },
+      { agent: "hermes", agent_status: "working", pane_id: "w1:p8", workspace_id: "w1", cwd: ws, agent_session: { value: "me-session" } },
+    ];
+    const { data, text } = await collectWith(ws, { store: db, sessionId: "me-session", herdr: herdrJson(agents) });
+    assert.equal(data.lanes.count, 2);
+    assert.equal(data.next.kind, "wait-lanes");
+    assert.match(nextBox(text), /wait for 2 lanes/u);
+    assert.equal(lastLine(text), "Do not type `go` until they finish.");
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("a lane waiting on the user is the step to answer while lanes work", { skip: !hasSqlite3() }, async () => {
+  const ws = fixtureWs();
+  try {
+    const db = path.join(ws, "state.db");
+    writeFixtureDb(db, ws);
+    const now = Math.floor(Date.now() / 1000);
+    const sql = `INSERT INTO messages (session_id, role, content, timestamp, active) VALUES ('sess-active-1', 'user', 'Which port should it bind?', ${now - 30}, 1);`;
+    assert.equal(spawnSync("sqlite3", [db], { input: sql, encoding: "utf8" }).status, 0);
+    const { data, text } = await collectWith(ws, { store: db, sessionId: "me-session" });
+    assert.equal(data.lanes.count, 1);
+    assert.equal(data.next.kind, "wait-lanes");
+    assert.match(nextBox(text), /answer sess-act/u);
+    assert.equal(lastLine(text), "Do not type `go` until they finish.");
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("an ownerless start-work run is never this session's run to continue", async () => {
+  const ws = roundThreeWs();
+  try {
+    const run = path.join(ws, ".hermes", "lithermes", "runs", "run-2");
+    fs.mkdirSync(run, { recursive: true });
+    fs.writeFileSync(path.join(run, "state.json"), JSON.stringify({
+      run_id: "run-2", command: "start-work", created_at: new Date(Date.now() + 1000).toISOString(), plan: path.join(ws, "plans", "open.md"),
+    }));
+    const { data, text } = await collectWith(ws, { sessionId: "me-session" });
+    assert.equal(data.startWork[0].status, "active");
+    assert.equal(data.startWork[0].self, false);
+    assert.notEqual(data.next.kind, "continue-work");
+    assert.doesNotMatch(text, /^(?!.*Do not).*\b(type|say) [`"]go/imu);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("HANDOFF Next skips finished items and the newest handoff file wins", async () => {
+  const ws = roundThreeWs({ openPlan: false });
+  try {
+    fs.writeFileSync(path.join(ws, "HANDOFF.md"), [
+      "# Handoff", "", "## Next", "",
+      "- ✅ Ship the port", "- [x] Tag it", "- ~~Old idea~~", "- DONE: rerun gates", "- SHIPPED 1.0.3", "- ✓ notes",
+      "- Done-ish wording stays open", "- Later item", "",
+    ].join("\n"));
+    let quiet = await collectWith(ws);
+    assert.equal(quiet.data.handoffs.find((handoff) => handoff.file === "HANDOFF.md").next, "Done-ish wording stays open");
+
+    const twoDaysAgo = (Date.now() - 2 * 86_400_000) / 1000;
+    fs.utimesSync(path.join(ws, "HANDOFF.md"), twoDaysAgo, twoDaysAgo);
+    fs.mkdirSync(path.join(ws, ".handoff"));
+    fs.writeFileSync(path.join(ws, ".handoff", "HANDOFF.md"), "# Handoff\n\n## Next\n\n- Fresh dedicated step\n");
+    quiet = await collectWith(ws);
+    assert.match(nextBox(quiet.text), /HANDOFF\.md Next: Fresh dedicated step/u);
+
+    fs.utimesSync(path.join(ws, ".handoff", "HANDOFF.md"), twoDaysAgo - 10, twoDaysAgo - 10);
+    fs.writeFileSync(path.join(ws, "HANDOFF-lane.md"), "# Lane\n\n## Next\n\n- Newest lane step\n");
+    quiet = await collectWith(ws);
+    assert.match(nextBox(quiet.text), /HANDOFF\.md Next: Newest lane step/u);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("live lanes and open plan items outrank the HANDOFF Next item", async () => {
+  const ws = roundThreeWs({ openPlan: false });
+  try {
+    const agents = [{ agent: "claude", agent_status: "working", pane_id: "w1:p2", workspace_id: "w1", cwd: ws }];
+    const busy = await collectWith(ws, { herdr: herdrJson(agents) });
+    assert.equal(busy.data.next.kind, "none");
+    assert.match(nextBox(busy.text), /wait for 1 lane/u);
+    assert.doesNotMatch(nextBox(busy.text), /HANDOFF/u);
+    assert.equal(lastLine(busy.text), "Do not type `go` until they finish.");
+
+    fs.writeFileSync(path.join(ws, "plans", "one.md"), "# One\n\n- [ ] 1. First open step\n");
+    fs.writeFileSync(path.join(ws, "plans", "two.md"), "# Two\n\n- [ ] 1. Second open step\n");
+    const planned = await collectWith(ws);
+    assert.equal(planned.data.next.kind, "none");
+    assert.match(nextBox(planned.text), /^Next in plans\/(one|two)\.md/u);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
   }
 });

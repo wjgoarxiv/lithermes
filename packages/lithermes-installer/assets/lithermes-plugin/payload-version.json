@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-30T01:21:04.862Z",
+  "syncedAt": "2026-10-30T05:58:31.786Z",
   "source": "bundled-payload",
-  "sourceHash": "67191a03708eca8d223dc72156886012d3707dcdc29c6546a821ccd344ae54b7",
+  "sourceHash": "13c8a24a72c9bfadd2b41df064bbc681a7c44e1f9ab471eb75ac08c99d3ccae1",
   "files": [
     {
       "path": "NOTICE.md",
@@ -17,7 +17,7 @@
     },
     {
       "path": "adhd_stack.py",
-      "sha256": "0a1e3e45f6697918758b1454a53f034a61658f3980430c5c1a15c149a9ba7012"
+      "sha256": "c2e31ecd2c1d3bd37b1c630b71d658d0364c9bc199b15a992f05be0da9b933f8"
     },
     {
       "path": "auto_handoff.py",
@@ -29,7 +29,7 @@
     },
     {
       "path": "bounded_work.py",
-      "sha256": "12159eed9ea3ca71d1de7b10c12b4dea5cb273d9abe7b1b52dddad1738cbeb04"
+      "sha256": "418c4a140b0fb3d6f075fbaccd058be70dee8ad2b033c6f18244a4c06c03d2ca"
     },
     {
       "path": "bounded_work_tools.py",
@@ -1489,11 +1489,11 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "5c7b769bbca2e534874425e755d0b8d01a57f3b042a7368ba7575cceea0a7c76"
+      "sha256": "8a07b62b9898839381ffee43b91c4a9be0ce71700c982088d8da8c1482998fa2"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
-      "sha256": "e7ee488082297403e1ff5796f7a117fe69e7e62fbae749c547ec41dd1b70bfc4"
+      "sha256": "1eb34945f8035b5e997ccd5986fe073b7e6c8dfea5750833d8bdaea35b973bdf"
     },
     {
       "path": "skills/lit-adhd/references/card-examples.md",
@@ -1509,7 +1509,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "ca056223c8dba8008543ba900a45f4bbea5859119215ad6a2a35cf0fb34ed68f"
+      "sha256": "45b6c24d3747a95d0ce9584a9348f191542b4687613778a1c33fdb03de2eedd9"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -1521,7 +1521,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/next-step.mjs",
-      "sha256": "314692a2efdbe22b1eaa968cd4c8e428eef5e82f71b446c61ee3c23361a8c334"
+      "sha256": "a497de6aaa1f4c4c7665293a59ee065129b8cf4b5d79035a8a5f4523ee58fc7c"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/plan-task-rows.mjs",

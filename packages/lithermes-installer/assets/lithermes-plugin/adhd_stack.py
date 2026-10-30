@@ -13,7 +13,10 @@ step the last brief offered: the hook reads the next-step record the collector w
 session (``.hermes/lithermes/adhd/next-<session>.json``) and returns a short context note for
 the model. A plan saved under ``plans/`` during a lit-plan turn writes the same record
 (``start-plan``), so ``go`` right after planning shows that plan's ``/start-work`` command. A record older than 30 minutes, or no record at all, reads as no next step on
-record. Hermes has no typed ``go`` command; ``go`` is a word the hook consumes.
+record. A ``continue-work`` record is re-checked against the run's state first: a run that is no
+longer active or no longer bound to this session starts nothing, and a ``wait-lanes`` record
+(other lanes were at work) starts nothing either. Hermes has no typed ``go`` command; ``go`` is
+a word the hook consumes.
 """
 from __future__ import annotations
 
@@ -214,6 +217,31 @@ def read_next_step(workspace: Path | str, session_id: Any) -> dict[str, Any] | N
     return data if isinstance(data, dict) and isinstance(data.get("kind"), str) else None
 
 
+_WORK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$")
+
+
+def _run_still_owned(workspace: Path | str, target: dict[str, Any], session_id: Any) -> bool:
+    """True when the recorded bounded-work run is still active and bound to this session.
+
+    Reads the run's state file without taking its lock, so `go` never waits on a busy run.
+    A missing, unreadable or ownerless run does not hold. Never raises.
+    """
+    work_id = str(target.get("workId") or "")
+    if not _WORK_ID.match(work_id):
+        return False
+    try:
+        path = Path(workspace) / ".hermes" / "lithermes" / "work" / work_id / "state.json"
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_STATE_BYTES:
+            return False
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(state, dict):
+        return False
+    owner = state.get("active_session_id")
+    return state.get("status") == "active" and bool(owner) and owner == str(session_id or "")
+
+
 def go_note(workspace: Path | str, session_id: Any, *, now: float | None = None) -> str:
     """The context note a consumed `go` injects: what to do next, or that nothing is on record."""
     import time as _time
@@ -253,6 +281,20 @@ def go_note(workspace: Path | str, session_id: Any, *, now: float | None = None)
             f"The user typed `go` after a brief whose next step is: start plan {detail} with "
             f"`/start-work {detail}`. Present that command for the user to run; do not run it, "
             "and do not start anything else."
+        )
+    if record.get("kind") == "wait-lanes":
+        lanes = target.get("lanes")
+        count = f"{lanes} " if isinstance(lanes, int) and lanes > 0 else ""
+        return (
+            f"The user typed `go` while {count}other lane(s) of this repo were still at work when "
+            "the brief ran: start nothing. Say that `go` waits until those lanes finish, and offer "
+            "`lit adhd` for a fresh brief once they have."
+        )
+    if record.get("kind") == "continue-work" and not _run_still_owned(workspace, target, session_id):
+        return (
+            f"The user typed `go`, but the brief's step no longer holds: run {detail or 'unknown'} "
+            "is no longer active or no longer owned by this session. Say so and start nothing; "
+            "offer `lit adhd` for a fresh brief."
         )
     if record.get("kind") == "approve-boundary":
         return (

@@ -779,6 +779,42 @@ class HermesNativeLoop(unittest.TestCase):
         self.assertLess(len(stored), 100_000)
         self.assertNotIn("grant publish", stored)
 
+class BoundedLockWait(unittest.TestCase):
+    """The prompt path never waits on the run lock without a limit."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.ws = Path(self._tmp.name).resolve()
+        self.plan = _plan(self.ws)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_a_held_run_lock_reports_busy_within_seconds_and_binds_nothing(self):
+        import fcntl
+        import time
+
+        import bounded_work
+
+        created = core.init_bounded_work(self.ws, self.plan, grants=[{"action": "write", "root": str(self.ws)}])
+        work_id = created["state"]["work_id"]
+        envelope = bounded_work.activation_envelope(self.ws, work_id, created["activation_token"])
+        lock_path = bounded_work._work_dir(self.ws, work_id) / ".lock"
+        with lock_path.open("a+", encoding="utf-8") as holder:
+            fcntl.flock(holder.fileno(), fcntl.LOCK_EX)
+            started = time.monotonic()
+            note = bounded_work.consume_activation_message(envelope, session_id="busy-session")
+            elapsed = time.monotonic() - started
+            fcntl.flock(holder.fileno(), fcntl.LOCK_UN)
+        self.assertLess(elapsed, 5.0)
+        self.assertIsNotNone(note)
+        self.assertIn("busy", note)
+        self.assertIn("send it again", note)
+        state = core.load_bounded_work(self.ws, work_id)
+        self.assertFalse(state["activation_consumed"])
+        accepted = bounded_work.consume_activation_message(envelope, session_id="busy-session")
+        self.assertIn("lithermes-bounded-work", accepted)
+
 
 if __name__ == "__main__":
     unittest.main()

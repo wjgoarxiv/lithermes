@@ -11,7 +11,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 
 import { parsePlanTaskRows } from './plan-task-rows.mjs';
 import { aggregateProgress, clipToWidth, displayWidth, progressOf } from './gauge.mjs';
-import { chooseNextStep, suggestNext, writeNextStep } from './next-step.mjs';
+import { chooseNextStep, suggestNext, waitText, writeNextStep } from './next-step.mjs';
 import { makeRedactor } from './redact.mjs';
 import { findHermesSessions, hermesSessionRecord, hermesStorePath, makeBudget, normalizeRoot, readHermesMessages } from './hermes-sessions.mjs';
 
@@ -164,33 +164,42 @@ const goalsOf = (root, budget, redact) => {
   });
 };
 
-// The first item under a `## Next` (or `## Next steps`) heading, its list marker removed.
+// A Next item already marked finished: a tick, a checked box, a struck line, or DONE/SHIPPED
+// written in capitals (lowercase "done" in ordinary prose stays open).
+const finishedItem = (raw, line) =>
+  /[✅✓]/u.test(line) || /^(?:[-*+]|\d+[.)])\s+\[[xX]\]/u.test(raw) || /^~~.*~~$/u.test(line) || /\b(?:DONE|SHIPPED)\b/u.test(line);
+
+// The first open item under a `## Next` (or `## Next steps`) heading, its list marker removed.
 const nextItemOf = (text) => {
   let inside = false;
   for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (/^#{1,6}\s/u.test(line)) {
+    const trimmed = raw.trim();
+    if (/^#{1,6}\s/u.test(trimmed)) {
       if (inside) return null;
-      inside = /^#{1,6}\s+next(?:\s+steps?)?$/iu.test(line);
-    } else if (inside && line) {
-      return line.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/u, '');
+      inside = /^#{1,6}\s+next(?:\s+steps?)?$/iu.test(trimmed);
+    } else if (inside && trimmed) {
+      const item = trimmed.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/u, '');
+      if (!finishedItem(trimmed, item)) return item;
     }
   }
   return null;
 };
 
-// Only this worktree's own handoff offers a `next`; another worktree's never does.
+// Only this worktree's own handoff offers a `next`, and only from its newest file: an old root
+// HANDOFF.md never outranks a newer one (the dedicated `.handoff/HANDOFF.md` wins a tie).
+// Another worktree's handoff never offers one.
 const handoffsOf = (root, budget, redact, local) => {
   const files = (entries(root) ?? [])
     .filter((entry) => entry.isFile() && /^HANDOFF.*\.md$/u.test(entry.name))
     .map((entry) => join(root, entry.name));
   const dotted = join(root, '.handoff', 'HANDOFF.md');
   if (existsSync(dotted)) files.push(dotted);
-  return files.map((path) => {
-    const text = readSmallFile(path, budget) ?? '';
-    const headings = text.split('\n').slice(0, 40).filter((line) => /^#{1,3} /u.test(line)).map((line) => clipToWidth(redact(line), 100));
-    const next = local ? nextItemOf(text) : null;
-    return { worktree: redact(root), file: basename(path), headings, local, next: next ? clipToWidth(redact(next), 120) : null };
+  const read = files.map((path) => ({ path, text: readSmallFile(path, budget) ?? '', mtimeMs: mtimeOf(path) ?? 0 }));
+  const newest = read.reduce((best, item) => (best === null || item.mtimeMs > best.mtimeMs || (item.mtimeMs === best.mtimeMs && item.path === dotted) ? item : best), null);
+  return read.map((item) => {
+    const headings = item.text.split('\n').slice(0, 40).filter((line) => /^#{1,3} /u.test(line)).map((line) => clipToWidth(redact(line), 100));
+    const next = local && item === newest ? nextItemOf(item.text) : null;
+    return { worktree: redact(root), file: basename(item.path), headings, local, next: next ? clipToWidth(redact(next), 120) : null };
   });
 };
 
@@ -233,7 +242,7 @@ const stacksOf = (root, budget, redact) => {
 // Hermes start-work state: newest `runs/*/state.json` with `command: start-work` (a run has no
 // status field, so an unfinished plan reads active and a finished plan reads done), plus
 // bounded-work `work/*/state.json` records, which carry a real status and a pending boundary.
-const startWorkOf = (root, budget, redact, sessionId) => {
+const startWorkOf = (root, budget, redact) => {
   const items = [];
   const runs = entries(join(root, '.hermes', 'lithermes', 'runs')) ?? [];
   let newestRun = null;
@@ -254,8 +263,9 @@ const startWorkOf = (root, budget, redact, sessionId) => {
       plan: plan ? redact(plan) : 'unknown',
       status: rows.length && !open.length ? 'done' : 'active',
       atMs: Date.parse(String(newestRun.created_at ?? '')),
-      sessionId: sessionId ?? null,
-      id8: sessionId ? String(sessionId).slice(0, 8) : 'unknown',
+      // A start-work run records no session, so it is never assumed to be this session's.
+      sessionId: null,
+      id8: 'unknown',
       progress: rows.length
         ? progressOf(rows.length - open.length, rows.length, open.map((row) => clipToWidth(redact(row.text), NAME_MAX)))
         : progressOf(null, null),
@@ -295,14 +305,51 @@ const startWorkOf = (root, budget, redact, sessionId) => {
   return items.length ? items : null;
 };
 
-const herdrOf = (env, exec, redact) => {
+const insideAny = (dir, roots) =>
+  typeof dir === 'string' && dir !== '' && roots.some((root) => dir === root || dir.startsWith(`${root}/`));
+
+// `herdr agent list` prints one JSON document. An agent is a lane when it is working or blocked
+// in this herdr workspace or inside one of this repo's worktrees; this pane is never a lane.
+// Anything unreadable leaves herdr `unknown` with no lanes.
+const herdrOf = (env, exec, redact, roots) => {
   if (env.HERDR_ENV !== '1') return { status: 'unknown', agents: [] };
   try {
     const out = exec('herdr', ['agent', 'list'], { timeout: HERDR_TIMEOUT_MS });
-    return { status: 'ok', agents: out.split('\n').filter((line) => line.trim()).slice(0, 20).map((line) => clipToWidth(redact(line.trim()), 120)) };
+    const listed = JSON.parse(out)?.result?.agents;
+    if (!Array.isArray(listed)) return { status: 'unknown', agents: [] };
+    const agents = listed.slice(0, 40).filter((agent) => agent && typeof agent === 'object').map((agent) => {
+      const status = typeof agent.agent_status === 'string' ? agent.agent_status : 'unknown';
+      const pane = typeof agent.pane_id === 'string' ? agent.pane_id : 'unknown';
+      const here = (env.HERDR_WORKSPACE_ID && agent.workspace_id === env.HERDR_WORKSPACE_ID)
+        || insideAny(agent.cwd, roots) || insideAny(agent.foreground_cwd, roots);
+      const session = typeof agent.agent_session?.value === 'string' ? agent.agent_session.value : null;
+      return {
+        agent: clipToWidth(redact(String(agent.agent ?? 'unknown')), 40),
+        status,
+        pane: clipToWidth(redact(pane), 40),
+        lane: ['working', 'blocked'].includes(status) && Boolean(here) && !(env.HERDR_PANE_ID && pane === env.HERDR_PANE_ID),
+        sessionId: session,
+      };
+    });
+    return { status: 'ok', agents };
   } catch {
     return { status: 'unknown', agents: [] };
   }
+};
+
+// Lanes: other live sessions of this repo (active or waiting on the user) plus herdr lane agents;
+// an agent whose session is already counted, or is this session, counts once or not at all.
+const lanesOf = (sessions, herdr, sessionId) => {
+  const others = sessions.filter((session) => session.sessionId !== sessionId && ['active', 'waiting-on-user'].includes(session.status));
+  const counted = new Set(others.map((session) => session.sessionId));
+  const agents = herdr.agents.filter((agent) => agent.lane && !(agent.sessionId && (counted.has(agent.sessionId) || agent.sessionId === sessionId)));
+  const waiting = others.find((session) => session.status === 'waiting-on-user');
+  return {
+    count: others.length + agents.length,
+    sessions: others.map((session) => session.id8),
+    agents: agents.map((agent) => agent.pane),
+    waiting: waiting ? waiting.id8 : null,
+  };
 };
 
 const known = (list) => (list === null ? 'unknown' : 'ok');
@@ -350,7 +397,7 @@ export const collectAdhd = ({
   });
   const handoffs = roots.flatMap((root) => handoffsOf(root, budget, redact, resolve(root) === start));
   const workflows = collectEach((root) => stacksOf(root, budget, redact));
-  const startWork = collectEach((root) => startWorkOf(root, budget, redact, sessionId));
+  const startWork = collectEach((root) => startWorkOf(root, budget, redact));
 
   const found = findHermesSessions(hermesStorePath(env), roots, { exec });
   const sessions = [];
@@ -364,7 +411,7 @@ export const collectAdhd = ({
   }
 
   const commits = collectEach((root) => commitsOf(root, sinceMs, now, exec, redact));
-  const herdr = herdrOf(env, exec, redact);
+  const herdr = herdrOf(env, exec, redact, roots.map((root) => resolve(root)));
 
   // A session waits on the user when it asked something, or holds a paused boundary.
   for (const session of sessions) {
@@ -382,6 +429,7 @@ export const collectAdhd = ({
       .map(({ hash, subject }) => ({ hash, subject }));
   }
   sessions.sort((a, b) => statusRank[a.status] - statusRank[b.status] || (b.lastMs ?? 0) - (a.lastMs ?? 0));
+  const lanes = lanesOf(sessions, herdr, sessionId);
 
   // Open plans changed inside the window are listed, this worktree's first, then the most recently
   // changed, up to a short cap; a stale plan is left out here and elsewhere. The roadmap gauge
@@ -433,7 +481,8 @@ export const collectAdhd = ({
     startWork: startWork ?? [],
     handoffs,
     commits: (commits ?? []).slice(0, 20).map(({ atMs: _atMs, ...commit }) => commit),
-    herdr,
+    herdr: { status: herdr.status, agents: herdr.agents.map(({ sessionId: _sessionId, ...agent }) => agent) },
+    lanes,
   };
   const next = chooseNextStep(data, sessionId);
   data.next = next;
@@ -561,7 +610,7 @@ const openerLines = (data, nextText) => {
       : active
         ? clipToWidth(goalOf(active), 80)
         : running[0]
-          ? `start-work ${planInWorktree(running[0].worktree, running[0].plan)} ${running[0].progress.gauge} (another session)`
+          ? `start-work ${planInWorktree(running[0].worktree, running[0].plan)} ${running[0].progress.gauge}${running[0].id8 === 'unknown' ? '' : ' (another session)'}`
           : 'nothing running';
   return [`Done so far: ${done}`, `Doing now: ${doing}`, `Next: ${nextText}`];
 };
@@ -570,19 +619,22 @@ const openerLines = (data, nextText) => {
 export const renderAdhd = (data, width = 100, sessionId = null) => {
   const out = [];
   const push = (text) => out.push(line(text, width));
-  const recorded = data.next.kind !== 'none';
-  // With no step on record, this worktree's HANDOFF.md `## Next` item comes before any suggestion.
-  const handoffNext = (data.handoffs ?? []).find((handoff) => handoff.local && handoff.next)?.next;
+  const waiting = data.next.kind === 'wait-lanes';
+  const recorded = data.next.kind !== 'none' && !waiting;
+  // With no runnable step on record, the suggestion ranks live signals (a session waiting on the
+  // user, lanes at work) and open plan items ahead of this worktree's HANDOFF.md `## Next` item.
   const step = recorded
     ? data.next
-    : handoffNext
-      ? { kind: 'suggest', label: 'handoff next', say: `HANDOFF.md Next: ${handoffNext}`, command: null }
+    : waiting
+      ? { kind: 'suggest', label: 'wait for lanes', say: waitText(data.next.target.lanes, data.next.target.waiting), command: null }
       : suggestNext(data, sessionId);
   const stepName = recorded ? data.next.kind.replace(/-/gu, ' ') : step.label;
   const stepSay = recorded && data.next.say ? ` (say "${data.next.say}")` : '';
   const stepRun = step.command ? ` (run ${step.command})` : recorded ? '' : ' (continue in chat)';
   const target = recorded ? data.next.target?.plan ?? data.next.target?.workId ?? '' : '';
   const nextText = recorded ? `${stepName}${target ? `: ${target}` : ''}${stepSay}${stepRun}` : `${step.say}${stepRun}`;
+  // While other lanes work and the step is not this session's own run, `go` has nothing to start.
+  const holdGo = (data.lanes?.count ?? 0) > 0 && !recorded;
   for (const opener of openerLines(data, nextText)) push(opener);
   push(`lit-adhd: ${data.summary.sessions} session(s) · ${data.summary.waitingOnUser} waiting on you · next: ${stepName}${stepSay}${stepRun}`);
   const live = data.sessions.filter((session) => session.status !== 'ended');
@@ -618,6 +670,7 @@ export const renderAdhd = (data, width = 100, sessionId = null) => {
   if (unknownSources.length) push(`unknown: ${unknownSources.join(', ')}`);
   const skipped = data.roadmap.plansSkipped ?? 0;
   if (skipped) push(`${skipped} ${skipped === 1 ? 'plan was' : 'plans were'} not read (read budget used up)`);
+  if (holdGo) push('Do not type `go` until they finish.');
   return `${out.join('\n')}\n`;
 };
 

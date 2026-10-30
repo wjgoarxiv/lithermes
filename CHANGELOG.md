@@ -7,6 +7,9 @@ identity or source-provenance tokens in tracked files.
 ## [Unreleased]
 
 - Dependency alert cleared: the Remotion cover template now pins zod 4.6.6 (was 4.5.4). The HyperFrames cover template still resolves zod 3.25.76 through its pinned browser-driver chain; that needs a HyperFrames upgrade, so it is left for a separate change.
+- `lit adhd` no longer tells you to start a plan while other lanes of the repo are still working (other live Hermes sessions, or herdr agents working or blocked here when `HERDR_ENV=1`). The box says to wait for them, or to answer the one waiting on you, and the brief ends with "Do not type `go` until they finish." When there is no step to run, a session waiting on you, lanes at work and open plan items now come before the HANDOFF Next line, which reads only the newest handoff file and skips items already marked done.
+- `go` checks again before continuing a run: if the run has finished, paused or moved to another session, it says the step no longer holds and starts nothing. A start-work run, which records no session, is no longer treated as the current session's run.
+- Activating bounded work no longer waits indefinitely when another call holds the run's lock. After about 2 seconds it reports that the run is busy and asks you to send it again.
 
 ## [1.0.32] - 2026-10-28
 

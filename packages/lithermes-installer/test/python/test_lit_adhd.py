@@ -220,6 +220,38 @@ class AdhdGoContinuation(unittest.TestCase):
         self.assertIn("expired", note)
         self.assertIn("lit adhd", note)
 
+    def _work(self, work_id, status, owner):
+        path = self.root / ".hermes" / "lithermes" / "work" / work_id / "state.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"work_id": work_id, "status": status, "active_session_id": owner}), encoding="utf-8")
+
+    def test_go_rechecks_that_the_recorded_run_is_still_active_and_owned(self):
+        record = _fresh_record("continue-work", {"workId": "work-1", "plan": "plans/a.md"})
+        self._work("work-1", "active", "own-session")
+        held = self._note("own-session", record)
+        self.assertIn("Continue that step in chat", held)
+        for status, owner in (("completed", "own-session"), ("paused", "own-session"), ("active", "other-session")):
+            with self.subTest(status=status, owner=owner):
+                self._work("work-1", status, owner)
+                note = self._note("own-session", record)
+                self.assertIn("no longer holds", note)
+                self.assertIn("start nothing", note)
+                self.assertNotIn("Continue that step", note)
+        missing = self._note("own-session", _fresh_record("continue-work", {"workId": "work-gone"}))
+        self.assertIn("no longer holds", missing)
+
+    def test_go_while_lanes_work_starts_nothing(self):
+        note = self._note("lane-session", _fresh_record("wait-lanes", {"lanes": 2, "plan": "plans/a.md"}))
+        self.assertIn("2", note)
+        self.assertIn("start nothing", note)
+        self.assertNotIn("/start-work", note)
+        self.assertNotIn("Continue that step", note)
+
+    def test_an_approval_step_never_carries_a_go_line(self):
+        note = self._note("approval-session", _fresh_record("approve-boundary", {"workId": "w", "boundary": "b"}))
+        self.assertIn("Never approve it yourself", note)
+        self.assertNotRegex(note, r"(?i)(type|say) `go`")
+
     def test_go_through_the_hook_consumes_the_word(self):
         from plugin_register_test_support import _load_plugin_package
 
