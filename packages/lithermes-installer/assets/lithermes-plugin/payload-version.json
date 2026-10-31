@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-31T00:25:26.994Z",
+  "syncedAt": "2026-10-31T01:35:43.864Z",
   "source": "bundled-payload",
-  "sourceHash": "a0c0358b440fb85f983f94a438943bbb157a31668d8a8765d1b8b560f098dd89",
+  "sourceHash": "98ad4db11886b84c672150843b3e9f232807253f0eb478f530df0de073a7ad86",
   "files": [
     {
       "path": "NOTICE.md",
@@ -201,7 +201,7 @@
     },
     {
       "path": "rules/bundled-rules/baseline-discipline.md",
-      "sha256": "3877ac87596538aada77a8475c65300ff2e7b1f27f4d8fa677957c52f6df92d5"
+      "sha256": "f2cb1776e3522719c929a6f4f2d801e7236c6de8e168fe8ac78ec017d7bc2e6b"
     },
     {
       "path": "rules/bundled-rules/build-decision-gate.md",

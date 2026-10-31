@@ -538,6 +538,19 @@ class DedupAndBudgets(RulesTestCase):
         baseline = block.split('path="baseline-discipline.md"')[1]
         self.assertNotIn("[Truncated. Full: baseline-discipline.md]", baseline)
 
+    def test_always_on_baseline_carries_the_three_ground_rules(self):
+        """The static lane is the always-on context. These three used to wait for a lit route."""
+        block = self.rules.static_rules_block(self.root, "ground")
+        baseline = block.split('path="baseline-discipline.md"', 1)[1].split("</lithermes-rule>", 1)[0]
+        baseline = " ".join(baseline.split())
+        self.assertIn("`lit` at the start of a prompt is LitHermes's activation word.", baseline)
+        self.assertIn(
+            "Read plans/, HANDOFF.md or .handoff/HANDOFF.md, and .hermes/lithermes/ before resuming.",
+            baseline,
+        )
+        self.assertIn("A plain git push needs an explicit yes.", baseline)
+        self.assertIn("tag, publish, or bump a version without an explicit yes", baseline)
+
     def test_dynamic_budget_is_smaller_than_the_static_budget(self):
         self.assertLess(self.rules.DYNAMIC_MAX_RULE_CHARS, self.rules.DEFAULT_MAX_RULE_CHARS)
         self.assertLess(self.rules.DYNAMIC_MAX_RESULT_CHARS, self.rules.DEFAULT_MAX_RESULT_CHARS)
