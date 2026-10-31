@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-30T05:58:31.786Z",
+  "syncedAt": "2026-10-31T00:25:26.994Z",
   "source": "bundled-payload",
-  "sourceHash": "13c8a24a72c9bfadd2b41df064bbc681a7c44e1f9ab471eb75ac08c99d3ccae1",
+  "sourceHash": "a0c0358b440fb85f983f94a438943bbb157a31668d8a8765d1b8b560f098dd89",
   "files": [
     {
       "path": "NOTICE.md",
@@ -1489,7 +1489,7 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "8a07b62b9898839381ffee43b91c4a9be0ce71700c982088d8da8c1482998fa2"
+      "sha256": "639681990d46d8a86d6fde540865eab0529e99e9a9e8ce4780927d6c8609f806"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
@@ -1509,7 +1509,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "45b6c24d3747a95d0ce9584a9348f191542b4687613778a1c33fdb03de2eedd9"
+      "sha256": "b8c5463c8c5f877dca3e8ba48ab38763da6c6e23469e729b6e348d8786f76495"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -1521,7 +1521,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/next-step.mjs",
-      "sha256": "a497de6aaa1f4c4c7665293a59ee065129b8cf4b5d79035a8a5f4523ee58fc7c"
+      "sha256": "f17467ce2371170408d9a1429218c027e70d34e1f3e438e6a654b2aa48d11d70"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/plan-task-rows.mjs",

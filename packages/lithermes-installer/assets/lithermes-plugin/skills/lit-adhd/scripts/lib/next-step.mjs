@@ -4,11 +4,14 @@
 // user answers in words, and an active run simply continues in chat. The record `go` reads back
 // lives under the workspace's `.hermes/lithermes/adhd/` directory alongside the stack file.
 //
-//   1. a bounded-work run paused at a boundary -> approve-boundary (shown, never started)
-//   2. this session's own active run or bounded work  -> continue-work (continue in chat)
+//   1. a bounded-work run paused at a boundary -> approve-boundary (shown, never started),
+//      even while other lanes are at work: that choice is the user's
+//   2. this session's own active run or bounded work  -> continue-work (continue in chat),
+//      or wait-lanes while other lanes are at work
 //   3. a single open plan with no work running        -> start-plan (`/start-work plans/<f>.md`),
 //      or wait-lanes while other lanes are at work (no command, and no `go` until they finish)
 //   4. otherwise                                     -> none
+// A paused discipline frame is not a resume. Hermes has no pausable stack to continue.
 import { closeSync, constants, lstatSync, mkdirSync, openSync, renameSync, writeSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -23,9 +26,15 @@ export const chooseNextStep = (data, sessionId) => {
   if (paused) {
     return { kind: 'approve-boundary', target: { workId: paused.workId, plan: paused.plan, ...paused.pendingBoundary }, say: null, automatic: false };
   }
+  const lanes = data.lanes?.count ?? 0;
   const active = sessionId
     ? (data.startWork ?? []).find((work) => work.status === 'active' && work.sessionId === sessionId)
     : null;
+  // The lane hold used to sit only on the start-plan branch, so this session's own
+  // run was still offered while the lanes it started were at work.
+  if (active && lanes > 0) {
+    return { kind: 'wait-lanes', target: { lanes, waiting: data.lanes?.waiting ?? null }, say: null };
+  }
   if (active) return { kind: 'continue-work', target: { workId: active.workId, plan: active.plan }, say: null };
   const running = (data.startWork ?? []).some((work) => ['active', 'paused'].includes(work.status));
   const open = data.roadmap.plans.filter((plan) => plan.local && plan.progress.total !== null && plan.progress.done < plan.progress.total);

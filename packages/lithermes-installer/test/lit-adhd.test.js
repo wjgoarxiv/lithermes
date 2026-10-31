@@ -531,6 +531,59 @@ test("a lane waiting on the user is the step to answer while lanes work", { skip
   }
 });
 
+test("this session's own run waits for other lanes, and a paused frame is not a resume", async () => {
+  const { chooseNextStep } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/next-step.mjs");
+  const { renderAdhd } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/collect.mjs");
+  const sessionId = "s1";
+  const card = {
+    id8: "self0001", status: "active", self: true, title: "own", asked: ["keep going"],
+    progress: { gauge: "[░] 0/1", remaining: [] }, done: { tools: {}, commits: [] }, worktree: "/tmp/ws",
+  };
+  const ownRun = {
+    workId: "w1", plan: "plans/c.md", status: "active", sessionId, self: true, id8: "self0001",
+    progress: { gauge: "[░] 0/1", remaining: [] }, worktree: "/tmp/ws",
+  };
+  const shell = (extra) => ({
+    generatedAt: new Date().toISOString(),
+    summary: { sessions: 1, waitingOnUser: 0 },
+    scope: { worktrees: ["/tmp/ws"] },
+    sessions: [card],
+    workflows: [],
+    startWork: [],
+    roadmap: { plans: [], litgoal: [], plansOmitted: 0, plansSkipped: 0 },
+    lanes: { count: 0, waiting: null },
+    finished: { runs: [], plans: [] },
+    commits: [],
+    sources: {},
+    handoffs: [],
+    ...extra,
+  });
+
+  const quiet = shell({ startWork: [ownRun] });
+  assert.equal(chooseNextStep(quiet, sessionId).kind, "continue-work");
+
+  const busy = shell({ startWork: [ownRun], lanes: { count: 1, waiting: null } });
+  busy.next = chooseNextStep(busy, sessionId);
+  assert.equal(busy.next.kind, "wait-lanes");
+  const text = renderAdhd(busy, 120, sessionId);
+  assert.equal(lastLine(text), "Do not type `go` until they finish.");
+  assert.doesNotMatch(text, /continue work/u);
+
+  const paused = shell({
+    lanes: { count: 1, waiting: null },
+    workflows: [{ id8: "self0001", self: true, status: "paused", skill: "lit-loop", stage: "RED" }],
+  });
+  paused.next = chooseNextStep(paused, sessionId);
+  assert.equal(paused.next.kind, "none", "Hermes has no paused-frame resume to offer");
+  const cardText = renderAdhd(paused, 160, sessionId);
+  assert.doesNotMatch(cardText, /lit continue/u);
+  assert.doesNotMatch(cardText, /resume lit-loop/u);
+
+  const boundary = { ...ownRun, status: "paused", pendingBoundary: { action: "read", root: "/x" } };
+  const approval = shell({ startWork: [boundary], lanes: { count: 1, waiting: null } });
+  assert.equal(chooseNextStep(approval, sessionId).kind, "approve-boundary");
+});
+
 test("an ownerless start-work run is never this session's run to continue", async () => {
   const ws = roundThreeWs();
   try {

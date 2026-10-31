@@ -633,7 +633,8 @@ export const renderAdhd = (data, width = 100, sessionId = null) => {
   const stepRun = step.command ? ` (run ${step.command})` : recorded ? '' : ' (continue in chat)';
   const target = recorded ? data.next.target?.plan ?? data.next.target?.workId ?? '' : '';
   const nextText = recorded ? `${stepName}${target ? `: ${target}` : ''}${stepSay}${stepRun}` : `${step.say}${stepRun}`;
-  // While other lanes work and the step is not this session's own run, `go` has nothing to start.
+  // While other lanes work, `go` has nothing to start. An own run is held back
+  // before it is recorded, so this line covers that case too.
   const holdGo = (data.lanes?.count ?? 0) > 0 && !recorded;
   for (const opener of openerLines(data, nextText)) push(opener);
   push(`lit-adhd: ${data.summary.sessions} session(s) · ${data.summary.waitingOnUser} waiting on you · next: ${stepName}${stepSay}${stepRun}`);

@@ -6,6 +6,7 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- `lit adhd` no longer tells this session to keep going on its own run while other lanes of the repo are still working. It used to look at that run before the lanes, so the session that started them was still offered the run. A boundary waiting on you is still shown, because that answer is yours. A paused discipline frame was never a resume on Hermes, and it still is not.
 - Dependency alert cleared: the Remotion cover template now pins zod 4.6.6 (was 4.5.4). The HyperFrames cover template still resolves zod 3.25.76 through its pinned browser-driver chain; that needs a HyperFrames upgrade, so it is left for a separate change.
 - `lit adhd` no longer tells you to start a plan while other lanes of the repo are still working (other live Hermes sessions, or herdr agents working or blocked here when `HERDR_ENV=1`). The box says to wait for them, or to answer the one waiting on you, and the brief ends with "Do not type `go` until they finish." When there is no step to run, a session waiting on you, lanes at work and open plan items now come before the HANDOFF Next line, which reads only the newest handoff file and skips items already marked done.
 - `go` checks again before continuing a run: if the run has finished, paused or moved to another session, it says the step no longer holds and starts nothing. A start-work run, which records no session, is no longer treated as the current session's run.

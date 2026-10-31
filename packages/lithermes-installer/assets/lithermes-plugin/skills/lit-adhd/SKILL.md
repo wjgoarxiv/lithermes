@@ -154,9 +154,9 @@ A start-work run whose plan has every row ticked reads `done`, and completed bou
 
 `next` is chosen by code, in this priority order, and the brief offers exactly that one:
 
-1. A bounded-work run paused at a boundary: show what it wants to reach. Answer in chat to approve or deny; this is never automatic and never starts work by itself.
-2. This session's own active bounded work: keep going in chat. Another session's run, or a start-work run that records no session, is never this session's to continue.
-3. Exactly one open plan in this worktree and no work running: start it with `/start-work plans/<plan>.md`. While other lanes are at work (`lanes.count` above zero) the step is `wait-lanes` instead: wait for them, or answer the one waiting on the user, and do not type `go` until they finish.
+1. A bounded-work run paused at a boundary: show what it wants to reach. Answer in chat to approve or deny; this is never automatic and never starts work by itself. Other lanes at work do not replace this step, because the answer is the user's.
+2. This session's own active bounded work: keep going in chat. While other lanes are at work (`lanes.count` above zero) the step is `wait-lanes` instead, and `go` starts nothing. Another session's run, or a start-work run that records no session, is never this session's to continue. A paused discipline frame is not resumed: Hermes has no stack to continue, and the card does not offer one.
+3. Exactly one open plan in this worktree and no work running: start it with `/start-work plans/<plan>.md`. While other lanes are at work the step is `wait-lanes` instead: wait for them, or answer the one waiting on the user, and do not type `go` until they finish.
 4. Otherwise `none`: show the collector's suggestion, which puts live signals ahead of plan items and the HANDOFF Next item.
 
 ## Continuing after the brief
