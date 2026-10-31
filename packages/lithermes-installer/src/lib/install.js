@@ -32,6 +32,9 @@ const { installSkins } = require("./skins");
 
 const packageRoot = path.resolve(__dirname, "..", "..");
 const assetRoot = path.join(packageRoot, "assets", "lithermes-plugin");
+const channelRoot = path.join(packageRoot, "assets", "npm-channel");
+const NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel";
+const NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n";
 const LEGACY_VENDOR_DIRS = new Map([
   ["vendor/022_handoff", "vendor/handoff"],
   ["vendor/045_scientific-visualization", "vendor/scientific-visualization"],
@@ -547,6 +550,24 @@ function previewModelRoute(flags = {}) {
   };
 }
 
+function stageNpmChannel(dest) {
+  const source = path.join(channelRoot, "auto_update.py");
+  const sourceStat = fs.lstatSync(source);
+  if (!sourceStat.isFile()) {
+    throw new LitHermesError("npm channel updater is missing.", 5);
+  }
+  const target = path.join(dest, "auto_update.py");
+  fs.copyFileSync(source, target);
+  fs.chmodSync(target, 0o644);
+  const marker = path.join(dest, NPM_CHANNEL_MARKER_NAME);
+  fs.writeFileSync(marker, NPM_CHANNEL_TOKEN, { encoding: "utf8", mode: 0o644 });
+  fs.chmodSync(marker, 0o644);
+  return [
+    { path: "auto_update.py", sha256: sha256(target) },
+    { path: NPM_CHANNEL_MARKER_NAME, sha256: sha256(marker) },
+  ];
+}
+
 function installLitHermes(flags = {}) {
   const dryRun = Boolean(flags["dry-run"]);
   const homeInfo = dryRun
@@ -655,6 +676,7 @@ function installLitHermes(flags = {}) {
     assertPluginParent(hermesHome);
     fs.rmSync(dest, { recursive: true, force: true });
     const files = copyTree(assetRoot, dest);
+    files.push(...stageNpmChannel(dest));
     onProgress("Writing Hermes config");
     checkState();
     let afterConfig = beforeConfig;

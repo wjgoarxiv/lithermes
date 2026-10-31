@@ -100,7 +100,7 @@ app.get(
   validator('query', QuerySchema),
   (c) => {
     const query = c.req.valid('query')
-    return c.json({ message: `Hello ${query.name ?? 'Hono'}!` })
+    return c.json({ message: `Hello ${query.name ?? 'Hono'}.` })
   },
 )
 

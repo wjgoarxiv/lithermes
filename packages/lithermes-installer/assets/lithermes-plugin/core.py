@@ -72,11 +72,6 @@ except (ImportError, ModuleNotFoundError):
     import rules as _rules
 
 try:
-    from . import auto_update as _auto_update
-except (ImportError, ModuleNotFoundError):
-    import auto_update as _auto_update
-
-try:
     from . import auto_handoff as _auto_handoff
 except (ImportError, ModuleNotFoundError):
     import auto_handoff as _auto_handoff
@@ -1656,6 +1651,60 @@ def browser_drive_tool_guard(
     }
 
 
+NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel"
+NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n"
+_NPM_CHANNEL_MODULE: Any = False
+
+
+def _npm_channel_module() -> Any:
+    """Load the npm updater once. Reloading it would clear its per-session guard."""
+
+    global _NPM_CHANNEL_MODULE
+    if _NPM_CHANNEL_MODULE is not False:
+        return _NPM_CHANNEL_MODULE
+    import importlib.util
+
+    here = Path(__file__).resolve().parent
+    module_path = here / "auto_update.py"
+    marker_path = here / NPM_CHANNEL_MARKER_NAME
+    loaded = None
+    try:
+        if (
+            not module_path.is_symlink()
+            and not marker_path.is_symlink()
+            and module_path.is_file()
+            and marker_path.is_file()
+            and marker_path.read_text(encoding="utf-8") == NPM_CHANNEL_TOKEN
+        ):
+            spec = importlib.util.spec_from_file_location("_lithermes_npm_channel", module_path)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[spec.name] = module
+                spec.loader.exec_module(module)
+                loaded = module
+    except Exception:
+        loaded = None
+    _NPM_CHANNEL_MODULE = loaded
+    return loaded
+
+
+def _npm_channel_pre_llm(kwargs: dict[str, Any]) -> None:
+    """Run the npm-only updater when this directory carries both channel files.
+
+    A catalog copy never has the sibling module and the marker together, so it
+    cannot reach the updater. A symlink is not the installer's file.
+    """
+
+    module = _npm_channel_module()
+    if module is None:
+        return
+    try:
+        module.pre_llm_call(**kwargs)
+    except Exception as exc:
+        if exc.__class__.__module__ == "_lithermes_npm_channel" and exc.__class__.__name__ == "UnknownStateError":
+            raise
+
+
 def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     # Hermes identifies delegate_task children with platform="subagent".
     # Child goals may quote words such as "lit" or "lit-crucible" as inert task
@@ -1664,19 +1713,11 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         release_browser_drive_state(kwargs.get("session_id"))
         return None
     # A first interactive top-level turn is the only plugin lifecycle point
-    # where the Python payload can safely foreground an exact npm update. The
-    # bridge owns its own recursion guard, timeout, transaction, rollback, and
-    # receipt; it never contributes text to the model-facing context.
-    try:
-        _auto_update.pre_llm_call(**kwargs)
-    except _auto_update.UnknownStateError:
-        # A failed restore is not an advisory miss: continuing would let the
-        # model operate against a profile whose installed payload is unknown.
-        raise
-    except Exception:
-        # Ordinary registry/installer failures remain fail-open for this turn;
-        # the transaction receipt records the redacted reason.
-        pass
+    # where an npm install can safely foreground an exact update. The channel
+    # loader no-ops unless this directory is that install. The updater owns
+    # its recursion guard, timeout, transaction, rollback, and receipt, and it
+    # never contributes text to the model-facing context.
+    _npm_channel_pre_llm(kwargs)
     user_message = str(kwargs.get("user_message") or "")
     requested_reader_mode = reader_facing_mode_from_user_request(user_message)
     reader_contract = reader_facing_contract_block(

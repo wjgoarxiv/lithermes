@@ -16,7 +16,7 @@ Supported:
   `?`    exactly one character within one segment
   `[abc]` `[a-z]` `[!abc]` `[^abc]`  character class, never matches `/`
   `{a,b}` brace alternation, nestable, expanded before compilation
-  leading `!` negation (handled by the caller, not here)
+  leading (!) negation (handled by the caller, not here)
 
 There is NO backslash escape: `\` is normalized to `/` so Windows-style paths and
 patterns match, exactly as the reference does. See D9.

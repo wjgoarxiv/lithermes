@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-31T01:35:43.864Z",
+  "syncedAt": "2026-10-31T02:05:08.656Z",
   "source": "bundled-payload",
-  "sourceHash": "98ad4db11886b84c672150843b3e9f232807253f0eb478f530df0de073a7ad86",
+  "sourceHash": "e161e995293a360bfca33c195d4513f89021ed29905596c3ff2870fb53e50f79",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "702b92b127bd2fc52830f7da86717b20dcd85fd272c0869918d05141a11ca506"
+      "sha256": "fc223bcca7846557bf86f17328f54e8954cc41d991bb41e0e1494a0e60eab3b0"
     },
     {
       "path": "__init__.py",
@@ -21,11 +21,7 @@
     },
     {
       "path": "auto_handoff.py",
-      "sha256": "452a027f6f8cc800ff723a137ffec3e6b4a582b464519e2e1556c8d141a20242"
-    },
-    {
-      "path": "auto_update.py",
-      "sha256": "062e9ace40cc802b4889e0f69cc67155ef20ecb73f2d20e5c46bae4662253c50"
+      "sha256": "5f3525048b259be09111d430b66c727b95e62aced29d31efb53c93a3cddbc8c0"
     },
     {
       "path": "bounded_work.py",
@@ -37,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "68641a92c3cc389c46bc1c1dc8bfab7e72fed16c10769a0f5ad7a6327258178e"
+      "sha256": "e3f3933e8b67cbe14a74f808ec51e2164ce4aa6a50c7cd71b23ab9075ea5d160"
     },
     {
       "path": "core_commands.py",
@@ -69,7 +65,7 @@
     },
     {
       "path": "core_review.py",
-      "sha256": "dc81766b3c446f4c05daac0a7bd42ad92c32ff439515a018782abcbe56bfc69a"
+      "sha256": "b90d0b6432a01885887403f6197cc7b32af928be5ecf81058794f824951145d4"
     },
     {
       "path": "core_routing.py",
@@ -121,7 +117,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "7df8bab8025db62753eab286c0809ed9a45b83251c4562df3f2e7f1b4d917d52"
+      "sha256": "bc98017e15b5dc06fa461b8bb9452f7755d20e8dcd55bdbd37dc13c9279b5fd4"
     },
     {
       "path": "lit_mark_rows.json",
@@ -233,7 +229,7 @@
     },
     {
       "path": "rules/globmatch.py",
-      "sha256": "5c803ee6e9432cddd2a46f7303aef84052ff48f8d5011698464d571d5708050c"
+      "sha256": "d8e6a20b0fca9841590936a3aea67e4be4d8ca51e304a4238d9ecbc686e142d5"
     },
     {
       "path": "scientific_visualization.py",
@@ -501,15 +497,15 @@
     },
     {
       "path": "skills/debugging/SKILL.md",
-      "sha256": "a667d4f20024ebdf6c20048f40b0f1340a86c9676a9219d593246d8f29a339cd"
+      "sha256": "5ffdf6ef1d422f521dda18a6053efff853a132ba2503a5562fb840864079c911"
     },
     {
       "path": "skills/debugging/references/methodology/00-setup.md",
-      "sha256": "dc05ca5d38d870359b2ab8304ae32b31430892d864723d87f846e7a41cf8ed7f"
+      "sha256": "3cb3a251dcac602694f7e8e0bdd70f76da6b5994bf59889bd4cece994b959096"
     },
     {
       "path": "skills/debugging/references/methodology/02-investigate.md",
-      "sha256": "0f32125856f9175d3273e38ffe8f7edd63e055fbc8df95a352066094caa1a2dd"
+      "sha256": "de243e3eee0125baef6340e91fb7841e7a1907d01868508b8efc63f67e7b1579"
     },
     {
       "path": "skills/debugging/references/methodology/04-oracle-triple.md",
@@ -529,7 +525,7 @@
     },
     {
       "path": "skills/debugging/references/methodology/09-cleanup.md",
-      "sha256": "5675b3e72c38b9d0c87ab1b473f9f303aaea24047c8ef8d96e069539c8125679"
+      "sha256": "2efe84de9684e93c0156b19cea8e5411635a4c0c11eb1e3dc146c4224cf6d645"
     },
     {
       "path": "skills/debugging/references/methodology/partial-runtime-evidence.md",
@@ -545,7 +541,7 @@
     },
     {
       "path": "skills/debugging/references/runtimes/native-binary.md",
-      "sha256": "4400780ec5cb505512b3c4a67363369071f8046c34f712776170fb6dc76bc132"
+      "sha256": "1f0d5f64661baf235cc742d4bf029c4010e4b9ca4dedcb60f101fc755fe564b7"
     },
     {
       "path": "skills/debugging/references/runtimes/node.md",
@@ -557,11 +553,11 @@
     },
     {
       "path": "skills/debugging/references/runtimes/rust.md",
-      "sha256": "48fa55949ba60c42a1e9827af94122905ea82cb147262b1e044a27734b6a2958"
+      "sha256": "e159b858524626cf538d79ca92884b3f4b31b431c80fe60d745729d988341da3"
     },
     {
       "path": "skills/debugging/references/tools/ghidra.md",
-      "sha256": "8d50534340eef3cd664458cade9d11d18cabff804979128d7107a5fdd36dbbf0"
+      "sha256": "5abed319fa62a95f2bd7109f3291150af9b6cd959a794c38b2a5b6b25916d01e"
     },
     {
       "path": "skills/debugging/references/tools/playwright-cli.md",
@@ -1249,7 +1245,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/_canonical-corpus/corpus/ui-ux-db/data/stacks/nuxtjs.csv",
-      "sha256": "f7a3f2d9542856d00199f85c6c023b7c284cc698e2e6e12d61afce2edacb24d6"
+      "sha256": "560b74265e334d325b92d7add4271442cff67d99bdc134ce5896e28e23fcd753"
     },
     {
       "path": "skills/frontend-ui-ux/references/_canonical-corpus/corpus/ui-ux-db/data/stacks/react-native.csv",
@@ -1321,7 +1317,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/_canonical-corpus/manifest.json",
-      "sha256": "a4578e3bf20455bda26f19da67301c3da13b384031030cc6c04ca2f404fcff03"
+      "sha256": "27f83c01586e6bf1edc2e4aaa152681c6a1e9b421ffea8c6df49ef4fbaf169bc"
     },
     {
       "path": "skills/frontend-ui-ux/references/adaptive-layout.md",
@@ -1541,7 +1537,7 @@
     },
     {
       "path": "skills/lit-burnoff/SKILL.md",
-      "sha256": "5fea4ed034262071b957df01276566274cc33e295934b8a610085e7fb981b74a"
+      "sha256": "bd50b2a6aaf0de12b8394867916531fc985f0a3510678d880c1a926834a5fadb"
     },
     {
       "path": "skills/lit-burnoff-file/SKILL.md",
@@ -1549,7 +1545,7 @@
     },
     {
       "path": "skills/lit-code/SKILL.md",
-      "sha256": "8c6059548465bccc05e304b6a1a5de72019589dfd00f090e35b50d0526c60ef1"
+      "sha256": "6cd781ed5035abe6679277cad9fe1fb7a905201b1ee1d6943d3ec009f133e34d"
     },
     {
       "path": "skills/lit-code/references/go/README.md",
@@ -1669,15 +1665,15 @@
     },
     {
       "path": "skills/lit-code/references/rust/README.md",
-      "sha256": "7502ee277c86df00388ea7cdbc5b54fc743d4eacab8b4015cd00ad0483ead727"
+      "sha256": "60439bf4f6aabd6031619349ec96a841e72a825dc889e226c29a48f8f3607893"
     },
     {
       "path": "skills/lit-code/references/rust/async-tokio.md",
-      "sha256": "48e54d0b4be71fe1765e9bc62e0073a767abd966e29d4b456ae1326d0dc7b760"
+      "sha256": "96ce1f75794f3493efb8871daeb0dadbb47b2dff695c48b579f5848c4a688bc9"
     },
     {
       "path": "skills/lit-code/references/rust/axum-stack.md",
-      "sha256": "54500cdf3981235b6af178ec4868a8a320087fe18b0a6104c9f462091b1b081b"
+      "sha256": "aa7c269e850abe826af77571cc2f9390213f06528581e01b7ef7fa2e8a04c21b"
     },
     {
       "path": "skills/lit-code/references/rust/cargo-strict.md",
@@ -1685,7 +1681,7 @@
     },
     {
       "path": "skills/lit-code/references/rust/clap-stack.md",
-      "sha256": "317286b98bbd9faa33529cd2d2a01a21c0f2eda3151afc07940955e8da7034b8"
+      "sha256": "c5be3307613fbbf7d7326580293ffc8503d6cfba4ca90759bbdb5fdd9893f816"
     },
     {
       "path": "skills/lit-code/references/rust/concurrency.md",
@@ -1693,7 +1689,7 @@
     },
     {
       "path": "skills/lit-code/references/rust/libraries.md",
-      "sha256": "d34fec0ff40f79d80cf4bd9d01333995dbb4c0ca0b753610c3a32edad9d4999f"
+      "sha256": "dd25794cdc67c1924793624cc6efa15342e4f48e7d69cbe9f54692662973ced1"
     },
     {
       "path": "skills/lit-code/references/rust/one-liners.md",
@@ -1701,7 +1697,7 @@
     },
     {
       "path": "skills/lit-code/references/rust/proptest-insta.md",
-      "sha256": "be787a4e174f55062931b70c53027a6c46423e3473608b315ac800b52325c3d1"
+      "sha256": "aef996c4f965a14a76fe62fd11ecd40f973c64557f4bafcd38fd73de20378d7c"
     },
     {
       "path": "skills/lit-code/references/rust/type-state.md",
@@ -1713,7 +1709,7 @@
     },
     {
       "path": "skills/lit-code/references/rust/zero-cost-safety.md",
-      "sha256": "a03623f9e0d80cdb5c2addddb97b27932c84adb5232b2d659442ba5e74e37bbb"
+      "sha256": "9b41629d158a91cc2a05341dfafa868b3126cc7625b2714c74823ddcbcd1a59b"
     },
     {
       "path": "skills/lit-code/references/rust-ub/README.md",
@@ -1729,11 +1725,11 @@
     },
     {
       "path": "skills/lit-code/references/typescript/README.md",
-      "sha256": "c54f997b70659b574ce805196aefd9978354da5f73d5fdb6defbce1abf11041e"
+      "sha256": "87a776dd654c4ed4a70565a063dba24f525fb94635f64471437f127bfe79a8e0"
     },
     {
       "path": "skills/lit-code/references/typescript/backend-hono.md",
-      "sha256": "7df19dd33da142423412ad4a0fa67a8b800e79d200adc62e20d05bcb15ff8e4f"
+      "sha256": "b4c7fb35a5493d24bc755a21196f94321d9b22c0d701599b1464b9b585794fa5"
     },
     {
       "path": "skills/lit-code/references/typescript/bootstrap.md",
@@ -1749,7 +1745,7 @@
     },
     {
       "path": "skills/lit-code/references/typescript/tsconfig-strict.md",
-      "sha256": "e844903aa4dcf9c5e45592eccbbf04d6146c602c70067c72be74f523b0e2134d"
+      "sha256": "3207febd94978f32d4a8e5d098ddaadea7df1af48fb1e3a977a44aaefba8b043"
     },
     {
       "path": "skills/lit-code/references/typescript/type-patterns.md",
@@ -1829,7 +1825,7 @@
     },
     {
       "path": "skills/lit-code/scripts/typescript/check-no-excuse-rules.ts",
-      "sha256": "2416e1c1a49010e2c5284a6515b26404001d92178a22215410712de94d628d36"
+      "sha256": "c96021f1529fef33f5d0551e4093cd2be2832c6b9cfe326e0c18fa136755b61f"
     },
     {
       "path": "skills/lit-code/scripts/typescript/new-project.ts",
@@ -4925,7 +4921,7 @@
     },
     {
       "path": "skills/rules/SKILL.md",
-      "sha256": "9ea8ef0dc4259e2e376046fa2f0287f03db66e27f9fa91c1b73318a54e533b5d"
+      "sha256": "81ef82aa8c819dc3f48841afa6cbcd5969717dcb7e6e2779ca8c353967916325"
     },
     {
       "path": "skills/start-work/SKILL.md",

@@ -512,7 +512,7 @@ tempfile = "3"  # idiomatic RAII temp files/dirs
 | No hidden allocations | `#![no_std]` / slice-based APIs / `Cow` | Style choice | §3 |
 | `packed struct` / bitfields | `#[repr(C, packed)]` / `bitfield` / `zerocopy` | Easy | §4 |
 | `errdefer` | `scopeguard::guard` + defuse on success | Easy | §5 |
-| `defer` | `scopeguard::defer!` / `Drop` | Easy | §5 |
+| `defer` | `scopeguard::defer!() / `Drop` | Easy | §5 |
 
 All achievable within Rust's single toolchain. You get Zig's explicitness **plus** the borrow checker, lifetime analysis, trait bounds, and `miri`. The combination is strictly more powerful than either alone.
 

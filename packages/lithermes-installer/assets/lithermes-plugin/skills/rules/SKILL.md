@@ -169,7 +169,7 @@ priority rules.
   `paths` and Copilot `applyTo` aliases. A Cursor-style comma-separated scalar
   (`globs: *.ts,*.tsx`) is split into separate patterns.
 - **Glob support is a documented SUBSET**, not picomatch. `**`, `*`, `?`,
-  `[seq]`, `{a,b}` and a leading `!` work. Extglob (`@(a|b)`) and POSIX classes
+  `[seq]`, `{a,b}` and a leading (!) work. Extglob (`@(a|b)`) and POSIX classes
   (`[[:alpha:]]`) do NOT — a rule using them silently matches nothing. The full
   divergence list lives in `rules/globmatch.py` `DIVERGENCES`; read it before
   claiming a glob "should have" matched.

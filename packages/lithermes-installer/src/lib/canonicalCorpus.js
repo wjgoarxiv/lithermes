@@ -14,7 +14,7 @@ const EXPECTED = Object.freeze({
   tree: "9188410be0af35f2421ba300d91a0d7a7341caf0",
   fileCount: 167,
   totalBytes: 2596360,
-  digest: "b0d1a085de8856e7edeba24127d26875fe5473b80c0d95f6578addfdc801e445",
+  digest: "c921ed87f41b5aaef14ef480c791f1c36bbd3ec616eaccc32f5e1246fcc547e6",
   directories: ["design", "designpowers", "perfection", "ui-ux-db"],
   attributes: "corpus/** -text\nlegal/** -text\n",
   legal: [

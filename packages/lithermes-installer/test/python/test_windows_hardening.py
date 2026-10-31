@@ -13,10 +13,13 @@ from unittest import mock
 
 _HERE = Path(__file__).resolve().parent
 _ASSET_DIR = (_HERE / ".." / ".." / "assets" / "lithermes-plugin").resolve()
+_CHANNEL_DIR = (_HERE / ".." / ".." / "assets" / "npm-channel").resolve()
 _DOCX_SCRIPTS = _ASSET_DIR / "skills" / "lit-docx" / "scripts"
 for _path in (_ASSET_DIR, _DOCX_SCRIPTS):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
+if str(_CHANNEL_DIR) not in sys.path:
+    sys.path.insert(0, str(_CHANNEL_DIR))
 
 import auto_update
 

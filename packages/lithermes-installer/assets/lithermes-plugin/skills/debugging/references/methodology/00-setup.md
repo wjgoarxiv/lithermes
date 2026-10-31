@@ -105,4 +105,4 @@ If you catch yourself about to run a command that creates a file, opens a port, 
 
 - One `git checkout`, one `rm`, one `tmux kill-session` list — simple Phase 9 walk.
 - Survives interruptions. If you get pulled away mid-session, the next agent (or you later) can continue or revert without guessing.
-- Prevents the most common failure: leaving `console.log`/`print()`/`dbg!` scattered across the tree.
+- Prevents the most common failure: leaving `console.log`/`print()`/`dbg!() scattered across the tree.

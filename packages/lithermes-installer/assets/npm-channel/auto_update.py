@@ -42,6 +42,8 @@ INSTALL_TIMEOUT_SECONDS = 90.0
 MAX_RESPONSE_BYTES = 64 * 1024
 AUTO_UPDATE_GUARD_ENV = "LITHERMES_AUTO_UPDATE_RUNNING"
 INSTALLER_DISTRIBUTION = "npm"
+NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel"
+NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n"
 ATTEMPT_RECORD_NAME = "auto-update-attempt.json"
 # A broken npm fetch blocked each new session's first reply for about 70 s, so
 # after a failed install the bridge waits a day before it tries the same
@@ -244,19 +246,51 @@ def _read_install_receipt(home: Path) -> dict[str, Any] | None:
     return _read_state_json(home, "auto-update-receipt.json")
 
 
-def _is_npm_channel(home: Path) -> bool:
-    """Return true only for a manifest written by the npm installer.
+def _plugin_dir(home: Path, manifest: dict[str, Any] | None) -> Path:
+    """Prefer the receipt's plugin path when it is a real directory, not a link."""
 
-    Hermes catalog/git installs copy the plugin tree directly and do not create the
-    installer's ownership receipt.  The explicit distribution marker makes a stale
-    receipt fail closed too: a catalog payload must never use it as permission to
-    fetch and replace itself.  Older receipts without the marker are intentionally
-    treated as non-npm until the user runs the installer once, which preserves the
-    catalog safety boundary over an ambiguous channel.
+    raw = manifest.get("pluginPath") if isinstance(manifest, dict) else None
+    if isinstance(raw, str) and raw.strip():
+        candidate = Path(raw).expanduser()
+        try:
+            info = candidate.lstat()
+        except OSError:
+            info = None
+        if info is not None and stat.S_ISDIR(info.st_mode) and not stat.S_ISLNK(info.st_mode):
+            return candidate
+    return home / "plugins" / "lithermes"
+
+
+def _channel_marker_matches(root: Path) -> bool:
+    marker = root / NPM_CHANNEL_MARKER_NAME
+    expected = NPM_CHANNEL_TOKEN.encode("utf-8")
+    try:
+        info = marker.lstat()
+        if not stat.S_ISREG(info.st_mode) or stat.S_ISLNK(info.st_mode):
+            return False
+        fd = os.open(marker, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        try:
+            data = os.read(fd, len(expected) + 1)
+        finally:
+            os.close(fd)
+    except OSError:
+        return False
+    return data == expected
+
+
+def _is_npm_channel(home: Path) -> bool:
+    """Return true only for an npm receipt that also carries the channel marker.
+
+    The receipt lives outside the plugin directory and survives a catalog replace,
+    so ``distribution: npm`` alone is not permission to fetch and replace the
+    tree. The marker is written only by the npm installer, into the plugin
+    directory, and a catalog copy never contains it. A symlink is not the marker.
     """
 
     manifest = _read_state_json(home, "install-manifest.json")
-    return isinstance(manifest, dict) and manifest.get("distribution") == INSTALLER_DISTRIBUTION
+    if not (isinstance(manifest, dict) and manifest.get("distribution") == INSTALLER_DISTRIBUTION):
+        return False
+    return _channel_marker_matches(_plugin_dir(home, manifest))
 
 
 def _utc_stamp(seconds: float | None = None) -> str:

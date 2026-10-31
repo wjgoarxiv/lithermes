@@ -8,7 +8,7 @@
  *   no-ts-ignore            - `@ts-ignore` comments
  *   no-ts-expect-error      - `@ts-expect-error` comments
  *   no-enum                 - `enum` declarations
- *   no-non-null-assertion   - `x!` postfix operator
+ *   no-non-null-assertion   - `x!.y` postfix operator
  *   no-throw-literal        - `throw "string"` / `throw 123`
  *   no-mutable-export       - `export let` / `export var`
  *   no-any-annotation       - `: any` in annotations (opt out: `// no-excuse-ok: any`)
@@ -140,7 +140,7 @@ function analyzeFile(filePath: string): Violation[] {
     // ── x! non-null assertion ──
     if (ts.isNonNullExpression(node)) {
       const p = pos(node)
-      violations.push({ ruleId: "no-non-null-assertion", filePath, ...p, message: "`x!` — use narrowing or optional chaining" })
+      violations.push({ ruleId: "no-non-null-assertion", filePath, ...p, message: "`x!.y` — use narrowing or optional chaining" })
     }
 
     // ── throw "literal" ──

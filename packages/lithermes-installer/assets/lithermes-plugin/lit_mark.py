@@ -260,10 +260,5 @@ def skin_logo(*, env=None, stream=None, json=False) -> str:
 
 
 def configure_welcome_skin() -> None:
-    """Adjust the active managed skin in memory; the host draws it at welcome."""
-    try:
-        from hermes_cli.skin_engine import get_active_skin, get_active_skin_name
-    except ImportError:
-        return
-    if get_active_skin_name().startswith("lithermes-"):
-        get_active_skin().banner_logo = skin_logo(json="--json" in sys.argv)
+    """Leave the active skin as the host loaded it. The managed skin file carries its own logo."""
+    return None

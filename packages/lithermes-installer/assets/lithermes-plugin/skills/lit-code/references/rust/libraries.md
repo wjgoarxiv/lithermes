@@ -120,7 +120,7 @@ async fn process_user(db: &Pool, user: &User) -> anyhow::Result<()> {
 }
 ```
 
-Replace `println!` with `info!`/`warn!`/`error!`. Replace `eprintln!` with `tracing::error!`.
+Replace `println!() with `info!()/`warn!()/`error!(). Replace `eprintln!() with `tracing::error!().
 
 ## Error reporting (binaries) — `color-eyre`
 
@@ -235,7 +235,7 @@ pub async fn find_user(pool: &PgPool, email: &str) -> Result<Option<User>, sqlx:
 }
 ```
 
-`query_as!` checks the SQL against the live database at compile time. To work without a live DB during builds, generate offline metadata: `cargo sqlx prepare`. Commit the resulting `.sqlx/` directory.
+`query_as!() checks the SQL against the live database at compile time. To work without a live DB during builds, generate offline metadata: `cargo sqlx prepare`. Commit the resulting `.sqlx/` directory.
 
 Avoid `diesel` (sync-first, heavy DSL), raw `tokio-postgres` (loses type checks), `sea-orm` (more magic, less control).
 
@@ -391,7 +391,7 @@ use std::sync::LazyLock;
 static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::load_from_env().unwrap());
 ```
 
-Avoid `lazy_static!` (macro-heavy, predates std), `once_cell` (now in std as `LazyLock`/`OnceLock`).
+Avoid `lazy_static!() (macro-heavy, predates std), `once_cell` (now in std as `LazyLock`/`OnceLock`).
 
 ## Hash maps — `std::collections::HashMap` + `ahash` for hot paths
 

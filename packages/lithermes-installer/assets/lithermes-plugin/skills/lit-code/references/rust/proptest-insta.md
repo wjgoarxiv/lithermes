@@ -6,11 +6,11 @@ Two test types every Rust project should have alongside unit tests. Proptest hun
 
 | Want to test… | Use |
 |---|---|
-| One specific behavior with a known input | `#[test]` + `assert_eq!` |
-| All inputs of a certain shape work | `proptest!` |
-| Output structure stays stable across refactors | `insta::assert_*_snapshot!` |
-| Parser/serializer round-trips | `proptest!` (the round-trip property) |
-| CLI help text, JSON response shape, debug output | `insta::assert_snapshot!` |
+| One specific behavior with a known input | `#[test]` + `assert_eq!() |
+| All inputs of a certain shape work | `proptest!() |
+| Output structure stays stable across refactors | `insta::assert_*_snapshot!() |
+| Parser/serializer round-trips | `proptest!() (the round-trip property) |
+| CLI help text, JSON response shape, debug output | `insta::assert_snapshot!() |
 | Concurrency under all interleavings | `loom` (see `concurrency.md`) |
 
 Use all three. They cover different bug classes.
@@ -58,7 +58,7 @@ proptest! {
 }
 ```
 
-`proptest!` macro takes `(arg in strategy, ...)` pairs. Each strategy produces values; proptest runs the body with random samples, then shrinks failing cases to minimal forms.
+`proptest!() macro takes `(arg in strategy, ...)` pairs. Each strategy produces values; proptest runs the body with random samples, then shrinks failing cases to minimal forms.
 
 ## Strategies — the value-generation language
 
@@ -296,10 +296,10 @@ fn debug_repr() {
 ```
 
 Choose:
-- `assert_snapshot!` for `String`/`Display` output (CLI help, error messages, generated code).
-- `assert_debug_snapshot!` for `{:?}` (Rust-internal data).
-- `assert_json_snapshot!` for structured data crossing process boundaries.
-- `assert_yaml_snapshot!` when YAML is easier to read in diffs.
+- `assert_snapshot!() for `String`/`Display` output (CLI help, error messages, generated code).
+- `assert_debug_snapshot!() for `{:?}` (Rust-internal data).
+- `assert_json_snapshot!() for structured data crossing process boundaries.
+- `assert_yaml_snapshot!() when YAML is easier to read in diffs.
 
 ## Insta — redactions and filters
 

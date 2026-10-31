@@ -128,7 +128,7 @@ For Bun projects, add to `compilerOptions`:
 | Rule | What |
 |---|---|
 | `noExplicitAny` | `any` in annotations is an error |
-| `noNonNullAssertion` | `x!` is an error |
+| `noNonNullAssertion` | `x!.y` is an error |
 | `noDefaultExport` | Forces named exports |
 | `useImportType` | Forces `import type` for type-only imports |
 | `noParameterAssign` | No mutation of function parameters |

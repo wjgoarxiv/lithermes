@@ -164,7 +164,7 @@ match status {
 }
 ```
 
-For `#[non_exhaustive]` enums from external crates, the wildcard `_` is required — but add a `tracing::warn!` in the catch-all so you notice when new variants appear.
+For `#[non_exhaustive]` enums from external crates, the wildcard `_` is required — but add a `tracing::warn!() in the catch-all so you notice when new variants appear.
 
 ### 8. Type-State Over Runtime Checks
 
@@ -278,7 +278,7 @@ zerocopy = { version = "0.8", features = ["derive"] }
 | [unsafe-discipline.md](unsafe-discipline.md) | Any `unsafe` block — SAFETY comments, safe wrappers, miri proof |
 | [libraries.md](libraries.md) | Library selection, crate decision tree, dependency audit |
 | [cargo-strict.md](cargo-strict.md) | Project bootstrap, lint config, CI gate commands |
-| [async-tokio.md](async-tokio.md) | Async runtime, spawning, cancellation, `JoinSet`, `select!` |
+| [async-tokio.md](async-tokio.md) | Async runtime, spawning, cancellation, `JoinSet`, `select!() |
 | [axum-stack.md](axum-stack.md) | HTTP services — axum + sqlx + tower + tracing |
 | [clap-stack.md](clap-stack.md) | CLI tools — clap derive + color-eyre + indicatif |
 | [concurrency.md](concurrency.md) | Locks, atomics, channels, loom model checker |

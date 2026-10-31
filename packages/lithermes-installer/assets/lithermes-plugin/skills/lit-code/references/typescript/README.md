@@ -31,7 +31,7 @@ These are deliberate project choices. Violations are always wrong, not "style pr
 3. **Exhaustive switch** — every `switch` on a discriminated union ends with `default: assertNever(x)`. No fall-through.
 4. **No any** — `any` is banned in annotations, returns, and parameters. Use `unknown` and narrow.
 5. **No type assertions** — `as any`, `as unknown` banned. `as const` and `satisfies` are fine.
-6. **No non-null assertion** — `x!` is banned. Use narrowing or optional chaining (`x?.y`).
+6. **No non-null assertion** — `x!.y` is banned. Use narrowing or optional chaining (`x?.y`).
 7. **No @ts-ignore / @ts-expect-error** — fix the type.
 8. **No enum** — use `as const` objects + literal union types.
 9. **Zod at boundaries** — external input (API, user, file) → Zod schema. Internal → plain types.
@@ -163,7 +163,7 @@ Violations caught by `../../scripts/typescript/check-no-excuse-rules.ts`. Run af
 | `no-ts-ignore` | `@ts-ignore` | None — fix the type |
 | `no-ts-expect-error` | `@ts-expect-error` | None — fix the type |
 | `no-enum` | `enum` declarations | None — use `as const` |
-| `no-non-null-assertion` | `x!` postfix | None — narrow or `?.` |
+| `no-non-null-assertion` | `x!.y` postfix | None — narrow or `?.` |
 | `no-throw-literal` | `throw "string"` / `throw 123` | None — throw Error subclass |
 | `no-mutable-export` | `export let` / `export var` | None — use `export const` |
 | `no-any-annotation` | `: any` in parameter/return/variable types | `// no-excuse-ok: any` |

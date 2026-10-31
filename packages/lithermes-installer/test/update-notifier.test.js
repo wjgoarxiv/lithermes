@@ -829,7 +829,7 @@ test("the Python first-turn bridge waits longer than the Node transaction it lau
   // one kills the bridge mid-transaction and leaves the Hermes home unknown.
   const innerMs = notifier.AUTO_UPDATE_TIMEOUT_MS;
   assert.equal(typeof innerMs, "number");
-  const bridge = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_update.py"), "utf8");
+  const bridge = fs.readFileSync(path.join(packageRoot, "assets", "npm-channel", "auto_update.py"), "utf8");
   const match = bridge.match(/^INSTALL_TIMEOUT_SECONDS = (\d+(?:\.\d+)?)$/mu);
   assert.ok(match, "auto_update.py must declare INSTALL_TIMEOUT_SECONDS");
   const outerMs = Number(match[1]) * 1000;

@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 _HERE = Path(__file__).resolve().parent
-_ASSET_DIR = (_HERE / ".." / ".." / "assets" / "lithermes-plugin").resolve()
+_ASSET_DIR = (_HERE / ".." / ".." / "assets" / "npm-channel").resolve()
 if str(_ASSET_DIR) not in sys.path:
     sys.path.insert(0, str(_ASSET_DIR))
 
@@ -44,7 +44,13 @@ class AutoUpdateTests(unittest.TestCase):
         plugin = home / "plugins" / "lithermes"
         plugin.mkdir(parents=True)
         (plugin / "plugin.yaml").write_text("version: 0.8.41\n", encoding="utf-8")
+        self._mark_npm_channel(home)
         return state
+
+    def _mark_npm_channel(self, home: Path) -> None:
+        plugin = home / "plugins" / "lithermes"
+        plugin.mkdir(parents=True, exist_ok=True)
+        (plugin / auto_update.NPM_CHANNEL_MARKER_NAME).write_text(auto_update.NPM_CHANNEL_TOKEN, encoding="utf-8")
 
     def _preserved_files(self, root):
         return {str(file.relative_to(root)): (file.stat().st_ino, file.read_bytes())
@@ -296,6 +302,7 @@ class AutoUpdateTests(unittest.TestCase):
             home = Path(tmp)
             (home / "lithermes").mkdir()
             (home / "lithermes" / "install-manifest.json").write_text(json.dumps({"version": "0.8.41", "distribution": "npm"}), encoding="utf-8")
+            self._mark_npm_channel(home)
             calls = []
 
             def runner(command, **options):
@@ -346,6 +353,27 @@ class AutoUpdateTests(unittest.TestCase):
             fetch.assert_not_called()
             runner.assert_not_called()
 
+    def test_npm_distribution_without_channel_marker_skips(self):
+        """A surviving npm receipt is not enough once the catalog tree replaced the plugin."""
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            state = home / "lithermes"
+            state.mkdir()
+            (state / "install-manifest.json").write_text(
+                json.dumps({"version": "0.8.41", "distribution": "npm"}),
+                encoding="utf-8",
+            )
+            fetch = mock.Mock(return_value="0.8.42")
+            runner = mock.Mock()
+            with mock.patch.object(auto_update, "fetch_latest_version", fetch):
+                result = auto_update.run_auto_update(
+                    kwargs=self._eligible(home, hermes_home=str(home), session_id="no-marker"),
+                    runner=runner,
+                )
+            self.assertEqual(result, {"status": "skipped", "reason": "catalog-channel"})
+            fetch.assert_not_called()
+            runner.assert_not_called()
+
     def test_npm_channel_still_attempts_self_update(self):
         """The installer-owned npm marker preserves the existing updater behavior."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -356,6 +384,7 @@ class AutoUpdateTests(unittest.TestCase):
                 json.dumps({"version": "0.8.41", "distribution": "npm"}),
                 encoding="utf-8",
             )
+            self._mark_npm_channel(home)
             calls = []
 
             def runner(command, **options):
@@ -389,6 +418,7 @@ class AutoUpdateTests(unittest.TestCase):
             home = Path(tmp)
             (home / "lithermes").mkdir()
             (home / "lithermes" / "install-manifest.json").write_text(json.dumps({"version": "0.8.41", "distribution": "npm"}), encoding="utf-8")
+            self._mark_npm_channel(home)
 
             with mock.patch.object(auto_update, "fetch_latest_version", return_value="0.8.42"):
                 no_receipt = auto_update.run_auto_update(
@@ -423,6 +453,7 @@ class AutoUpdateTests(unittest.TestCase):
         state = home / "lithermes"
         state.mkdir()
         (state / "install-manifest.json").write_text(json.dumps({"version": "0.8.41", "distribution": "npm"}), encoding="utf-8")
+        self._mark_npm_channel(home)
         return state
 
     def test_failed_install_backs_off_for_the_same_target(self):
@@ -494,6 +525,7 @@ class AutoUpdateTests(unittest.TestCase):
             state = home / "lithermes"
             state.mkdir()
             (state / "install-manifest.json").write_text(json.dumps({"version": "1.0.9", "distribution": "npm"}), encoding="utf-8")
+            self._mark_npm_channel(home)
             runner = mock.Mock(return_value=SimpleNamespace(returncode=1, stdout="", stderr=""))
             with mock.patch.object(auto_update, "fetch_latest_version", return_value="1.0.10"):
                 result = auto_update.run_auto_update(kwargs=self._eligible(home, hermes_home=str(home)), runner=runner)

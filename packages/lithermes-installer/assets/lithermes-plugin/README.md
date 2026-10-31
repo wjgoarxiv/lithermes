@@ -111,18 +111,6 @@ CLI/plugin name, not the npm package name.
   `lit-brainstorm` (after `lit`: `brainstorm`, `brainstorming`, `ideation`, `ideate`, `idea`, `ideas`),
   `lit-burnoff`, `lit-burnoff-file`, `comment-checker`, `lsp`, `lsp-setup`, and
   `rules`.
-- On the first interactive top-level `pre_llm_call`, the payload runs one
-  foreground update barrier by default. It resolves the host-owned
-  `HERMES_HOME`, validates an exact stable registry version, and calls the
-  package's transaction bridge with `npx --yes --package @litfamily/lithermes@<version> -- lithermes
-  __auto-update --hermes-home PATH`. The bridge performs the real guarded
-  `install --yes --no-hud --no-style --no-patch-installed-hermes` child, separate locking, backup,
-  journal/receipt, rollback on interruption or timeout, and a truthful
-  post-install doctor. `--no-auto-update`, `LITHERMES_NO_AUTO_UPDATE`,
-  `NO_UPDATE_NOTIFIER`, and `LITHERMES_NO_UPDATE_CHECK` disable the relevant
-  path. Noninteractive, CI, JSON, dry-run, HUD/help/version/uninstall, and
-  delegate sessions remain no-op. The update bridge never receives npm
-  credentials and never uses the unsupported `--home` option.
 - Optional automatic handoff (`auto_handoff.py`), off by default. The user
   switches it on with `/lit-handoff auto on <percent>` (plain text reply, no
   model call; `auto off` and `auto status` likewise) or with

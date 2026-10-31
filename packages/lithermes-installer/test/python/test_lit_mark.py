@@ -264,12 +264,12 @@ process.stdout.write(JSON.stringify({
         skin = SimpleNamespace(banner_logo="before")
         engine = SimpleNamespace(get_active_skin=lambda: skin, get_active_skin_name=lambda: "lithermes-orange")
         with patch.dict("sys.modules", {"hermes_cli.skin_engine": engine}), patch.dict("os.environ", {"TERM": "dumb"}):
-            self.mark.configure_welcome_skin()
-            self.assertEqual(skin.banner_logo, "LIT")
+            self.assertIsNone(self.mark.configure_welcome_skin())
+            self.assertEqual(skin.banner_logo, "before")
         engine.get_active_skin_name = lambda: "custom-user-skin"
         skin.banner_logo = "user-owned"
         with patch.dict("sys.modules", {"hermes_cli.skin_engine": engine}):
-            self.mark.configure_welcome_skin()
+            self.assertIsNone(self.mark.configure_welcome_skin())
         self.assertEqual(skin.banner_logo, "user-owned")
 
 

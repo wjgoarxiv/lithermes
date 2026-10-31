@@ -13,7 +13,7 @@
   "corpus": {
     "fileCount": 167,
     "totalBytes": 2596360,
-    "digest": "b0d1a085de8856e7edeba24127d26875fe5473b80c0d95f6578addfdc801e445",
+    "digest": "c921ed87f41b5aaef14ef480c791f1c36bbd3ec616eaccc32f5e1246fcc547e6",
     "digestFormat": "sorted sha256 two-spaces path newline"
   },
   "files": [
@@ -780,7 +780,7 @@
     {
       "path": "ui-ux-db/data/stacks/nuxtjs.csv",
       "size": 16539,
-      "sha256": "f7a3f2d9542856d00199f85c6c023b7c284cc698e2e6e12d61afce2edacb24d6"
+      "sha256": "560b74265e334d325b92d7add4271442cff67d99bdc134ce5896e28e23fcd753"
     },
     {
       "path": "ui-ux-db/data/stacks/react-native.csv",

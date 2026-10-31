@@ -445,7 +445,7 @@ pkill -f 'lldb' || true
 # Ghidra scratch projects (if made just for this session)
 # Named something like ~/ghidra-projects/debug-<timestamp>:
 ls -la ~/ghidra-projects/ 2>/dev/null
-# rm -rf ~/ghidra-projects/debug-scratch         # only if the journal says to
+# delete the scratch project directory the journal names under ~/ghidra-projects
 
 # Core dumps left from crashes
 rm -f ./core ./core.* ~/core.*

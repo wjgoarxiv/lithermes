@@ -221,7 +221,7 @@ function inspectSkillPayload(pluginPath, manifest, verifySourceHash = false, opt
     const failure = checkEntry(pluginPath, entryPath, expectedHash);
     if (failure) failures.push(failure);
   }
-  const allowedUnlisted = new Set(["payload-version.json"]);
+  const allowedUnlisted = new Set(["payload-version.json", "auto_update.py", ".lithermes-npm-channel"]);
   const allowedDirectories = new Set();
   for (const entryPath of inspected.entries.keys()) {
     const segments = entryPath.split("/");
@@ -237,20 +237,25 @@ function inspectSkillPayload(pluginPath, manifest, verifySourceHash = false, opt
     const directory = path.posix.dirname(entryPath);
     hostCacheDirectories.add(directory === "." ? "__pycache__/" : `${directory}/__pycache__/`);
   }
-  const isHostBytecode = (entryPath) => {
-    const source = hostBytecodeSource(entryPath);
-    if (!source || !inspected.entries.has(source)) return false;
+  const isRegularFile = (entryPath) => {
     try {
       return fs.lstatSync(path.join(pluginPath, ...entryPath.split("/"))).isFile();
     } catch {
       return false;
     }
   };
+  const isHostBytecode = (entryPath) => {
+    const source = hostBytecodeSource(entryPath);
+    if (!source || !(inspected.entries.has(source) || source === "auto_update.py")) return false;
+    return isRegularFile(entryPath);
+  };
+  const isNpmChannelFile = (entryPath) =>
+    (entryPath === "auto_update.py" || entryPath === ".lithermes-npm-channel") && isRegularFile(entryPath);
   const traversal = listPayloadEntries(pluginPath, options.readDirectory);
   for (const entryPath of traversal.entries) {
     if (
       inspected.entries.has(entryPath)
-      || allowedUnlisted.has(entryPath)
+      || (allowedUnlisted.has(entryPath) && (entryPath === "payload-version.json" || isNpmChannelFile(entryPath)))
       || allowedDirectories.has(entryPath)
       || hostCacheDirectories.has(entryPath)
       || isHostBytecode(entryPath)

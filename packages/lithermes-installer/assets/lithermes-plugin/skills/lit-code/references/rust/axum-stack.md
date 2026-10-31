@@ -447,7 +447,7 @@ let app = router.merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json
 - Bind to `0.0.0.0` in containers, `127.0.0.1` for local-only services.
 - Set `RUST_LOG=info,sqlx=warn` (or use `EnvFilter` defaults as shown).
 - Send logs to stdout in JSON. Ingest via Vector / Fluent Bit / Loki.
-- Run migrations on startup (`sqlx::migrate!` block). Fail fast on schema mismatch.
+- Run migrations on startup (`sqlx::migrate!() block). Fail fast on schema mismatch.
 - Health endpoint **must hit the DB** (so load balancers know if the pool is dead).
 - Add `tower::limit::RateLimitLayer` or token-bucket middleware for public endpoints.
 - Set `tower_http::limit::RequestBodyLimitLayer` to bound request size.

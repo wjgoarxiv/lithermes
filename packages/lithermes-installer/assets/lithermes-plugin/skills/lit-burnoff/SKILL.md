@@ -176,7 +176,7 @@ The agent looks for these nine categories. The first three are stylistic, the ne
 5. **Boundary violations** — wrong-layer imports (UI importing DB driver), leaky responsibilities (handler doing business logic that belongs in a service), hidden coupling (module A reads module B's private state), side effects in pure-named functions.
    - KEEP: pragmatic short-circuits already established as a pattern in this codebase. Flag for human judgment if unsure.
 
-6. **Dead code** — unused imports, unused private functions/methods, unreachable branches, stale feature flags, debug leftovers (`console.log`, `print(...)`, `dbg!`), removed-but-still-referenced code.
+6. **Dead code** — unused imports, unused private functions/methods, unreachable branches, stale feature flags, debug leftovers (`console.log`, `print(...)`, `dbg!()), removed-but-still-referenced code.
    - KEEP: code referenced via reflection, dynamic dispatch, or string lookup. Code intentionally kept as a feature flag rollback path (verify with the user).
 
 ### Hidden cost

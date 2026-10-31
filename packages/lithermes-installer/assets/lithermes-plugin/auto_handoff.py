@@ -350,14 +350,23 @@ def _host_comparison(setting: Setting) -> tuple[str, bool]:
 
 # ---- the host's own compaction point ---------------------------------------
 
+def _yaml_module() -> Any:
+    try:
+        return importlib.import_module("yaml")
+    except ImportError:
+        return None
+
+
 def _host_config() -> dict[str, Any]:
+    yaml = _yaml_module()
+    if yaml is None:
+        return {"_lithermes_yaml": "missing"}
     try:
         path = get_hermes_home() / "config.yaml"
         if path.stat().st_size > 1024 * 1024:
             return {}
-        yaml = importlib.import_module("yaml")
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 - a config we cannot read only removes the comparison
+    except (OSError, ValueError, UnicodeDecodeError, yaml.YAMLError):
         return {}
     return data if isinstance(data, dict) else {}
 
@@ -459,6 +468,8 @@ def _context_window(model: str, base_url: str, provider: str, config: Mapping[st
 def host_estimate() -> tuple[float | None, str]:
     """Estimate Hermes' compaction point for the configured model, or say why not."""
     config = _host_config()
+    if config.get("_lithermes_yaml") == "missing":
+        return None, "PyYAML is not importable, so the compaction comparison is missing"
     section = config.get("model") if isinstance(config.get("model"), Mapping) else {}
     model = str(section.get("default") or "")
     window = _context_window(model, str(section.get("base_url") or ""), str(section.get("provider") or ""), config)

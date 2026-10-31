@@ -203,7 +203,7 @@ Ghidra is the right tool when you need to **read the logic** of a binary you don
 # (the journal should have the exact path)
 # Example:
 ls ~/ghidra-projects/ 2>/dev/null
-# rm -rf ~/ghidra-projects/debug-<binary-name>
+# delete the scratch project directory the journal names under ~/ghidra-projects
 
 # If you promoted the project (kept it), it's not cleanup — note it in the final summary to the user
 

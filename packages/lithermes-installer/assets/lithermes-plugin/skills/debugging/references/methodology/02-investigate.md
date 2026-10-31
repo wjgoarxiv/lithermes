@@ -51,7 +51,7 @@ child task whose `goal`/`context` inlines that role's mandate. Fan out whenever 
 whose evidence source is most likely to confirm or refute it, and inline the full
 hypothesis list in every child's `context` so each knows what the others are testing.
 Children investigate and report evidence only — they do **not** edit source code, and any
-instrumentation statement (`breakpoint()`, `debugger;`, `dbg!`, etc.) is added by you, the
+instrumentation statement (`breakpoint()`, `debugger;`, `dbg!(), etc.) is added by you, the
 orchestrator, after a child requests it.
 
 Dispatch the batch in a single `delegate_task` call. Roles to inline as child mandates:
@@ -83,7 +83,7 @@ delegate_task(tasks=[
 
 **Orchestrator responsibilities** (you keep these — children never do them):
 - Maintain the journal; children return evidence, you record it.
-- Approve and apply any source-code edits (including `debugger;` / `breakpoint()` / `dbg!`).
+- Approve and apply any source-code edits (including `debugger;` / `breakpoint()` / `dbg!()).
 - Synthesize child reports into updated hypothesis statuses.
 
 Hermes re-enters each hypothesis result as a separate message. The parent records and merges

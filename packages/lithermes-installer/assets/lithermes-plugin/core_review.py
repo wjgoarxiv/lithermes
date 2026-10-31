@@ -61,7 +61,7 @@ def _decode_git_path(value: bytes) -> str:
 def _changed_paths(workspace: Path, base: str) -> list[str]:
     paths = {
         _decode_git_path(value)
-        for value in _run_git_bytes(workspace, ["diff", "--name-only", "-z", base]).split(b"\0")
+        for value in _run_git_bytes(workspace, ["diff", "--name-only", "-z", "--", base]).split(b"\0")
         if value
     }
     records = _run_git_bytes(
@@ -255,7 +255,7 @@ def command_review_work(raw_args: str) -> dict[str, str]:
     if mode != "work":
         return _plan_or_ask_review(mode, mode_line, target, workspace, reader_args)
     changed_paths = _changed_paths(workspace, base)
-    diff = _run_git(workspace, ["diff", base])
+    diff = _run_git(workspace, ["diff", "--", base])
     if len(diff) > 60000:
         diff = diff[:60000] + "\n... [diff truncated at 60k chars — lanes should read full files as needed]"
     run_cmd = detect_run_command(workspace)

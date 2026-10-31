@@ -1,6 +1,6 @@
 # Rust Debugging
 
-Covers `cargo`, `tokio`, panics, and the fact that you usually don't actually need a debugger — Rust's type system, `dbg!`, and logging cover 80% of sessions faster than gdb would.
+Covers `cargo`, `tokio`, panics, and the fact that you usually don't actually need a debugger — Rust's type system, `dbg!(), and logging cover 80% of sessions faster than gdb would.
 
 ---
 
@@ -43,7 +43,7 @@ Reach for the lightest tool that answers the hypothesis.
 
 ---
 
-## `dbg!` — the underused macro
+## `dbg!() — the underused macro
 
 ```rust
 let x = 5;
@@ -60,7 +60,7 @@ Multiple values at once:
 dbg!(&user, &request, elapsed.as_millis());
 ```
 
-`dbg!` writes to stderr, so it won't corrupt stdout-based pipelines. **Journal each `dbg!` you add**; revert at Phase 9.
+`dbg!() writes to stderr, so it won't corrupt stdout-based pipelines. **Journal each `dbg!() you add**; revert at Phase 9.
 
 ---
 
@@ -208,7 +208,7 @@ Now `rust-gdb ./target/release/my_binary` works on release builds. This is requi
 | `if let Ok(x) = ... { use(x); } // no else` | Silent on Err |
 | `.ok()` chaining | Converts Result to Option, throwing the error away |
 | Panic inside a tokio task not `.await`ed | Task dies silently; runtime usually logs but it's quiet if logs are off |
-| `eprintln!` that goes to a redirected-null stderr | Looks like nothing happened |
+| `eprintln!() that goes to a redirected-null stderr | Looks like nothing happened |
 | `Drop` impl that panics under specific condition | Double-panic aborts process silently if no logging configured |
 
 ---

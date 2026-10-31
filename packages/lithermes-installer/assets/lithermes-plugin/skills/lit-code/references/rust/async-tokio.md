@@ -48,14 +48,14 @@ while let Some(joined) = set.join_next().await {
 - Dropping the set aborts every still-running task.
 - Lets you handle failures one by one rather than all-or-nothing.
 
-For wait-for-all semantics with one type, `join!`:
+For wait-for-all semantics with one type, `join!():
 
 ```rust
 let (a, b, c) = tokio::join!(load_a(), load_b(), load_c());
 let a = a?; let b = b?; let c = c?;
 ```
 
-For first-of-many, `select!`:
+For first-of-many, `select!():
 
 ```rust
 tokio::select! {
@@ -74,7 +74,7 @@ Without `biased`, branches are polled in random order each iteration (good for f
 
 ## Cancellation
 
-A future is cancelled when it is dropped (e.g., the `select!` arm wins another branch). **Always think: if this future is dropped mid-await, what state is left behind?**
+A future is cancelled when it is dropped (e.g., the `select!() arm wins another branch). **Always think: if this future is dropped mid-await, what state is left behind?**
 
 Cancel-safe futures (you can drop without lasting effect):
 - `recv()` on channels
@@ -229,7 +229,7 @@ async fn main() -> anyhow::Result<()> {
 }
 ```
 
-Pattern: catch signal → cancel a token shared with the server → server's `select!` arms see the cancel and exit cleanly → wait with a timeout so a hung worker can't deadlock shutdown.
+Pattern: catch signal → cancel a token shared with the server → server's `select!() arms see the cancel and exit cleanly → wait with a timeout so a hung worker can't deadlock shutdown.
 
 ## Concurrency primitives
 

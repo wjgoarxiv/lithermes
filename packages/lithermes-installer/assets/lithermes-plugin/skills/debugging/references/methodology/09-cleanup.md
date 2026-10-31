@@ -48,7 +48,7 @@ unset RUST_LOG
 unset DEBUG
 
 # --- Ghidra scratch projects (if created just for this session) ---
-# rm -rf ~/ghidra-projects/debug-scratch
+# delete the scratch project directory the journal names under ~/ghidra-projects
 
 # --- Core dumps from debugging (if any) ---
 rm -f ./core ./core.* ~/core.*

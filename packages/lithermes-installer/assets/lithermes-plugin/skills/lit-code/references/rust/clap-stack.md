@@ -375,7 +375,7 @@ Errors with `.wrap_err("...")` from `eyre::WrapErr` (compatible with anyhow's `.
 1. **Mixing stdout and stderr.** Tool output goes to stdout; logs and progress go to stderr.
 2. **No `--non-interactive` flag.** Interactive prompts block automation.
 3. **Printing colored output unconditionally.** Honor `NO_COLOR` env var, detect TTY with `console::user_attended()`.
-4. **`println!` for errors.** Use `tracing::error!` so logs go to stderr automatically and respect verbosity.
+4. **`println!() for errors.** Use `tracing::error!() so logs go to stderr automatically and respect verbosity.
 5. **`unwrap()` on `Cli::parse()`.** clap returns clean errors with `--help` text; `parse()` exits on its own.
 6. **Long subcommand handlers in `main.rs`.** Split into `src/commands/<name>.rs` per command.
 7. **Missing exit code semantics.** Use `std::process::exit(1)` (general error), `2` (usage), `130` (SIGINT) appropriately. Or return `Result` and let main map.
