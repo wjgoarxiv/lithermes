@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.33] - 2026-10-31
+
 - The npm channel marker is a short label, not a secret-shaped assignment, and the session brief no longer quotes an instruction-override phrase. Hermes's install scan of the catalog tree stays at caution instead of a hard block.
 - Catalog installs no longer carry the npm self-updater. The updater stays with the npm install, behind a marker file the catalog tree never contains, and a catalog copy updates only when the catalog pin moves. Commented home-directory deletes and a backtick immediately after `!` are gone from the plugin text, because both tripped Hermes' install scan. The welcome skin is no longer rewritten in memory, review diffs put `--` before a caller-supplied base, and a missing PyYAML import is named instead of being swallowed.
 - The always-on baseline now carries three things that used to show up only after a lit route had started. `lit` at the start of a prompt is LitHermes's activation word. Before resuming, read `plans/`, the session handoff (`HANDOFF.md` or `.handoff/HANDOFF.md`), and `.hermes/lithermes/`. A plain `git push` needs an explicit yes, and so do tagging, publishing, and a version bump. The aside that vague goals produce vague verdicts came out so an ordinary turn still fits what Hermes keeps.
