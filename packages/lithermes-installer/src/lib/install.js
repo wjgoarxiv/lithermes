@@ -34,7 +34,7 @@ const packageRoot = path.resolve(__dirname, "..", "..");
 const assetRoot = path.join(packageRoot, "assets", "lithermes-plugin");
 const channelRoot = path.join(packageRoot, "assets", "npm-channel");
 const NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel";
-const NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n";
+const NPM_CHANNEL_MARKER_TEXT = "lithermes npm channel\n";
 const LEGACY_VENDOR_DIRS = new Map([
   ["vendor/022_handoff", "vendor/handoff"],
   ["vendor/045_scientific-visualization", "vendor/scientific-visualization"],
@@ -560,7 +560,7 @@ function stageNpmChannel(dest) {
   fs.copyFileSync(source, target);
   fs.chmodSync(target, 0o644);
   const marker = path.join(dest, NPM_CHANNEL_MARKER_NAME);
-  fs.writeFileSync(marker, NPM_CHANNEL_TOKEN, { encoding: "utf8", mode: 0o644 });
+  fs.writeFileSync(marker, NPM_CHANNEL_MARKER_TEXT, { encoding: "utf8", mode: 0o644 });
   fs.chmodSync(marker, 0o644);
   return [
     { path: "auto_update.py", sha256: sha256(target) },

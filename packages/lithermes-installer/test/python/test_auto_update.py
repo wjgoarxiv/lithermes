@@ -50,7 +50,7 @@ class AutoUpdateTests(unittest.TestCase):
     def _mark_npm_channel(self, home: Path) -> None:
         plugin = home / "plugins" / "lithermes"
         plugin.mkdir(parents=True, exist_ok=True)
-        (plugin / auto_update.NPM_CHANNEL_MARKER_NAME).write_text(auto_update.NPM_CHANNEL_TOKEN, encoding="utf-8")
+        (plugin / auto_update.NPM_CHANNEL_MARKER_NAME).write_text(auto_update.NPM_CHANNEL_MARKER_TEXT, encoding="utf-8")
 
     def _preserved_files(self, root):
         return {str(file.relative_to(root)): (file.stat().st_ino, file.read_bytes())

@@ -43,7 +43,7 @@ MAX_RESPONSE_BYTES = 64 * 1024
 AUTO_UPDATE_GUARD_ENV = "LITHERMES_AUTO_UPDATE_RUNNING"
 INSTALLER_DISTRIBUTION = "npm"
 NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel"
-NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n"
+NPM_CHANNEL_MARKER_TEXT = "lithermes npm channel\n"
 ATTEMPT_RECORD_NAME = "auto-update-attempt.json"
 # A broken npm fetch blocked each new session's first reply for about 70 s, so
 # after a failed install the bridge waits a day before it tries the same
@@ -263,7 +263,7 @@ def _plugin_dir(home: Path, manifest: dict[str, Any] | None) -> Path:
 
 def _channel_marker_matches(root: Path) -> bool:
     marker = root / NPM_CHANNEL_MARKER_NAME
-    expected = NPM_CHANNEL_TOKEN.encode("utf-8")
+    expected = NPM_CHANNEL_MARKER_TEXT.encode("utf-8")
     try:
         info = marker.lstat()
         if not stat.S_ISREG(info.st_mode) or stat.S_ISLNK(info.st_mode):

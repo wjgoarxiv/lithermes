@@ -9,7 +9,7 @@ const packageRoot = path.resolve(__dirname, "..");
 const payload = path.join(packageRoot, "assets", "lithermes-plugin");
 const channelModule = path.join(packageRoot, "assets", "npm-channel", "auto_update.py");
 const markerName = ".lithermes-npm-channel";
-const markerToken = "lithermes-npm-channel-v1\n";
+const markerText = "lithermes npm channel\n";
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -33,8 +33,8 @@ test("catalog payload carries no self-updater", () => {
   assert.equal(readme.includes("foreground update barrier"), false);
   const channel = fs.readFileSync(channelModule, "utf8");
   assert.match(channel, new RegExp(`NPM_CHANNEL_MARKER_NAME = ${JSON.stringify(markerName)}`));
-  // A raw newline inside the quotes is not valid Python. The escape is the token.
-  assert.match(channel, /NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\\n"/);
+  // A raw newline inside the quotes is not valid Python. The escape is the marker text.
+  assert.match(channel, /NPM_CHANNEL_MARKER_TEXT = "lithermes npm channel\\n"/);
   assert.equal(fs.existsSync(path.join(payload, markerName)), false);
 });
 
@@ -48,7 +48,7 @@ test("npm install writes the channel marker the catalog tree never contains", ()
     ], { cwd: packageRoot, encoding: "utf8" });
     assert.equal(installed.status, 0, installed.stdout + installed.stderr);
     const dest = path.join(home, "plugins", "lithermes");
-    assert.equal(fs.readFileSync(path.join(dest, markerName), "utf8"), markerToken);
+    assert.equal(fs.readFileSync(path.join(dest, markerName), "utf8"), markerText);
     assert.equal(fs.existsSync(path.join(dest, "auto_update.py")), true);
     const manifest = JSON.parse(fs.readFileSync(path.join(home, "lithermes", "install-manifest.json"), "utf8"));
     assert.equal(manifest.distribution, "npm");
@@ -88,4 +88,52 @@ test("review-work puts -- before a caller-supplied diff base", () => {
 test("a missing PyYAML import is named instead of disappearing inside a bare except", () => {
   const source = fs.readFileSync(path.join(payload, "auto_handoff.py"), "utf8");
   assert.match(source, /PyYAML is not importable/);
+});
+
+function hermesScanner() {
+  const found = spawnSync("which", ["hermes"], { encoding: "utf8" });
+  if (found.status !== 0 || !found.stdout.trim()) return null;
+  let pythonDir;
+  try {
+    pythonDir = path.dirname(fs.realpathSync(found.stdout.trim()));
+  } catch {
+    return null;
+  }
+  const python = path.join(pythonDir, "python3");
+  const agentRoot = path.resolve(pythonDir, "..", "..");
+  if (!fs.existsSync(python) || !fs.existsSync(path.join(agentRoot, "tools", "plugin_guard.py"))) return null;
+  return { python, agentRoot };
+}
+
+test("hermes install scan of the catalog payload is not dangerous", (t) => {
+  const scanner = hermesScanner();
+  if (!scanner) {
+    t.skip("Hermes plugin scanner is not importable");
+    return;
+  }
+  const probe = spawnSync(scanner.python, ["-c", `
+import json, sys
+from pathlib import Path
+from tools.plugin_guard import scan_plugin
+result = scan_plugin(Path(sys.argv[1]))
+def rows(severity):
+    return [
+        {"severity": item.severity, "pattern": item.pattern_id, "file": item.file, "line": item.line}
+        for item in result.findings if item.severity == severity
+    ]
+json.dump({
+    "verdict": result.verdict,
+    "total": len(result.findings),
+    "critical": rows("critical"),
+    "high": rows("high"),
+}, sys.stdout)
+`, payload], {
+    cwd: scanner.agentRoot,
+    env: { ...process.env, PYTHONPATH: scanner.agentRoot, PYTHONDONTWRITEBYTECODE: "1" },
+    encoding: "utf8",
+  });
+  assert.equal(probe.status, 0, probe.stderr);
+  const report = JSON.parse(probe.stdout);
+  assert.ok(report.verdict === "safe" || report.verdict === "caution", probe.stdout);
+  assert.deepEqual(report.critical, []);
 });

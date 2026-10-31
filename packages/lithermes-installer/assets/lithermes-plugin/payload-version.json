@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-31T02:05:08.656Z",
+  "syncedAt": "2026-10-31T02:28:31.259Z",
   "source": "bundled-payload",
-  "sourceHash": "e161e995293a360bfca33c195d4513f89021ed29905596c3ff2870fb53e50f79",
+  "sourceHash": "a79203a800b065ddcec74b8a804d5d71d820e097e8e36be753cf2381bb9e9efa",
   "files": [
     {
       "path": "NOTICE.md",
@@ -33,7 +33,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "e3f3933e8b67cbe14a74f808ec51e2164ce4aa6a50c7cd71b23ab9075ea5d160"
+      "sha256": "68bfc846f0497cd456db8db979454e15cb98d8fd59dcbf8fcf322b07ef7a395c"
     },
     {
       "path": "core_commands.py",
@@ -1485,7 +1485,7 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "639681990d46d8a86d6fde540865eab0529e99e9a9e8ce4780927d6c8609f806"
+      "sha256": "9b3f05d71da59e7f68024f2e9104e07aeb9f6d0e9562f6d6023d30bd40163cf0"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",

@@ -1652,7 +1652,7 @@ def browser_drive_tool_guard(
 
 
 NPM_CHANNEL_MARKER_NAME = ".lithermes-npm-channel"
-NPM_CHANNEL_TOKEN = "lithermes-npm-channel-v1\n"
+NPM_CHANNEL_MARKER_TEXT = "lithermes npm channel\n"
 _NPM_CHANNEL_MODULE: Any = False
 
 
@@ -1674,7 +1674,7 @@ def _npm_channel_module() -> Any:
             and not marker_path.is_symlink()
             and module_path.is_file()
             and marker_path.is_file()
-            and marker_path.read_text(encoding="utf-8") == NPM_CHANNEL_TOKEN
+            and marker_path.read_text(encoding="utf-8") == NPM_CHANNEL_MARKER_TEXT
         ):
             spec = importlib.util.spec_from_file_location("_lithermes_npm_channel", module_path)
             if spec is not None and spec.loader is not None:
