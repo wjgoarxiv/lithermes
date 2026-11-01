@@ -102,7 +102,7 @@ function prepare(out, env) {
   recordFirstTreatment(out, plan.treatment);
   const coverDir = join(out, COVER_DIR);
   if (!existsSync(join(coverDir, 'index.html'))) throw fail(EXIT.STAGE_CONTRACT_ERROR, `STAGE_CONTRACT_ERROR: no ${COVER_DIR}/index.html in ${out}; write the cover page first (references/cover.md)`);
-  const scan = scanStage(coverDir);
+  const scan = scanStage(coverDir, { clips: false });
   if (scan.contract.length) throw fail(EXIT.STAGE_CONTRACT_ERROR, `STAGE_CONTRACT_ERROR: ${scan.contract.join('; ')}`);
   if (scan.network.length) throw fail(EXIT.STAGE_NETWORK_REQUEST, `STAGE_NETWORK_REQUEST: ${scan.network.join('; ')}; a cover is served offline`);
   const assets = checkAssets({ out, recipe: plan.treatment.recipe, rasters: scan.rasters.paths, coverDir: COVER_DIR });

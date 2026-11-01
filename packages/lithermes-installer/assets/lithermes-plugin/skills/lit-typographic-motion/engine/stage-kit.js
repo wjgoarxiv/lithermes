@@ -1,7 +1,7 @@
 // LitHermes stage kit, served to stage pages at /lit/stage-kit.js.
 // Motion primitives only: easing, springs, keyframes, timing, seeded
-// randomness, text splitting, path drawing and morphing, masks, colour mixing
-// and text registration. It ships no scene, object, layout or copy; the page
+// randomness, text splitting, path drawing and morphing, masks, colour mixing,
+// text registration and declared keyed clips. It ships no scene, object, layout or copy; the page
 // draws whatever its treatment calls for. Every function is a pure function of
 // its arguments (and of t), so a frame depends only on the virtual clock.
 (() => {
@@ -374,6 +374,45 @@
     return target;
   }
 
+  // A declared keyed clip (stage/clips/clips.json, served as window.LitClips by /lit/clips.js). One absolutely
+  // placed wrapper at `box` holds the clip's frame for t; the frame index is floor((t - start) * fps) + 1 counted
+  // from `from`, a pure function of film time, so no <video> and no real clock is involved. Outside from..to the
+  // wrapper is hidden (null returned) unless `hold` keeps the last frame or `loop` wraps by frame index. The page
+  // scales or fades the returned wrapper; the <img> inside is replaced on a frame change and the renderer waits
+  // for its decode before it captures.
+  function clip({ parent, id, box } = {}) {
+    const all = window.LitClips;
+    if (!all) throw new Error('LitStage.clip: load <script src="/lit/clips.js"></script> after the kit; the stage declares no clips (clips/clips.json)');
+    const c = all[id];
+    if (!c) throw new Error(`LitStage.clip: no clip "${id}" in clips/clips.json (declared: ${Object.keys(all).join(', ')})`);
+    if (!parent || !box || !(box.w > 0) || !(box.h > 0)) throw new Error('LitStage.clip: needs { parent, id, box: { x, y, w, h } }');
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-lit-clip', id);
+    Object.assign(wrap.style, { position: 'absolute', left: `${box.x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px`, display: 'none', pointerEvents: 'none' });
+    parent.append(wrap);
+    let shown = 0;
+    let img = null;
+    return (t, { start = 0, from = 1, to = c.count, loop = false, hold = false } = {}) => {
+      if (!(from >= 1 && to <= c.count && from <= to)) throw new Error(`LitStage.clip: from..to must lie within 1..${c.count} (got ${from}..${to})`);
+      const n = to - from + 1;
+      const k = Math.floor((t - start) * c.fps + 1e-6);
+      const i = k < 0 ? 0 : k < n ? from + k : loop ? from + (k % n) : hold ? to : 0;
+      wrap.style.display = i ? 'block' : 'none';
+      if (!i) return null;
+      if (i !== shown) {
+        const next = document.createElement('img');
+        next.src = `${c.src}/frame_${String(i).padStart(4, '0')}.png`;
+        next.alt = '';
+        Object.assign(next.style, { display: 'block', width: '100%', height: '100%', objectFit: 'contain' });
+        if (img) img.replaceWith(next);
+        else wrap.append(next);
+        img = next;
+        shown = i;
+      }
+      return wrap;
+    };
+  }
+
   function define(film) {
     if (!film || typeof film !== 'object') throw new Error('LitStage.define needs { width, height, fps, duration, render }');
     for (const key of ['width', 'height', 'duration']) if (!Number.isFinite(film[key])) throw new Error(`LitStage.define: ${key} must be a number`);
@@ -384,6 +423,6 @@
 
   window.LitStage = Object.freeze({
     ease, bezier, spring, kf, at, stagger, seq, rand, splitText, drawPath, morph,
-    clipInset, clipCircle, maskWipe, mix, text, define,
+    clipInset, clipCircle, maskWipe, mix, text, define, clip,
   });
 })();

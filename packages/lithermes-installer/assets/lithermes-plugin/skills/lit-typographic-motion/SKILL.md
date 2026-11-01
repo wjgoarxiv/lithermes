@@ -64,7 +64,7 @@ Done only when `$M complete --out DIR` exits 0: valid treatment, passing gate (a
 
 ## #contract.hard_stops
 
-Exits 10, 11, 12, 14, 15: name the state and its fix (`references/runtime.md`). 16 the treatment field, 17 a stage break, 18 a nondeterministic frame, 19 a network request, 20 a sound fault, 21 no cover encoder, 22 a missing cover asset. Never install during a render, deliver a flash-failing film, or downgrade to pass.
+Exits 10, 11, 12, 14, 15: name the state and its fix (`references/runtime.md`). 16 the treatment field, 17 a stage or clip break, 18 a nondeterministic frame, 19 a network request, 20 a sound fault, 21 no cover encoder, 22 a missing cover asset. Never install during a render, deliver a flash-failing film, or downgrade to pass.
 
 ## #contract.anti_patterns
 

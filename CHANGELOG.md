@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- A `lit-typographic-motion` film on the stage path can now carry real keyed footage, such as a reaction clip shot on a green screen. Declare the frames in `stage/clips/clips.json` (id, folder, frame count, fps), load `/lit/clips.js`, register each clip with `LitStage.clip` and call the returned function from `render(t)`. The frame is chosen from film time alone, so the flash audit and the determinism replay still run on the final pixels. The scan holds clips to 12 per stage, 360 frames and 40 MB each, 1500 frames and 128 MB in all, 720 px on the long side, 30 fps and 8-bit RGBA PNG with real transparency. A frame folder that is not declared is still refused as a flipbook, and cover mode takes no clips.
+
 ## [1.0.33] - 2026-10-31
 
 - The npm channel marker is a short label, not a secret-shaped assignment, and the session brief no longer quotes an instruction-override phrase. Hermes's install scan of the catalog tree stays at caution instead of a hard block.

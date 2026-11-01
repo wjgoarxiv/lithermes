@@ -22,6 +22,7 @@ import { runTextQa } from './stage-qa.mjs';
 import { readStyle, styleCss, styleScript } from './styles.mjs';
 import { addToStills, writeBoard } from './board.mjs';
 import { FONT_FILES } from './frame.mjs';
+import { decodePng } from './cover-png.mjs';
 
 import { findCache, fontFile, fontState, hangulPath, runtimeRequire, WARM } from '../bin/runtime.mjs';
 
@@ -54,6 +55,12 @@ export const CONTENT_TYPES = Object.freeze({
 const RASTER = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif']);
 const TEXTUAL = new Set(['.html', '.js', '.mjs', '.css', '.svg', '.json']);
 export const RASTER_LIMITS = Object.freeze({ count: 24, bytes: 8 * 1024 * 1024, sameSize: 10 });
+// Declared keyed clips (references/stage.md, Clips) answer to these caps instead of RASTER_LIMITS. A clip
+// is a sticker on the film, never the film: 8-bit RGBA PNG frames, at most `side` px on the long side.
+export const CLIP_LIMITS = Object.freeze({
+  clips: 12, framesPerClip: 360, framesTotal: 1500, bytesPerClip: 40 * 1024 * 1024, bytesTotal: 128 * 1024 * 1024, side: 720, fps: 30,
+});
+export const CLIPS_DIR = 'clips';
 
 // The software rung only (SwiftShader, CPU raster): a mismatch between two
 // captures can then only come from the page. Plus the stage set and the two
@@ -171,14 +178,130 @@ function walk(dir, root, out = []) {
   return out;
 }
 
-export function scanStage(stageDir) {
+// ---------------------------------------------------------------------------
+// Declared clips: stage/clips/clips.json and the frame folders it names.
+
+const CLIP_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/u;
+const CLIP_DIR = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u;
+const clipFrame = (i) => `frame_${String(i).padStart(4, '0')}.png`;
+const mb = (bytes) => (bytes / 1048576).toFixed(1);
+
+// The clips clips.json declares ([] without the file), checked for shape. Throws a plain Error naming the break.
+function declaredClips(root, limits = CLIP_LIMITS) {
+  const file = join(root, CLIPS_DIR, 'clips.json');
+  if (!existsSync(file)) return [];
+  let doc;
+  try { doc = JSON.parse(readFileSync(file, 'utf8')); } catch (error) { throw new Error(`${CLIPS_DIR}/clips.json is not valid JSON (${error.message})`); }
+  if (!doc || !Array.isArray(doc.clips)) throw new Error(`${CLIPS_DIR}/clips.json needs { "clips": [ { "id", "dir", "count", "fps" } ] }`);
+  if (doc.clips.length > limits.clips) throw new Error(`${doc.clips.length} clips declared (at most ${limits.clips} clips)`);
+  const ids = new Set(), dirs = new Set();
+  return doc.clips.map((c, n) => {
+    const at = `${CLIPS_DIR}/clips.json clip #${n + 1}`;
+    if (!c || typeof c !== 'object') throw new Error(`${at} is not an object`);
+    if (typeof c.id !== 'string' || !CLIP_ID.test(c.id)) throw new Error(`${at}: id must be a plain token of letters, digits, - and _ (got ${JSON.stringify(c.id)})`);
+    if (ids.has(c.id)) throw new Error(`${at}: duplicate id ${c.id}`);
+    ids.add(c.id);
+    if (typeof c.dir !== 'string' || !CLIP_DIR.test(c.dir) || c.dir.includes('..')) throw new Error(`clip "${c.id}": dir must be a folder name directly under ${CLIPS_DIR}/ (got ${JSON.stringify(c.dir)})`);
+    if (dirs.has(c.dir)) throw new Error(`clip "${c.id}": dir ${c.dir} is already declared by another clip`);
+    dirs.add(c.dir);
+    if (!Number.isInteger(c.count) || c.count < 1) throw new Error(`clip "${c.id}": count must be a whole number of frames (got ${JSON.stringify(c.count)})`);
+    if (!Number.isInteger(c.fps) || c.fps < 1 || c.fps > limits.fps) throw new Error(`clip "${c.id}": fps must be a whole number from 1 to ${limits.fps} (got ${JSON.stringify(c.fps)})`);
+    return { id: c.id, dir: c.dir, count: c.count, fps: c.fps };
+  });
+}
+
+// One declared clip against its bytes: exactly frame_0001.png..frame_<count>.png in clips/<dir>/, each an 8-bit
+// non-animated RGBA PNG of one size within the overlay cap, real transparency in the first, middle and last frame.
+function checkClip(d, byRel, limits) {
+  const fail = (message) => new Error(`clip "${d.id}": ${message}`);
+  if (d.count > limits.framesPerClip) throw fail(`${d.count} frames (at most ${limits.framesPerClip} per clip)`);
+  const names = [];
+  for (let i = 1; i <= d.count; i++) {
+    const rel = join(CLIPS_DIR, d.dir, clipFrame(i));
+    if (!byRel.has(rel)) throw fail(`${CLIPS_DIR}/${d.dir}/${clipFrame(i)} is missing (declared ${d.count} frames, named frame_0001.png onward)`);
+    names.push(rel);
+  }
+  const prefix = join(CLIPS_DIR, d.dir) + sep;
+  const stray = [...byRel.keys()].find((rel) => rel.startsWith(prefix) && !names.includes(rel));
+  if (stray) throw fail(`${stray.split(sep).join('/')} is not one of the ${d.count} declared frames; raise count or remove it`);
+  const bytes = names.reduce((sum, rel) => sum + statSync(byRel.get(rel)).size, 0);
+  if (bytes > limits.bytesPerClip) throw fail(`${mb(bytes)} MB (at most ${(limits.bytesPerClip / 1048576).toFixed(0)} MB per clip)`);
+  let size = null;
+  for (const rel of names) {
+    const data = readFileSync(byRel.get(rel));
+    const shown = rel.split(sep).join('/');
+    if (data.length < 33 || data.readUInt32BE(12) !== 0x49484452 || data.toString('latin1', 1, 4) !== 'PNG') throw fail(`${shown} is not a readable PNG`);
+    if (isAnimatedRaster(data, '.png')) throw fail(`${shown} is an animated image; a clip is a folder of still frames`);
+    if (data[25] !== 6 || data[24] !== 8) throw fail(`${shown} must be an 8-bit RGBA PNG with an alpha channel (a keyed frame), not an opaque image`);
+    const [width, height] = imageSize(data, '.png');
+    if (Math.max(width, height) > limits.side) throw fail(`${shown} is ${width}x${height}; a clip is an overlay of at most ${limits.side} px on the long side`);
+    if (size && (size[0] !== width || size[1] !== height)) throw fail(`${shown} is ${width}x${height} but frame_0001.png is ${size[0]}x${size[1]}; one size per clip`);
+    size = [width, height];
+  }
+  for (const rel of [names[0], names[Math.floor((names.length - 1) / 2)], names[names.length - 1]]) {
+    let rgba;
+    try { ({ rgba } = decodePng(readFileSync(byRel.get(rel)))); } catch (error) { throw fail(`${rel.split(sep).join('/')} cannot be decoded (${error.message}); use a non-interlaced 8-bit RGBA PNG`); }
+    let transparent = false;
+    for (let i = 3; i < rgba.length && !transparent; i += 4) transparent = rgba[i] < 255;
+    if (!transparent) throw fail(`${rel.split(sep).join('/')} has no transparent pixel; a clip is keyed, not a full-frame video`);
+  }
+  return { ...d, width: size[0], height: size[1], bytes, frames: names };
+}
+
+/**
+ * Check every declared clip. Never throws: returns { clips, problems, claimed }, where `clips` are the clips that
+ * passed ({ id, dir, count, fps, width, height, bytes, frames }), `problems` are the contract findings, and
+ * `claimed` is the set of stage-relative raster paths inside declared clip folders, which are not page rasters.
+ */
+export function scanClips(stageDir, { limits = CLIP_LIMITS, files = null } = {}) {
+  const root = realpathSync(stageDir);
+  const problems = [];
+  let decls;
+  try { decls = declaredClips(root, limits); } catch (error) { return { clips: [], problems: [error.message], claimed: new Set() }; }
+  const byRel = new Map();
+  for (const f of files || walk(root, root)) if (!f.escape && RASTER.has(extname(f.path).toLowerCase())) byRel.set(relative(root, f.path), f.real);
+  const claimed = new Set();
+  const clips = [];
+  let frames = 0, bytes = 0;
+  for (const d of decls) {
+    const prefix = join(CLIPS_DIR, d.dir) + sep;
+    const mine = new Map([...byRel].filter(([rel]) => rel.startsWith(prefix)));
+    for (const rel of mine.keys()) claimed.add(rel);
+    try { clips.push(checkClip(d, mine, limits)); } catch (error) { problems.push(error.message); }
+  }
+  for (const c of clips) { frames += c.count; bytes += c.bytes; }
+  if (frames > limits.framesTotal) problems.push(`${frames} clip frames in all (at most ${limits.framesTotal})`);
+  if (bytes > limits.bytesTotal) problems.push(`${mb(bytes)} MB of clip frames in all (at most ${(limits.bytesTotal / 1048576).toFixed(0)} MB)`);
+  return { clips, problems, claimed };
+}
+
+/**
+ * window.LitClips for LitStage.clip: id -> { src, count, fps, width, height }, from clips.json and the first frame's
+ * header. null when the stage declares no clips, or declares ones the scan would refuse.
+ */
+export function clipsScript(stageDir) {
+  try {
+    const root = realpathSync(stageDir);
+    const table = Object.fromEntries(declaredClips(root).map((c) => {
+      const [width, height] = imageSize(readFileSync(join(root, CLIPS_DIR, c.dir, clipFrame(1))), '.png');
+      return [c.id, { src: `${CLIPS_DIR}/${c.dir}`, count: c.count, fps: c.fps, width, height }];
+    }));
+    return Object.keys(table).length ? `window.LitClips = ${JSON.stringify(table)};\n` : null;
+  } catch { return null; }
+}
+
+// `clips: false` (cover mode) ignores clips.json, so a clip folder is held to the raster limits.
+export function scanStage(stageDir, { clips: allowClips = true } = {}) {
   const root = realpathSync(stageDir);
   const contract = [], network = [];
   const files = walk(root, root);
+  const clipScan = allowClips ? scanClips(root, { files }) : { clips: [], problems: [], claimed: new Set() };
+  contract.push(...clipScan.problems);
   const rasters = [];
   for (const file of files) {
     const rel = relative(root, file.path);
     if (file.escape) { contract.push(`${rel} is a symlink that leaves the stage dir`); continue; }
+    if (clipScan.claimed.has(rel)) continue;
     const ext = extname(file.path).toLowerCase();
     const bytes = readFileSync(file.real);
     if (RASTER.has(ext)) {
@@ -199,7 +322,8 @@ export function scanStage(stageDir) {
   const bySize = new Map();
   for (const r of rasters) if (r.size) { const key = r.size.join('x'); bySize.set(key, (bySize.get(key) || 0) + 1); }
   for (const [key, count] of bySize) if (count >= RASTER_LIMITS.sameSize) contract.push(`${count} rasters of the same size ${key} read as a flipbook; draw motion, do not play frames`);
-  return { contract: [...new Set(contract)], network: [...new Set(network)], files: files.length, rasters: { count: rasters.length, bytes: total, paths: rasters.map((r) => r.rel) } };
+  const clips = clipScan.clips.map(({ id, count, fps, width, height, bytes }) => ({ id, count, fps, width, height, bytes }));
+  return { contract: [...new Set(contract)], network: [...new Set(network)], files: files.length, rasters: { count: rasters.length, bytes: total, paths: rasters.map((r) => r.rel) }, clips };
 }
 
 // ---------------------------------------------------------------------------
@@ -312,6 +436,7 @@ export async function openStage({ runtime, stageDir, profileRoot, width, height,
   const cdp = await context.newCDPSession(page);
   const root = realpathSync(stageDir);
   const kit = readFileSync(join(here, 'stage-kit.js'));
+  const clipsJs = clipsScript(root);
   const blocked = [], contract = [];
   const serve = async (event) => {
     const { requestId, request } = event;
@@ -329,6 +454,7 @@ export async function openStage({ runtime, stageDir, profileRoot, width, height,
     const path = decodeURIComponent(url.pathname);
     if (path === '/lit/stage-kit.js') return reply(200, CONTENT_TYPES['.js'], kit);
     if (path === '/lit/fonts.css') return reply(200, CONTENT_TYPES['.css'], fontCss);
+    if (path === '/lit/clips.js' && clipsJs) return reply(200, CONTENT_TYPES['.js'], clipsJs);
     if (path === '/lit/style.css' && style) return reply(200, CONTENT_TYPES['.css'], style.css);
     if (path === '/lit/style.js' && style) return reply(200, CONTENT_TYPES['.js'], style.js);
     if (path.startsWith('/lit/three/')) {
@@ -448,9 +574,12 @@ function beatFramesOf(treatment, fps, totalFrames) {
   });
 }
 
-function imageUrlsIn(stageDir) {
+// The rasters decoded before frame 0. Declared clip frames are left out: a page decodes each one when it shows it.
+export function imageUrlsIn(stageDir) {
   const root = realpathSync(stageDir);
-  return walk(root, root).filter((f) => !f.escape && RASTER.has(extname(f.path).toLowerCase()))
+  let prefixes = [];
+  try { prefixes = declaredClips(root).map((c) => join(CLIPS_DIR, c.dir) + sep); } catch { /* the scan already refused a bad declaration */ }
+  return walk(root, root).filter((f) => !f.escape && RASTER.has(extname(f.path).toLowerCase()) && !prefixes.some((p) => relative(root, f.path).startsWith(p)))
     .map((f) => `${ORIGIN}/${relative(root, f.path).split(sep).map(encodeURIComponent).join('/')}`);
 }
 

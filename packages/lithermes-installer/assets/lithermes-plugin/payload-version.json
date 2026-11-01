@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-10-31T04:39:04.686Z",
+  "syncedAt": "2026-11-01T11:36:30.457Z",
   "source": "bundled-payload",
-  "sourceHash": "eb3d5233f206bc088a614b8feedd37be49b298e4c9bb8de4d8ade6bd5805bc3f",
+  "sourceHash": "f0d1e8d6eda385fd00692ac7066979f655d446e5e3cab07f7d79e55ad55b24c4",
   "files": [
     {
       "path": "NOTICE.md",
@@ -4329,7 +4329,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
-      "sha256": "ff4c4f987a7762fce2d33cdc8ef86de670284310a843da9854a00bcaf70b6dd6"
+      "sha256": "a1da7728a3f998c05150a23426be0b7e1a0e000e58ffe5a24289d50a71b8370e"
     },
     {
       "path": "skills/lit-typographic-motion/bin/audio.py",
@@ -4417,7 +4417,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/cover.mjs",
-      "sha256": "7bd6e2ff73ebb0525bf416f8685a36236316443631217245055c68668cfaa15f"
+      "sha256": "0a112972eacbc6b18f7ca1765a26a5044c4b5c76dfd4812338ae7486f831c2d9"
     },
     {
       "path": "skills/lit-typographic-motion/engine/director.mjs",
@@ -4485,7 +4485,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage-gate.mjs",
-      "sha256": "fd3ddea38388d93a87fb3b880b834002a49b937a6705b929a290cb31e784ea06"
+      "sha256": "7ce876d61ed0cbee9b2e3f847e9da0257113572737b1f7c76649632a2a31ff9d"
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage-init.js",
@@ -4493,7 +4493,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage-kit.js",
-      "sha256": "4dc0083faf542f9b873d866438549f4f618896acbefa7b51797f44b00552931b"
+      "sha256": "b33f71648fd897c22c119841c1b43226cb11bb5ad855e85040a1dc8d81ca66e2"
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage-qa.mjs",
@@ -4505,7 +4505,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/engine/stage.mjs",
-      "sha256": "fb31e467eed069d6110d121e31825d314b7bf4e8d478aea30bb04d99e8fbed34"
+      "sha256": "03165bde6fdb74ca8ad29e38a835629f672c272cb1e88d43c1c2f64914849a8f"
     },
     {
       "path": "skills/lit-typographic-motion/engine/stills.mjs",
@@ -4637,7 +4637,7 @@
     },
     {
       "path": "skills/lit-typographic-motion/references/stage.md",
-      "sha256": "555e788a408d41e74ce217a63507d096a4d945419e79f33cdf05cc4af236dca8"
+      "sha256": "c02bd6c8373bd684b58ae3f92c178418353465cbefabf310292c17cf8f91490b"
     },
     {
       "path": "skills/lit-typographic-motion/references/studio.md",

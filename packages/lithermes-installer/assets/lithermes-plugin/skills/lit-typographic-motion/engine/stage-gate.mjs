@@ -85,6 +85,7 @@ export function renderStageReport(manifest, gate, { out, previewName }) {
   lines.push(`path: stage; format ${manifest.format} (${manifest.resolution.join('x')}); ${manifest.durationSec.toFixed(2)} s at ${manifest.fps} fps (${manifest.totalFrames} frames); treatment ${manifest.targetDurationSec} s`);
   lines.push(`renderer: ${manifest.renderer}; flags: ${manifest.chromeFlags.join(' ')}`);
   lines.push(`frame time: p50 ${manifest.frameTimeMs.p50} ms, p95 ${manifest.frameTimeMs.p95} ms over ${manifest.frameTimeMs.captured} captures; master ${manifest.masterSec?.toFixed(1)} s`);
+  if (manifest.scan?.clips?.length) lines.push(`clips: ${manifest.scan.clips.map((c) => `${c.id} ${c.count} frames at ${c.fps} fps`).join(', ')} (keyed overlays, chosen from film time)`);
   if (manifest.sound) lines.push(`sound: ${manifest.sound.label}`);
   lines.push(`QA gate: ${gate.failed.length ? 'FAIL' : 'PASS'}`);
   for (const rule of gate.rules) lines.push(`${rule.id}: ${rule.status} — ${rule.detail}`);

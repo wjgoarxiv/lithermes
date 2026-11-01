@@ -17,7 +17,8 @@ deliverable.
 Never install, download or copy a third-party library into the stage dir. Use
 the kit below and your own code. Rasters are textures and stills, never a frame
 sequence: at most 24 raster images and 8 MB in total; 10 or more rasters of the
-same size (a flipbook), or any animated GIF, APNG or WebP, is exit 17.
+same size (a flipbook), or any animated GIF, APNG or WebP, is exit 17. The one
+frame sequence a page may carry is a declared keyed clip (Clips).
 
 Put all on-screen copy in one `COPY` object at the top of `stage/index.html`,
 so the copy is easy to find and edit:
@@ -43,6 +44,8 @@ declares the film:
   1080×1920 for 9:16. `duration` is the treatment's `durationSec`; the render
   must land within ±10 % of it.
 - `fps` is 60. Use 30 only when the treatment says so.
+- A page that shows clips also loads `<script src="/lit/clips.js"></script>`
+  after the kit (Clips).
 - `render(t)` draws the frame at time `t` in seconds. It may be omitted when
   the page animates only with CSS or the Web Animations API.
 - Setting `window.litStage` to the same object is equivalent to calling
@@ -167,6 +170,57 @@ scenes, no objects, no layouts, no copy. `window.LitStage` holds:
 
 - **Text registration.** `LitStage.text(el, { decor: true })` and
   `LitStage.text({ content, x, y, w, h })`, above.
+
+- **Clips.** `LitStage.clip({ parent, id, box })` registers a declared keyed
+  clip once and returns `show(t, opts)`, which `render(t)` calls every frame
+  (Clips).
+
+  ```text
+  const boom = LitStage.clip({ parent: layer, id: "boom", box: { x: 1200, y: 300, w: 520, h: 511 } });
+  boom(t, { start: 2.1 });
+  ```
+
+## Clips
+
+Real keyed footage (a reaction clip, a spinning loop shot on a green screen) joins the
+film as a layer of the page. The footage is keyed outside the renderer into one 8-bit RGBA
+PNG per frame, the frames are declared, and the page picks the frame from film time. Nothing
+is encoded by hand: the renderer captures the page, so the flash audit, the determinism
+replay and the text checks see the final pixels like any other film.
+
+1. Put each clip's frames in the run's stage folder as `stage/clips/<dir>/frame_0001.png`,
+   `frame_0002.png` and on, with no gap and no other image in that folder.
+2. Declare the clips in `stage/clips/clips.json`:
+
+   ```json
+   { "clips": [ { "id": "boom", "dir": "01-boom", "count": 122, "fps": 30 } ] }
+   ```
+
+   `id` is the name the page uses, `dir` a folder directly under `clips/`, `count` the number
+   of frames and `fps` the clip's own rate, 1 to 30. Declare a clip once even if it plays twice.
+3. The page loads `<script src="/lit/clips.js"></script>` after the kit. For each place a clip
+   appears it calls `LitStage.clip({ parent, id, box })` once, outside `render`, and calls the
+   returned `show(t, opts)` from `render(t)`. `parent` holds the clip, `box` is its place in
+   pixels and the frame is fitted inside it. `show` returns the clip's wrapper element, or
+   `null` while the clip is hidden; scale, fade or move that wrapper from `t` like any layer.
+
+The frame is `floor((t - start) * fps) + 1`, counted from `from`, so a cue is plain
+arithmetic: `start = cue - (N - 1) / fps` puts frame N on the cue. A clip whose own sound
+sits on frame 85 and has to land on a cue at 0.12 s takes `start = 0.12 - 84 / 30`. Options
+are `start` (film seconds, default 0), `from` and `to` (the frame range, default the whole
+clip), `loop` (wrap by frame index) and `hold` (keep the last frame). Before `start`, and after
+`to` without `loop` or `hold`, the clip is hidden.
+
+The pre-flight scan refuses with exit 17, naming the clip: a stage holds at most 12 clips; a
+clip holds at most 360 frames and the stage 1500 in all; more than 40 MB in a clip or 128 MB in
+all; a frame whose long side is above 720 px (a clip is an overlay, not the film); a frame rate
+above 30; frames of mixed sizes; a missing or extra frame; a frame that is not an 8-bit RGBA
+PNG, or has no transparent pixel in the first, middle and last frame (an opaque video is not
+keyed); an animated image; a duplicate `id`; and a `dir` that leaves `clips/`. A folder that is
+not declared, and any frame sequence beside a declared clip, is a flipbook as before. Cover mode takes no clips,
+so a declaration there changes nothing and the folder meets the raster limits.
+The text checks read DOM text, so keep clips clear of copy; a clip laid over a line is yours to
+catch on the stills. The manifest and the gate report list each clip.
 
 ## How the capture works
 
