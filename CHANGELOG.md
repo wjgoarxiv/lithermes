@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.35] - 2026-11-04
+
 - Dependency alerts cleared in the HyperFrames cover template: `@hono/node-server` 2.1.5 (was 2.1.1), and HyperFrames is now a development dependency of the template, as it is a render tool and never ships in an install. Its browser-driver chain still resolves zod 3.25.76, which GitHub now tracks as a development-scope dependency.
 
 ## [1.0.34] - 2026-11-01
