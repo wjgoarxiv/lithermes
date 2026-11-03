@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- Dependency alerts cleared in the HyperFrames cover template: `@hono/node-server` 2.1.5 (was 2.1.1), and HyperFrames is now a development dependency of the template, as it is a render tool and never ships in an install. Its browser-driver chain still resolves zod 3.25.76, which GitHub now tracks as a development-scope dependency.
+
 ## [1.0.34] - 2026-11-01
 
 - A `lit-typographic-motion` film on the stage path can now carry real keyed footage, such as a reaction clip shot on a green screen. Declare the frames in `stage/clips/clips.json` (id, folder, frame count, fps), load `/lit/clips.js`, register each clip with `LitStage.clip` and call the returned function from `render(t)`. The frame is chosen from film time alone, so the flash audit and the determinism replay still run on the final pixels. The scan holds clips to 12 per stage, 360 frames and 40 MB each, 1500 frames and 128 MB in all, 720 px on the long side, 30 fps and 8-bit RGBA PNG with real transparency. A frame folder that is not declared is still refused as a flipbook, and cover mode takes no clips.
