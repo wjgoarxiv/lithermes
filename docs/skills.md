@@ -101,7 +101,7 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>A cross-session brief: what each recent session was asked, did and waits on, roadmap gauges and one next step. Read-only.</td>
 </tr>
 <tr>
-<td><img src="./assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and the skill first picks one of eight looks for your deck, names it with two alternatives, then builds an editable PowerPoint file and its Markdown source. QA checks title, layout and fill variety on the finished file." /></td>
+<td><img src="./assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and the skill first picks one of thirteen looks for your deck, names it with two alternatives, then builds an editable PowerPoint file and its Markdown source. QA checks title, layout and fill variety on the finished file." /></td>
 <td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
 <td>Ask for slides with <code>lit</code> and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file.</td>
 </tr>
@@ -245,7 +245,7 @@ Ask for a report or a presentation with a bare `lit`, and LitHermes hands it to 
 
 Before anything is written, the skill works out how the result should look and tells you. A quarterly review that people read at their desks wants tables and quiet type. A pitch on a projector wants one idea per slide, and a lecture wants its steps laid out in order. So the reply starts with a short direction card: the look that was chosen, why it suits your reader and your material, and the two looks that came next. A bare request gets no style question. If you would rather have one of the alternatives, name it and the file is rebuilt.
 
-Decks have eight of these looks, called Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio and Night. Each brings its own colours, title placements, slide layouts and cover, section and closing pages, so two decks made from the same notes come out looking different. Slides are dense by default and set in Pretendard. A slide title names its topic and leaves the argument to the body, and every figure keeps its label, basis and source and is never blown up past title size.
+Decks have thirteen of these looks, called Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night, Computational Brutalism, Neo-Brutalism, Bauhaus, Riso and Newsroom. Each brings its own colours, title placements, slide layouts and cover, section and closing pages, so two decks made from the same notes come out looking different. Slides are dense by default and set in Pretendard. A slide title names its topic and leaves the argument to the body, and every figure keeps its label, basis and source and is never blown up past title size.
 
 Documents have six looks: Report, Brief, Manual, Proposal, Memo and Journal. What tells them apart is structure. A memo opens with its To and From lines and has no cover; a brief leads with its conclusion as numbered points; a proposal gets a typographic cover, one decision box and a budget table; a Korean report reads like an institute paper with numbered sections. The pages stay as restrained as a good printed report: near-black headings, one accent colour at most, ruled tables without fills, and Korean conventions such as `<표 1>` captions, a units line and dates written as 2026. 10. 5. If you name a journal profile (Elsevier, ACS, IEEE, Nature or korean-generic), that profile is used instead.
 
