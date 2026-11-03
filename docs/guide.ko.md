@@ -101,7 +101,7 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-    LH --> S["39 skills"]
+    LH --> S["40 skills"]
 ```
 
 > **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 39개 skill catalog가 실제 host에 로드됩니다.

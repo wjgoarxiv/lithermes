@@ -58,7 +58,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 39개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
 
 ## 확인, 업데이트, 삭제
 

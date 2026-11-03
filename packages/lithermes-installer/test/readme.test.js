@@ -162,8 +162,8 @@ test("the collapsible banner guard rejects lost copyability, changed rows and an
 });
 
 const GITHUB_SECTIONS = {
-  en: ["Why LitHermes", "Quick start", "What you get", "What you can make", "How it works", "Requirements, updates and removal", "Learn more", "Contributing"],
-  ko: ["왜 LitHermes인가요", "빠른 시작", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "기여"],
+  en: ["What you can make", "Why LitHermes", "Install", "Quick start", "The workflow map", "Automatic handoff", "What you get", "How it works", "Requirements, updates and removal", "Learn more", "LitFamily"],
+  ko: ["만들 수 있는 것", "왜 LitHermes인가요", "설치", "빠른 시작", "워크플로 지도", "자동 핸드오프", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "LitFamily"],
 };
 const NPM_SECTIONS = {
   en: ["Install", "Your first task", "What you get", "Check, update, remove", "Learn more"],
@@ -350,7 +350,8 @@ test("npm READMEs are short install-first cards that send readers to the GitHub 
     assert.ok(installAt > headings[0].index && installAt < headings[1].index, `${name} npm card must put the install command in its first section`);
     for (const [label, measure] of [["bytes", (text) => Buffer.byteLength(text)], ["words", (text) => text.split(/\s+/).filter(Boolean).length]]) {
       const ratio = measure(card) / measure(full);
-      assert.ok(ratio >= 0.2 && ratio <= 0.5, `${name} npm card must stay a short card, not a copy of the GitHub page (${label} ratio ${ratio.toFixed(2)})`);
+      // The GitHub page carries the showcase and the workflow map; the card stays an install-first summary of it.
+      assert.ok(ratio >= 0.12 && ratio <= 0.5, `${name} npm card must stay a short card, not a copy of the GitHub page (${label} ratio ${ratio.toFixed(2)})`);
     }
     assert.notEqual(card.replace(/https:\/\/cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@[^/]+\/readme-assets\//g, ""), full, `${name} npm card must differ from the GitHub page`);
     assert.equal(card.match(/^# .+$/m)?.[0], full.match(/^# .+$/m)?.[0], `${name} keeps the same name on both pages`);

@@ -101,10 +101,10 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-        LH --> S["39 skills"]
+        LH --> S["40 skills"]
 ```
 
-> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 38-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
+> **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 40-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
 
 ## Core commands
 

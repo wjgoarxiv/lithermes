@@ -58,7 +58,7 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `/lit-adhd [--here] [--since 7d] [--max 12]` | `lit-adhd` | A cross-session brief with gauges and one next step, read-only |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 39 with pictures.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 40 with pictures.
 
 ## Check, update, remove
 
