@@ -226,6 +226,8 @@ function inspectHermesCapabilities(text, options = {}) {
     // The route safety verdict below carries the typed fail-closed result.
     route = managedRequest();
   }
+  const hostVersion = exactHostVersion(options.hostVersion);
+  const hostLabel = hostVersion ? `Hermes ${hostVersion}` : "This Hermes host";
   const routeSafety = inspectEffectiveRouteSafety(boundary.document, OPENAI_PROVIDER);
   const samplingSafety = inspectManagedAstraSampling(boundary.document);
   return {
@@ -238,7 +240,7 @@ function inspectHermesCapabilities(text, options = {}) {
       }
       : {
         status: "unavailable",
-        reason: "Hermes 0.17.0 exposes ratio-only compression; no exact 650K trigger schema",
+        reason: `${hostLabel} exposes ratio-only compression; no exact 650K trigger schema`,
         observedSource: "Hermes compression.threshold ratio-only schema",
       },
     concurrency: concurrency === 20

@@ -895,3 +895,14 @@ test("a verified matrix version reports as verified, not as beyond the matrix", 
   assert.equal(current.action, "write");
   assert.equal(current.reason, "verified Hermes 0.19.0 model schema");
 });
+
+test("ratio-only compression reason names the running host version", () => {
+  // Given: a host newer than the verified matrix
+  const effective = verifiedConfig("gpt-5.6-luna");
+  // When: capabilities are inspected for Hermes 0.21.3
+  const capabilities = inspectHermesCapabilities(effective, { ...VERIFIED, hostVersion: "Hermes Agent v0.21.3" });
+  // Then: the reason quotes 0.21.3, never a hard-coded older release
+  assert.equal(capabilities.autoCompaction.status, "unavailable");
+  assert.match(capabilities.autoCompaction.reason, /Hermes 0\.21\.3 exposes ratio-only compression/);
+  assert.doesNotMatch(capabilities.autoCompaction.reason, /0\.17\.0/);
+});
