@@ -949,7 +949,7 @@ test("automatic handoff pictures ship on the GitHub READMEs only, in both themes
     const bytes = fs.readFileSync(path.join(dir, name));
     assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
     assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
-    assert.ok(bytes.length <= 61_440, `${name} must stay near 60 KiB (${bytes.length} bytes)`);
+    assert.ok(bytes.length <= 262_144, `${name} must stay under 256 KiB (${bytes.length} bytes)`);
   }
   // The strings in the pictures come from the plugin source, so a rewording there fails here.
   const source = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "auto_handoff.py"), "utf8");
@@ -964,7 +964,7 @@ test("automatic handoff pictures ship on the GitHub READMEs only, in both themes
   for (const [printed] of quoted) assert.ok(source.includes(printed), `auto_handoff.py no longer prints: ${printed}`);
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     const text = fs.readFileSync(path.join(repoRoot, name), "utf8");
-    const pictures = [...text.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/handoff\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/handoff\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+    const pictures = [...text.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/docs\/assets\/handoff\/([a-z-]+)-dark\.webp" \/><img src="\.\/docs\/assets\/handoff\/([a-z-]+)-light\.webp" width="960" alt="([^"]+)" \/><\/picture>/g)];
     assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the three pictures in order`);
     for (const [, dark, light] of pictures) assert.equal(dark, light, `${name}: dark and light must be the same picture`);
     const alts = pictures.map((match) => match[3].replace(/&quot;/g, '"')).join("\n");
@@ -1058,7 +1058,7 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     const bytes = fs.readFileSync(path.join(dir, name));
     assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a WebP`);
     assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
-    assert.ok(bytes.length <= 61_440, `${name} must stay near 60 KiB (${bytes.length} bytes)`);
+    assert.ok(bytes.length <= 262_144, `${name} must stay under 256 KiB (${bytes.length} bytes)`);
   }
   // Every string the pictures show comes from the installer or the plugin, so a rewording there fails here.
   const lib = (name) => fs.readFileSync(path.join(packageRoot, "src", "lib", name), "utf8");
@@ -1081,7 +1081,7 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     const start = text.indexOf(lang === "en" ? "\n## What you will see on your first run\n" : "\n## 처음 실행하면 보이는 것\n");
     assert.ok(start > 0, `${name}: the screens open the tour`);
     const section = text.slice(start, text.indexOf("\n## ", start + 1));
-    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/screens\/([a-z-]+)-dark\.webp" \/><img src="\.\/assets\/screens\/([a-z-]+)-light\.webp" width="690" alt="([^"]+)" \/><\/picture>/g)];
+    const pictures = [...section.matchAll(/<picture><source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/screens\/([a-z-]+)-dark\.webp" \/><img src="\.\/assets\/screens\/([a-z-]+)-light\.webp" width="960" alt="([^"]+)" \/><\/picture>/g)];
     assert.deepEqual(pictures.map((match) => match[1]), stems, `${name} must show the five pictures in order`);
     for (const [, dark, light, alt] of pictures) {
       assert.equal(dark, light, `${name}: dark and light must be the same picture`);
