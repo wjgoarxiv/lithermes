@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.36] - 2026-11-06
+
+- `doctor` names the Hermes version it is running on when it explains why the 650K compaction trigger cannot be set exactly. It used to say Hermes 0.17.0 on every host.
+
 ## [1.0.35] - 2026-11-04
 
 - Dependency alerts cleared in the HyperFrames cover template: `@hono/node-server` 2.1.5 (was 2.1.1), and HyperFrames is now a development dependency of the template, as it is a render tool and never ships in an install. Its browser-driver chain still resolves zod 3.25.76, which GitHub now tracks as a development-scope dependency.

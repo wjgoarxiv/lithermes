@@ -10,7 +10,7 @@ LitHermes가 일하는 화면, 짧은 영상, Hermes CLI용 Ignition 스킨, LIT
 
 **설치.** 설치 프로그램은 플러그인을 Hermes 홈에 복사하고, 새 홈이면 기본 모델 경로를 쓰고, 그 전에 설정 파일의 백업을 남깁니다. 마지막에는 실행 중인 gateway를 다시 시작하라는 안내와, 영상 도구를 받았는지에 대한 한 줄이 나옵니다.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/screens/install-dark.webp" /><img src="./assets/screens/install-light.webp" width="960" alt="demo — lithermes install이라는 제목의 터미널 카드. ~/demo $ lithermes install --yes --no-style --offline --no-patch-installed-hermes 다음에 INSTALL RECEIPT가 나옵니다. &quot;Status Ready for Hermes&quot;, &quot;Package Installed LitHermes 1.0.35&quot;, &quot;Plugin ~/.hermes/plugins/lithermes&quot;, &quot;Model config updated&quot;, &quot;Auto-compaction unavailable (Hermes 0.21.3 exposes ratio-only compression; no exact 650K trigger schema)&quot;, &quot;Concurrency hard (per batch 20; async batches 3; potential children 60)&quot;, &quot;Recursion hard (depth 1, flat)&quot;입니다. 흐린 “…” 줄은 잘라 낸 경로 줄이고, 그 뒤에 &quot;Next Restart any running Hermes gateway to load new plugins.&quot;와 &quot;LitHermes is installed; restart Hermes to load the new plugin&quot;가 이어집니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/screens/install-dark.webp" /><img src="./assets/screens/install-light.webp" width="960" alt="demo — lithermes install이라는 제목의 터미널 카드. ~/demo $ lithermes install --yes --no-style --offline --no-patch-installed-hermes 다음에 INSTALL RECEIPT가 나옵니다. &quot;Status Ready for Hermes&quot;, &quot;Package Installed LitHermes 1.0.36&quot;, &quot;Plugin ~/.hermes/plugins/lithermes&quot;, &quot;Model config updated&quot;, &quot;Auto-compaction unavailable (Hermes 0.21.3 exposes ratio-only compression; no exact 650K trigger schema)&quot;, &quot;Concurrency hard (per batch 20; async batches 3; potential children 60)&quot;, &quot;Recursion hard (depth 1, flat)&quot;입니다. 흐린 “…” 줄은 잘라 낸 경로 줄이고, 그 뒤에 &quot;Next Restart any running Hermes gateway to load new plugins.&quot;와 &quot;LitHermes is installed; restart Hermes to load the new plugin&quot;가 이어집니다." /></picture></p>
 
 *스크래치용 Hermes 홈에서 실제 설치 프로그램으로 얻은 출력입니다. 밖으로 아무것도 나가지 않고 Hermes 설치본도 건드리지 않도록 오프라인(자동 업데이트도 함께 꺼집니다)과 호환 패치 끄기 옵션을 더해 실행했습니다. 스크래치 홈에는 설치 프로그램과 doctor가 Hermes를 확인할 때 읽는 소스 파일의 사본을 두었고, Hermes 버전은 같은 컴퓨터에 설치된 Hermes에서 읽었습니다. 그림에는 영수증의 주요 줄만 남겼습니다. 배너와 설치 단계, 모델 경로 줄은 잘랐고("…"), 긴 줄은 카드 끝에서 접었으며, 스크래치 폴더는 ~/.hermes로 적었습니다.*
 
@@ -34,9 +34,9 @@ LitHermes가 일하는 화면, 짧은 영상, Hermes CLI용 Ignition 스킨, LIT
 
 **업데이트 알림.** 새 버전이 있다는 것을 알고 있고 자동 업데이트가 꺼져 있으면, check, doctor, install이 끝날 때 세 줄짜리 알림이 나옵니다. 두 버전, 실행할 정확한 명령, Hermes를 다시 시작하라는 안내입니다. 알림은 알려 주기만 하고, 그 명령을 직접 실행하기 전까지 아무것도 설치되지 않습니다.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/screens/update-notice-dark.webp" /><img src="./assets/screens/update-notice-light.webp" width="960" alt="demo — lithermes check라는 제목의 터미널 카드. &quot;lithermes check --no-auto-update&quot; 명령이 잘라 낸 배너를 뜻하는 점 줄 다음에 &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.35 → 1.0.36&quot;, &quot;Run exactly:&quot;로 시작해 그 버전을 설치하는 npx 명령을 알려 주는 줄, &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;를 출력합니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./assets/screens/update-notice-dark.webp" /><img src="./assets/screens/update-notice-light.webp" width="960" alt="demo — lithermes check라는 제목의 터미널 카드. &quot;lithermes check --no-auto-update&quot; 명령이 잘라 낸 배너를 뜻하는 점 줄 다음에 &quot;LitHermes check PASS&quot;, &quot;commands: lit, lit-loop, lit-plan&quot;, &quot;LitHermes update available: 1.0.36 → 1.0.37&quot;, &quot;Run exactly:&quot;로 시작해 그 버전을 설치하는 npx 명령을 알려 주는 줄, &quot;Then restart the Hermes CLI and any Hermes gateways.&quot;를 출력합니다." /></picture></p>
 
-*스크래치 홈에서 실제 check 명령으로 얻은 출력입니다. 알림이 나오도록 1.0.36을 적은 업데이트 확인 파일을 미리 놓았으므로 이 버전 번호는 예시입니다. 결과 줄 위의 배너는 잘랐습니다.*
+*스크래치 홈에서 실제 check 명령으로 얻은 출력입니다. 알림이 나오도록 1.0.37을 적은 업데이트 확인 파일을 미리 놓았으므로 이 버전 번호는 예시입니다. 결과 줄 위의 배너는 잘랐습니다.*
 
 ## 움직이는 모습 보기
 
