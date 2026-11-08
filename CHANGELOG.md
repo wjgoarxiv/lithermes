@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.37] - 2026-11-09
+
 - The `lsp` skill no longer documents `lsp.*` agent tools, which do not exist on Hermes. It describes the real surface: automatic post-write diagnostics plus the `hermes lsp` CLI (`status`, `list`, `install`, `install-all`, `restart`, `which`), and the Config section now targets `lsp.servers` in `~/.hermes/config.yaml`.
 - The `lsp-setup` skill, its `detect-lsp.ts` / `verify-lsp.ts` helpers, and all 20 language references now teach the Hermes config surface: YAML under `lsp.servers.<id>` in `~/.hermes/config.yaml`, overrides (no `extensions` key) for Hermes built-in ids, and full `command` + `extensions` entries only for custom servers (including `basedpyright` under a custom `python` id, since the Python built-in is `pyright`). `.lithermes/lsp.json` is now labelled everywhere as LitHermes-only helper input that Hermes never reads.
 - TypeScript install hints pin `typescript@6`: TypeScript 7 ships no `lib/tsserver.js`, which `typescript-language-server` loads.
