@@ -20,36 +20,21 @@ command -v clangd
 
 ## Configure
 
-Add a `c-cpp` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `clangd`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install clangd` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "c-cpp": {
-      "command": [
-        "clangd",
-        "--background-index",
-        "--clang-tidy"
-      ],
-      "extensions": [
-        ".c",
-        ".h",
-        ".cpp",
-        ".cc",
-        ".cxx",
-        ".hpp",
-        ".hh",
-        ".hxx"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes these extensions to `clangd` via the `extensions` list. clangd reads
-build flags from a project `.clangd` file, not from the Hermes LSP config; the `command`
-above already passes `--background-index --clang-tidy`.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+clangd reads build flags from a project `.clangd` file, not from the Hermes LSP config. Hermes launches it with `--background-index --clang-tidy` by default.
 ## Compile commands
 
 clangd needs a `compile_commands.json` at the project root (or in `build/`) for

@@ -208,10 +208,10 @@ current user request, Hermes safety, or higher-priority rules. With
 `--create-new`, read ALL existing files first (preserve context), THEN delete,
 THEN regenerate.
 
-**3. LSP code map (if available)** — use Hermes' `lsp` tools: `lsp.status` to list configured servers,
-then `lsp.symbols` for entry-point/workspace symbols (`class` / `interface` / `function`) and
-`lsp.find_references` on the top exports to gauge centrality. If no server is configured, fall back to
-the discovery children + plain search. (See the `lithermes:lsp` skill.)
+**3. LSP code map (if available)** — run `hermes lsp status` to see which language servers are
+configured. Hermes exposes no symbol or reference tools to the agent (its LSP only feeds automatic
+post-write diagnostics), so map entry points and the top exports' callers with plain search. If no
+server is configured, fall back to the discovery children + plain search. (See the `lithermes:lsp` skill.)
 
 Merge bash + LSP + existing + child findings. Mark "discovery" completed.
 

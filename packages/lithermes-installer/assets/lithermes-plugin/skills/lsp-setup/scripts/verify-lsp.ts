@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // verify-lsp.ts <file> [--timeout=ms] [--config=<path>] — perform a real LSP
 // diagnostics roundtrip for <file>: resolve the server for the file extension
-// (from the Hermes LSP config when present, else the embedded table),
+// (from a LitHermes-only helper config copy when present — Hermes itself never
+// reads that file — else the embedded table),
 // spawn it, run the JSON-RPC initialize -> initialized -> didOpen handshake over
 // stdio, wait for textDocument/publishDiagnostics, and report OK / FAIL / SKIP.
 //
@@ -43,10 +44,12 @@ function embeddedCommandFor(language: string): readonly string[] | null {
 	return server ? server.command : null
 }
 
-// Resolve the server command for `ext`, preferring a Hermes LSP config entry
-// (under `lsp`) whose `extensions` list covers the extension, then the embedded
-// table. A config entry may omit `command` for a builtin language; in that case
-// the command is supplied from the embedded table.
+// Resolve the server command for `ext`, preferring a LitHermes-only helper
+// config entry (under `lsp`) whose `extensions` list covers the extension, then
+// the embedded table. A helper entry may omit `command` for a builtin language;
+// in that case the command is supplied from the embedded table. Hermes itself
+// never reads the helper file; its own config is ~/.hermes/config.yaml under
+// `lsp.servers`.
 function resolveServer(ext: string, configPath: string): ResolvedServer | null {
 	if (existsSync(configPath)) {
 		try {

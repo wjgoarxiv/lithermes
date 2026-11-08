@@ -22,45 +22,34 @@ command -v csharp-ls
 
 ## Configure
 
-Add a `csharp` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes has no built-in for C#, so declare a custom server in the Hermes config
+file (`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) under
+`lsp.servers`:
 
-```json
-{
-  "lsp": {
-    "csharp": {
-      "command": [
-        "csharp-ls"
-      ],
-      "extensions": [
-        ".cs"
-      ]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    csharp:
+      command: ["csharp-ls"]
+      extensions: [".cs"]
 ```
 
-Hermes routes `.cs` edits to `csharp-ls` via the `extensions` list. `csharp-ls` picks up
-the nearest `.sln` or `.csproj`; keep the solution restorable (`dotnet restore`).
+Custom servers are never auto-installed: `csharp-ls` must be on PATH (see the
+Install section). `csharp-ls` picks up the nearest `.sln` or `.csproj`; keep
+the solution restorable (`dotnet restore`).
 
 ## Razor / Blazor
 
-Razor and Blazor files use a separate server. Add a second entry:
+Razor and Blazor files use a separate server. Hermes has no built-in for it
+either — add a second custom entry under `lsp.servers` (custom servers are
+never auto-installed: `roslyn-language-server` must be on PATH):
 
-```json
-{
-  "lsp": {
-    "razor": {
-      "command": [
-        "roslyn-language-server",
-        "--stdio"
-      ],
-      "extensions": [
-        ".razor",
-        ".cshtml"
-      ]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    razor:
+      command: ["roslyn-language-server", "--stdio"]
+      extensions: [".razor", ".cshtml"]
 ```
 
 Install it (requires **v5.8.0+**; see [dotnet/razor](https://github.com/dotnet/razor)):

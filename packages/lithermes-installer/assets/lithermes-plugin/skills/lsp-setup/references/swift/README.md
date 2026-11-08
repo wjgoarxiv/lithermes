@@ -20,29 +20,22 @@ command -v sourcekit-lsp
 
 ## Configure
 
-Add a `swift` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes has no built-in for Swift, so declare a custom server in the Hermes
+config file (`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) under
+`lsp.servers`:
 
-```json
-{
-  "lsp": {
-    "swift": {
-      "command": [
-        "sourcekit-lsp"
-      ],
-      "extensions": [
-        ".swift",
-        ".objc",
-        ".objcpp"
-      ]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    swift:
+      command: ["sourcekit-lsp"]
+      extensions: [".swift", ".objc", ".objcpp"]
 ```
 
-Hermes routes these extensions to `sourcekit-lsp` via the `extensions` list. For best
-results the project needs a **SwiftPM `Package.swift`** or a
-`compile_commands.json` compilation database so the server can resolve modules.
+Custom servers are never auto-installed: the binary must be on PATH (or give an
+absolute path in `command`).
 
+For best results the project needs a **SwiftPM `Package.swift`** or a `compile_commands.json` compilation database so the server can resolve modules.
 ## Alternatives
 
 **No mainstream alternative.** `sourcekit-lsp` is the official Apple/swift.org

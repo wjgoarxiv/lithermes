@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-05T18:53:59.311Z",
+  "syncedAt": "2026-11-08T14:43:53.261Z",
   "source": "bundled-payload",
-  "sourceHash": "51d7585a97d17ba0b9e364622542c7cfd2b3cf22612cdd504a32291c79d1c653",
+  "sourceHash": "a2f5292dd409679ae46b9410348bc8a4bd81c1976be65f91848af2fc0d7d6c99",
   "files": [
     {
       "path": "NOTICE.md",
@@ -3669,7 +3669,7 @@
     },
     {
       "path": "skills/lit-init/SKILL.md",
-      "sha256": "6e2819437a3fe9cae18ce42fdcdc35f1d0b187af265fd3c9abda63da8cad064c"
+      "sha256": "af0a4fcf00ad42b72e7a9a2737a28ed1d3a37454380ce2b21549fa9b368f67cd"
     },
     {
       "path": "skills/lit-plan/SKILL.md",
@@ -4725,99 +4725,99 @@
     },
     {
       "path": "skills/lsp/SKILL.md",
-      "sha256": "c2d718c16dfb457352eb9926dcb36d0729cd8bd081a891bfafdabcf20a0b10b4"
+      "sha256": "7c3b00497d61e3769c28804aaae6ee0dd7ed3d7acde3bf0fd4dc4678195fb0a3"
     },
     {
       "path": "skills/lsp-setup/SKILL.md",
-      "sha256": "8a416bc3c9dc082fa35e4e0a4b5e36c304985e0f638d95d82daed8dd8279e6c5"
+      "sha256": "a7750246209e03ffa08f824e730c0df80e31c6b956a54650f8024647f75335a2"
     },
     {
       "path": "skills/lsp-setup/references/bash/README.md",
-      "sha256": "7d32640c2f50ad18e4ccf1ab2f7b4b1ea989ce2228054c8bc2f05b97d484f8ad"
+      "sha256": "3ffb89c36c08e9fad497b7c6a44b869aa10c8d7c2639c6491893e8290c9cb4c2"
     },
     {
       "path": "skills/lsp-setup/references/c-cpp/README.md",
-      "sha256": "0334f275754d4231a30700b9f1518c06ae9fd04f8809e3c89b197763cbdfdbb3"
+      "sha256": "0deaa6dcb89456fafe03702afadb85399d91252616c9aa69f39025354c9d89ef"
     },
     {
       "path": "skills/lsp-setup/references/csharp/README.md",
-      "sha256": "1717ca8bf762832f7209ef1d10f8896958e1a5a9c0445b8b9ce7bbce18423fb8"
+      "sha256": "29e909765fd51c187ed5c02daeb6a9e21d9f91ca1adaa1cf09c92bdc2c83473f"
     },
     {
       "path": "skills/lsp-setup/references/dart/README.md",
-      "sha256": "eaa9b13bdbcd162b43220fdefb6292a86d53b053c32d60b3d067f9785a26c9df"
+      "sha256": "9c1e76c636374b4b2f63da82e8868e923732b74151ec87db7edee81e76637766"
     },
     {
       "path": "skills/lsp-setup/references/elixir/README.md",
-      "sha256": "385b3d4c3d0d531afb07e33570c502e754174b52125ae6572a35edd24d0da1e5"
+      "sha256": "3993bf608aa52a0a0836410e07f936b9eecf4c9d45c9b695fb03928f68652de9"
     },
     {
       "path": "skills/lsp-setup/references/go/README.md",
-      "sha256": "e0f2ced60994adfe22a76e37d69deb3308fe7f4885a9579e28b864a1948e7c22"
+      "sha256": "65a428bfb26500a5dfaeb26393613a1cfd0bd274bbd35ce4c21742a0a18d4029"
     },
     {
       "path": "skills/lsp-setup/references/haskell/README.md",
-      "sha256": "df6dc810662b52de10d358edae6742cfab9cd66fc1636c68096ffe7f241fe102"
+      "sha256": "b24264f0ca238bba54f808ea686ffd631963534f1267be963dd8f1259dda1058"
     },
     {
       "path": "skills/lsp-setup/references/java/README.md",
-      "sha256": "a33e64405e090ffc4ec028d2aead42ec3c52b8c38f72ec0f92e4f0324bbbf4f3"
+      "sha256": "fba411281e304088f7ab6aaa4a71db4bb1772472c53288ccd1ad704c5c0c0608"
     },
     {
       "path": "skills/lsp-setup/references/julia/README.md",
-      "sha256": "98902c1f3883adc739a1e52485a43b3234a269b29928d49101bdd56c56c37084"
+      "sha256": "0a4d8d304f4d5743f4277e55b9918a5df213968ec7eaf495305369bc75742bb2"
     },
     {
       "path": "skills/lsp-setup/references/kotlin/README.md",
-      "sha256": "f4472bb7c34328aaeb1461d0c729efbf738a2e89fc94a1eb729f2a868ca88a76"
+      "sha256": "84cc090a6aa6cf700ea7c40f8f6fde0a40cc82df09b365b304a9f15cfd09ebd4"
     },
     {
       "path": "skills/lsp-setup/references/lua/README.md",
-      "sha256": "892613acb00e9cdb50ba5e69f147e33788a9b3db6500371f2ae6e20a07db3220"
+      "sha256": "5d719bc8012c09e56298946d8378cd6ec2c2216fe4bf7b45b887478a01f61cae"
     },
     {
       "path": "skills/lsp-setup/references/php/README.md",
-      "sha256": "3719c12c64bd823ff9cf7af4073e14eaa4799726dee5b20a593b8a528527472f"
+      "sha256": "d1e068d743c9ba8c99bde073fdf3eafc3c3652fd56b0f8a7a091839c794e8d52"
     },
     {
       "path": "skills/lsp-setup/references/python/README.md",
-      "sha256": "b64b0add1c8eb5472cf03bfe4aad7ee4eab20c8f12874be20739071cdd58be7d"
+      "sha256": "d7db691842e8b74a1c2605833126e19c3399f50ced0ba9e084547abe49eec946"
     },
     {
       "path": "skills/lsp-setup/references/ruby/README.md",
-      "sha256": "6c7a146dc58ef38c3670ba4c16690e419c96099ac6e62f0f059d4f16a5792e48"
+      "sha256": "5ce5aeec82f09bb1d5e8dc0903f062e2f2feb9f54b2ee00b991aa94e0b892124"
     },
     {
       "path": "skills/lsp-setup/references/rust/README.md",
-      "sha256": "2797c7c27d1041924600192cb649d81bbb94a53ddbb894f82748e977eac64d3a"
+      "sha256": "2d1101a2b768240d7ef439de703391475bf51d0f1152e91764e78b1bb3e428b0"
     },
     {
       "path": "skills/lsp-setup/references/swift/README.md",
-      "sha256": "d7589fe85fae9937bfcfb951e41171577e743f6e4b7cea9dbef575b811d041ed"
+      "sha256": "9d110889b488e5978d9743b0a26659dd618086f55f55d82f89eef671ce8b7006"
     },
     {
       "path": "skills/lsp-setup/references/terraform/README.md",
-      "sha256": "fe86c8bcb4966efd400e083bd3e22863ee4fae56c3fba1eb3abdaa666fe9c24e"
+      "sha256": "3d4e360e0618193b26d1b22cf7c42ee6b18f8a5b8534634d43bfd8d24513cb7e"
     },
     {
       "path": "skills/lsp-setup/references/typescript/README.md",
-      "sha256": "fbdc8348d5d0b3978e73d7bd3701d34d8df692d031437e87c19b8708a5946108"
+      "sha256": "917a79bfb88d8bcb2b2776b792b97c33ded1853b1a6f6f0019b24ab85bfdba95"
     },
     {
       "path": "skills/lsp-setup/references/yaml/README.md",
-      "sha256": "c9456d750ba91716e30538d262e83f70ae51b44697e3bdee87d68dbf861f4b63"
+      "sha256": "36a59994cc54df631ce5525f3755acb4577320ec056250c061ac3d85fe1a51a2"
     },
     {
       "path": "skills/lsp-setup/references/zig/README.md",
-      "sha256": "87b955a8bd792561e291fe2922b467714aefdf59bede752938b20ce3da2a402c"
+      "sha256": "ba49eed19a7042bccf8659c14a24894252ef7a2e875b9e5e99904866d68e9d40"
     },
     {
       "path": "skills/lsp-setup/scripts/detect-lsp.ts",
-      "sha256": "32d9dba93c1e604e49e6049603c0ee8da67927540a7c53c87fc46c9a059b5178"
+      "sha256": "4125dec96054f11b3dc8e1c3544b004bcd477b3a8364b8e45c2e1e8386653895"
     },
     {
       "path": "skills/lsp-setup/scripts/lsp-server-table.ts",
-      "sha256": "fc281d78ff2f50657d4c9bcc253f2ff8c0f9e6be1dcea0b9963f52d874ef801e"
+      "sha256": "b56c1656d682d910b76b4a1e46a756db21393ac3790b925b17df5b3e3d362454"
     },
     {
       "path": "skills/lsp-setup/scripts/tsconfig.json",
@@ -4825,7 +4825,7 @@
     },
     {
       "path": "skills/lsp-setup/scripts/verify-lsp.ts",
-      "sha256": "f4974fad32446709d5617ac8b724c6959fed8c767fb491004ce779412c549061"
+      "sha256": "d7e09674f78977f8ce13b7df145a78a84143fde4f431d3459f0d6f951a9b0b63"
     },
     {
       "path": "skills/readme-studio/SKILL.md",

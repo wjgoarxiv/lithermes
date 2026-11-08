@@ -20,29 +20,21 @@ command -v intelephense
 
 ## Configure
 
-Add a `php` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `intelephense`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install intelephense` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "php": {
-      "command": [
-        "intelephense",
-        "--stdio"
-      ],
-      "extensions": [
-        ".php"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.php` edits to `intelephense` via the `extensions` list. Intelephense's
-premium features (rename, find-all-implementations, etc.) require a licence key,
-which is passed through the editor's LSP `initializationOptions` rather than
-the Hermes LSP config. Without a key the server runs fine in free mode.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+Intelephense's premium features (rename, find-all-implementations, etc.) require a licence key, which is passed through the editor's LSP `initializationOptions` rather than the Hermes LSP config. Without a key the server runs fine in free mode.
 ## Alternatives
 
 **phpactor** — pure-PHP, no Node dependency. Set the `command` to

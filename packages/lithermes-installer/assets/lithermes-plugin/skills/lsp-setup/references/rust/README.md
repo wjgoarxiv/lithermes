@@ -22,27 +22,21 @@ command -v rust-analyzer
 
 ## Configure
 
-Add a `rust` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `rust-analyzer`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install rust-analyzer` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "rust": {
-      "command": [
-        "rust-analyzer"
-      ],
-      "extensions": [
-        ".rs"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.rs` edits to `rust-analyzer` via the `extensions` list. Options
-such as switching the check command to clippy live in `rust-analyzer` settings
-consumed by your editor, not in the Hermes LSP config.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+Options such as switching the check command to clippy live in `rust-analyzer` settings consumed by your editor, not in the Hermes LSP config.
 ## Alternatives
 
 None — `rust-analyzer` is the official and sole Rust language server.

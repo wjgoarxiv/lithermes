@@ -22,25 +22,20 @@ command -v kotlin-lsp
 
 ## Configure
 
-Add a `kotlin` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships Kotlin support as the built-in `kotlin-language-server`.
+The JetBrains launcher from the Install section is named `kotlin-lsp`, which
+the built-in does not look for — pin it with an override in the Hermes config
+file (`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) under
+`lsp.servers` (built-in entries take no `extensions` key):
 
-```json
-{
-  "lsp": {
-    "kotlin": {
-      "command": [
-        "kotlin-lsp"
-      ],
-      "extensions": [
-        ".kt",
-        ".kts"
-      ]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    kotlin-language-server:
+      command: ["kotlin-lsp"]
 ```
 
-Hermes routes `.kt`/`.kts` edits to `kotlin-lsp` via the `extensions` list. If the server
+Then confirm Hermes sees it with `hermes lsp status`. If the server
 cannot find a Java runtime, export `JAVA_HOME` in the launching shell:
 
 ```bash

@@ -25,26 +25,23 @@ command -v gopls
 
 ## Configure
 
-Add a `go` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `gopls`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install gopls` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "go": {
-      "command": [
-        "gopls"
-      ],
-      "extensions": [
-        ".go"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.go` edits to `gopls` via the `extensions` list. Analyses such as
-`staticcheck` are configured in `gopls` settings (e.g. a workspace `settings.json`
-consumed by your editor) rather than in the Hermes LSP config.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
+
+Analyses such as `staticcheck` are configured in `gopls` settings (e.g. a
+workspace `settings.json` consumed by your editor) rather than in the Hermes
+LSP config.
 
 ## Alternatives
 

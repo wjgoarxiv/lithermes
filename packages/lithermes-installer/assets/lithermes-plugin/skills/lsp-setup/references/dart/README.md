@@ -20,28 +20,21 @@ command -v dart
 
 ## Configure
 
-Add a `dart` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `dart`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install dart` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "dart": {
-      "command": [
-        "dart",
-        "language-server",
-        "--lsp"
-      ],
-      "extensions": [
-        ".dart"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.dart` edits to the Dart language server via the `extensions` list. No
-extra configuration is normally required.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+No extra configuration is normally required.
 ## Alternatives
 
 None.

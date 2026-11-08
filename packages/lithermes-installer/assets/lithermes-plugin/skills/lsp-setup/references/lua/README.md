@@ -20,28 +20,21 @@ command -v lua-language-server
 
 ## Configure
 
-Add a `lua` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `lua-language-server`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install lua-language-server` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "lua": {
-      "command": [
-        "lua-language-server"
-      ],
-      "extensions": [
-        ".lua"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.lua` edits to `lua-language-server` via the `extensions` list. Deeper
-behavior (Neovim runtime libraries, the Lua runtime version, allowed globals)
-is configured through a project `.luarc.json` rather than the Hermes LSP config. For
-Neovim config work, a `.luarc.json` like the following resolves `vim` globals and
-the stdlib:
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
+
+Deeper behavior (Neovim runtime libraries, the Lua runtime version, allowed globals) is configured through a project `.luarc.json` rather than the Hermes LSP config. For Neovim config work, a `.luarc.json` like the following resolves `vim` globals and the stdlib:
 
 ```json
 {
@@ -50,7 +43,6 @@ the stdlib:
   "diagnostics": { "globals": ["vim"] }
 }
 ```
-
 ## Alternatives
 
 None.

@@ -20,35 +20,27 @@ command -v jdtls
 
 ## Configure
 
-Add a `java` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `jdtls`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install jdtls` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "java": {
-      "command": [
-        "jdtls"
-      ],
-      "extensions": [
-        ".java"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.java` edits to `jdtls` via the `extensions` list. jdtls maintains
-a per-project workspace data directory and the first index is slow (it resolves
-the full classpath and builds). If `jdtls` cannot find a runtime, export
-`JAVA_HOME` for a JDK 17+ in the shell that launches Hermes:
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
+
+jdtls maintains a per-project workspace data directory and the first index is slow (it resolves the full classpath and builds). If `jdtls` cannot find a runtime, export `JAVA_HOME` for a JDK 17+ in the shell that launches Hermes:
 
 ```bash
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
 ```
 
-Most settings (runtimes, format, import order) come from `settings.java.*`
-defaults and work for Maven/Gradle projects with a standard layout.
-
+Most settings (runtimes, format, import order) come from `settings.java.*` defaults and work for Maven/Gradle projects with a standard layout.
 ## Alternatives
 
 **No mainstream alternative.** `jdtls` (Eclipse JDT Language Server) is the

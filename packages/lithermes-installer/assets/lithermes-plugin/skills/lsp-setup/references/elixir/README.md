@@ -21,27 +21,21 @@ command -v elixir-ls
 
 ## Configure
 
-Add an `elixir` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `elixir-ls`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install elixir-ls` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "elixir": {
-      "command": [
-        "elixir-ls"
-      ],
-      "extensions": [
-        ".ex",
-        ".exs"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.ex`/`.exs` edits to `elixir-ls` via the `extensions` list. No extra
-configuration is normally required.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+No extra configuration is normally required.
 ## Alternatives
 
 - **lexical**: set the `command` to `["lexical"]` — fast, modern alternative LSP.

@@ -25,31 +25,21 @@ command -v shellcheck
 
 ## Configure
 
-Add a `bash` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `bash-language-server`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install bash-language-server` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "bash": {
-      "command": [
-        "bash-language-server",
-        "start"
-      ],
-      "extensions": [
-        ".sh",
-        ".bash",
-        ".zsh",
-        ".ksh"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes these extensions to `bash-language-server` via the `extensions` list.
-`bash-language-server` discovers `shellcheck` on PATH automatically; to point at a
-non-PATH binary, export `SHELLCHECK_PATH` in the launching shell.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+`bash-language-server` delegates diagnostics to `shellcheck`: without it on PATH the server runs but reports nothing, so install `shellcheck` as well. To point at a non-PATH binary, export `SHELLCHECK_PATH` in the launching shell.
 ## Alternatives
 
 - `shellcheck` standalone as a linter-only flow (no LSP).

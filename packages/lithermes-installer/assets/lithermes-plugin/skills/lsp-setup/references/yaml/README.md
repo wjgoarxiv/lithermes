@@ -18,35 +18,25 @@ command -v yaml-language-server
 
 ## Configure
 
-Add a `yaml` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `yaml-language-server`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install yaml-language-server` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "yaml": {
-      "command": [
-        "yaml-language-server",
-        "--stdio"
-      ],
-      "extensions": [
-        ".yaml",
-        ".yml"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.yaml`/`.yml` edits to `yaml-language-server` via the `extensions` list.
-Schema association is the main reason to tune the server, but those options
-travel through the editor's LSP `initializationOptions` (`yaml.schemas`,
-`yaml.schemaStore`), not the Hermes LSP config. An inline
-`# yaml-language-server: $schema=<url>` modeline works without any config:
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
+
+Schema association is the main reason to tune the server, but those options travel through the editor's LSP `initializationOptions` (`yaml.schemas`, `yaml.schemaStore`), not the Hermes LSP config. An inline `# yaml-language-server: $schema=<url>` modeline works without any config:
 
 ```yaml
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 ```
-
 ## Alternatives
 
 - `redhat.vscode-yaml` bundles the same server in editors.

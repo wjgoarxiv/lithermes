@@ -27,29 +27,21 @@ command -v haskell-language-server-wrapper
 
 ## Configure
 
-Add a `haskell` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `haskell-language-server`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install haskell-language-server` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "haskell": {
-      "command": [
-        "haskell-language-server-wrapper",
-        "--lsp"
-      ],
-      "extensions": [
-        ".hs",
-        ".lhs"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.hs`/`.lhs` edits to the HLS wrapper via the `extensions` list. Per-project
-plugin/formatter settings normally live in a `hie.yaml` (cradle) and
-`.haskell-language-server` files rather than the Hermes LSP config.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+Per-project plugin/formatter settings normally live in a `hie.yaml` (cradle) and `.haskell-language-server` files rather than the Hermes LSP config.
 ## Alternatives
 
 - `ghcide` (the core HLS engine, standalone) — largely superseded by HLS.

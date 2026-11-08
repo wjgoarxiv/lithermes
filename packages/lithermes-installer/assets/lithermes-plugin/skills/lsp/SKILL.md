@@ -117,49 +117,65 @@ limitations_channel: reply
 
 # Hermes LSP
 
-Hermes exposes language-server intelligence through `lsp` tools. Call them through the
-tool interface; `lsp.*`/`mcp__lsp__*` are tool-call names, not shell commands. Use these
-after edits to catch breakage that a plain text search would miss, and before renames to
-confirm the edit is safe across the workspace.
+Hermes runs language-server diagnostics automatically after file writes:
+`write_file`/`patch` report the fresh diagnostics an edit introduced, with no
+extra call. There are no `lsp.*` agent tools on this host — do not call
+`lsp.status`, `lsp.diagnostics`, `lsp.goto_definition`, `lsp.find_references`,
+`lsp.symbols`, `lsp.prepare_rename`, or `lsp.rename`; those names do not exist
+here. After edits, read the diagnostics Hermes already reported; to manage
+servers, use the `hermes lsp` CLI from a shell.
 
-## Tools
+## After an edit
 
-- `lsp.status`: list configured, installed, missing, disabled, and active language servers.
-- `lsp.diagnostics`: check one file or directory for LSP diagnostics. Prefer `severity: "error"` after edits.
-- `lsp.goto_definition`: locate a symbol definition from file, line, and character.
-- `lsp.find_references`: find usages of a symbol across the workspace.
-- `lsp.symbols`: inspect document symbols or search workspace symbols.
-- `lsp.prepare_rename`: check whether a rename is valid at a position.
-- `lsp.rename`: apply a language-server workspace edit for a rename.
+1. Read the diagnostics the write already reported. A clean report means "no
+   problems found by a running server" — check the server state below before
+   concluding the code is clean.
+2. When diagnostics stay empty where you expect errors, run
+   `hermes lsp status` to see whether any server handles the file's extension.
+3. Before a rename, trace impact with workspace text search, apply the rename,
+   then re-check the reported diagnostics.
+4. Never fabricate a diagnostics result. If no server is installed for the
+   language, say so and fall back to the project's own commands
+   (`tsc --noEmit`, `ruff`, `cargo check`, `go test`, ...), labelled as a
+   controlled skip.
 
-## Workflow
+## Server state (`hermes lsp` CLI)
 
-1. Run `lsp.status` first when diagnostics report a missing or inactive language server,
-   so you know whether a clean result means "no problems" or "no server".
-2. After any edit, run `lsp.diagnostics` with `severity: "error"` on the changed file or
-   directory and resolve errors before moving on.
-3. Before renaming a symbol, call `lsp.prepare_rename` at the target position; only call
-   `lsp.rename` once the position is confirmed renamable, then re-check diagnostics.
-4. Use `lsp.goto_definition` and `lsp.find_references` to trace impact across the
-   workspace instead of guessing from text matches.
+- `hermes lsp status`: service state plus per-server install state.
+- `hermes lsp list`: supported servers with install state and extensions.
+- `hermes lsp install <id>` / `hermes lsp install-all`: fetch the servers
+  Hermes can auto-install into `<HERMES_HOME>/lsp`.
+- `hermes lsp restart`: tear down running clients; the next edit re-spawns.
+- `hermes lsp which <id>`: print the binary path for a server.
 
 ## Config
 
-Language servers are discovered automatically per project. When a server is missing,
-`lsp.status` reports it and the workspace's LSP configuration tells Hermes which command
-and file extensions a server handles. A typical entry maps a language to its server
-binary and the extensions it covers:
+Hermes reads its LSP config from the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`), never from a project
+JSON file. Servers live under the `lsp.servers` map, keyed by server id:
 
-```json
-{
-	"lsp": {
-		"typescript": {
-			"command": ["typescript-language-server", "--stdio"],
-			"extensions": [".ts", ".tsx", ".js", ".jsx"]
-		}
-	}
-}
+```yaml
+lsp:
+  servers:
+    <custom-id>:
+      command: ["bin", "--stdio"]   # array: binary plus args
+      extensions: [".ext"]          # custom ids only
 ```
 
-Install the missing server (or enable a disabled one), then re-run `lsp.status` to confirm
-it shows as active before relying on its diagnostics.
+Rules:
+
+- `command` is an array whose first element is the binary (a PATH lookup or an
+  absolute path) followed by its args.
+- A key that matches a Hermes built-in id (`typescript`, `pyright`, `gopls`,
+  ...) is an **override**: only `command`, `disabled`, `env`, or
+  `initialization_options`. Built-ins own their extensions — a built-in entry
+  takes no `extensions` key. `hermes lsp list` shows the ids.
+- Any other key declares a **custom** server and needs both `command` and
+  `extensions` (plus optional `root_markers`, `language_id`, `description`).
+  Custom servers match before built-ins, so one can take over an extension —
+  that is how a stricter Python server replaces the `pyright` built-in.
+
+Install the missing server (through `hermes lsp install <id>` where Hermes
+offers a recipe, else the manual install from the `lsp-setup` reference), then
+re-run `hermes lsp status` to confirm Hermes sees it before relying on its
+diagnostics.

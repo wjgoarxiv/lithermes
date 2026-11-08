@@ -2,17 +2,18 @@
 
 - **Recommended server:** `typescript-language-server --stdio`
 - **Extensions:** `.ts .tsx .js .jsx .mjs .cjs .mts .cts`
-- **Install hint:** `npm install -g typescript-language-server typescript`
+- **Install hint:** `npm install -g typescript-language-server typescript@6`
 
 ## Install
 
-- **macOS:** `npm install -g typescript-language-server typescript`
-- **Linux:** `npm install -g typescript-language-server typescript`
-- **Windows:** `npm install -g typescript-language-server typescript` (PowerShell or cmd)
+- **macOS:** `npm install -g typescript-language-server typescript@6`
+- **Linux:** `npm install -g typescript-language-server typescript@6`
+- **Windows:** `npm install -g typescript-language-server typescript@6` (PowerShell or cmd)
 
 `typescript-language-server` is only a thin wrapper — it needs the `typescript`
 package (`tsserver`) present too, either globally or in the project's
-`node_modules`. Always install both.
+`node_modules`. Always install both. Pin `typescript@6`: TypeScript 7 (the Go
+port) ships no `lib/tsserver.js`, which `typescript-language-server` loads.
 
 Confirm it resolves:
 
@@ -22,40 +23,25 @@ command -v typescript-language-server
 
 ## Configure
 
-Hermes declares language servers under `lsp.<language>`. Each entry
-is keyed by language name and holds a `command` array plus an
-`extensions` list. TypeScript/JavaScript already ships in the default
-config:
+Hermes already ships TypeScript/JavaScript support as the built-in
+`typescript`: no config entry is needed, and Hermes already covers `.ts .tsx
+.js .jsx .mjs .cjs .mts .cts`. Hermes auto-installs the server on first use
+(its recipe pins `typescript@6`); a manual global install is optional and must
+pin the same line (see the Install section). Confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "typescript": {
-      "command": [
-        "typescript-language-server",
-        "--stdio"
-      ],
-      "extensions": [
-        ".ts",
-        ".tsx",
-        ".js",
-        ".jsx",
-        ".mjs",
-        ".cjs"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Add `.mts`/`.cts` to the `extensions` list if your project uses them. Hermes
-resolves the server for an edited file by matching its extension against this
-list.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
 ## Alternatives
 
-Swap the `command` for your toolchain. Keep the same Hermes LSP config shape and adjust
-the `extensions` list to cover the extensions that server should own:
+Swap the `command` for your toolchain with an override under
+`lsp.servers.typescript` (built-in entries take no `extensions` key):
 
 | command                                   | when to choose                          |
 | ----------------------------------------- | --------------------------------------- |
@@ -68,7 +54,8 @@ the `extensions` list to cover the extensions that server should own:
 | `["astro-ls", "--stdio"]`                 | `.astro` files                          |
 
 `eslint` install: `npm i -g vscode-langservers-extracted`. To run Deno instead
-of the default, replace the `typescript` entry's `command` with `["deno", "lsp"]`.
+of the default, set `command: ["deno", "lsp"]` on the `lsp.servers.typescript`
+override.
 
 ## Troubleshooting
 - **PATH:** `typescript-language-server` must be on PATH; reopen shell after `npm i -g`. Check your global bin with `npm bin -g`.

@@ -21,27 +21,21 @@ command -v zls
 
 ## Configure
 
-Add a `zig` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `zls`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install zls` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "zig": {
-      "command": [
-        "zls"
-      ],
-      "extensions": [
-        ".zig",
-        ".zon"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.zig`/`.zon` edits to `zls` via the `extensions` list. No extra
-configuration is normally required.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+No extra configuration is normally required.
 ## Alternatives
 
 None.

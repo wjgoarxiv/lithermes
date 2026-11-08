@@ -28,31 +28,21 @@ command -v julia
 
 ## Configure
 
-Add a `julia` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes already ships this server as the built-in `julia`: no config entry is
+needed. Install the binary from the Install section above (or run
+`hermes lsp install julia` when Hermes offers an auto-install recipe for it),
+then confirm Hermes sees it:
 
-```json
-{
-  "lsp": {
-    "julia": {
-      "command": [
-        "julia",
-        "--startup-file=no",
-        "--history-file=no",
-        "-e",
-        "using LanguageServer; runserver()"
-      ],
-      "extensions": [
-        ".jl"
-      ]
-    }
-  }
-}
+```bash
+hermes lsp status
 ```
 
-Hermes routes `.jl` edits to the Julia language server via the `extensions` list. To pin
-which environment hosts LanguageServer.jl, export `JULIA_PROJECT=@lsp` in the
-shell that launches Hermes.
+Only add an entry under `lsp.servers` in the Hermes config file
+(`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) to override the
+default — a custom binary path, `disabled`, `env`, or
+`initialization_options`. Built-in entries take no `extensions` key.
 
+To pin which environment hosts LanguageServer.jl, export `JULIA_PROJECT=@lsp` in the shell that launches Hermes.
 ## Alternatives
 
 - The VS Code Julia extension bundles the same LanguageServer.jl server.

@@ -21,34 +21,34 @@ command -v basedpyright-langserver
 
 ## Configure
 
-Add a `python` entry to the Hermes LSP config under `lsp.<language>`. Hermes keys
-each entry by language name with a `command` array and an `extensions` list:
+Hermes already ships Python support as the built-in `pyright` (Microsoft's type
+checker, pointed at your project venv automatically): no config entry is needed
+— install it with `hermes lsp install pyright` (or let Hermes auto-install it)
+and confirm with `hermes lsp status`.
 
-```json
-{
-  "lsp": {
-    "python": {
-      "command": [
-        "basedpyright-langserver",
-        "--stdio"
-      ],
-      "extensions": [
-        ".py",
-        ".pyi"
-      ]
-    }
-  }
-}
+To run `basedpyright` instead (the default this reference recommends), declare
+it as a **custom** server — Hermes has no `basedpyright` built-in — in the
+Hermes config file (`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`)
+under `lsp.servers`. Custom servers match before built-ins, so this entry takes
+`.py`/`.pyi` over from `pyright`:
+
+```yaml
+lsp:
+  servers:
+    python:
+      command: ["basedpyright-langserver", "--stdio"]
+      extensions: [".py", ".pyi"]
 ```
 
-Hermes routes `.py`/`.pyi` edits to this server via the `extensions` list.
 Type-check strictness lives in `pyrightconfig.json` or `[tool.basedpyright]` in
 `pyproject.toml`, not in the Hermes LSP config.
 
 ## Choosing a server
 
 Type checkers and the linter serve different roles. Run a type server, and
-optionally `ruff` ALONGSIDE it (not instead). Set the `command` accordingly:
+optionally `ruff` ALONGSIDE it (not instead). Point the custom entry's
+`command` at your choice (keep the `python` id and the `extensions` list so it
+still claims `.py`/`.pyi`):
 
 | command                              | install                | role                                    |
 | ------------------------------------ | ---------------------- | --------------------------------------- |

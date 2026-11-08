@@ -22,31 +22,22 @@ command -v rubocop
 
 ## Configure
 
-Add a `ruby` entry to the Hermes LSP config under `lsp.<language>`:
+Hermes has no built-in for Ruby, so declare a custom server in the Hermes
+config file (`~/.hermes/config.yaml`, or `$HERMES_HOME/config.yaml`) under
+`lsp.servers`:
 
-```json
-{
-  "lsp": {
-    "ruby": {
-      "command": [
-        "rubocop",
-        "--lsp"
-      ],
-      "extensions": [
-        ".rb",
-        ".rake",
-        ".gemspec",
-        ".ru"
-      ]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    ruby:
+      command: ["rubocop", "--lsp"]
+      extensions: [".rb", ".rake", ".gemspec", ".ru"]
 ```
 
-Hermes routes these extensions to `rubocop --lsp` via the `extensions` list. Behavior is
-driven by your `.rubocop.yml`; the server surfaces RuboCop diagnostics,
-formatting, and code actions over LSP.
+Custom servers are never auto-installed: the binary must be on PATH (or give an
+absolute path in `command`).
 
+Behavior is driven by your `.rubocop.yml`; the server surfaces RuboCop diagnostics, formatting, and code actions over LSP.
 ## Alternatives
 
 - **Shopify `ruby-lsp`** — the standalone `ruby-lsp` executable, richer navigation than RuboCop alone. Set the `command` to `["ruby-lsp"]`.

@@ -1,8 +1,10 @@
 // Standalone snapshot of the primary language server per supported language,
 // embedded so detect-lsp.ts runs without any external dependency in any project.
-// Each entry mirrors the per-language references/<language>/README.md and the
-// Hermes LSP config shape, which is keyed by language name under `lsp`:
-//   { "lsp": { "<language>": { "command": [...], "extensions": [".ext"] } } }
+// Each entry mirrors the per-language references/<language>/README.md. Hermes
+// itself never reads the .lithermes/lsp.json helper file below: the real Hermes
+// config is ~/.hermes/config.yaml under `lsp.servers`. That helper file is
+// LitHermes-only input for detect-lsp.ts / verify-lsp.ts (`--config=<path>`
+// points them at a copy).
 // Edit this table when a reference README changes.
 
 export interface LanguageServer {
@@ -17,7 +19,7 @@ export const LANGUAGES: readonly LanguageServer[] = [
 		language: "typescript",
 		command: ["typescript-language-server", "--stdio"],
 		extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
-		installHint: "npm install -g typescript-language-server typescript",
+		installHint: "npm install -g typescript-language-server typescript@6",
 	},
 	{
 		language: "python",
@@ -141,6 +143,8 @@ export const LANGUAGES: readonly LanguageServer[] = [
 	},
 ] as const
 
-// The Hermes LSP config file, relative to the project root. detect-lsp.ts also
-// accepts an explicit path so it can be pointed at a different copy.
+// LitHermes-only helper input, relative to the project root. Hermes never reads
+// this file (its config is ~/.hermes/config.yaml under `lsp.servers`).
+// detect-lsp.ts also accepts an explicit path so it can be pointed at a
+// different copy.
 export const LSP_CONFIG_FILE = ".lithermes/lsp.json"

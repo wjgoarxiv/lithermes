@@ -2,7 +2,8 @@
 // detect-lsp.ts <targetDir> [--json] [--config=<path>] — scan a directory for
 // source languages and report, per detected language: the recommended language
 // server, whether its executable is on PATH, an install hint, and whether the
-// Hermes LSP config already declares that language.
+// LitHermes-only helper config (default .lithermes/lsp.json, never read by
+// Hermes itself) already declares that language.
 //
 // Runtime: Node 22.6+ with `node --experimental-strip-types`, or `bun`.
 //   node --experimental-strip-types scripts/detect-lsp.ts <dir>
@@ -117,8 +118,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
-// The Hermes LSP config keys each server by language name under `lsp`:
-//   { "lsp": { "typescript": { "command": [...], "extensions": [...] } } }
+// The LitHermes-only helper config keys each server by language name under
+// `lsp`: { "lsp": { "typescript": { "command": [...], "extensions": [...] } } }.
+// Hermes never reads this file; its own config is ~/.hermes/config.yaml under
+// `lsp.servers`.
 function parseConfiguredLanguages(path: string): readonly string[] {
 	let parsed: unknown
 	try {
@@ -174,7 +177,7 @@ function renderReport(root: string, results: readonly DetectionResult[], config:
 	for (const result of results) {
 		const mark = result.installed ? "OK  " : "MISS"
 		const state = result.installed ? `installed (${result.resolvedPath})` : "NOT installed"
-		const config = result.configured ? "declared in the Hermes LSP config" : "NOT in the Hermes LSP config"
+		const config = result.configured ? "declared in the LitHermes helper config" : "NOT in the LitHermes helper config"
 		lines.push(
 			`[${mark}] ${result.server.language.padEnd(12)} exe=${result.executable}  ${state}  ${config}`,
 		)
@@ -189,9 +192,9 @@ function renderReport(root: string, results: readonly DetectionResult[], config:
 			? `All ${results.length} detected server(s) installed.`
 			: `${missing.length}/${results.length} server(s) NOT installed: ${missing.map((m) => m.server.language).join(", ")}`,
 		notConfigured.length === 0
-			? "All detected languages are declared in the Hermes LSP config."
-			: `${notConfigured.length} language(s) absent from the Hermes LSP config: ${notConfigured.map((m) => m.server.language).join(", ")}`,
-		"Next: read references/<language>/README.md, then add the language under `lsp` in the Hermes LSP config.",
+			? "All detected languages are declared in the LitHermes helper config."
+			: `${notConfigured.length} language(s) absent from the LitHermes helper config: ${notConfigured.map((m) => m.server.language).join(", ")}`,
+		"Next: read references/<language>/README.md, then declare the language in ~/.hermes/config.yaml under `lsp.servers`.",
 	)
 	return lines.join("\n")
 }

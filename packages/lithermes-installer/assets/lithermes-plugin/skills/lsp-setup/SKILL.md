@@ -1,6 +1,6 @@
 ---
 name: lsp-setup
-description: "Configure a Language Server (LSP) for a specific language so Hermes tooling — diagnostics, go-to-definition, find-references, rename — works in LitHermes. Use when you need to set up or install a language server, fix 'no LSP server configured' / 'server not installed', choose between servers (basedpyright vs pyright vs ruff), or add a language to the Hermes LSP config. Routes by file extension to references/<language>/README.md for the server choice, per-OS install commands, the LSP config snippet, and troubleshooting. Ships scripts: detect-lsp.ts (scan a project for languages + report each server's install/config status against the Hermes LSP config) and verify-lsp.ts (real diagnostics roundtrip). Covers typescript, python, go, rust, c/c++, java, kotlin, c#/razor, swift, ruby, php, dart, elixir, zig, lua, bash, yaml, terraform, haskell, julia."
+description: "Configure a Language Server (LSP) for a specific language so Hermes automatic post-write diagnostics cover it in LitHermes. Use when you need to set up or install a language server, fix 'no LSP server configured' / 'server not installed', choose between servers (basedpyright vs pyright vs ruff), or add a language to the Hermes LSP config. Routes by file extension to references/<language>/README.md for the server choice, per-OS install commands, the LSP config snippet, and troubleshooting. Ships scripts: detect-lsp.ts (scan a project for languages + report each server's install/config status against the LitHermes helper config) and verify-lsp.ts (real diagnostics roundtrip). Covers typescript, python, go, rust, c/c++, java, kotlin, c#/razor, swift, ruby, php, dart, elixir, zig, lua, bash, yaml, terraform, haskell, julia."
 ---
 
 ## #contract.activation
@@ -117,11 +117,11 @@ limitations_channel: reply
 
 # LSP Setup
 
-Configure the right Language Server for a project so Hermes's `lsp` tools
-(`lsp.diagnostics`, `lsp.goto_definition`, `lsp.find_references`, `lsp.symbols`,
-`lsp.rename`) actually work in LitHermes. This skill is an index: detect what a
-project needs, install the server, declare it in the Hermes LSP config, then
-verify with a real diagnostics roundtrip.
+Configure the right Language Server for a project so the automatic
+post-write diagnostics actually cover it in LitHermes. This skill is an index:
+detect what a project needs, install the server, declare it in the Hermes LSP
+config when Hermes does not already ship it, then verify with a real
+diagnostics roundtrip.
 
 This is the multi-language configurator. For a quick post-edit diagnostics pass
 on an already-configured language, use the lighter `lsp` skill instead — `lsp` is
@@ -173,7 +173,8 @@ before installing or configuring anything.
 ### 1. Detect
 
 Scan the project to see which languages are present and whether each server is
-installed and already declared in the Hermes LSP config:
+installed and already declared in the LitHermes helper config (Hermes itself
+reads `~/.hermes/config.yaml`, never this helper file):
 
 ```bash
 node --experimental-strip-types scripts/detect-lsp.ts <projectDir>
@@ -182,8 +183,8 @@ node --experimental-strip-types scripts/detect-lsp.ts <projectDir> --json
 
 For each detected language it prints the recommended server, the executable it
 needs on `PATH`, whether that executable is installed, an install hint, and
-whether the Hermes LSP config already declares the language. Use
-`--config=<path>` to point at a different config copy.
+whether the LitHermes helper config already declares the language. Use
+`--config=<path>` to point at a different helper copy.
 
 ### 2. Install
 
@@ -196,48 +197,53 @@ command -v <server-executable>   # e.g. typescript-language-server, gopls, rust-
 
 ### 3. Configure (Hermes LSP config)
 
-Hermes declares servers under the top-level `lsp` key (the project copy lives at
-`.lithermes/lsp.json`). The map is keyed by **language name**; each entry holds a
-`command` array and an `extensions` list that tells Hermes which file extensions
-route to that server:
+Hermes reads servers from its own config file (`~/.hermes/config.yaml`, or
+`$HERMES_HOME/config.yaml`) under the `lsp.servers` map, keyed by **server id**.
+Hermes never reads the `.lithermes/lsp.json` helper file below — that file is
+LitHermes-only input for the `detect-lsp.ts` / `verify-lsp.ts` scripts
+(`--config=<path>` points them at a copy).
 
-```json
-{
-  "lsp": {
-    "<language>": {
-      "command": ["<bin>", "<arg>"],
-      "extensions": [".ext"]
-    }
-  }
-}
+```yaml
+lsp:
+  servers:
+    <server-id>:
+      command: ["<bin>", "<arg>"]   # array: binary plus args
+      extensions: [".ext"]          # custom ids only, never built-ins
 ```
 
 Rules:
 
-- One entry per server, keyed by language name. The `command` is the full argv.
-- `extensions` lists each owned extension. Hermes resolves the server for an
-  edited file by matching its extension here.
-- The shipped default declares only `typescript`. Add a language by copying the
-  block from its reference README into the `lsp` map.
-- Server-specific tuning (schemas, licence keys, check commands) travels through
-  the LSP `initializationOptions` or a project config file (for example
+- One entry per server, keyed by server id. The `command` is the full argv as
+  an array; a string command is rejected.
+- A key that matches a Hermes built-in id (`typescript`, `pyright`, `gopls`,
+  `rust-analyzer`, `clangd`, ... — `hermes lsp list` shows them all) is an
+  **override**: only `command`, `disabled`, `env`, or `initialization_options`.
+  Built-ins own their extensions, need no entry to work, and take no
+  `extensions` key. Python's built-in is `pyright`; to run `basedpyright`
+  instead, declare it as a **custom** id with `command` plus `extensions` so it
+  takes over `.py`/`.pyi` (custom servers match before built-ins).
+- Any other key declares a **custom** server and needs both `command` and
+  `extensions` (plus optional `root_markers`, `language_id`, `description`).
+  Custom servers are never auto-installed: the binary must be on PATH.
+- Server-specific tuning (schemas, licence keys, check commands) travels
+  through the LSP `initializationOptions` or a project config file (for example
   `.clangd`, `.rubocop.yml`, `pyrightconfig.json`), not through the Hermes LSP
   config.
 
 If a language also needs a bridge (for example a server exposed through a stdio
 bridge rather than a direct binary), declare that bridge and keep the `command`
-pointed at the resulting executable. Most servers here are direct binaries and
-need only the `lsp` entry.
+pointed at the resulting executable. Most servers here are direct binaries.
 
-Each language reference gives a ready-to-paste snippet.
+Each language reference gives a ready-to-paste snippet: built-in languages show
+the override (or nothing to add), custom languages show the full entry.
 
 ### 4. Verify
 
 Run a real diagnostics roundtrip against a source file. The script resolves the
-server for the file extension (from the Hermes LSP config when present, else the
-embedded table), spawns it, runs the JSON-RPC `initialize` -> `initialized` ->
-`didOpen` handshake over stdio, waits for `textDocument/publishDiagnostics`, and
-reports:
+server for the file extension (from a LitHermes helper config copy when present,
+else the embedded table), spawns it, runs the JSON-RPC `initialize` ->
+`initialized` -> `didOpen` handshake over stdio, waits for
+`textDocument/publishDiagnostics`, and reports:
 
 ```bash
 node --experimental-strip-types scripts/verify-lsp.ts <path/to/file.ext>
@@ -253,7 +259,7 @@ reference and the Hermes LSP config. Exit codes: 0 OK, 1 FAIL, 2 usage, 3 SKIP.
 
 | Script | Purpose |
 |---|---|
-| `scripts/detect-lsp.ts` | Scan a directory; per detected language report the recommended server, install status, install hint, and whether the Hermes LSP config declares it. `--json` for machine output, `--config=<path>` to target a config. |
+| `scripts/detect-lsp.ts` | Scan a directory; per detected language report the recommended server, install status, install hint, and whether the LitHermes helper config declares it. `--json` for machine output, `--config=<path>` to target a helper copy. |
 | `scripts/verify-lsp.ts` | Real LSP diagnostics roundtrip for one file over stdio JSON-RPC; `OK`/`FAIL`/`SKIP` + exit code 0/1/2/3. Dependency-free. |
 | `scripts/lsp-server-table.ts` | Embedded snapshot of the recommended server per language, mirrored by the references. |
 
