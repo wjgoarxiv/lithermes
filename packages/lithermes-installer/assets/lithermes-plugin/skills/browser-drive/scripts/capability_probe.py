@@ -400,7 +400,7 @@ def _terminate_and_reap(process) -> None:
     _reap_process_group(process)
 
 
-def _run_bounded_version_command(args: list[str]):
+def _run_bounded_version_command(args: list[str], env: Optional[dict] = None):
     popen_kwargs = {
         "stdin": subprocess.DEVNULL,
         "stdout": subprocess.PIPE,
@@ -409,7 +409,7 @@ def _run_bounded_version_command(args: list[str]):
     if os.name == "posix":
         popen_kwargs["start_new_session"] = True
     try:
-        process = subprocess.Popen(args, **popen_kwargs)
+        process = subprocess.Popen(args, env=env, **popen_kwargs)
     except Exception:
         return None
 
@@ -511,7 +511,9 @@ def _run_bounded_version_command(args: list[str]):
     )
 
 
-def probe_browser_driver(path: Optional[str] = None, run_command: Optional[Callable] = None) -> dict:
+def probe_browser_driver(
+    path: Optional[str] = None, run_command: Optional[Callable] = None, env: Optional[dict] = None
+) -> dict:
     search_path = path if isinstance(path, str) else os.environ.get("PATH", "")
     command = _resolve(search_path)
     if command is None:
@@ -529,7 +531,7 @@ def probe_browser_driver(path: Optional[str] = None, run_command: Optional[Calla
 
     try:
         if run_command is None:
-            result = _run_bounded_version_command([command, "--version"])
+            result = _run_bounded_version_command([command, "--version"], env)
         else:
             result = run_command(
                 [command, "--version"],

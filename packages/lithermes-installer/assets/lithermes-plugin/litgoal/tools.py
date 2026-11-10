@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 from . import model, runtime, store
+try:
+    from ..workspace import resolve as resolve_workspace
+except ImportError:  # standalone litgoal tests import this package at top level
+    from workspace import resolve as resolve_workspace
 
 TOOLSET = "lithermes-goal"
 NATIVE_GOAL_CAPABILITY = {
@@ -28,8 +32,16 @@ CONTRACT_DESCRIPTION_SUFFIX = (
 )
 
 
-def _workspace() -> Path:
-    return Path.cwd()
+NO_WORKSPACE = {
+    "error": (
+        "no workspace: this session runs from the Hermes home itself, where litgoal state is never "
+        "written. Start the session inside the project folder."
+    ),
+}
+
+
+def _workspace(kwargs: dict[str, Any]) -> Path | None:
+    return resolve_workspace(session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"))
 
 
 def _json(obj: Any) -> str:
@@ -48,7 +60,7 @@ def _snapshot(workspace: Path, session_id: str = "") -> dict[str, Any]:
             "active_goal": None,
             "native_goal_capability": dict(NATIVE_GOAL_CAPABILITY),
         }
-    gate = runtime.quality_gate(workspace, session_id=session_id)
+    gate = runtime.quality_gate(workspace, session_id=session_id, persist=True)
     return {
         "active_goal": {
             "id": goal.id,
@@ -77,11 +89,14 @@ def _snapshot(workspace: Path, session_id: str = "") -> dict[str, Any]:
 # -- tool handlers (args: dict) -> str --------------------------------------
 
 def tool_goal_status(args: dict | None = None, **kwargs) -> str:
-    return _json(_snapshot(_workspace(), _session_id(kwargs)))
+    ws = _workspace(kwargs)
+    return _json(NO_WORKSPACE if ws is None else _snapshot(ws, _session_id(kwargs)))
 
 
 def tool_goal_set(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     objective = str((args or {}).get("objective", "")).strip()
     title = str((args or {}).get("title", "")).strip()
@@ -91,7 +106,9 @@ def tool_goal_set(args: dict, **kwargs) -> str:
 
 
 def tool_goal_add_criterion(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     crit = runtime.add_criterion(
         ws,
@@ -104,7 +121,9 @@ def tool_goal_add_criterion(args: dict, **kwargs) -> str:
 
 
 def tool_goal_evidence(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     runtime.add_evidence(
         ws,
@@ -118,7 +137,9 @@ def tool_goal_evidence(args: dict, **kwargs) -> str:
 
 
 def tool_goal_criterion_status(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     runtime.set_criterion_status(
         ws,
@@ -130,7 +151,9 @@ def tool_goal_criterion_status(args: dict, **kwargs) -> str:
 
 
 def tool_goal_steer(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     payload = args or {}
     directive = str(payload.get("directive", ""))
@@ -155,7 +178,9 @@ def tool_goal_steer(args: dict, **kwargs) -> str:
 
 
 def tool_goal_status_set(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     status = str((args or {}).get("status", ""))
     try:
@@ -166,7 +191,9 @@ def tool_goal_status_set(args: dict, **kwargs) -> str:
 
 
 def tool_goal_checkpoint(args: dict, **kwargs) -> str:
-    ws = _workspace()
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
     session_id = _session_id(kwargs)
     runtime.record_checkpoint(
         ws,
@@ -178,7 +205,10 @@ def tool_goal_checkpoint(args: dict, **kwargs) -> str:
 
 
 def tool_goal_complete(args: dict | None = None, **kwargs) -> str:
-    return _json(runtime.complete_goal(_workspace(), session_id=_session_id(kwargs)))
+    ws = _workspace(kwargs)
+    if ws is None:
+        return _json(NO_WORKSPACE)
+    return _json(runtime.complete_goal(ws, session_id=_session_id(kwargs)))
 
 
 def _spec(name: str, description: str, handler: Callable, properties: dict, required: list[str]) -> dict:
@@ -233,12 +263,14 @@ TOOL_SPECS: list[dict] = [
     ),
     _spec(
         "goal_evidence",
-        "Attach evidence (red|green|scenario|cleanup|note) to a criterion.",
+        "Attach evidence (red|green|scenario|cleanup|note) to a criterion. `green` counts toward the "
+        "gate only when ref is run:<id> of an exit-0 terminal run this session observed (ids are "
+        "listed in the goal snapshot); any other green ref is stored as claimed.",
         tool_goal_evidence,
         {
             "criterion_id": {"type": "string"},
             "kind": {"type": "string", "enum": ["red", "green", "scenario", "cleanup", "note"]},
-            "ref": {"type": "string", "description": "test id or artifact path"},
+            "ref": {"type": "string", "description": "artifact path; for green, run:<id> of an observed passing terminal run"},
             "detail": {"type": "string"},
         },
         ["criterion_id", "kind", "ref"],

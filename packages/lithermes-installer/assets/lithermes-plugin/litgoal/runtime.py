@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import model, store
+from . import fingerprint, gate_snapshot, model, runs, store, testguard
 
 try:
     from ..redaction import redact_text
@@ -35,6 +35,22 @@ def _next_id(prefix: str, existing: list[str]) -> str:
     while f"{prefix}{n:03d}" in used:
         n += 1
     return f"{prefix}{n:03d}"
+
+
+_COMPLETED_HERE: set[tuple[str, str, str]] = set()
+
+
+def is_finished(workspace: Path, session_id: Any, goal: model.Goal) -> bool:
+    """Whether `goal` is complete AND this install says so.
+
+    A `complete` status is believed only when the state file still carries this install's seal or
+    this process completed the goal itself; a status written into goals.json from outside is not a
+    completion, so the gate keeps evaluating it.
+    """
+    if goal.status != "complete":
+        return False
+    key = (str(Path(workspace).resolve()), store.normalize_session_id(session_id), goal.id)
+    return key in _COMPLETED_HERE or store.is_sealed(workspace, session_id)
 
 
 def _derive_open_blocker_status(goal: model.Goal) -> str:
@@ -80,6 +96,7 @@ def create_goal(
         {"kind": "goal_created", "goal_id": goal_id, "objective": objective},
         session_id,
     )
+    testguard.snapshot(workspace, session_id, goal_id)
     return goal
 
 
@@ -220,6 +237,7 @@ def set_criterion_status(
                     },
                     session_id,
                 )
+            refresh_gate(workspace, session_id)
             return crit.attempt
     raise ValueError(f"criterion '{criterion_id}' not found")
 
@@ -246,6 +264,7 @@ def add_evidence(
                 detail=redact_text(detail),
                 at=_utc_now(),
                 attempt=int(crit.attempt or 1),
+                verified=kind == "green" and runs.verify_run(workspace, session_id, ref) is not None,
             )
             crit.evidence.append(ev)
             store.save(workspace, state, session_id)
@@ -257,9 +276,11 @@ def add_evidence(
                     "evidence_kind": kind,
                     "ref": redact_text(ref),
                     "attempt": ev.attempt,
+                    "verified": ev.verified,
                 },
                 session_id,
             )
+            refresh_gate(workspace, session_id)
             return ev
     raise ValueError(f"criterion '{criterion_id}' not found")
 
@@ -439,6 +460,7 @@ def add_review_blocker(
         {"kind": "review_blocker", "goal_id": goal.id, "blocker_id": blocker.id, "status": status},
         session_id,
     )
+    refresh_gate(workspace, session_id)
     return blocker
 
 
@@ -449,6 +471,11 @@ def resolve_review_blocker(
     goal = _require_active(state, force=force)
     for blocker in goal.review_blockers:
         if blocker.id == blocker_id:
+            if blocker.source == testguard.SOURCE:
+                raise ValueError(
+                    f"review blocker '{blocker_id}' guards the tests and only the user can clear it "
+                    "(/lit-accept-tests <reason>); restoring the weakened test files also clears it"
+                )
             blocker.resolved = True
             status = _sync_goal_status(goal)
             store.save(workspace, state, session_id)
@@ -457,6 +484,7 @@ def resolve_review_blocker(
                 {"kind": "review_blocker_resolved", "blocker_id": blocker_id, "status": status},
                 session_id,
             )
+            refresh_gate(workspace, session_id)
             return
     raise ValueError(f"review blocker '{blocker_id}' not found")
 
@@ -469,8 +497,79 @@ def current_attempt_evidence_kinds(criterion: model.Criterion) -> set[str]:
     return {e.kind for e in criterion.evidence if int(e.attempt or 1) == attempt}
 
 
-def _evaluate_gate(goal: model.Goal) -> dict[str, Any]:
+def _green_verdict(
+    workspace: Path, session_id: str, criterion: model.Criterion, now: fingerprint.Current
+) -> tuple[str, tuple[str, list[str]] | None]:
+    """How the current attempt's green stands, plus (run id, changed files) when stale."""
+    attempt = int(criterion.attempt or 1)
+    greens = [
+        e for e in criterion.evidence if e.kind == "green" and int(e.attempt or 1) == attempt
+    ]
+    if not greens:
+        return "none", None
+    cited = [(e, runs.verify_run(workspace, session_id, e.ref)) for e in greens if e.verified]
+    records = [record for _, record in cited if record]
+    stale: tuple[str, list[str]] | None = None
+    for record in reversed(records):
+        moved, names = fingerprint.changed(record.get("fp"), now.get())
+        if not moved:
+            return "verified", None
+        stale = stale or (str(record.get("id")), names)
+    if stale is not None:
+        return "stale", stale
+    cites_run = any(e.ref.strip().startswith(runs.RUN_REF_PREFIX) for e in greens)
+    return ("unverifiable" if cites_run else "claimed"), None
+
+
+def green_state(
+    workspace: Path, session_id: str, criterion: model.Criterion, now: fingerprint.Current | None = None
+) -> str:
+    """How the current attempt's green evidence stands: none | claimed | unverifiable | stale | verified.
+
+    Verified means a stored `verified` flag, a fresh signature check of the cited run
+    (a flag edited into goals.json, or a run signed by an earlier process, does not
+    count) AND a workspace that still matches the fingerprint the run saw.
+    """
+    return _green_verdict(workspace, session_id, criterion, now or fingerprint.Current(workspace))[0]
+
+
+def _sync_testguard(workspace: Path, session_id: str, state: model.LitgoalState, goal: model.Goal) -> None:
+    """Bring the goal's test-weakening blockers in line with the files on disk."""
+    if is_finished(workspace, session_id, goal):
+        return
+    try:
+        changed, events = testguard.sync(workspace, session_id, goal)
+    except Exception:
+        return
+    if not changed:
+        return
+    status = _sync_goal_status(goal)
+    store.save(workspace, state, session_id)
+    for event in events:
+        store.append_ledger(workspace, {**event, "status": status}, session_id)
+
+
+def _stale_reason(criterion_id: str, run_id: str, names: list[str]) -> str:
+    what = f"{fingerprint.describe(names)} changed" if names else "the workspace changed"
+    return f"{criterion_id} evidence {run_id} is stale: {what} after the run (re-run the tests)"
+
+
+_GREEN_REASONS = {
+    "claimed": "{id} green evidence is claimed, not observed (cite run:<id> from a passing test run)",
+    "unverifiable": (
+        "{id} green evidence cites a run this session cannot verify as passing "
+        "(re-run the tests in this session, then cite the new run:<id>)"
+    ),
+}
+
+
+def _evaluate_gate(
+    goal: model.Goal, workspace: Path, session_id: str = "", *, write: bool = True
+) -> dict[str, Any]:
+    urgent: list[str] = []
     reasons: list[str] = []
+    greens: dict[str, str] = {}
+    now = fingerprint.Current(workspace)
     if not goal.criteria:
         reasons.append("no success criteria defined")
     for crit in goal.criteria:
@@ -478,45 +577,75 @@ def _evaluate_gate(goal: model.Goal) -> dict[str, Any]:
         kinds = current_attempt_evidence_kinds(crit)
         if crit.status != "pass":
             reasons.append(f"{crit.id} status is '{crit.status}' (need 'pass')")
-        if "green" not in kinds:
+        green, detail = _green_verdict(workspace, session_id, crit, now)
+        greens[crit.id] = green
+        if green == "none":
             reasons.append(
                 f"{crit.id} missing RED->GREEN proof (green evidence for attempt {attempt})"
             )
+        elif green == "stale" and detail is not None:
+            urgent.append(_stale_reason(crit.id, *detail))
+        elif green in _GREEN_REASONS:
+            reasons.append(_GREEN_REASONS[green].format(id=crit.id))
         if "scenario" not in kinds:
             reasons.append(
                 f"{crit.id} missing manual-QA scenario evidence for attempt {attempt}"
             )
     for blocker in goal.review_blockers:
         if not blocker.resolved:
-            reasons.append(f"unresolved review blocker {blocker.id}: {blocker.detail}")
+            line = f"unresolved review blocker {blocker.id}: {blocker.detail}"
+            (urgent if blocker.source == testguard.SOURCE else reasons).append(line)
     if goal.status in model.GOAL_STALLED_STATUSES:
         reasons.append(f"goal status is '{goal.status}' — resolve it before completing")
-    return {
+    reasons = urgent + reasons
+    gate = {
         "passed": len(reasons) == 0,
         "reasons": reasons,
         "goal_id": goal.id,
         "status": goal.status,
+        "green_states": greens,
     }
+    if write:
+        gate_snapshot.write(workspace, session_id, goal, gate, now)
+    return gate
 
 
-def quality_gate(workspace: Path, goal_id: str | None = None, *, session_id: str = "") -> dict[str, Any]:
+def refresh_gate(workspace: Path, session_id: str = "") -> None:
+    """Re-evaluate the gate so gate.json reflects a new run or evidence; never raises."""
+    try:
+        quality_gate(workspace, session_id=session_id, persist=True)
+    except Exception:
+        return None
+
+
+def quality_gate(
+    workspace: Path, goal_id: str | None = None, *, session_id: str = "", persist: bool = False
+) -> dict[str, Any]:
+    """Evaluate the gate. The default is read-only (recap, dashboard, CLI): it neither raises
+    test-weakening blockers nor rewrites gate.json. In-session callers pass `persist=True`."""
     state = store.load_or_create(workspace, session_id)
     goal = state.goal_by_id(goal_id) if goal_id else state.active_goal()
     if goal is None:
         return {"passed": False, "reasons": ["no active goal"]}
+    if persist:
+        _sync_testguard(workspace, session_id, state, goal)
     _derive_open_blocker_status(goal)
-    return _evaluate_gate(goal)
+    return _evaluate_gate(goal, workspace, session_id, write=persist)
 
 
 def complete_goal(workspace: Path, *, session_id: str = "", force: bool = False) -> dict[str, Any]:
     # Single load: evaluate the gate and mutate the same state to avoid any
     # read-decide-read race between the gate check and the completion write.
     state = store.load_or_create(workspace, session_id)
+    if state.active_goal() is None:
+        return {"completed": False, "reasons": ["no active litgoal"]}
     goal = _require_active(state, force=force)
-    gate = _evaluate_gate(goal)
+    _sync_testguard(workspace, session_id, state, goal)
+    gate = _evaluate_gate(goal, workspace, session_id)
     if not gate["passed"]:
         return {"completed": False, "reasons": gate["reasons"], "status": goal.status}
     goal.status = "complete"
     store.save(workspace, state, session_id)
+    _COMPLETED_HERE.add((str(Path(workspace).resolve()), store.normalize_session_id(session_id), goal.id))
     store.append_ledger(workspace, {"kind": "goal_completed", "goal_id": goal.id}, session_id)
     return {"completed": True, "goal_id": goal.id, "status": goal.status}

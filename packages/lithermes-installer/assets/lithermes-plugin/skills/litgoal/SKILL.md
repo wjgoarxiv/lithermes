@@ -148,9 +148,27 @@ LitHermes ships litgoal as a **real durable runtime**, not prose. State persists
 - `ledger.jsonl` — append-only audit trail, schema `lithermes.litgoal.ledger/v1`,
   keyed on `kind`: `goal_created`, `criterion_added`, `criterion_status`,
   `criterion_retry`, `evidence_added`, `checkpoint`, `steer`, `steering_rejected`,
-  `review_blocker`, `review_blocker_resolved`, `goal_status`, `goal_completed`.
+  `review_blocker`, `review_blocker_resolved`, `goal_status`, `goal_completed`,
+  `testguard_accepted` (the user accepted a test-weakening change and re-baselined),
+  `goal_adopted` (a new session took over an unfinished goal; `goals.json` then
+  carries `adopted_from`, the earlier session id, and that session's files stay as they were).
   This is NOT the run ledger (`.hermes/lithermes/runs/<id>/ledger.jsonl`), which is
   schema `lithermes.run.ledger/v1` and keyed on `event`. One vocabulary per file.
+- `testguard.json` — per-goal snapshot of the workspace's test files (test functions,
+  assertions, skip/xfail/only markers), taken by `goal_set`. A later gate evaluation that
+  finds a snapshotted file with fewer tests or assertions, more skip markers, or deleted
+  raises an unresolved review blocker (source `testguard`) such as "<test file> lost 1
+  assertion and gained 1 skip since the goal started". No tool, CLI command, or
+  steering directive can resolve it: restoring the file clears it, or the user types
+  `/lit-accept-tests <reason>` (reason recorded in the ledger, snapshot re-taken).
+- `runs.jsonl` — signed terminal runs; each carries a workspace fingerprint. `green`
+  evidence stays verified only while the workspace still matches the fingerprint of the
+  cited run: an edit afterwards makes the gate report "C001 evidence R004 is stale: ...
+  changed after the run (re-run the tests)", and the fix is to re-run and cite the new run.
+- `gate.json` — read-only mirror of the last gate evaluation (`open`, `reasons`, `runs`
+  with `stale` flags, `blockers` with their `source`) for the dashboard; the real gate
+  stays in-process. It is refreshed on every run, evidence add, status change and
+  blocker change.
 - `evidence/<criterion-id>/attempt-<n>/` — captured artifacts, versioned per
   attempt. Moving a criterion out of `fail`/`blocked` back into
   `in_progress`/`pending` bumps its attempt, so a retry never overwrites the
@@ -193,7 +211,8 @@ NOT exist in Hermes — translate every one to the following native surface:
 **Evidence-gated completion (the whole point).** `goal_complete` is *refused* until the
 quality gate passes: every criterion must be `pass` AND carry both a `green` (RED→GREEN
 proof) and a `scenario` (manual-QA artifact) evidence entry from its current attempt, AND
-no `review_blocker` may be unresolved. The active goal + the next unmet criteria + the gate
+no `review_blocker` may be unresolved, AND the cited run must still match the workspace
+(stale evidence and test-weakening blockers are listed first in the refusal). The active goal + the next unmet criteria + the gate
 status are injected into every turn via the session-scoped `pre_llm_call` snapshot, so you
 always see what is still owed.
 

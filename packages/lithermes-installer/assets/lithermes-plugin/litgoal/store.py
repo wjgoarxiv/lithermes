@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import tempfile
 from json import JSONDecodeError
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import model
+from . import model, seal
 
 # Anchor every litgoal path under the constant declared in core (dual-context).
 try:  # installed as lithermes.litgoal.store
@@ -65,6 +66,8 @@ LEDGER_KINDS = (
     "review_blocker_resolved",
     "goal_status",
     "goal_completed",
+    "goal_adopted",
+    "testguard_accepted",
 )
 
 _SESSION_SUBDIR = "sessions"
@@ -180,11 +183,13 @@ def _validate_evidence(value: Any, location: str) -> None:
     item = _mapping(
         value,
         location,
-        {"kind", "ref", "detail", "at", "attempt"},
+        {"kind", "ref", "detail", "at", "attempt", "verified"},
         {"kind", "ref"},
     )
     for key in ("kind", "ref", "detail", "at"):
         _string_field(item, key, location)
+    if "verified" in item and not isinstance(item["verified"], bool):
+        raise ValueError(f"{location}.verified must be a boolean")
     if item.get("kind", "note") not in model.EVIDENCE_KINDS:
         raise ValueError(f"{location}.kind is invalid")
     _positive_int_field(item, "attempt", location)
@@ -237,10 +242,10 @@ def _validate_review_blocker(value: Any, location: str) -> str:
     item = _mapping(
         value,
         location,
-        {"id", "detail", "resolved"},
+        {"id", "detail", "resolved", "source"},
         {"id", "detail", "resolved"},
     )
-    for key in ("id", "detail"):
+    for key in ("id", "detail", "source"):
         _string_field(item, key, location)
     if not isinstance(item["resolved"], bool):
         raise ValueError(f"{location}.resolved must be a boolean")
@@ -292,13 +297,13 @@ def _validate_state(value: Any) -> None:
     state = _mapping(
         value,
         "state",
-        {"version", "created_at", "updated_at", "active_goal_id", "goals"},
+        {"version", "created_at", "updated_at", "active_goal_id", "goals", "adopted_from", "seal"},
         {"version", "active_goal_id", "goals"},
     )
     version = state["version"]
     if isinstance(version, bool) or not isinstance(version, int) or version != model.STATE_VERSION:
         raise ValueError(f"state.version must equal {model.STATE_VERSION}")
-    for key in ("created_at", "updated_at", "active_goal_id"):
+    for key in ("created_at", "updated_at", "active_goal_id", "adopted_from", "seal"):
         _string_field(state, key, "state")
     goal_ids = [
         _validate_goal(goal, f"state.goals[{index}]")
@@ -332,7 +337,19 @@ def save(workspace: Path, state: model.LitgoalState, session_id: Any = "") -> No
         state.created_at = state.updated_at
     target = goals_path(workspace, session_id)
     target.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(model.to_dict(state), indent=2, sort_keys=False, ensure_ascii=False)
+    data = model.to_dict(state)
+    if not data.get("adopted_from"):
+        data.pop("adopted_from", None)
+    for goal in data.get("goals", []):
+        for blocker in goal.get("review_blockers", []):
+            if not blocker.get("source"):
+                blocker.pop("source", None)
+    # A file that exists but fails its seal was edited or shipped from outside; saving over it must not
+    # launder that content into a sealed one, so it stays unsealed until the session starts over.
+    stamp = seal.sign(normalize_session_id(session_id), data) if not target.exists() or is_sealed(workspace, session_id) else None
+    if stamp:
+        data["seal"] = stamp
+    payload = json.dumps(data, indent=2, sort_keys=False, ensure_ascii=False)
     # Atomic: write to a temp file in the same dir, fsync, then os.replace.
     fd, tmp_name = tempfile.mkstemp(dir=str(target.parent), suffix=".tmp")
     try:
@@ -355,6 +372,29 @@ def save(workspace: Path, state: model.LitgoalState, session_id: Any = "") -> No
             os.remove(tmp_name)
 
 
+def is_sealed(workspace: Path, session_id: Any = "") -> bool:
+    """Whether the session's goals.json is byte-for-byte what this install saved (see `seal`)."""
+    try:
+        data = json.loads(goals_path(workspace, session_id).read_text(encoding="utf-8"))
+        return seal.verify(normalize_session_id(session_id), data)
+    except (OSError, ValueError):
+        return False
+
+
+def write_json_atomic(path: Path, data: Any) -> None:
+    """Replace `path` with `data` as JSON in one rename, so a reader never sees half a file."""
+    assert_within_isolation(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        os.replace(tmp_name, path)
+    finally:
+        if os.path.exists(tmp_name):
+            os.remove(tmp_name)
+
+
 def append_ledger(workspace: Path, event: dict[str, Any], session_id: Any = "") -> None:
     path = ledger_path(workspace, session_id)
     assert_within_isolation(path)
@@ -365,3 +405,73 @@ def append_ledger(workspace: Path, event: dict[str, Any], session_id: Any = "") 
     # last unflushed entry; goals.json (the source of truth) is fsync-durable.
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+MAX_RESUME_SCAN = 50
+
+
+def latest_unfinished(workspace: Path, exclude_session: Any = "") -> dict[str, Any] | None:
+    """The newest session goal in this workspace that is not complete, or None.
+
+    Only goals this install sealed are candidates, so state shipped in a cloned repository is
+    never offered. Only `sessions/*` is read: the legacy shared path is never a candidate, so a
+    new session still cannot fall back to it. Unreadable or malformed state is
+    skipped rather than raised, since this runs on a session's first turn.
+    """
+    root = Path(workspace) / ".hermes" / "lithermes" / LITGOAL_STATE_DIRNAME / _SESSION_SUBDIR
+    try:
+        found = [(item.stat().st_mtime, item.name) for item in root.iterdir() if (item / "goals.json").is_file()]
+    except OSError:
+        return None
+    for _, name in sorted(found, reverse=True)[:MAX_RESUME_SCAN]:
+        if name == str(exclude_session or ""):
+            continue
+        try:
+            if not is_sealed(workspace, name):
+                continue  # not written by this install: a cloned repo or a hand-made file
+            goal = load_or_create(workspace, name).active_goal()
+        except (ValueError, OSError):
+            continue
+        if goal is not None and goal.status != "complete":
+            return {
+                "session_id": name,
+                "goal_id": goal.id,
+                "title": goal.title or goal.objective,
+                "open": sum(1 for criterion in goal.criteria if criterion.status != "pass"),
+            }
+    return None
+
+
+def adopt(workspace: Path, from_session: Any, to_session: Any) -> model.LitgoalState:
+    """Copy one session's unfinished goal into another, recording where it came from.
+
+    State, ledger, evidence files and brief are copied verbatim; the source
+    session's files are only read. Raises ValueError when the target already has
+    state or the source has no unfinished goal.
+    """
+    source, target = normalize_session_id(from_session), normalize_session_id(to_session)
+    if not source or not target or source == target:
+        raise ValueError("adoption needs two different session ids")
+    if goals_path(workspace, target).exists():
+        raise ValueError("the target session already has litgoal state")
+    if not is_sealed(workspace, source):
+        raise ValueError("the source session's litgoal was not written by this install")
+    state = load_or_create(workspace, source)
+    goal = state.active_goal()
+    if goal is None or goal.status == "complete":
+        raise ValueError("the source session has no unfinished litgoal")
+    destination = state_dir(workspace, target)
+    assert_within_isolation(destination)
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in ("ledger.jsonl", "brief.md", "testguard.json"):
+        original = state_dir(workspace, source) / name
+        if original.is_file():
+            shutil.copyfile(original, destination / name)
+    if evidence_dir(workspace, source).is_dir():
+        shutil.copytree(evidence_dir(workspace, source), evidence_dir(workspace, target), dirs_exist_ok=True)
+    state.adopted_from = source
+    save(workspace, state, target)
+    append_ledger(
+        workspace, {"kind": "goal_adopted", "goal_id": goal.id, "adopted_from": source}, target
+    )
+    return state

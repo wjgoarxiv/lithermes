@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-08T15:02:19.641Z",
+  "syncedAt": "2026-11-09T22:18:10.361Z",
   "source": "bundled-payload",
-  "sourceHash": "6cbda1ee5b6f472c4e2026714c158f010be8afcd3c6b48e24d9c9cd63f1d6fce",
+  "sourceHash": "427f1bf6595ec686cfd0abdb95765c22ecef0d29fc4be9fdf03ce1e0e0e96637",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "fc223bcca7846557bf86f17328f54e8954cc41d991bb41e0e1494a0e60eab3b0"
+      "sha256": "f48767414569881038ab13b01c6702c61163d9e62da67e1dcba798ad7ff2faa5"
     },
     {
       "path": "__init__.py",
-      "sha256": "5cc0aa55f932237aa00cb1535c3feec425704d0521c3f1e4fb600174c6069070"
+      "sha256": "c05a6610a9eb8c85079cea3fb654d6136290972d84473f31fa3cfe3e44e3fdcc"
     },
     {
       "path": "adhd_stack.py",
@@ -21,19 +21,23 @@
     },
     {
       "path": "auto_handoff.py",
-      "sha256": "5f3525048b259be09111d430b66c727b95e62aced29d31efb53c93a3cddbc8c0"
+      "sha256": "119c2a5ac4e2c2d02dc9650f2b2d0d8ad4ab5c9793f69ae0a6ca3467fb7becdb"
     },
     {
       "path": "bounded_work.py",
-      "sha256": "418c4a140b0fb3d6f075fbaccd058be70dee8ad2b033c6f18244a4c06c03d2ca"
+      "sha256": "81f3ce453e4c329839ffa7ac346166e3315ead3944712ec9cab249ffa01dfe31"
     },
     {
       "path": "bounded_work_tools.py",
       "sha256": "3945a1c73b9ff3541e7ff39e169c2e8397182bfa49f21bb6a1728d1393071025"
     },
     {
+      "path": "child_env.py",
+      "sha256": "da49ba73a4f1012c25ba804fe696a858d5cbb41164f9910dfc9db7d55628cd9b"
+    },
+    {
       "path": "core.py",
-      "sha256": "68bfc846f0497cd456db8db979454e15cb98d8fd59dcbf8fcf322b07ef7a395c"
+      "sha256": "2f5afda8a486d68d50e5e5885faab823533845950cfae7e1711b9bc751d7d1b2"
     },
     {
       "path": "core_commands.py",
@@ -41,7 +45,7 @@
     },
     {
       "path": "core_contexts.py",
-      "sha256": "4b8ab6c18ac58c1b9472547c6f4c50aa64b40878f86f848e6e1ca5a5dc800640"
+      "sha256": "b9bb1c44b0106a7bb12f71ab93e3fb6c3b3ad1580acaf4ecc728eb7909d52824"
     },
     {
       "path": "core_contract.py",
@@ -49,7 +53,7 @@
     },
     {
       "path": "core_plans.py",
-      "sha256": "e1f138375a88a5098ac091444fbf528eeb8e83d750c68a4ced5072c779b1c2e4"
+      "sha256": "3664f8c711916cf41485576937d8eca472c1b9d3b5433ae3c4ec2062ef99a93a"
     },
     {
       "path": "core_reader_args.py",
@@ -65,7 +69,7 @@
     },
     {
       "path": "core_review.py",
-      "sha256": "b90d0b6432a01885887403f6197cc7b32af928be5ecf81058794f824951145d4"
+      "sha256": "b5ca070ee00b37ea8f1371ce11f9c8577d6a0a5fadac7c167cae2f838eda14bf"
     },
     {
       "path": "core_routing.py",
@@ -77,23 +81,43 @@
     },
     {
       "path": "core_runtime.py",
-      "sha256": "a96a8ad0c01829ec6107c3f4006b6d69df4f7cc51d5d7c3d6f5352bcd7b8cc61"
+      "sha256": "4a0f2b3c79125ed7f81745628c5ef9846bb3887e72b8a7aed69b32bd3056251f"
     },
     {
       "path": "core_workflow_commands.py",
       "sha256": "734133dbfac98d98fff445c5787fab49899c94a9f72f5aace27665798765ee37"
     },
     {
+      "path": "dashboard/manifest.json",
+      "sha256": "ca5d50f44d2bf37b29774a3fc6a060e511e1becaa46e529378461b6a02205c98"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "59d5ba84423c39446cd7a782c56129a37b5bbac98f7d0773aa3334d5f198c7c8"
+    },
+    {
       "path": "deliverable_hedge_guard.py",
-      "sha256": "f65110568952f197e93452e8a9d01c21cd75479b987110d36e9b05a78f34a302"
+      "sha256": "62c6fba762350615b0443e5388c59c43a4000a2e1923a6606c61896fcb88bb67"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "3607de7417f5f0c42934e90c4f733cbd0e62d79dd3fceee9dedee1a96bdb692a"
     },
     {
       "path": "diagnostics.py",
-      "sha256": "6280b00f54686c2191caa2bdded184c4ca5ebd11b5e80b163761369f751b8621"
+      "sha256": "d7e60c326289bb71a3ac3995bc05cbf04dbc9654047ce721de5e9daf2eea8cb8"
+    },
+    {
+      "path": "goal_stages.py",
+      "sha256": "dbe547bb60b9517ff60cc8424af779a7e8404f83b5f0785cc722ac7ed067d3c8"
     },
     {
       "path": "handoff.py",
       "sha256": "f34788ee4b56b6156e6503b546ea416fd886856df2c8f9e60006eb2b0289a027"
+    },
+    {
+      "path": "handoff_card.py",
+      "sha256": "2459126af048b02247d2583432307f354a13435e6934746d421440aaa8003ce1"
     },
     {
       "path": "humanizer_detector.py",
@@ -113,11 +137,11 @@
     },
     {
       "path": "knowledge_tools.py",
-      "sha256": "58172bdda8e1929c46fce03cc9bb2e3a0a7fae6157be8d2700079fc21dd31748"
+      "sha256": "8b558b81e5642a79a8f2dc0e5e2c34816d30120d9f339478c37538c57afa183f"
     },
     {
       "path": "lit_mark.py",
-      "sha256": "bc98017e15b5dc06fa461b8bb9452f7755d20e8dcd55bdbd37dc13c9279b5fd4"
+      "sha256": "edd02789071f21be3586387bf54b8cff9163cbab8cd8a1a4506bd4650559bb54"
     },
     {
       "path": "lit_mark_rows.json",
@@ -125,7 +149,7 @@
     },
     {
       "path": "lit_reentry.py",
-      "sha256": "d0a945ae8b6ee417b49e683939d81373f6b35a02d6cd7f6282761cc1102672c2"
+      "sha256": "23843cec2aca04a34c76ba7abb5857c1acfdeab41aa96630399b89e232af53f1"
     },
     {
       "path": "litgoal/__init__.py",
@@ -136,24 +160,44 @@
       "sha256": "9c2af198468947db350d845c1d18afe79b0177f2c5c153ab5c75cbcd6c9e9059"
     },
     {
+      "path": "litgoal/fingerprint.py",
+      "sha256": "3188f230333c1a8114f0ebf4aec815e43d73dd1903a6e87eeda31b517e03bc92"
+    },
+    {
+      "path": "litgoal/gate_snapshot.py",
+      "sha256": "a43a6a12d5b039fbf144efc93d7d5ac5c88875d8bee190fe9871371ec9babf3b"
+    },
+    {
       "path": "litgoal/hook.py",
-      "sha256": "0377e6495a0921a61bb6de8eeb8b206025c334a3d9f14dab27bf202ab9f1403b"
+      "sha256": "b2bb169d3a7e436de836a47fb83cbfa4377188fa883474e45a14964326945a59"
     },
     {
       "path": "litgoal/model.py",
-      "sha256": "f081c92f1af2771de5af8aacffa09a3bb46bd632faaa751e19d45339a56fd1fb"
+      "sha256": "8671ce9370448abeb8de03caf0a7f26128e25fbc6b2279f1713b79c473caa6ff"
+    },
+    {
+      "path": "litgoal/runs.py",
+      "sha256": "f2bee7ee9b772d190b47eb4acbbb76e4c7f2bbfaf45b1c7e53b549121eec4b83"
     },
     {
       "path": "litgoal/runtime.py",
-      "sha256": "2a4ec4ff60099c665cadc3438762a8ed3fdfbd2c29ffa75983298ec1f086bb3d"
+      "sha256": "68e5c329789ec2c2da1401371fcbec0689518afb43eea148b6b667f43141afbe"
+    },
+    {
+      "path": "litgoal/seal.py",
+      "sha256": "bc19a58f768395405615720e3882908568ed24f65b8f5d53271959b7f00aa14e"
     },
     {
       "path": "litgoal/store.py",
-      "sha256": "e17cb9f8d6beb969ffd6cbc28e1081bf10f2c4f8a5b25a7d6d04e73817374089"
+      "sha256": "7fd4aec35d1ee1f45bfc1179a37d36adfee42db4efbb6788331ac47187d9cefc"
+    },
+    {
+      "path": "litgoal/testguard.py",
+      "sha256": "06625c4e8af0660e650907d6d1d522cce59fd3c0d70692bcb4b26583b73b27a1"
     },
     {
       "path": "litgoal/tools.py",
-      "sha256": "ee8a5dc50b5db4a24e1811e5b33e970e7af18ee08767343b167f38d8873ec114"
+      "sha256": "475e47a968cdb00e4269f8e4eef2b92cfecc0a7fe7490a14cbac6a6f3c373271"
     },
     {
       "path": "motion_receipts.py",
@@ -181,7 +225,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "b88646bd64aca68aa5a2d29dee7155119e6a29f9532677035630d1e1b525aa5f"
+      "sha256": "2808ed166aee86a538f605b18f0110416214074fe372cf601bca5c705e099b50"
     },
     {
       "path": "provider_metrics.py",
@@ -489,7 +533,7 @@
     },
     {
       "path": "skills/browser-drive/scripts/capability_probe.py",
-      "sha256": "44989a3e9d318118c1eafd548121147ebc56938bfdca6f2b3ef09a06350de8af"
+      "sha256": "634751abe093f72c262090b96ab2d0fbeaa160180a78d8b565f7c52843c77d00"
     },
     {
       "path": "skills/comment-checker/SKILL.md",
@@ -1329,7 +1373,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/complete-contract.md",
-      "sha256": "53552d1e3580818c70c8be11f5d041917271201c373adb8ca22cdd385959959a"
+      "sha256": "74c6fefc90ae50b27f2c5d88e0e37aa40b60638193d6455602c821dc9b04b217"
     },
     {
       "path": "skills/frontend-ui-ux/references/composition.md",
@@ -3661,7 +3705,7 @@
     },
     {
       "path": "skills/lit-humanizer/scripts/extract_office_text.py",
-      "sha256": "fa34db1ebc4bece289477ddb6eeaf43a0db721164b363adf8fb3ffab2706715c"
+      "sha256": "70875af7abf72b126d1d589f846f8c463f1613b5e5d0e9c83f2940bb1be30bbc"
     },
     {
       "path": "skills/lit-humanizer/scripts/ko_metrics.py",
@@ -4709,7 +4753,7 @@
     },
     {
       "path": "skills/litgoal/SKILL.md",
-      "sha256": "ec38d44e41e91013f58867836cf0e156c702b0b22e5ea853f430420151d410f0"
+      "sha256": "da7c24423c920bd7bad4f9d198cbde84b05361de66283d5d5bbeb6af1ef5b07e"
     },
     {
       "path": "skills/litresearch/ATTRIBUTION.md",
@@ -4941,7 +4985,7 @@
     },
     {
       "path": "skills/visual-qa/references/complete-contract.md",
-      "sha256": "435f682f2ea164243424a284297d843f02c9a04c1933e74f7b606cd0889a58bc"
+      "sha256": "819bc197f1e5b3847a78f6ae3dc01e9df3aa294db5f7af7e3d2a30eb10b3edc6"
     },
     {
       "path": "skills/visual-qa/schemas/evidence-manifest-v1alpha1.schema.json",
@@ -5154,6 +5198,10 @@
     {
       "path": "workflow_map.py",
       "sha256": "8da12ac65ee0f9c9d8d07611df41dda8b07fd75eca821bf0e8b5c3dc376cd930"
+    },
+    {
+      "path": "workspace.py",
+      "sha256": "00ff18b4709580bb9235c26f7c36d646577a0f8e53e3d465e4f2423c04bb0dd0"
     }
   ]
 }

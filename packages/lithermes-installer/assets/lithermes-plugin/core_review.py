@@ -11,6 +11,7 @@ try:
         contract_route_block,
         reader_facing_contract_block,
     )
+    from .child_env import scrubbed_env
     from .core_reader_args import parse_reader_facing_command_args
     from .core_runtime import parse_args, plan_dir, record_delegate_batch_intent, workspace_from_option
 except (ImportError, ModuleNotFoundError):
@@ -20,6 +21,7 @@ except (ImportError, ModuleNotFoundError):
         contract_route_block,
         reader_facing_contract_block,
     )
+    from child_env import scrubbed_env
     from core_reader_args import parse_reader_facing_command_args
     from core_runtime import parse_args, plan_dir, record_delegate_batch_intent, workspace_from_option
 
@@ -30,6 +32,7 @@ def _run_git(workspace: Path, args: list[str]) -> str:
         out = subprocess.run(
             ["git", *args],
             cwd=str(workspace),
+            env=scrubbed_env({"GIT_OPTIONAL_LOCKS": "0"}),
             capture_output=True,
             text=True,
             timeout=20,
@@ -46,6 +49,7 @@ def _run_git_bytes(workspace: Path, args: list[str]) -> bytes:
         out = subprocess.run(
             ["git", *args],
             cwd=str(workspace),
+            env=scrubbed_env({"GIT_OPTIONAL_LOCKS": "0"}),
             capture_output=True,
             timeout=20,
         )

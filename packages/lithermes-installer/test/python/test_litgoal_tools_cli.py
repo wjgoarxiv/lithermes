@@ -14,7 +14,15 @@ _ASSET_DIR = os.path.normpath(os.path.join(_HERE, "..", "..", "assets", "litherm
 if _ASSET_DIR not in sys.path:
     sys.path.insert(0, _ASSET_DIR)
 
-from litgoal import cli, hook, runtime, store, tools  # noqa: E402
+from litgoal import cli, hook, runs, runtime, store, tools  # noqa: E402
+
+
+def _observed_green(workspace, session_id=""):
+    """Record a passing terminal run as post_tool_call does; return the ref that cites it."""
+    run_id = runs.record_run(
+        workspace, session_id, "terminal", {"command": "pytest -q"}, json.dumps({"exit_code": 0})
+    )
+    return f"run:{run_id}"
 
 
 def _seed_032_state(workspace, *, status="active", resolved=False):
@@ -120,7 +128,7 @@ class ToolHandlers(unittest.TestCase):
         refused = json.loads(tools.tool_goal_complete())
         self.assertFalse(refused["completed"])
 
-        tools.tool_goal_evidence({"criterion_id": cid, "kind": "green", "ref": "t::x", "detail": "GREEN"})
+        tools.tool_goal_evidence({"criterion_id": cid, "kind": "green", "ref": _observed_green(Path.cwd()), "detail": "GREEN"})
         tools.tool_goal_evidence({"criterion_id": cid, "kind": "scenario", "ref": "evidence/qa.txt"})
         tools.tool_goal_criterion_status({"criterion_id": cid, "status": "pass"})
         done = json.loads(tools.tool_goal_complete())
@@ -263,7 +271,7 @@ class CliSurface(unittest.TestCase):
         self.assertEqual(cli.main(["--workspace", self.ws, "status"]), 0)
         # complete is refused (exit 1) until proven
         self.assertEqual(cli.main(["--workspace", self.ws, "complete"]), 1)
-        cli.main(["--workspace", self.ws, "evidence", "C001", "--kind", "green", "--ref", "t::x"])
+        cli.main(["--workspace", self.ws, "evidence", "C001", "--kind", "green", "--ref", _observed_green(Path(self.ws).resolve())])
         cli.main(["--workspace", self.ws, "evidence", "C001", "--kind", "scenario", "--ref", "a.txt"])
         cli.main(["--workspace", self.ws, "criterion-status", "C001", "pass"])
         self.assertEqual(cli.main(["--workspace", self.ws, "complete"]), 0)

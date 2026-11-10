@@ -5,10 +5,10 @@ from pathlib import Path
 
 try:
     from .core_contract import _skill_body_block, contract_route_block
-    from .core_runtime import _clamp_task, lithermes_dir, plan_dir, record_event, slugify, utc_now
+    from .core_runtime import _clamp_task, lithermes_dir, plan_dir, record_event, slugify, utc_now, workspace_from_option
 except (ImportError, ModuleNotFoundError):
     from core_contract import _skill_body_block, contract_route_block
-    from core_runtime import _clamp_task, lithermes_dir, plan_dir, record_event, slugify, utc_now
+    from core_runtime import _clamp_task, lithermes_dir, plan_dir, record_event, slugify, utc_now, workspace_from_option
 
 def build_goal_instruction(
     objective: str,
@@ -65,7 +65,7 @@ def create_plan(brief: str, workspace: Path | None = None) -> Path:
     if not brief:
         raise ValueError('usage: /lit-plan "what to build"')
 
-    root = (workspace or Path.cwd()).resolve()
+    root = (workspace or workspace_from_option(None)).resolve()
     out_dir = plan_dir(root)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{slugify(brief)}.md"
@@ -246,7 +246,7 @@ def scaffold_plan(
     if intent not in ("clear", "unclear"):
         raise ValueError("intent must be 'clear' or 'unclear'")
 
-    root = (workspace or Path.cwd()).resolve()
+    root = (workspace or workspace_from_option(None)).resolve()
     target = draft_path(root, slug)
     created = False
     if target.exists() and not reset:

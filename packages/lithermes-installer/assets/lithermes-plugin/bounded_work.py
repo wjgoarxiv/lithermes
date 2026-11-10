@@ -23,8 +23,10 @@ from typing import Any, Iterator
 
 try:
     from .core_runtime import parse_args, utc_now, workspace_from_option
+    from .workspace import locate as locate_workspace
 except (ImportError, ModuleNotFoundError):
     from core_runtime import parse_args, utc_now, workspace_from_option
+    from workspace import locate as locate_workspace
 
 
 SCHEMA = 3
@@ -104,7 +106,7 @@ def _token_hash(token: str) -> str:
 
 
 def _canonical_worktree(worktree: Path | str | None) -> Path:
-    root = Path.cwd() if worktree is None else Path(worktree).expanduser()
+    root = workspace_from_option(None) if worktree is None else Path(worktree).expanduser()
     root = root.resolve()
     if not root.is_dir():
         raise ValueError(f"worktree is not a directory: {root}")
@@ -765,7 +767,10 @@ def _canonical_tool_path(value: Any) -> Path:
         raise ValueError("mutating tool requires a canonical target path")
     candidate = Path(raw).expanduser()
     if not candidate.is_absolute():
-        candidate = Path.cwd() / candidate
+        anchor = locate_workspace()
+        if anchor is None:
+            raise ValueError("mutating tool requires a canonical target path")
+        candidate = anchor / candidate
     return candidate.resolve()
 
 
@@ -818,7 +823,7 @@ def _terminal_requirement(args: dict[str, Any]) -> tuple[str, list[Path]] | None
         action = "execute-check"
     else:
         raise ValueError("terminal command is not a supported bounded mutation")
-    return action, [_canonical_tool_path(args.get("workdir") or Path.cwd())]
+    return action, [_canonical_tool_path(args.get("workdir") or locate_workspace())]
 
 
 _OBSERVER_HERDR_READS = {
@@ -959,10 +964,9 @@ def release_bounded_session(session_id: str) -> None:
     if not session_id:
         return
     candidates = list(_SESSION_WORKTREES.get(session_id) or set())
-    try:
-        candidates.append(Path.cwd().resolve())
-    except OSError:
-        pass
+    session_root = locate_workspace(session_id=session_id)
+    if session_root is not None:
+        candidates.append(session_root)
     for root in dict.fromkeys(candidates):
         work_root = _work_root(root)
         if not work_root.is_dir():

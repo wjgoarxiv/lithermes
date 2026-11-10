@@ -56,8 +56,14 @@ function detectHermesRuntimeRepo() {
     .find((entry) => fs.existsSync(entry));
   if (!executable) return null;
   try {
-    const firstLine = fs.readFileSync(executable, "utf8").split(/\r?\n/, 1)[0];
-    const interpreter = firstLine.startsWith("#!") ? firstLine.slice(2).trim() : "";
+    const lines = fs.readFileSync(executable, "utf8").split(/\r?\n/, 5);
+    const firstLine = lines[0];
+    // Hermes 0.23 installs `#!/bin/sh` + `exec <repo>/.hermes/bin/hermes "$@"`; the exec target
+    // sits three levels under the repo, as a python shebang does (<repo>/venv/bin/python).
+    const launched = lines.slice(1).map((line) => line.match(/^exec\s+(\/\S+)/)?.[1]).find(Boolean);
+    const interpreter = !firstLine.startsWith("#!") ? ""
+      : /^#!\/bin\/(?:ba)?sh\b/.test(firstLine) ? (launched || "") : firstLine.slice(2).trim();
+    if (!interpreter) return null;
     const runtimeRepo = path.dirname(path.dirname(path.dirname(interpreter)));
     return fs.existsSync(path.join(runtimeRepo, "hermes_cli")) ? runtimeRepo : null;
   } catch {
@@ -77,6 +83,7 @@ function readIfExists(filePath) {
 // helpers moved into tools/delegate_tool_config.py, and hermes_cli/runtime_provider.py
 // moved from an if/elif chain to a _POOL_ENTRY_SIMPLE_MODES data table. Both layouts are
 // checked so a 0.21.0 host is not misreported as lacking capabilities it genuinely has.
+// The 0.23.0 layout is the 0.21.0 one plus the effort read noted below.
 function inspectHermesHostCapabilities(hermesRepo) {
   const unavailable = { concurrencyHard: false, delegationRouteHard: false, runtimeHard: false };
   if (!hermesRepo) return unavailable;
@@ -95,7 +102,11 @@ function inspectHermesHostCapabilities(hermesRepo) {
       // The config-level model override moved from a single `configured_model` line
       // (0.17/0.19) into a per-key dict comprehension in _resolve_delegation_credentials
       // (0.21.0); both read the same cfg.get("model") value.
-      delegationRouteHard: delegation.includes('delegation_cfg.get("reasoning_effort")')
+      // Hermes 0.23.0 moved the delegation effort read into _child_reasoning() and wrapped the
+      // section in `(delegation_cfg or {})`; it still prefers delegation.reasoning_effort over
+      // the parent's level (tools/delegate_tool_config.py:552-564).
+      delegationRouteHard: (delegation.includes('delegation_cfg.get("reasoning_effort")')
+          || delegation.includes('(delegation_cfg or {}).get("reasoning_effort")'))
         && delegation.includes("effective_model = model or parent_agent.model")
         && (delegation.includes('configured_model = str(cfg.get("model")')
           || delegation.includes('str(cfg.get(k) or "").strip() or None for k in ("model"')),

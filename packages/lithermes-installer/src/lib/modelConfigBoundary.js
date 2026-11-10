@@ -7,7 +7,7 @@ const { isMap, isScalar, parseDocument, visit } = require("yaml");
 // July 2026 campaign's headline defect happened (the set held 0.17.0 while the host had
 // moved to 0.19.0, and the plugin went inert). The real gate is the source/runtime
 // marker check below, which is probed from the host that is actually running.
-const VERIFIED_HOST_VERSIONS = new Set(["0.17.0", "0.19.0"]);
+const VERIFIED_HOST_VERSIONS = new Set(["0.17.0", "0.19.0", "0.23.0"]);
 const VERIFIED_HOST_VERSION_TEXT = [...VERIFIED_HOST_VERSIONS].join(", ");
 // Below this the managed schema did not exist, so forward compatibility must not become
 // backward acceptance.
@@ -88,14 +88,26 @@ function sourceHash(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
-// Hermes 0.19 prints "Hermes Agent v0.19.0 (2026.7.20) · upstream <hash>" plus an
-// "Install directory:" second line; only that exact build/upstream shape is
-// tolerated — arbitrary suffixes ("-beta", "_beta", " stable") stay rejected.
+// The banner is `Hermes Agent v<version> (<date>)<label>`, composed by hermes_cli/banner.py
+// `format_banner_version_label` over hermes_cli/version_info.py `_derived_version`. Hermes 0.19
+// printed `v0.19.0 (2026.7.20) · upstream <hash>`; 0.23 also prints a build suffix on the
+// version (`+1558.g96cac93.dirty`, `+3`, `+?`) and a channel label (`· stable · local <hash>`,
+// `· commit-build · <hash>`, `· installer`). Only those exact shapes are tolerated: arbitrary
+// suffixes ("-beta", "_beta", " stable") stay rejected, and the returned version is the release.
+const HEX = "[0-9a-f]{7,40}";
+const BUILD_SUFFIX = "(?:\\+(?:\\?|[0-9]+(?:\\.g[0-9a-f]{7,40}(?:\\.dirty)?)?))?";
+const LABEL = [
+  `upstream ${HEX}(?: · local ${HEX} \\(\\+[0-9]+ carried commits?\\))?`,
+  `commit-build · ${HEX}`,
+  `(?!upstream\\b|local\\b)[a-z0-9]+(?:-[a-z0-9]+)*(?: · local ${HEX})?`,
+].map((alternative) => `(?:${alternative})`).join("|");
+const HOST_BANNER = new RegExp(
+  `^(?:Hermes Agent )?v?([0-9]+(?:\\.[0-9]+)+)${BUILD_SUFFIX}`
+  + `(?: \\([0-9]{4}\\.[0-9]{1,2}\\.[0-9]{1,2}\\)(?: · (?:${LABEL}))?)?$`,
+);
 function exactHostVersion(raw) {
   const firstLine = String(raw || "").split(/\r?\n/, 1)[0];
-  const match = firstLine
-    .match(/^(?:Hermes Agent )?v?([0-9]+(?:\.[0-9]+)+)(?: \([0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}\)(?: · upstream [0-9a-f]{7,40})?)?$/);
-  return match?.[1] || "";
+  return firstLine.match(HOST_BANNER)?.[1] || "";
 }
 
 /** Compare dotted numeric versions. Returns <0, 0 or >0. */

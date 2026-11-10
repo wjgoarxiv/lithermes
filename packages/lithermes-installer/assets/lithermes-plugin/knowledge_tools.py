@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from . import knowledge
+from .workspace import resolve as resolve_workspace
 
 
 TOOL_NAME = "lithermes_knowledge_capture"
@@ -21,7 +22,7 @@ _HOST_WORKSPACE_KEY = "workspace"
 
 def _workspace_from_kwargs(kwargs: dict[str, Any]) -> Path | None:
     if _HOST_WORKSPACE_KEY not in kwargs:
-        return Path.cwd()
+        return resolve_workspace(session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"))
     value = kwargs.get(_HOST_WORKSPACE_KEY)
     if not isinstance(value, (str, os.PathLike)):
         return None

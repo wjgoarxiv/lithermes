@@ -1,5 +1,6 @@
 """W1-T2: litgoal lifecycle, evidence, checkpoint, steering, quality gate, blockers."""
 
+import json
 import os
 import sys
 import tempfile
@@ -11,7 +12,7 @@ _ASSET_DIR = os.path.normpath(os.path.join(_HERE, "..", "..", "assets", "litherm
 if _ASSET_DIR not in sys.path:
     sys.path.insert(0, _ASSET_DIR)
 
-from litgoal import runtime, store  # noqa: E402
+from litgoal import runs, runtime, store  # noqa: E402
 
 
 class Lifecycle(unittest.TestCase):
@@ -21,6 +22,13 @@ class Lifecycle(unittest.TestCase):
 
     def tearDown(self):
         self._tmp.cleanup()
+
+    def observed_green(self, exit_code=0):
+        """Record a terminal run the way post_tool_call does; return the ref that cites it."""
+        run_id = runs.record_run(
+            self.ws, "", "terminal", {"command": "pytest -q"}, json.dumps({"exit_code": exit_code})
+        )
+        return f"run:{run_id}"
 
     def test_create_goal_sets_active_and_logs(self):
         goal = runtime.create_goal(self.ws, "ship parity", title="parity")
@@ -52,7 +60,7 @@ class Lifecycle(unittest.TestCase):
         self.assertFalse(result["completed"])
 
         # satisfy: pass status + green + scenario evidence
-        runtime.add_evidence(self.ws, crit.id, "green", "t.py::x", "GREEN")
+        runtime.add_evidence(self.ws, crit.id, "green", self.observed_green(), "GREEN")
         runtime.add_evidence(self.ws, crit.id, "scenario", "evidence/qa.txt", "tmux artifact")
         runtime.set_criterion_status(self.ws, crit.id, "pass")
         gate2 = runtime.quality_gate(self.ws)
@@ -72,7 +80,7 @@ class Lifecycle(unittest.TestCase):
     def test_review_blocker_blocks_completion(self):
         runtime.create_goal(self.ws, "obj")
         crit = runtime.add_criterion(self.ws, "happy", qa_channel="cli", test_ref="t")
-        runtime.add_evidence(self.ws, crit.id, "green", "t", "g")
+        runtime.add_evidence(self.ws, crit.id, "green", self.observed_green(), "g")
         runtime.add_evidence(self.ws, crit.id, "scenario", "a", "s")
         runtime.set_criterion_status(self.ws, crit.id, "pass")
         blocker = runtime.add_review_blocker(self.ws, "reviewer wants more evidence")
@@ -86,7 +94,7 @@ class Lifecycle(unittest.TestCase):
     def test_blocked_criterion_cannot_complete_even_with_required_evidence(self):
         runtime.create_goal(self.ws, "obj")
         crit = runtime.add_criterion(self.ws, "blocked path", qa_channel="cli", test_ref="t")
-        runtime.add_evidence(self.ws, crit.id, "green", "t", "g")
+        runtime.add_evidence(self.ws, crit.id, "green", self.observed_green(), "g")
         runtime.add_evidence(self.ws, crit.id, "scenario", "a", "s")
         runtime.set_criterion_status(self.ws, crit.id, "blocked")
 

@@ -1,5 +1,6 @@
 name: lithermes
-version: 1.0.37
+version: 1.0.38
+requires_hermes: ">=0.21.3"
 description: "Hermes-native workflow toolkit: litgoal durable runtime, 5-lane review orchestrator, Litwork commands, skills, and prompt steering."
 author: "LitHermes contributors"
 kind: standalone
@@ -14,6 +15,7 @@ hooks:
   - post_api_request
   - subagent_stop
   - transform_llm_output
+  - pre_verify
   - on_session_finalize
   - on_session_reset
 provides_tools:
@@ -38,5 +40,6 @@ provides_hooks:
   - post_api_request
   - subagent_stop
   - transform_llm_output
+  - pre_verify
   - on_session_finalize
   - on_session_reset

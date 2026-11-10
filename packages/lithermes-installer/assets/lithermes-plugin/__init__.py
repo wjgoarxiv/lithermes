@@ -13,11 +13,15 @@ from . import bounded_work
 from . import bounded_work_tools
 from . import deliverable_hedge_guard
 from . import handoff
+from . import handoff_card
 from . import knowledge
 from . import knowledge_tools
+from . import lit_mark
 from . import scientific_visualization
 from .litgoal import cli as litgoal_cli
 from .litgoal import hook as litgoal_hook
+from .litgoal import runs as litgoal_runs
+from .litgoal import testguard as litgoal_testguard
 from .litgoal import tools as litgoal_tools
 
 
@@ -394,6 +398,27 @@ def _auto_handoff_block(kwargs: dict[str, Any]) -> str:
         return ""
 
 
+def _goal_resume_session(kwargs: dict[str, Any]) -> str:
+    return str(kwargs.get("session_id") or kwargs.get("task_id") or "")
+
+
+def _session_workspace(kwargs: dict[str, Any]) -> Path | None:
+    """The folder this session works in (the host's session cwd), or None when only the Hermes home is left."""
+    return core.resolve_workspace(
+        session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"), explicit=kwargs.get("workspace")
+    )
+
+
+def _note_goal_resume_first_turn(kwargs: dict[str, Any], workspace: Path | None) -> None:
+    """Look for an unfinished goal from an earlier session; an advisory offer never costs the turn."""
+    if workspace is None:
+        return
+    try:
+        core._lit_reentry.note_first_turn(_goal_resume_session(kwargs), workspace)
+    except Exception:  # noqa: BLE001 - advisory only
+        return
+
+
 def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     """Compose the Litwork directive and the active-litgoal snapshot.
 
@@ -414,9 +439,15 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     auto_handoff_block = _auto_handoff_block(kwargs)
     if auto_handoff_block:
         post_edit = f"{auto_handoff_block}\n\n{post_edit}" if post_edit else auto_handoff_block
-    workspace = kwargs.get("workspace")
-    knowledge_context = knowledge.query(workspace, str(kwargs.get("user_message") or ""))
+    workspace = _session_workspace(kwargs)
+    knowledge_context = (
+        knowledge.query(workspace, str(kwargs.get("user_message") or "")) if workspace is not None else ""
+    )
+    _note_goal_resume_first_turn(kwargs, workspace)
     base = core.pre_llm_call(**kwargs)
+    resume_block = core._lit_reentry.take_context(_goal_resume_session(kwargs))
+    if resume_block:
+        post_edit = f"{resume_block}\n\n{post_edit}" if post_edit else resume_block
     activation = bounded_work.consume_activation_message(
         str(kwargs.get("user_message") or ""),
         session_id=str(kwargs.get("session_id") or ""),
@@ -473,12 +504,12 @@ def _setup_lithermes_cli(parser) -> None:
         "slash commands: /lit /lit-loop /lit-plan /litgoal /review-work /start-work /deep-interview "
         "/lit-humanizer (legacy aliases: /lit-korean /text-naturalization /text-neutralization "
         "/korean-ai-slop-remover) /lit-recap "
-        "/lit-handoff /lit-scientific-visualization /lit-diagram-drawer /lit-schematic /lit-pptx /lit-docx /lit-hijack /lit-adhd /lit-typographic-motion\n"
+        "/lit-handoff /lit-accept-tests /lit-scientific-visualization /lit-diagram-drawer /lit-schematic /lit-pptx /lit-docx /lit-hijack /lit-adhd /lit-typographic-motion\n"
         f"skills: {len(PORTED_SKILLS)} lithermes:* skills — `hermes lithermes status` lists them\n"
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
         "hooks: on_session_start, pre_llm_call, pre_tool_call, pre_command, post_tool_call, "
-        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, on_session_finalize, on_session_reset\n"
+        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset\n"
         "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress\n"
         "wikify knowledge: hermes lithermes knowledge status|query|capture|save|review\n"
         "run `hermes lithermes status` for versions + full surface, or `doctor` for health checks"
@@ -607,13 +638,37 @@ def _command_handler(ctx, handler, route=None):
     return _native_command_dispatch(ctx, ignited)
 
 
+# Routes that are expected to open a goal before they claim work is done.
+_WORK_ROUTES = frozenset({"litwork", "lit-loop", "start-work"})
+
+
 def _transform_llm_output(**kwargs: Any) -> str | None:
     named = handoff.transform_llm_output(**kwargs)
     if named is None:
         named = scientific_visualization.transform_llm_output(**kwargs)
     if named is None:
         named = core.transform_llm_output(**kwargs)
-    return named
+    # Appended after whichever text won: the model's reply is never rewritten.
+    work_route = core._lit_reentry.active_discipline(_goal_resume_session(kwargs)) in _WORK_ROUTES
+    mark = litgoal_hook.not_done_mark(**kwargs, lit_route_active=work_route)
+    if mark is None:
+        return named
+    text = named if named is not None else str(kwargs.get("response_text") or "")
+    return f"{text}\n\n{mark}"
+
+
+def _pre_verify(**kwargs: Any) -> dict[str, str] | None:
+    return litgoal_hook.hold_finish(**kwargs)
+
+
+def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
+    """Append the one-line cross-session goal row after whatever mark the reply already gets."""
+    named = _transform_llm_output(**kwargs)
+    row = core._lit_reentry.take_visible(_goal_resume_session(kwargs))
+    if not row:
+        return named
+    base = named if named is not None else str(kwargs.get("response_text") or "")
+    return lit_mark.append_row(base, row)
 
 
 def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
@@ -626,7 +681,7 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
         tool_name=kwargs.get("tool_name"),
         args=kwargs.get("args"),
         session_id=kwargs.get("session_id"),
-        workspace=kwargs.get("workspace"),
+        workspace=_session_workspace(kwargs),
         task_id=kwargs.get("task_id"),
     )
     if humanizer_denial is not None:
@@ -637,6 +692,8 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
 
 
 def _post_tool_call(**kwargs: Any) -> None:
+    # Terminal runs are the only proof a `green` litgoal evidence item can cite.
+    litgoal_runs.observe_tool_call(**kwargs)
     return core.post_tool_call(**kwargs)
 
 
@@ -645,6 +702,7 @@ def _transform_tool_result(**kwargs: Any) -> str | None:
 
 
 def _on_session_start(**kwargs: Any) -> None:
+    core._lit_reentry.forget_offers(kwargs.get("session_id"))
     return core.on_session_start(**kwargs)
 
 
@@ -658,7 +716,15 @@ def _release_bounded_session(**kwargs: Any) -> None:
     # A finalized/reset session must not leave its rule dedup ledger behind: the
     # next session reusing the id would see every rule as "already injected".
     core.release_rules_session(session_id)
+    core._lit_reentry.forget_offers(session_id)
     return None
+
+
+def _finalize_session(**kwargs: Any) -> None:
+    # The card needs the session's litgoal state; the release below does not, but
+    # a card that fails to write must still never keep a session's authority alive.
+    handoff_card.finalize(kwargs.get("session_id"))
+    return _release_bounded_session(**kwargs)
 
 
 def register(ctx) -> None:
@@ -693,9 +759,12 @@ def register(ctx) -> None:
     # Record each delegate_task child (review lanes, reviewer gate) to the ledger.
     ctx.register_hook("subagent_stop", core.subagent_stop)
     # Draw natural-route acknowledgements without synthesizing model probe lines.
-    ctx.register_hook("transform_llm_output", _transform_llm_output)
+    ctx.register_hook("transform_llm_output", _transform_llm_output_with_offer)
+    # Hermes 0.18+ asks this once code was edited and the answer is about to go out; while the
+    # litgoal gate is closed and the draft claims done, the turn is kept going with the reasons.
+    ctx.register_hook("pre_verify", _pre_verify)
     # A finalized/reset session cannot retain live mutation authority.
-    ctx.register_hook("on_session_finalize", _release_bounded_session)
+    ctx.register_hook("on_session_finalize", _finalize_session)
     ctx.register_hook("on_session_reset", _release_bounded_session)
 
     # Model-facing litgoal tools (durable criteria/evidence/checkpoint/steering/gate).
@@ -746,6 +815,12 @@ def register(ctx) -> None:
         _command_handler(ctx, core.command_litgoal, "litgoal"),
         description="Open or inspect the LitHermes litgoal durable runtime",
         args_hint='["objective"] [--worktree PATH]',
+    )
+    ctx.register_command(
+        "lit-accept-tests",
+        _command_handler(ctx, litgoal_testguard.command_accept_tests),
+        description="Accept a test-weakening change the litgoal guard flagged (user only; reason is recorded)",
+        args_hint="<reason>",
     )
     ctx.register_command(
         "review-work",

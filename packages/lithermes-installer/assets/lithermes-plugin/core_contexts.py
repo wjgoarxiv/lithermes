@@ -4,11 +4,13 @@ from html import escape
 from pathlib import Path
 
 try:
+    from .child_env import scrubbed_env
     from .core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
     from .core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS, route_look_block
     from .core_review import review_mode_line, review_target
     from .core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
 except (ImportError, ModuleNotFoundError):
+    from child_env import scrubbed_env
     from core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
     from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS, route_look_block
     from core_review import review_mode_line, review_target
@@ -266,7 +268,7 @@ def _probe_browser_driver_report() -> dict:
             _sys.path.insert(0, str(scripts))
         import capability_probe as _probe
 
-        return _probe.probe_browser_driver()
+        return _probe.probe_browser_driver(env=scrubbed_env())
     except Exception:
         # An unmeasurable capability is reported as unmeasured, never as present.
         return {

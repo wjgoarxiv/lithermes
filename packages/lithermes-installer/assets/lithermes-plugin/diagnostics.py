@@ -7,14 +7,21 @@ from pathlib import Path
 from typing import assert_never
 
 try:
+    from .child_env import scrubbed_env
+except (ImportError, ModuleNotFoundError):
+    from child_env import scrubbed_env  # type: ignore
+
+try:
     from . import scientific_visualization as _science
 except (ImportError, ModuleNotFoundError):
     import scientific_visualization as _science  # type: ignore
 
 try:
     from . import knowledge as _knowledge
+    from .workspace import locate as _locate_workspace
 except (ImportError, ModuleNotFoundError):
     import knowledge as _knowledge  # type: ignore
+    from workspace import locate as _locate_workspace  # type: ignore
 
 try:
     from . import provider_metrics as _provider_metrics
@@ -42,6 +49,7 @@ HOOKS = (
     "post_api_request",
     "subagent_stop",
     "transform_llm_output",
+    "pre_verify",
     "on_session_finalize",
     "on_session_reset",
 )
@@ -480,7 +488,7 @@ def status_report(host_version: str | None = None) -> str:
         f"knowledge tools ({len(KNOWLEDGE_TOOLS)}): {', '.join(KNOWLEDGE_TOOLS)}",
         "bounded work schema: 3   (/lit-loop init|status|resume|cancel|complete)",
         "litgoal state: .hermes/lithermes/litgoal/   (drive via: hermes lithermes goal status)",
-        _knowledge.status_line(Path.cwd()),
+        _knowledge.status_line(_locate_workspace() or Path.cwd()),
         _provider_metrics.capability_line(),
         _auto_handoff.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
@@ -502,7 +510,7 @@ def _motion_runtime_lines() -> list[str]:
                 "motion software GL: unknown", "motion pre-warm: missing; run lithermes motion-runtime install",
                 "motion cover encoder: unavailable"]
     try:
-        result = subprocess.run(["node", str(command), "status"], capture_output=True, text=True, timeout=35)
+        result = subprocess.run(["node", str(command), "status"], capture_output=True, text=True, timeout=35, env=scrubbed_env())
         if result.returncode == 0 and len(result.stdout.splitlines()) == 6:
             return ["motion " + line for line in result.stdout.splitlines()]
     except (OSError, subprocess.TimeoutExpired):
@@ -549,7 +557,7 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     try:
         import subprocess
         runtime = PLUGIN_ROOT / "skills" / "lit-pptx" / "bin" / "office.mjs"
-        result = subprocess.run(["node", str(runtime), "doctor"], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(["node", str(runtime), "doctor"], capture_output=True, text=True, timeout=10, env=scrubbed_env())
         lines.append("[OK] " + result.stdout.strip() if result.returncode == 0 else "[WARN] Office runtime status unavailable")
     except (OSError, subprocess.TimeoutExpired):
         lines.append("[WARN] Office runtime status unavailable")
@@ -563,7 +571,7 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
     except (ImportError, ModuleNotFoundError) as exc:
         lines.append(f"[WARN] litgoal runtime import failed: {exc}")
         healthy = False
-    knowledge_detail, knowledge_ok = _knowledge.health(Path.cwd())
+    knowledge_detail, knowledge_ok = _knowledge.health(_locate_workspace() or Path.cwd())
     lines.append(
         f"[{'OK' if knowledge_ok else 'WARN'}] knowledge authority: {knowledge_detail}; "
         ".hermes/lithermes/knowledge/claims.jsonl"

@@ -13,7 +13,13 @@ A plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent) that h
 <a href="https://github.com/wjgoarxiv/lithermes/stargazers"><img src="https://img.shields.io/github/stars/wjgoarxiv/lithermes?style=flat-square&labelColor=080d14&color=f2efdf" alt="GitHub stars" /></a>
 </p>
 
-Put `lit` in front of a request and Hermes pins what "done" means, writes a test that fails before the change, checks the running result and writes down where things stand. Type `/lit-handoff` when you stop, and the next session starts from that note. It works the same in the Hermes CLI and through a Telegram or Discord gateway. To try it, install once, restart Hermes and give it a task:
+Put `lit` in front of a request and Hermes pins what "done" means, writes a test that fails before the change, checks the running result and writes down where things stand. With `lit` on, you see this:
+- **A "done" that has to be earned.** When a reply says it is done while the goal's checks are still open, it ends with `⛔ LIT: not done — <reason>` and the goal will not close. A `lit` session that says done without ever opening a goal gets the same line, with that reason.
+- **Tests you can trust.** A green counts only when the plugin watched that test command finish with exit 0 and signed a receipt for it. Change the code afterwards and the receipt goes stale until the tests run again. Delete a test, drop an assertion or add a skip, and the goal stays closed until you accept the change yourself with `/lit-accept-tests <reason>`; the model has no way to do that.
+- **A note for tomorrow.** When a session that held a goal closes, a handoff card is written under `.hermes/lithermes/handoff/`. The next session in that project offers the unfinished goal, and a bare `lit` picks it up.
+- **A pane in Hermes Desktop.** The goal, whether its gate is open and a six-step timeline sit in a right-hand pane. It is Off by default: in Hermes Desktop 0.23 or later, switch LitHermes on under Capabilities > Plugins.<br /><br /><img src="./docs/assets/desktop-pane.webp" width="360" alt="The LitHermes pane in Hermes Desktop for the goal Month-end export CI green. Timeline: Plan, 3 criteria; Runs, R003, R004 and R005 each marked stale; Review, no blockers; Gate, CLOSED with 9 reasons; Handoff, not written yet; Resume, fresh session. Three criteria are pending, the three evidence rows citing run R005 read stale, and the first reason says C001 evidence R005 is stale because tally/export.py changed after the run." />
+
+It works the same in the Hermes CLI and through a Telegram or Discord gateway. To try it, install once, restart Hermes and give it a task:
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -69,13 +75,7 @@ Name a look, or let `lit-pptx` choose one of thirteen for your reader and say wh
 
 Hermes Agent is good at the task in front of it. Work that outlasts one sitting is harder: the conversation gets compacted, the terminal closes or the gateway restarts, and next time you first have to work out what was decided, what was really tested and what was left half done. And "done" often means only that the model said so.
 
-LitHermes gives each session a routine and keeps a record of it. With `lit` in front, a request gets criteria you can check, a test that fails before the change and passes after it, a look at the running result, and a handoff note in your project. For a bigger change, `lit plan` writes a plan you approve before anything is edited. Goals, plans and evidence stay on disk, so a fresh session reads them and carries on. Hermes still runs the model, the tools and your sign-in; LitHermes adds the way of working on top.
-
-In one line, for a friend: *put `lit` in front of a Hermes task and it proves the result before it says done, then leaves tomorrow's session a note.*
-
-### Who it's for
-
-LitHermes suits people who already use Hermes on work that has to hold up: code that must keep passing its tests, reports and decks that go to other people, research you want sources for. It helps most when the work outlasts one sitting, or when you start it at your desk and check on it later from a phone through a gateway.
+LitHermes gives each session a routine and keeps a record of it. With `lit` in front, a request gets criteria you can check, a test that fails before the change and passes after it, a look at the running result, and a handoff note in your project. For a bigger change, `lit plan` writes a plan you approve before anything is edited. Goals, plans and evidence stay on disk, so a fresh session reads them and carries on. Hermes still runs the model, the tools and your sign-in; LitHermes adds the way of working on top. LitHermes suits people who already use Hermes on work that has to hold up: code that must keep passing its tests, reports and decks that go to other people, research you want sources for. It helps most when the work outlasts one sitting, or when you start it at your desk and check on it later from a phone through a gateway.
 
 ### What a session looks like
 
@@ -91,7 +91,7 @@ lit plan add a --shout flag that prints the greeting in capitals, with a test
 
 ## Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.37`. Run this in any terminal:
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.38`. Run this in any terminal:
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -143,7 +143,7 @@ Then type `/lit-handoff`. The result and the next step go into `HANDOFF.md` in t
 
 ## The workflow map
 
-A Hermes plugin cannot add a panel or a status bar segment of its own, so LitHermes shows where the work stands inside the reply itself. While a plan is being worked through, each reply ends with one map row:
+In the terminal a Hermes plugin cannot add a panel or a status bar segment of its own (the Desktop pane above is the exception), so LitHermes shows where the work stands inside the reply itself. While a plan is being worked through, each reply ends with one map row:
 
 ```text
 🔥 LIT · lit-loop — 📝 plan ✓ › 🔨 WORK ▰▰▰▱▱▱▱ 3/7 › 🔍 · › 🏁 ·
@@ -264,11 +264,11 @@ Before the next model call, the context hook reads those records and hands the m
 
 ## Requirements, updates and removal
 
-LitHermes needs Hermes Agent, Node.js 18 or later, and write access to your Hermes home. A film also needs Chrome and ffmpeg on your machine, and Word and PowerPoint files install their pinned tools into a LitHermes cache the first time you make one.
+LitHermes needs Hermes Agent 0.21.3 or later, Node.js 18 or later, and write access to your Hermes home. A film also needs Chrome and ffmpeg on your machine, and Word and PowerPoint files install their pinned tools into a LitHermes cache the first time you make one.
 
 It keeps itself up to date. When you run `install`, `check` or `doctor` in a terminal, or send the first message of an interactive Hermes CLI session, it looks for a newer stable release, backs up your plugin and settings, installs it and runs `doctor --offline`; if anything fails, the backup goes back. Gateways and the full-screen TUI never update this way. To install updates yourself, set `LITHERMES_NO_AUTO_UPDATE=1`. [Updates](./docs/install.md#updates) lists every step and switch.
 
-Its records stay on your machine. Goals, plans and evidence live under `.hermes/lithermes/` in your project; the install record, update cache and backups live in your Hermes home. LitHermes goes online for two things of its own. It asks npm whether a newer version exists, which you can switch off with `LITHERMES_NO_UPDATE_CHECK=1`. And it downloads pinned helper tools when a skill first needs them: the film helpers during `install` (add `--offline` to skip it) and the Office tools the first time you make a Word or PowerPoint file. Your prompts go to whichever model provider Hermes is set up with, as before. [Privacy and local records](./docs/privacy.md) lists every file it writes.
+Its records stay on your machine. Goals, plans, evidence, signed run notes and handoff cards live under `.hermes/lithermes/` in your project; the install record, update cache and backups live in your Hermes home. Four details are worth knowing. A run note shows that the plugin saw a command finish with that exit code, and it does not show that the command tested anything useful. The test watch behind `/lit-accept-tests` keeps its counts in a project file that a model with a raw shell could empty. A new session reads other sessions' goal files in the same project to offer a resume, but only goals this install sealed with its own key (kept in your Hermes home), and `LITHERMES_GOAL_RESUME=0` turns that off. A handoff card is written when Hermes closes the session, which can be well after your last message. LitHermes goes online for two things of its own. It asks npm whether a newer version exists, which you can switch off with `LITHERMES_NO_UPDATE_CHECK=1`. And it downloads pinned helper tools when a skill first needs them: the film helpers during `install` (add `--offline` to skip it) and the Office tools the first time you make a Word or PowerPoint file. Your prompts go to whichever model provider Hermes is set up with, as before. [Privacy and local records](./docs/privacy.md) lists every file it writes, and [what the plugin checks, reads and starts](./docs/privacy.md#what-the-plugin-checks-reads-and-starts) covers the rest: the run signature, the Desktop pane's read-only route, the processes it launches, the Hermes internals it reads and the one `sudo` scan caution.
 
 To check an install without going online, or to remove it:
 

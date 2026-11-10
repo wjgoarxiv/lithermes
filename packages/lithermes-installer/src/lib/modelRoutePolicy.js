@@ -36,6 +36,20 @@ const HOST_SENT_EFFORTS = new Map([["minimal", "low"]]);
 const CHILD_TRANSPORT_KEYS = ["provider", "base_url", "api_mode"];
 const { OPENAI_PROVIDER: OPENAI_PROVIDER_ID } = require("./modelConfigBoundary");
 const XAI_PROVIDER_ID = "xai";
+const XAI_OAUTH_PROVIDER_ID = "xai-oauth";
+// The host's own spellings of its xAI OAuth provider (hermes_cli/auth.py `_PROVIDER_ALIASES`),
+// folded to the canonical id the host reads from config.yaml.
+const PROVIDER_ALIASES = new Map([
+  [XAI_OAUTH_PROVIDER_ID, XAI_OAUTH_PROVIDER_ID],
+  ["x-ai-oauth", XAI_OAUTH_PROVIDER_ID],
+  ["grok-oauth", XAI_OAUTH_PROVIDER_ID],
+  ["xai-grok-oauth", XAI_OAUTH_PROVIDER_ID],
+]);
+
+function canonicalProvider(provider) {
+  const text = String(provider);
+  return PROVIDER_ALIASES.get(text.trim().toLowerCase()) ?? text;
+}
 // Installer choice catalog (plans/references/installer-choice-contract.md, LitHermes row).
 // OpenAI rows offer every effort the live model catalog lists for each model
 // (supported_reasoning_levels), including the selectable legacy GPT-5.6 routes. Hermes
@@ -116,6 +130,13 @@ const ROUTE_CATALOG = {
     lead: { effort: "high", model: "grok-build-0.1" },
     helper: { effort: "high", model: "grok-4.3" },
   },
+};
+// Same host catalog as xAI direct (`_xai_finalize_catalog` serves both providers), reached with the
+// OAuth login Hermes keeps in its auth store, so no API-key variable is expected.
+ROUTE_CATALOG[XAI_OAUTH_PROVIDER_ID] = {
+  ...ROUTE_CATALOG[XAI_PROVIDER_ID],
+  credentialEnv: null,
+  label: "xAI Grok OAuth (SuperGrok)",
 };
 const PROVIDER_IDS = Object.keys(ROUTE_CATALOG);
 const MANAGED_PROVIDER_MODELS = Object.fromEntries(
@@ -236,10 +257,12 @@ function resolveRow(provider, role, model, effort) {
 // Resolves installer flags (or prompt answers) to one managed route. Omitted
 // fields fall back to today's shipped route: openai Astra xhigh lead + Luna max child.
 function managedRequest(options = {}) {
-  const provider = options.provider === undefined || options.provider === "" ? OPENAI_PROVIDER_ID : String(options.provider);
+  const provider = options.provider === undefined || options.provider === ""
+    ? OPENAI_PROVIDER_ID
+    : canonicalProvider(options.provider);
   const childProvider = options.childProvider === undefined || options.childProvider === ""
     ? provider
-    : String(options.childProvider);
+    : canonicalProvider(options.childProvider);
   const lead = resolveRow(provider, "lead", options.model, options.effort);
   const child = resolveRow(childProvider, "child", options.childModel, options.childEffort);
   return {
@@ -424,6 +447,7 @@ module.exports = {
   SOL_MODEL,
   PROVIDER_IDS,
   ROUTE_CATALOG,
+  XAI_OAUTH_PROVIDER_ID,
   XAI_PROVIDER_ID,
   applyManagedRoute,
   customChildTransportReason,

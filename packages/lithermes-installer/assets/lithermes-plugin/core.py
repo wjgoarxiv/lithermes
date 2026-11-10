@@ -35,6 +35,7 @@ try:
     from .core_runtime import _clamp_task, _redact_local_only_preview
     from .core_workflow_commands import *
     from .session_context import is_delegate_child_platform
+    from .workspace import locate as locate_workspace, resolve as resolve_workspace
 except (ImportError, ModuleNotFoundError):
     from bounded_work import *
     from core_commands import *
@@ -63,6 +64,7 @@ except (ImportError, ModuleNotFoundError):
     from core_runtime import _clamp_task, _redact_local_only_preview
     from core_workflow_commands import *
     from session_context import is_delegate_child_platform
+    from workspace import locate as locate_workspace, resolve as resolve_workspace
 
 # The rules engine is a subpackage, so it is imported separately from the flat
 # star-imports above: it must not leak its module names into this facade.
@@ -138,7 +140,13 @@ def post_tool_call(**kwargs: Any) -> None:
     """
     if str(kwargs.get("status") or "ok") != "ok":
         return None
-    _motion_receipts.observe(str(kwargs.get("tool_name") or ""), kwargs.get("args"), workspace=kwargs.get("workspace"))
+    _motion_receipts.observe(
+        str(kwargs.get("tool_name") or ""),
+        kwargs.get("args"),
+        workspace=locate_workspace(
+            session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"), explicit=kwargs.get("workspace")
+        ),
+    )
     paths = mutated_tool_paths(
         str(kwargs.get("tool_name") or ""), kwargs.get("args"), kwargs.get("result")
     )
@@ -169,8 +177,8 @@ def _arm_plan_go(session_id: str, paths: list[str]) -> None:
     if not session_id:
         return
     try:
-        workspace = Path.cwd().resolve()
-        if _adhd_stack.active_skill(workspace, session_id) != "lit-plan":
+        workspace = resolve_workspace(session_id=session_id)
+        if workspace is None or _adhd_stack.active_skill(workspace, session_id) != "lit-plan":
             return
         for raw in reversed(paths):
             target = Path(raw).expanduser()
@@ -272,7 +280,11 @@ def consume_rules_context(**kwargs: Any) -> str:
     blocks = []
     if kwargs.get("is_first_turn") or reopened:
         try:
-            blocks.append(_rules.static_rules_block(Path.cwd(), session_id, compacted=reopened))
+            blocks.append(
+                _rules.static_rules_block(
+                    locate_workspace(session_id=session_id, task_id=kwargs.get("task_id")), session_id, compacted=reopened
+                )
+            )
         except OSError:
             pass
         style_block = _output_styles.output_style_block()
@@ -1740,6 +1752,9 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         return {"context": f"{context.rstrip()}\n\n{contract}"}
 
     session_id = _browser_session_id(kwargs.get("session_id")) or ""
+    # The folder this session works in: the host's session cwd, never the gateway's own. None when
+    # that folder is the Hermes home, where the activation below must not write state.
+    workspace = resolve_workspace(session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"))
     if session_id:
         # The guard belongs to this turn's route. Clear a previous browser route
         # before a new message can select another mode.
@@ -1756,15 +1771,15 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     if bind_obj:
         # The /lit-plan envelope marks this session's lit-plan frame, so the plan
         # it saves arms `go` the same way a natural `lit plan` turn does.
-        if session_id and "<lithermes-plan-context>" in user_message:
-            _adhd_stack.push(Path.cwd().resolve(), session_id, "lit-plan")
+        if session_id and workspace is not None and "<lithermes-plan-context>" in user_message:
+            _adhd_stack.push(workspace, session_id, "lit-plan")
         return None
     # A bare `go` continues the step the last brief offered. The hook consumes
     # the word and injects the next-step record; it never runs a command.
     # Hermes has no typed `go`, so nothing else can collide with this match.
     if _adhd_stack.match_go_word(user_message):
         try:
-            note = _adhd_stack.go_note(Path.cwd().resolve(), session_id)
+            note = _adhd_stack.go_note(locate_workspace(session_id=session_id, task_id=kwargs.get("task_id")), session_id)
         except Exception:
             note = (
                 "The user typed `go` but the next-step record could not be read. "
@@ -1819,13 +1834,17 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
 
     active = discipline(route.mode) if session_id else ""
     compacted = _rules.compaction_stamp(kwargs.get("conversation_history"))
-    step = _lit_reentry.decide(
-        session_id,
-        active,
-        route.objective,
-        workspace=Path.cwd().resolve(),
-        compacted=compacted,
-        review_required=detect_review_modifier(user_message),
+    step = (
+        _lit_reentry.decide(
+            session_id,
+            active,
+            route.objective,
+            workspace=workspace,
+            compacted=compacted,
+            review_required=detect_review_modifier(user_message),
+        )
+        if workspace is not None
+        else _lit_reentry.Step("first")
     )
     if step.kind != "first":
         if step.discipline and session_id:
@@ -1845,10 +1864,11 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         browser_report = _normalise_browser_driver_report(_browser_drive_probe_report())
         if session_id:
             arm_browser_drive_guard(session_id, browser_report)
-    if route.mode == "lit-plan" and route.objective:
+    if route.mode == "lit-plan" and route.objective and workspace is not None:
         planned = command_lit_plan(shlex.quote(route.objective))
         _lit_reentry.remember(session_id, active, plan=planned["plan"], compacted=compacted)
-        _adhd_stack.push(Path.cwd().resolve(), session_id, active)
+        if workspace is not None:
+            _adhd_stack.push(workspace, session_id, active)
         return with_reader_contract(
                 f"{build_natural_mode_context(route, session_id=session_id)}\n\n"
                 f"Durable plan: {planned['plan']}",
@@ -1856,7 +1876,8 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
         )
     if route.mode != "litwork":
         _lit_reentry.remember(session_id, active, compacted=compacted)
-        _adhd_stack.push(Path.cwd().resolve(), session_id, active)
+        if workspace is not None:
+            _adhd_stack.push(workspace, session_id, active)
         if route.mode in _SKILL_ROUTE_CONTRACTS:
             compact_contract = reader_facing_contract_block(
                 requested_reader_mode,
@@ -1882,8 +1903,7 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     run_binding = ""
     if direct or route.objective:
         task = route.objective or _clamp_task(direct.group("task") if direct else "")
-        if task:
-            workspace = Path.cwd().resolve()
+        if task and workspace is not None:
             run_dir = write_run_state(
                 workspace,
                 task=task,
@@ -1924,7 +1944,11 @@ def transform_llm_output(**kwargs: Any) -> str | None:
     if block:
         return acknowledge_reply(route, block)
     response = str(kwargs.get("response_text") or "")
-    return acknowledge_reply(route, response, workflow=workflow_row(route, Path.cwd(), session_id))
+    return acknowledge_reply(
+        route,
+        response,
+        workflow=workflow_row(route, locate_workspace(session_id=session_id, task_id=kwargs.get("task_id")), session_id),
+    )
 
 
 def subagent_stop(**kwargs: Any) -> None:

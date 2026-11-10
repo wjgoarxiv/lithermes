@@ -13,8 +13,10 @@ from typing import Any, Iterable
 
 try:
     from .redaction import redact_obj, redact_text
+    from .workspace import resolve as resolve_workspace
 except (ImportError, ModuleNotFoundError):
     from redaction import redact_obj, redact_text
+    from workspace import resolve as resolve_workspace
 
 MAX_TASK_LEN = 4000
 _SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
@@ -91,7 +93,10 @@ def parse_args(raw_args: str) -> CommandArgs:
 def workspace_from_option(value: str | bool | None) -> Path:
     if isinstance(value, str) and value.strip():
         return Path(value).expanduser().resolve()
-    return Path.cwd().resolve()
+    workspace = resolve_workspace()
+    if workspace is None:
+        raise ValueError("this session runs from the Hermes home, which is never used as a workspace; pass --worktree PATH")
+    return workspace
 
 
 def plan_dir(workspace: Path) -> Path:

@@ -13,18 +13,24 @@ activation": this module never blocks a turn and never trims a safety line.
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any, NamedTuple
 
 try:
+    from . import handoff_card
+    from . import lit_mark
     from .core_plans import unchecked_items
     from .core_runtime import lithermes_dir
 except (ImportError, ModuleNotFoundError):
+    import handoff_card
+    import lit_mark
     from core_plans import unchecked_items
     from core_runtime import lithermes_dir
 
 MAX_TRACKED_SESSIONS = 64
+RESUME_ENV = "LITHERMES_GOAL_RESUME"
 MAX_STATE_BYTES = 2_000_000
 MAX_NOTE_BYTES = 600
 # Disciplines that have a short continue note. Every other lit route still
@@ -52,6 +58,10 @@ _GUARDS = {
 # the activation was last sent after ("" before any compaction).
 _ACTIVE: dict[str, dict[str, Any]] = {}
 
+# session id -> the cross-session goal offer made on that session's first turn ({} when none was
+# made). Separate from _ACTIVE so a `lit new` or a first activation cannot re-arm the offer.
+_GOAL_OFFERS: dict[str, dict[str, Any]] = {}
+
 
 class Step(NamedTuple):
     kind: str  # "first" | "continue" | "resume"
@@ -74,6 +84,117 @@ def remember(
     while len(_ACTIVE) >= MAX_TRACKED_SESSIONS:
         _ACTIVE.pop(next(iter(_ACTIVE)), None)
     _ACTIVE[key] = {"discipline": discipline, "run": run, "plan": plan, "compacted": compacted}
+
+
+def active_discipline(session_id: object) -> str:
+    """The discipline this session's `lit` route activated, or "" when none is active."""
+    record = _record(str(session_id or ""), "")
+    return record["discipline"] if record else ""
+
+
+def goal_resume_enabled() -> bool:
+    return os.environ.get(RESUME_ENV, "1").strip() != "0"
+
+
+def forget_offers(session_id: object) -> None:
+    _GOAL_OFFERS.pop(str(session_id or ""), None)
+
+
+def _litgoal_store() -> Any:
+    try:
+        from .litgoal import store
+    except (ImportError, ModuleNotFoundError):
+        from litgoal import store
+    return store
+
+
+def _handoff_saved(workspace: Path, session_id: str) -> str:
+    """``HH:MM`` the offered session's handoff card was saved, or ``""`` when it left none."""
+    card = handoff_card.read_card(workspace, session_id)
+    return handoff_card.saved_time(card.get("written_at")) if card else ""
+
+
+def note_first_turn(session_id: object, workspace: Path) -> None:
+    """On a session's first turn, look for an unfinished goal from an earlier session.
+
+    Runs once per session id. A session that already holds litgoal state of its
+    own, or `LITHERMES_GOAL_RESUME=0`, records "no offer". Nothing is adopted here.
+    """
+    key = str(session_id or "")
+    if not key or key in _GOAL_OFFERS:
+        return
+    while len(_GOAL_OFFERS) >= MAX_TRACKED_SESSIONS:
+        _GOAL_OFFERS.pop(next(iter(_GOAL_OFFERS)), None)
+    offer: dict[str, Any] = {}
+    if goal_resume_enabled():
+        try:
+            store = _litgoal_store()
+            if not store.goals_path(workspace, key).exists():
+                offer = store.latest_unfinished(workspace, key) or {}
+                if offer:
+                    offer["handoff"] = _handoff_saved(workspace, offer["session_id"])
+        except (OSError, ValueError, ImportError):
+            offer = {}
+    _GOAL_OFFERS[key] = offer
+
+
+def take_context(session_id: object) -> str:
+    """The model-facing offer block, once. Empty when there is no offer or it was adopted."""
+    offer = _GOAL_OFFERS.get(str(session_id or ""))
+    if not offer or offer.get("announced"):
+        return ""
+    offer["announced"] = True
+    if offer.get("adopted"):
+        return ""
+    saved = str(offer.get("handoff") or "")
+    offer["visible"] = lit_mark.goal_resume_row(offer["title"], offer["open"]) + (
+        f" — handoff saved {saved}" if saved else ""
+    )
+    card_line = (
+        [f"A handoff card saved {saved} is at .hermes/lithermes/handoff/{offer['session_id']}.json."]
+        if saved else []
+    )
+    return "\n".join([
+        "<lithermes-goal-resume-offer>",
+        f'An unfinished litgoal "{lit_mark.clean_title(offer["title"])}" ({offer["open"]} criteria open) '
+        "from an earlier session exists in this workspace. It has NOT been adopted.",
+        *card_line,
+        "Mention it once in one short sentence and tell the user to type `lit` to resume it. "
+        "Do not call goal_* tools for it and do not start it yourself.",
+        "</lithermes-goal-resume-offer>",
+    ])
+
+
+def take_visible(session_id: object) -> str:
+    """The one visible mark row for this session's offer or adoption, once."""
+    offer = _GOAL_OFFERS.get(str(session_id or ""))
+    return str(offer.pop("visible", "")) if offer else ""
+
+
+def adopt_pending(session_id: object, workspace: Path) -> dict[str, Any] | None:
+    """Adopt the goal offered to this session, if any. Only a bare `lit` / `lit resume` calls this."""
+    key = str(session_id or "")
+    offer = _GOAL_OFFERS.get(key)
+    if not offer or offer.get("adopted") or not offer.get("session_id") or not goal_resume_enabled():
+        return None
+    try:
+        _litgoal_store().adopt(workspace, offer["session_id"], key)
+    except (OSError, ValueError, ImportError):
+        _GOAL_OFFERS[key] = {}
+        return None
+    offer["adopted"] = True
+    offer["visible"] = lit_mark.goal_resume_row(offer["title"], offer["open"], resumed=True)
+    return offer
+
+
+def _goal_adopted_note(offer: dict[str, Any]) -> str:
+    return "\n".join([
+        "<lithermes-goal-adopted>",
+        f'Unfinished litgoal "{lit_mark.clean_title(offer["title"])}" ({offer["open"]} criteria open) '
+        "was adopted from an earlier session into this one; its criteria and evidence are in the litgoal snapshot.",
+        "Continue it with the goal_* tools; the quality gate still decides completion. `lit new ...` starts over instead.",
+        "</lithermes-goal-adopted>",
+    ])
 
 
 def restart_rest(objective: str) -> str | None:
@@ -217,6 +338,12 @@ def decide(
         record = _record(key, compacted)
         text = objective.strip()
         generic = discipline == "litwork" and (not text or RESUME_WORD.match(text))
+        adopted = adopt_pending(key, workspace) if generic else None
+        if adopted:
+            work = _resumable_work(workspace)
+            remember(key, "litwork", run=work["dir"] if work and work["kind"] == "run" else "", compacted=compacted)
+            notes = [_resume_note(work, workspace)] if work else []
+            return Step("resume", "\n\n".join([*notes, _goal_adopted_note(adopted)]))
         if record and record["discipline"] in CONTINUABLE and (record["discipline"] == discipline or generic):
             active = record["discipline"]
             return Step("continue", _continue_note(active, record, workspace, review_required), discipline=active)

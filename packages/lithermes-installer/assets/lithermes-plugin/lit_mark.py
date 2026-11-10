@@ -240,6 +240,27 @@ def acknowledge_reply(route: str, response: str, *, workflow: str | None = None)
     return f"{response}\n\n{suffix}" if response else suffix
 
 
+def clean_title(title: str) -> str:
+    """A goal title reduced to one short plain line, so stored text cannot shape a mark or a tag."""
+    plain = re.sub(r"[^\w .,:;!?()/'+&-]", " ", str(title), flags=re.UNICODE)
+    return " ".join(plain.split())[:80]
+
+
+def goal_resume_row(title: str, open_count: int, *, resumed: bool = False) -> str:
+    """The one visible line for a cross-session goal: an offer, or the resumed notice."""
+    clean = clean_title(title)
+    prefix = "↻ " if utf8_terminal() else ""
+    counted = f"({open_count} criteria open)"
+    if resumed:
+        return f'{prefix}LIT: resumed goal "{clean}" {counted}'
+    return f'{prefix}LIT: unfinished goal "{clean}" {counted} — type lit to resume'
+
+
+def append_row(response: str, row: str) -> str:
+    """Add a mark row after the reply, never rewriting the reply text."""
+    return f"{response}\n\n{row}" if response else row
+
+
 def skin_logo(*, env=None, stream=None, json=False) -> str:
     if not utf8_terminal(env):
         return "LIT"

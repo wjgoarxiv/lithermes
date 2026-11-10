@@ -62,7 +62,7 @@ def extract_office_bytes(data: bytes, suffix: str) -> str:
     return "\n".join(paragraphs)
 
 
-def extract_pdf_bytes(data: bytes) -> str:
+def extract_pdf_bytes(data: bytes, env: dict[str, str] | None = None) -> str:
     if len(data) > MAX_FILE_BYTES:
         raise ValueError("refusing PDF larger than 32 MiB")
     executable = shutil.which("pdftotext")
@@ -71,6 +71,7 @@ def extract_pdf_bytes(data: bytes) -> str:
     result = subprocess.run(
         [executable, "-nopgbrk", "-layout", "-enc", "UTF-8", "-", "-"],
         input=data,
+        env=env,
         capture_output=True,
         timeout=8,
         check=False,

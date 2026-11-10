@@ -29,6 +29,13 @@ from pathlib import Path
 from typing import Iterable
 
 
+try:
+    from .child_env import scrubbed_env
+    from .workspace import locate as locate_workspace
+except ImportError:
+    from child_env import scrubbed_env  # type: ignore
+    from workspace import locate as locate_workspace  # type: ignore
+
 PLUGIN_ROOT = Path(__file__).resolve().parent
 DETECTOR = PLUGIN_ROOT / "skills" / "lit-humanizer" / "scripts" / "detect.py"
 MAX_SESSIONS = 64
@@ -173,9 +180,9 @@ def _directory_flags() -> int | None:
 
 
 def _project_root() -> Path | None:
-    """The Hermes launch directory (this process's cwd), widened to the git toplevel above it."""
+    """The session's launch directory (the host's session cwd, else this process's cwd), widened to the git toplevel above it."""
     try:
-        launch = Path(os.getcwd()).resolve(strict=True)
+        launch = Path(locate_workspace() or os.getcwd()).resolve(strict=True)
     except (OSError, RuntimeError):
         return None
     return next((folder for folder in (launch, *launch.parents) if (folder / ".git").exists()), launch)
@@ -393,6 +400,7 @@ def _run_detector(text: str, path_text: str) -> list[dict] | None:
         result = subprocess.run(
             [sys.executable, "-B", "-I", str(DETECTOR), "--stdin-json"],
             input=payload,
+            env=scrubbed_env(),
             capture_output=True,
             timeout=DETECT_TIMEOUT_SECONDS,
             check=False,
@@ -612,10 +620,7 @@ def _file_tool_base(task_id: object) -> str:
             recorded = None
         if isinstance(recorded, str) and os.path.isabs(recorded) and os.path.isdir(recorded):
             return recorded
-    configured = os.environ.get("TERMINAL_CWD", "")
-    if os.path.isabs(configured) and os.path.isdir(configured):
-        return configured
-    return os.getcwd()
+    return str(locate_workspace(task_id=task_id) or os.getcwd())
 
 
 def pre_tool_call(
@@ -674,7 +679,7 @@ def _extract_office(data: bytes, suffix: str) -> str:
     except ImportError:
         from . import humanizer_office
     if suffix == ".pdf":
-        return humanizer_office.extract_pdf_bytes(data)
+        return humanizer_office.extract_pdf_bytes(data, env=scrubbed_env())
     return humanizer_office.extract_office_bytes(data, suffix)
 
 
@@ -743,7 +748,7 @@ def _script_scan_roots(payload: dict, parsed: object, task_id: str, text: str) -
             named.append(session_cwd(task_id))
         except Exception:  # noqa: BLE001 - a host helper failure only drops one candidate
             pass
-    named.append(os.getcwd())
+    named.append(str(locate_workspace(task_id=task_id) or os.getcwd()))
     base = next((Path(str(item)).expanduser() for item in named if isinstance(item, str) and item and os.path.isdir(item)), Path.cwd())
     for token in _PATH_TOKEN.findall(text)[:32]:
         candidate = Path(token).expanduser()

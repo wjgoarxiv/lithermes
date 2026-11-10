@@ -41,6 +41,9 @@ class Evidence:
     # retry never overwrites a prior record; the attempt number is what lets a
     # reader tell attempt-1 evidence from attempt-2 evidence for the same criterion.
     attempt: int = 1
+    # True only for `green` evidence whose ref cited a terminal run the plugin
+    # observed (runs.verify_run). A claimed green stays False and never opens the gate.
+    verified: bool = False
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Evidence":
@@ -50,6 +53,7 @@ class Evidence:
             detail=str(d.get("detail", "")),
             at=str(d.get("at", "")),
             attempt=int(d.get("attempt", 1) or 1),
+            verified=d.get("verified") is True,
         )
 
 
@@ -128,6 +132,9 @@ class ReviewBlocker:
     id: str
     detail: str
     resolved: bool = False
+    # Who raised it. Empty for blockers the model or a reviewer added by hand;
+    # `testguard` for the test-weakening guard, which only the user can clear.
+    source: str = ""
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "ReviewBlocker":
@@ -135,6 +142,7 @@ class ReviewBlocker:
             id=str(d.get("id", "")),
             detail=str(d.get("detail", "")),
             resolved=bool(d.get("resolved", False)),
+            source=str(d.get("source", "")),
         )
 
 
@@ -170,6 +178,8 @@ class LitgoalState:
     updated_at: str = ""
     active_goal_id: str = ""
     goals: list[Goal] = field(default_factory=list)
+    # The session this state was adopted from; empty for state a session built itself.
+    adopted_from: str = ""
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "LitgoalState":
@@ -179,6 +189,7 @@ class LitgoalState:
             updated_at=str(d.get("updated_at", "")),
             active_goal_id=str(d.get("active_goal_id", "")),
             goals=[Goal.from_dict(g) for g in d.get("goals", []) or []],
+            adopted_from=str(d.get("adopted_from", "")),
         )
 
     def active_goal(self) -> Goal | None:

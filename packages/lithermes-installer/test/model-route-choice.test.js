@@ -390,8 +390,8 @@ test("renderModelRouteCard prints one helper row without the provider when it ma
 
 test("renderInstallBanner uses the canonical banner and product lockup", () => {
   const mark = require("../src/lib/litMark");
-  const banner = renderInstallBanner({ version: "1.0.37", color: false, env: { LANG: "en_US.UTF-8" } });
-  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.37", mark.banner));
+  const banner = renderInstallBanner({ version: "1.0.38", color: false, env: { LANG: "en_US.UTF-8" } });
+  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.38", mark.banner));
   assert.equal(banner.split("\n").length, 20);
   assert.doesNotMatch(banner, /\x1b/);
 });
@@ -414,10 +414,11 @@ test("promptModelRoute walks provider → lead → child provider → child and 
   assert.match(text, /Choose the provider for LitHermes agents\./);
   assert.match(text, new RegExp(`0\\. OpenAI OAuth Responses \\(Astra \\+ Sol \\+ Luna\\)\\s+\\(${GPT}\\)`));
   assert.match(text, /1\. xAI Grok\s+\(xai\)/);
+  assert.match(text, /2\. xAI Grok OAuth \(SuperGrok\)\s+\(xai-oauth\)/);
   assert.match(text, /Choose the LEAD model \(plans and reviews\)\./);
   assert.match(text, /gpt-6-astra\s+· xhigh\s+— .*recommended lead/);
   assert.match(text, /Choose the HELPER model \(delegated workers\)\./);
-  assert.match(text, /Select 0-1 \[0\]:/);
+  assert.match(text, /Select 0-2 \[0\]:/);
 });
 
 test("promptModelRoute selects xai lead and xai child by number", async () => {
@@ -426,7 +427,14 @@ test("promptModelRoute selects xai lead and xai child by number", async () => {
   assert.equal(route.model, "grok-build-0.1");
   assert.equal(route.childProvider, "xai");
   assert.equal(route.childModel, "grok-build-0.1");
-  assert.match(text, /Select 0-1 \[1\]:/);
+  assert.match(text, /Select 0-2 \[1\]:/);
+});
+
+test("promptModelRoute offers xai-oauth as lead and helper provider", async () => {
+  const { route } = await answer(["2", "0", "", "0"]);
+  assert.equal(route.provider, "xai-oauth");
+  assert.equal(route.model, "grok-build-0.1");
+  assert.equal(route.childProvider, "xai-oauth");
 });
 
 test("promptModelRoute re-asks on an out-of-range answer", async () => {
@@ -435,7 +443,7 @@ test("promptModelRoute re-asks on an out-of-range answer", async () => {
   assert.equal(route.model, ASTRA_MODEL);
   assert.equal(route.effort, "medium");
   assert.equal(route.childModel, "gpt-6-luna");
-  assert.match(text, /Please answer 0-1\./);
+  assert.match(text, /Please answer 0-2\./);
 });
 
 test("promptModelRoute resolves to the defaults when input closes early", async () => {

@@ -1,19 +1,29 @@
 # lithermes
 
-
-The scoped npm identity is an unpublished local candidate. Registry commands below are intended release targets, not evidence of public availability.
-
 Hermes-native workflow tools for plan-first execution, evidence ledgers, and
-first-class Hermes skills:
+first-class Hermes skills. With `lit` in front of a request you see this:
+
+- A reply that says it is done while the goal's checks are still open ends with
+  `⛔ LIT: not done — <reason>`, and `goal_complete` refuses. A `lit` session that says done
+  without ever opening a goal gets the same line.
+- A green counts only when the plugin watched that test command finish with exit 0 and signed
+  a receipt for it. Change the code afterwards and the receipt goes stale until the tests run
+  again.
+- Delete a test, drop an assertion or add a skip, and the goal stays closed until the user
+  accepts the change with `/lit-accept-tests <reason>`. No model-callable tool does that.
+- When a session that held a goal closes, a handoff card is written under
+  `.hermes/lithermes/handoff/`. The next session in the project offers the unfinished goal,
+  and a bare `lit` adopts it.
+- Hermes Desktop shows the goal, its gate and a six-step timeline in a right-hand pane. The
+  desktop half is Off by default: switch LitHermes on under Capabilities > Plugins.
+
+The sections below give the detail.
 
 Install from npm with the package name `@litfamily/lithermes`:
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes
 ```
-
-The current working tree carries package metadata present at build time; verify
-registry state separately before any release action.
 
 `npx --yes` only approves npm package execution; `install --yes` is the LitHermes
 installer approval to mutate Hermes config. `lithermes` is the installed
@@ -421,6 +431,208 @@ plugins:
   enabled:
     - lithermes
 ```
+
+## Observed evidence, resume, handoff card and Desktop pane
+
+These surfaces sit on the litgoal runtime (`litgoal/`). A session's state lives in
+`<workspace>/.hermes/lithermes/litgoal/sessions/<session>/`, and every item below reads or
+writes only there, plus the `handoff/` folder named in its own bullet.
+
+- Observed evidence. `post_tool_call` records each finished `terminal` call as a run
+  (`R001`, `R002`, ...) in the session's `runs.jsonl`: a SHA-256 of the command, a redacted
+  preview of at most 100 characters, the exit code, the time and a workspace fingerprint.
+  A call that only started a background process is not a run: Hermes answers `exit_code: 0`
+  the moment it spawns one (`{"output": "Background process started", "session_id", "pid"}`,
+  plus `auto_backgrounded` for a command it converted), so a result with `background` set in
+  the arguments, a `session_id`, `pid` or `auto_backgrounded`, or a `started` or
+  `yielded_to_background` status is never recorded, and a long suite that Hermes moved to the
+  background stays unproven until a foreground run finishes. Run numbers only grow within a
+  process, so truncating `runs.jsonl` does not reissue an id.
+  `goal_evidence` of kind `green` counts only when its ref is `run:<id>` and that run exited 0
+  and was signed by this process for this workspace and session. Any other green is stored as
+  `claimed` and the quality gate stays closed. `goal_complete` with no active goal returns a
+  refusal and no longer raises. After each run, evidence add, status change, blocker change and
+  gate evaluation the runtime saves the verdict to `gate.json` beside the goal.
+- Signed run receipts. Each record carries an HMAC-SHA256 over its workspace, session, id,
+  tool, command hash, preview, exit code, time and fingerprint. The key is 32 random bytes
+  generated when the module is imported. It lives in memory and is never written to disk.
+  A line added to `runs.jsonl` by hand, a line copied from another session or workspace, an
+  edited exit code, and a record written by an earlier process (a gateway restart ends the
+  old key) all fail verification, and evidence that cites such a run is reported as
+  unverifiable until the tests are run again. A valid signature shows that this plugin process
+  saw Hermes finish that terminal call with that exit code, in that workspace and session,
+  and that the record is unchanged since. It does not show that the command tested anything
+  useful (a command that exits 0 without testing still exits 0), that the code is correct,
+  or that the test files were left alone (the test guard below covers that). It gives no
+  protection against code that runs inside the gateway process or a process that can read
+  its memory. The dashboard route lives in a different process, cannot re-verify a signature,
+  and labels the gate it shows `"source": "session"`.
+- Stale evidence. A run stores a fingerprint of the workspace at the time it ran. Inside a
+  git work tree that is `HEAD` plus a content tag for every file that differs from `HEAD` or is
+  untracked; outside git it is a capped walk over path, size and modification time. When the
+  fingerprint at gate time differs, the green no longer counts, and the gate names the changed
+  files and asks for a new run. A run whose fingerprint could not be taken counts as stale, and
+  so does a work tree of more than 40,000 files. The fingerprint never runs `git diff` or
+  `git status`, because those apply the repository's `filter.<driver>.clean` programs (set by
+  `.gitattributes` and `.git/config`) to modified files, and no command-line flag switches off
+  drivers git has not been told by name. It uses only `rev-parse`, `ls-tree` and `ls-files`
+  (with `core.fsmonitor` forced off), which read names and object ids and start no repository
+  program, and hashes the files itself in Python against the object ids `HEAD` records. Its
+  `git` calls receive `PATH`, `HOME`, `LANG` and `LC_ALL` only and share a 2 second budget with
+  the file reads. A filter-converted file (CRLF conversion, for example) always counts as
+  changed, which is stable and only costs it a name in the list.
+- Visible refusal. When the last 20,000 characters of a reply contain a completion claim
+  (`done`, `completed`, `finished`, `fixed`, `shipped`, `ready to ship`, `all tests pass`,
+  `all green`, `완료`, `다 했`, `끝났`, `끝냈`, `마쳤`, `고쳤`) while the active goal's gate is
+  closed, `transform_llm_output` appends one line, `⛔ LIT: not done — <first two reasons>`.
+  The reply keeps its own words and nothing is blocked. The claim test is a short word
+  pattern, so a reply can trigger it without meaning to claim completion, and a claim in other
+  words ("LGTM") goes unmarked. The line is skipped only when the reply already carries that
+  exact line on a line of its own, outside code fences and HTML comments; the same text in a
+  comment or in the middle of a sentence does not suppress it. A goal whose `complete` status
+  is not backed by this install (see the seal below) is not treated as finished, so writing
+  `"status": "complete"` into `goals.json` by hand leaves the gate in force. Delegate children
+  and sessions without a work route are skipped. If the gate cannot be evaluated, no line is
+  added: the hook fails open, as the host's 30 second hook limit does.
+- No goal opened. When a work route (`lit`, `lit-loop` or `start-work`) is active in the
+  session, the reply carries a completion claim as above, and the session holds no litgoal goal
+  at all, `transform_llm_output` appends `⛔ LIT: not done — no goal was opened, so nothing was
+  verified (type lit to start one)`. It reads the plugin's own per-session record of the
+  activated route, so ordinary chat without `lit` never gets it, and neither do the planning
+  and review routes (`lit-plan`, `review-work`, `lit-brainstorm`, `litresearch`). Opening a goal
+  later hands the session to the gate line above. The same fencing and idempotence rules apply,
+  and a state file that cannot be read adds nothing.
+- Finish hold. The plugin registers `pre_verify`, which Hermes calls once per turn when the
+  agent edited code and is about to deliver its answer (in `VALID_HOOKS` since Hermes 0.18.0,
+  wired in `agent/turn_stop_gates.py` of the 0.21.3 floor). When the active goal's gate is
+  closed and the draft answer contains a completion claim, the hook returns
+  `{"action": "continue", "message": <first three gate reasons>}` and the turn runs once more.
+  It returns nothing for a delegate child, for a session without an active or unfinished
+  goal, for a draft that makes no claim, and when the gate cannot be evaluated. Hermes caps
+  consecutive holds per turn with `agent.max_verify_nudges` (default 3), and only edits made
+  through Hermes' file tools count as "edited code", so a change made with a shell command
+  does not trigger the hook. The `⛔` line above stays the backstop for a reply that goes out.
+- Test guard. `goal_set` snapshots every test file in the workspace (`test_*.py`,
+  `*_test.py`, `*.test.*`, `*.spec.*`): the number of test functions, assertions and skip
+  markers (`skip`, `xfail`, `only`), counted line by line. At every gate evaluation a file
+  that lost tests or assertions, gained a skip marker or was deleted raises a review blocker
+  whose source is `testguard`, and the gate closes. The blocker clears by itself when the
+  file is restored. No tool the model can call resolves it. Only the user's slash command
+  `/lit-accept-tests <reason>` accepts the change and re-baselines the files; the redacted
+  reason goes into the litgoal ledger. `/lit-accept-tests` accepts the session that most
+  recently ran a turn in this process; `/lit-accept-tests --all-sessions <reason>` accepts every
+  session of that workspace, and with no known session the plain form asks for the flag.
+  A new goal inherits the stricter of the old and the current counts per file (more tests and
+  assertions, fewer skips). The scan is bounded to 2,000 files, 50,000 directory entries,
+  1 MiB per file and a 5 second wall-clock budget. A baselined file that still exists but can
+  no longer be scanned (replaced by a symlink, grown past 1 MiB, unreadable, or not reached
+  before the budget ran out) counts as weakened and raises the same blocker, which clears
+  only when the file can be scanned again. Known limit: the baseline is `testguard.json` in the
+  session's folder inside the workspace, so a model with a raw shell can empty or rewrite
+  it. With no baseline the guard has nothing to compare and raises no blocker. The count is a
+  line pattern, so a rewrite that keeps the counts passes it.
+- Goal resume offer. On the first `pre_llm_call` of a session that holds no goal of its own,
+  the plugin looks through the other `litgoal/sessions/*` folders of the same workspace (the
+  newest 50) for an unfinished goal. If it finds one, the model gets its title and the number
+  of open criteria, plus the saved time and path of its handoff card, and is told to mention
+  the offer once and to start nothing. Only goals this install wrote are candidates: every
+  `goals.json` the runtime saves carries a `seal`, an HMAC-SHA256 over its content and session
+  id, keyed by a random per-install key in `<Hermes home>/lithermes/litgoal.key` (mode 0600,
+  created on first use). A file that is unsealed, edited after it was saved, copied from
+  another session or written under another key (for example one committed to a cloned
+  repository) is neither offered nor adopted. The same seal decides whether a `complete`
+  status is believed. The key is readable by anything running as the user, the model's shell
+  included, so the seal stops foreign and casually edited state and not an agent that
+  deliberately reads the key; if the key cannot be read or created nothing is sealed, and
+  state saved over an unsealed file stays unsealed. Goals saved before this release carry no
+  seal and are not offered. A bare `lit` or `lit resume` adopts the goal: the
+  goal state, ledger, brief, test baseline and evidence files are copied into the new
+  session, which records where they came from, and the other session is only read. Runs are
+  not copied, so green evidence must be earned again in the new session. `lit new ...` starts
+  over. `LITHERMES_GOAL_RESUME=0` turns the offer and the adoption off.
+- Handoff card. `on_session_finalize` writes `<workspace>/.hermes/lithermes/handoff/<session
+  id>.json`, `latest.json` (the same card) and `latest.md` for a session that holds a litgoal:
+  the goal, each criterion's status, whether the gate is open and why not, the last three
+  runs and the next step. It is built from files on disk with no model call, network or
+  subprocess, and a session with no goal writes nothing. The card is written when the host
+  closes the session, which is the host's decision. On `hermes -z` and Desktop chat the
+  gateway closes a session after a grace period once nothing is attached to it, so the card
+  can appear minutes or longer after the last turn. A gateway restart before that loses the
+  plugin's memory of the session's folder, and that session gets no card.
+- Workspace resolution (`workspace.py`). Since Hermes 0.23 runs `hermes -z` and Desktop chat
+  through one shared gateway process whose own cwd is the Hermes home, hooks cannot use the
+  process cwd. The folder is taken from the first of these that names an existing absolute
+  directory: a `workspace` or `cwd` hook argument; the turn's pinned folder
+  (`agent.runtime_cwd.scoped_session_cwd`); the task override cwd
+  (`tools.terminal_tool.resolve_task_overrides`); the folder this plugin saw earlier in the
+  session; the session's last terminal cwd (`tools.terminal_tool.get_session_cwd`); the
+  profile's `TERMINAL_CWD` (`agent.runtime_cwd.scope_terminal_cwd`, or the environment
+  variable on hosts without that module); and finally the process cwd. These host helpers are
+  private to Hermes and may be renamed in a release. They are read from `sys.modules` and
+  never imported, each call is wrapped so a failure only drops that source, and outside a
+  host (tests, the `hermes lithermes` CLI) only the process cwd remains. None of these is
+  used as a workspace, and the plugin logs the refusal once: a Hermes home, any folder inside
+  one or inside `~/.hermes` (symlinks followed), the user's own home folder, and a folder
+  whose `.hermes` is a Hermes home. The plugin writes no workspace state there; its own files
+  in the Hermes home are the ones listed under Disclosures.
+- Dashboard route and Desktop pane. `dashboard/manifest.json` and `dashboard/plugin_api.py`
+  add one route, `GET /api/plugins/lithermes/goal?cwd=<workspace>`, mounted by Hermes. It only
+  reads. `cwd` must be an absolute path that resolves, with symlinks followed, to a place
+  inside the user's home directory, otherwise the answer is HTTP 400. A state file that
+  resolves outside the workspace is ignored. Free text is redacted and length-capped. The
+  answer holds the goal, its criteria, the evidence, the gate verdict and a six-stage
+  timeline (plan, runs, review, gate, handoff, resume). Missing or unreadable state returns
+  `{"goal": null}`. The route sets no CORS headers, adds no authentication of its own and
+  opens no port; who can reach it is whatever Hermes allows for plugin routes. `desktop/plugin.js`
+  is plain ESM that imports only `@hermes/plugin-sdk` and `react/jsx-runtime`; it polls that
+  route every 5 seconds for the folder the app has open and registers a right pane and a
+  status-bar chip. In Hermes Desktop 0.23 the desktop half stays off until the user turns it on
+  under Capabilities > Plugins, and Desktop copies it into an app-level folder
+  (`desktop-plugins/`) that every profile shares.
+
+## Disclosures
+
+- Hermes version. `plugin.yaml` declares `requires_hermes: ">=0.21.3"`, a SemVer floor that
+  the catalog entry repeats. The floor is set by the Desktop half. Unified agent and desktop
+  packages, the `ctx.rest` call, the pane and `statusBar.right` areas and `useQuery` in
+  `@hermes/plugin-sdk` are all in 0.21.3 (checked against the Hermes source tagged
+  `v2026.9.14`), and so are all twelve hooks listed in `plugin.yaml`. Workspace
+  resolution reads newer host helpers when they exist and works without them.
+- Processes the plugin starts. The plugin builds every argument list itself and no call uses
+  a shell. The one caller-supplied value is the base ref of a review diff, and it goes after
+  `--`. `git` runs for review diffs and the fingerprint (20 second limit). `node` runs
+  the motion runtime `status` and the Office `doctor` (35 and 10 seconds). The prose detector
+  runs under the plugin's own interpreter (`-B -I`) with the text on stdin. `pdftotext` reads
+  PDF bytes on stdin (8 seconds). `agent-browser --version` is the browser probe. Each gets an
+  allowlist environment built by `child_env.py`: `PATH`, `HOME`, `USER`, locale, `TMPDIR`,
+  `SHELL`, `TERM`, `HERMES_HOME`, the `XDG_*` base directories and, on Windows, the system
+  variables the OS needs. Provider keys and tokens in the parent environment are not passed
+  down. The npm install channel's self-update uses its own allowlist and is absent from the
+  catalog copy. Skill scripts the model runs through Hermes' own terminal tool go through
+  Hermes' approval flow and are outside this list.
+- Private Hermes imports. `auto_handoff.py` imports `agent.context_compressor`,
+  `hermes_cli.config_defaults`, `agent.model_metadata` and `hermes_cli.commands`, and
+  `diagnostics.py` imports `hermes_cli`. They are read-only lookups of the compaction
+  defaults, the model's context window and the compact command's name, so the handoff
+  percent can be compared with Hermes' own compaction point and the right command named.
+  Hermes has no public interface for these. Each lookup is wrapped (the context-window lookup
+  has a 3 second limit) and falls back to a plain default or a "window unknown" notice, so a
+  Hermes release that moves one of them costs a missing comparison and breaks nothing else.
+  `hermes plugins validate` lists these imports as a caution under catalog rule 9, and
+  `workspace.py` (above) reads host modules the same way, through `sys.modules` where a
+  static check does not see them.
+- Hashed corpus text. The security scan reports `sudo_usage` for one line of the vendored
+  design database under `skills/frontend-ui-ux/references/_canonical-corpus/`: an Ubuntu
+  install guide whose first command raises privileges before calling the package manager.
+  It is reference text that the model may read. No plugin code runs it, imported Markdown
+  stays inert, and the file is part of the hashed corpus, so the line is left as shipped.
+- Local state. The files above live in the user's workspace under `.hermes/lithermes/`
+  (`litgoal/sessions/<session>/`: `goals.json`, `ledger.jsonl`, `runs.jsonl`, `gate.json`,
+  `testguard.json`; and `handoff/`). They hold redacted command previews, goal text and file
+  names, and should stay out of public commits. One file lives outside the workspace: the
+  seal key `<Hermes home>/lithermes/litgoal.key`, 32 random bytes in hex, which holds no
+  user content and should not be shared. Deleting it makes this install stop recognising
+  the goals it saved earlier.
 
 ## Reference
 

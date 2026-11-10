@@ -13,7 +13,13 @@
 <a href="https://github.com/wjgoarxiv/lithermes/stargazers"><img src="https://img.shields.io/github/stars/wjgoarxiv/lithermes?style=flat-square&labelColor=080d14&color=f2efdf" alt="GitHub 스타 수" /></a>
 </p>
 
-요청 앞에 `lit`을 붙이면 Hermes가 무엇을 "끝"으로 볼지 먼저 정하고, 고치기 전에 실패하는 테스트를 쓰고, 실제로 돌아가는 결과를 확인한 뒤 어디까지 왔는지 적어 둡니다. 일을 멈출 때 `/lit-handoff`를 입력하면 다음 세션은 그 메모에서 출발합니다. Hermes CLI에서도, Telegram이나 Discord gateway에서도 똑같이 동작합니다. 써 보려면 한 번 설치하고, Hermes를 다시 시작한 뒤 일을 맡겨 보세요.
+요청 앞에 `lit`을 붙이면 Hermes가 무엇을 "끝"으로 볼지 먼저 정하고, 고치기 전에 실패하는 테스트를 쓰고, 실제로 돌아가는 결과를 확인한 뒤 어디까지 왔는지 적어 둡니다. `lit`을 켜면 이런 모습이 보입니다.
+- **받아 낸 "끝".** 목표의 확인 항목이 아직 열려 있는데 답변이 끝났다고 하면 답변 끝에 `⛔ LIT: not done — <이유>` 한 줄이 붙고, 목표는 닫히지 않습니다. 목표를 한 번도 열지 않은 `lit` 세션이 끝났다고 말해도 같은 줄이 붙습니다.
+- **믿을 수 있는 테스트.** 플러그인이 테스트 명령이 종료 코드 0으로 끝나는 것을 직접 보고 서명한 영수증이 있어야 통과로 칩니다. 그 뒤에 코드를 고치면 테스트를 다시 돌릴 때까지 영수증은 오래된 것으로 표시됩니다. 테스트를 지우거나 단언을 빼거나 skip을 달면, 내가 직접 `/lit-accept-tests <이유>`로 받아들이기 전까지 목표는 닫힌 채로 남고, 모델에게는 이를 풀 방법이 없습니다.
+- **내일을 위한 메모.** 목표가 있던 세션이 닫히면 `.hermes/lithermes/handoff/`에 핸드오프 카드가 만들어집니다. 같은 프로젝트의 다음 세션이 끝나지 않은 목표를 알려 주고, `lit`만 입력하면 그 목표를 이어받습니다.
+- **Hermes Desktop의 패널.** 목표와 게이트가 열렸는지, 여섯 단계 타임라인이 오른쪽 패널에 나타납니다. 기본값은 꺼짐입니다. Hermes Desktop 0.23 이상에서 Capabilities > Plugins로 가서 LitHermes를 켜세요.<br /><br /><img src="./docs/assets/desktop-pane.webp" width="360" alt="Hermes Desktop의 LitHermes 패널. 목표는 Month-end export CI green입니다. 타임라인: Plan은 기준 3개, Runs는 R003, R004, R005가 모두 stale, Review는 막힘 없음, Gate는 이유 9개로 CLOSED, Handoff는 아직 없음, Resume은 새 세션입니다. 기준 세 개는 pending이고, 실행 R005를 인용한 증거 세 줄은 stale로 표시되며, 첫 이유는 실행 뒤에 tally/export.py가 바뀌어 C001 증거 R005가 stale이라고 말합니다." />
+
+Hermes CLI에서도, Telegram이나 Discord gateway에서도 똑같이 동작합니다. 써 보려면 한 번 설치하고, Hermes를 다시 시작한 뒤 일을 맡겨 보세요.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -69,13 +75,7 @@ lit 실패하는 로그인 테스트를 고쳐줘
 
 Hermes Agent는 눈앞의 일은 잘 해냅니다. 곤란해지는 건 일이 한자리에서 끝나지 않을 때입니다. 대화는 압축되고, 터미널은 닫히거나 gateway가 다시 시작되고, 다음에 앉으면 무엇을 정했는지, 무엇을 정말 확인했는지, 어디까지 하다 말았는지부터 되짚어야 하죠. 게다가 "다 됐습니다"가 모델의 말뿐인 경우도 많습니다.
 
-LitHermes는 세션마다 따라갈 순서를 주고, 그 기록을 남깁니다. 요청 앞에 `lit`을 붙이면 확인할 수 있는 기준, 고치기 전에는 실패하고 고친 뒤에는 통과하는 테스트, 실제 실행 결과 확인, 프로젝트 안의 인계 기록이 함께 남습니다. 큰 변경은 `lit plan`으로 계획을 먼저 세우고, 승인한 뒤에 고칩니다. 목표와 계획과 근거가 디스크에 남으니 새 세션은 그 기록을 읽고 바로 이어 갑니다. 모델과 도구, 로그인은 여전히 Hermes가 맡고, LitHermes는 그 위에 일하는 방식을 더합니다.
-
-친구에게 한 줄로 소개한다면 이렇습니다. *Hermes 작업 앞에 `lit`만 붙이면, 다 됐다고 하기 전에 결과부터 증명하고 내일 세션을 위한 메모까지 남겨 줘요.*
-
-### 누구에게 맞나요
-
-결과를 믿고 쓸 수 있어야 하는 일에 이미 Hermes를 쓰는 분께 맞습니다. 테스트를 계속 통과해야 하는 코드, 다른 사람에게 건넬 보고서와 발표자료, 출처가 필요한 조사 같은 일이요. 한자리에서 끝나지 않는 일, 책상에서 시작해 나중에 휴대폰으로 gateway를 통해 확인하는 일에서 특히 도움이 됩니다.
+LitHermes는 세션마다 따라갈 순서를 주고, 그 기록을 남깁니다. 요청 앞에 `lit`을 붙이면 확인할 수 있는 기준, 고치기 전에는 실패하고 고친 뒤에는 통과하는 테스트, 실제 실행 결과 확인, 프로젝트 안의 인계 기록이 함께 남습니다. 큰 변경은 `lit plan`으로 계획을 먼저 세우고, 승인한 뒤에 고칩니다. 목표와 계획과 근거가 디스크에 남으니 새 세션은 그 기록을 읽고 바로 이어 갑니다. 모델과 도구, 로그인은 여전히 Hermes가 맡고, LitHermes는 그 위에 일하는 방식을 더합니다. 결과를 믿고 쓸 수 있어야 하는 일에 이미 Hermes를 쓰는 분께 맞습니다. 테스트를 계속 통과해야 하는 코드, 다른 사람에게 건넬 보고서와 발표자료, 출처가 필요한 조사 같은 일이요. 한자리에서 끝나지 않는 일, 책상에서 시작해 나중에 휴대폰으로 gateway를 통해 확인하는 일에서 특히 도움이 됩니다.
 
 ### 세션은 이렇게 흘러갑니다
 
@@ -91,7 +91,7 @@ lit plan add a --shout flag that prints the greeting in capitals, with a test
 
 ## 설치
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.37` 기준입니다. 아무 터미널에서나 실행하세요.
+Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.38` 기준입니다. 아무 터미널에서나 실행하세요.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
@@ -143,7 +143,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 ## 워크플로 지도
 
-Hermes 플러그인은 패널이나 상태 표시줄 칸을 따로 더할 수 없어서, LitHermes는 지금 어디쯤인지를 답변 안에 보여 줍니다. 계획에 따라 작업하는 동안에는 답변마다 끝에 지도 한 줄이 붙습니다.
+터미널에서는 Hermes 플러그인이 패널이나 상태 표시줄 칸을 따로 더할 수 없어서(위의 Desktop 패널은 예외입니다), LitHermes는 지금 어디쯤인지를 답변 안에 보여 줍니다. 계획에 따라 작업하는 동안에는 답변마다 끝에 지도 한 줄이 붙습니다.
 
 ```text
 🔥 LIT · lit-loop — 📝 plan ✓ › 🔨 WORK ▰▰▰▱▱▱▱ 3/7 › 🔍 · › 🏁 ·
@@ -264,11 +264,11 @@ flowchart TD
 
 ## 요구 사항, 업데이트, 삭제
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈에 쓸 권한이 필요합니다. 영상을 만들려면 Chrome과 ffmpeg도 있어야 하고, Word와 PowerPoint 파일은 처음 만들 때 버전이 고정된 도구를 LitHermes 캐시에 설치합니다.
+Hermes Agent 0.21.3 이상과 Node.js 18 이상, 그리고 Hermes 홈에 쓸 권한이 필요합니다. 영상을 만들려면 Chrome과 ffmpeg도 있어야 하고, Word와 PowerPoint 파일은 처음 만들 때 버전이 고정된 도구를 LitHermes 캐시에 설치합니다.
 
 LitHermes는 스스로 최신 상태를 유지합니다. 터미널에서 `install`, `check`, `doctor`를 실행하거나 대화형 Hermes CLI 세션에서 첫 메시지를 보낼 때 더 새로운 안정 버전을 찾고, 있으면 플러그인과 설정을 백업한 뒤 설치하고 `doctor --offline`을 실행합니다. 무엇이든 실패하면 백업을 되돌립니다. gateway와 전체 화면 TUI는 이 방식으로 업데이트되지 않습니다. 업데이트를 직접 설치하고 싶다면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요. 단계와 끄는 방법은 [업데이트](./docs/install.ko.md#업데이트)에 모두 적어 두었습니다.
 
-기록은 모두 내 컴퓨터에 남습니다. 목표와 계획과 근거는 프로젝트의 `.hermes/lithermes/`에, 설치 기록과 업데이트 캐시와 백업은 Hermes 홈에 있습니다. LitHermes가 스스로 인터넷을 쓰는 일은 두 가지입니다. 하나는 npm에 새 버전이 있는지 묻는 것으로, `LITHERMES_NO_UPDATE_CHECK=1`을 설정하면 끌 수 있습니다. 다른 하나는 스킬이 처음 필요로 할 때 버전이 고정된 도구를 받는 것입니다. 영상용 도구는 `install` 때 받고(`--offline`을 붙이면 건너뜁니다), Office용 도구는 Word나 PowerPoint 파일을 처음 만들 때 받습니다. 프롬프트는 전과 같이 Hermes에 설정한 모델 제공자에게 갑니다. LitHermes가 쓰는 파일은 [개인정보와 로컬 기록](./docs/privacy.md)에 모두 나와 있습니다.
+기록은 모두 내 컴퓨터에 남습니다. 목표와 계획과 근거, 서명된 실행 기록, 핸드오프 카드는 프로젝트의 `.hermes/lithermes/`에, 설치 기록과 업데이트 캐시와 백업은 Hermes 홈에 있습니다. 알아 둘 점이 네 가지 있습니다. 실행 기록은 플러그인이 어떤 명령이 그 종료 코드로 끝나는 것을 보았다는 사실만 보여 주고, 그 명령이 쓸모 있는 검증을 했는지는 알려 주지 않습니다. `/lit-accept-tests`가 쓰는 테스트 감시는 개수를 프로젝트 안의 파일에 저장하므로, 셸을 직접 쓸 수 있는 모델은 그 파일을 비울 수 있습니다. 새 세션은 이어 하기를 제안하려고 같은 프로젝트에 있는 다른 세션의 목표 파일을 읽되, 이 설치가 Hermes 홈의 자체 키로 봉인한 목표만 대상으로 하며, `LITHERMES_GOAL_RESUME=0`을 설정하면 이 제안을 끌 수 있습니다. 핸드오프 카드는 Hermes가 세션을 닫을 때 써지므로, 마지막 메시지로부터 한참 뒤일 수 있습니다. LitHermes가 스스로 인터넷을 쓰는 일은 두 가지입니다. 하나는 npm에 새 버전이 있는지 묻는 것으로, `LITHERMES_NO_UPDATE_CHECK=1`을 설정하면 끌 수 있습니다. 다른 하나는 스킬이 처음 필요로 할 때 버전이 고정된 도구를 받는 것입니다. 영상용 도구는 `install` 때 받고(`--offline`을 붙이면 건너뜁니다), Office용 도구는 Word나 PowerPoint 파일을 처음 만들 때 받습니다. 프롬프트는 전과 같이 Hermes에 설정한 모델 제공자에게 갑니다. LitHermes가 쓰는 파일은 [개인정보와 로컬 기록](./docs/privacy.md)에 모두 나와 있고, 실행 서명, Desktop 창이 쓰는 읽기 전용 경로, 플러그인이 띄우는 프로세스, 플러그인이 읽는 Hermes 내부 항목, `sudo` 검사 경고는 [플러그인이 확인하고 읽고 시작하는 것](./docs/privacy.md#what-the-plugin-checks-reads-and-starts)에 정리해 두었습니다.
 
 온라인에 접속하지 않고 설치 상태를 점검하거나 삭제하는 명령입니다.
 

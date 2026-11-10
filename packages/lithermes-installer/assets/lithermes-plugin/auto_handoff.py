@@ -55,12 +55,14 @@ try:
     from .redaction import redact_text
     from .rules import constants as _RULE_CONSTANTS
     from .session_context import is_delegate_child_platform
+    from .workspace import locate as locate_workspace
 except (ImportError, ModuleNotFoundError):
     from core_runtime import assert_within_isolation, get_hermes_home, utc_now  # type: ignore
     from provider_metrics import _nonnegative_int, _value  # type: ignore
     from redaction import redact_text  # type: ignore
     from rules import constants as _RULE_CONSTANTS  # type: ignore
     from session_context import is_delegate_child_platform  # type: ignore
+    from workspace import locate as locate_workspace  # type: ignore
 
 
 FLAG = "LITHERMES_AUTO_HANDOFF"
@@ -620,7 +622,7 @@ def pre_llm_call(**kwargs: Any) -> str:
         state["pending"], state["awaiting"], state["dropped"] = False, True, False
         state["nonce"] = nonce
         state["fired_at"] = time.time()
-        state["cwd"] = os.getcwd()
+        state["cwd"] = str(locate_workspace(session_id=session_id) or os.getcwd())
         state["summary"] = _summary_fingerprint(history)
         state["platform"], state["home"] = platform, str(get_hermes_home())
         return block

@@ -36,6 +36,7 @@ class DriftTestCase(unittest.TestCase):
         cls.runtime = import_module("lithermes_plugin_pkg.litgoal.runtime")
         cls.store = import_module("lithermes_plugin_pkg.litgoal.store")
         cls.tools = import_module("lithermes_plugin_pkg.litgoal.tools")
+        cls.runs = import_module("lithermes_plugin_pkg.litgoal.runs")
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -44,11 +45,18 @@ class DriftTestCase(unittest.TestCase):
     def tearDown(self):
         self._tmp.cleanup()
 
+    def _green(self, session_id=""):
+        """Record a passing terminal run as post_tool_call does; return the ref that cites it."""
+        run_id = self.runs.record_run(
+            self.ws, session_id, "terminal", {"command": "pytest -q"}, json.dumps({"exit_code": 0})
+        )
+        return f"run:{run_id}"
+
     def _complete(self, session_id=""):
         """Drive one goal all the way through the quality gate."""
         self.runtime.create_goal(self.ws, "ship it", criteria=[{"scenario": "it works"}],
                                  session_id=session_id)
-        self.runtime.add_evidence(self.ws, "C001", "green", "t.py::x", session_id=session_id)
+        self.runtime.add_evidence(self.ws, "C001", "green", self._green(session_id), session_id=session_id)
         self.runtime.add_evidence(self.ws, "C001", "scenario", "curl -i /health", session_id=session_id)
         self.runtime.set_criterion_status(self.ws, "C001", "pass", session_id=session_id)
         return self.runtime.complete_goal(self.ws, session_id=session_id)
@@ -177,7 +185,7 @@ class D6bStatusEnum(DriftTestCase):
     def test_a_stalled_goal_cannot_pass_the_quality_gate(self):
         self.assertTrue(self._complete(session_id="done")["completed"])
         self.runtime.create_goal(self.ws, "obj", criteria=[{"scenario": "s"}], session_id="x")
-        self.runtime.add_evidence(self.ws, "C001", "green", "t", session_id="x")
+        self.runtime.add_evidence(self.ws, "C001", "green", self._green("x"), session_id="x")
         self.runtime.add_evidence(self.ws, "C001", "scenario", "s", session_id="x")
         self.runtime.set_criterion_status(self.ws, "C001", "pass", session_id="x")
         self.assertTrue(self.runtime.quality_gate(self.ws, session_id="x")["passed"])
@@ -398,7 +406,7 @@ class D6eAttemptScopedEvidence(DriftTestCase):
 
     def test_quality_gate_requires_green_and_scenario_from_the_current_attempt(self):
         self.runtime.create_goal(self.ws, "obj", criteria=[{"scenario": "s"}])
-        self.runtime.add_evidence(self.ws, "C001", "green", "attempt-1 green")
+        self.runtime.add_evidence(self.ws, "C001", "green", self._green())
         self.runtime.add_evidence(self.ws, "C001", "scenario", "attempt-1 scenario")
         self.runtime.set_criterion_status(self.ws, "C001", "fail")
         self.runtime.set_criterion_status(self.ws, "C001", "in_progress")
@@ -409,7 +417,7 @@ class D6eAttemptScopedEvidence(DriftTestCase):
         self.assertTrue(any("green evidence for attempt 2" in reason for reason in stale["reasons"]))
         self.assertTrue(any("scenario evidence for attempt 2" in reason for reason in stale["reasons"]))
 
-        self.runtime.add_evidence(self.ws, "C001", "green", "attempt-2 green")
+        self.runtime.add_evidence(self.ws, "C001", "green", self._green())
         green_only = self.runtime.quality_gate(self.ws)
         self.assertFalse(green_only["passed"])
         self.assertFalse(any("green evidence" in reason for reason in green_only["reasons"]))
