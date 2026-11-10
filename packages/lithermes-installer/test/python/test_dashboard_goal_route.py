@@ -381,8 +381,23 @@ class GoalStages(unittest.TestCase):
         base = store.goals_path(self.ws, "next-session").stat().st_mtime
         os.utime(store.goals_path(self.ws, "3f1a9c2e-77aa-4b1c-9d00-aaaaaaaaaaaa"), (base - 100, base - 100))
         _, by_key = self._stages()
-        self.assertEqual(by_key["resume"]["detail"], "from session 3f1a\u2026")
+        self.assertEqual(by_key["resume"]["detail"], "resumed from an earlier session")
+        self.assertNotIn("3f1a", json.dumps(by_key["resume"]), "never the raw session id")
         self.assertEqual(by_key["resume"]["state"], "done")
+        # With the earlier session's handoff card on disk, its time is shown.
+        card_dir = self.ws / ".hermes" / "lithermes" / "handoff"
+        card_dir.mkdir(parents=True, exist_ok=True)
+        (card_dir / "3f1a9c2e-77aa-4b1c-9d00-aaaaaaaaaaaa.json").write_text(
+            json.dumps({"written_at": "2026-11-09T14:02:00+00:00"}), encoding="utf-8"
+        )
+        with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+            time.tzset()
+            try:
+                _, by_key = self._stages()
+            finally:
+                os.environ.pop("TZ", None)
+                time.tzset()
+        self.assertEqual(by_key["resume"]["detail"], "resumed from an earlier session (handoff 14:02)")
 
     def test_hostile_reports_are_ignored_or_bounded_and_redacted(self):
         self._goal()

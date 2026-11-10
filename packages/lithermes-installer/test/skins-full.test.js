@@ -19,6 +19,9 @@ const ENGINE_TOP_LEVEL_KEYS = new Set([
   "spinner",
   "branding",
   "banner_logo",
+  "tool_prefix",
+  "tool_emojis",
+  "banner_hero",
 ]);
 
 const ACCENT_COLOR_KEYS = [
@@ -58,16 +61,19 @@ test("branding follows the skin brief for every accent", () => {
       prompt_symbol: "🔥 ›",
       welcome: "LIT ready",
       goodbye: "stay lit",
+      help_header: "(🔥 lit) Available Commands · type lit <task>",
     });
   }
 });
 
-test("banner_logo is the canonical standard mark in native Rich markup", () => {
-  const { standard, skinLogo } = require("../src/lib/litMark");
+test("banner_logo is the canonical standard mark in native Rich markup, one span per row", () => {
+  const { standard } = require("../src/lib/litMark");
   for (const accent of HUD_ACCENTS) {
     const logo = parsedSkin(accent).banner_logo.replace(/\n$/, "");
-    assert.equal(logo, skinLogo().join("\n"));
     assert.deepEqual(logo.replace(/\[[^\]]*\]/g, "").split("\n"), standard);
+    // ui-tui banner.ts parseRichMarkup draws every span on its own line, so a
+    // per-glyph row would scatter the mark one glyph per line in the Ink TUI.
+    for (const row of logo.split("\n")) assert.match(row, /^\[#[0-9A-F]{6}\][^[]*\[\/\]$/, row);
     for (const color of ["#FF6337", "#D7F75B", "#F2EFDF"]) assert.ok(logo.includes(`[${color}]`));
     assert.doesNotMatch(logo, /▓|\x1b|#601616/);
     assert.equal(logo.split("\n").length, 10);

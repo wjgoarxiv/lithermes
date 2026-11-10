@@ -38,14 +38,14 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.38 factual release scope
+### 1.0.39 factual release scope
 
-This checklist covers the 1.0.38 release.
+This checklist covers the 1.0.39 release.
 
-- [ ] Green evidence counts only for a run the plugin signed in this session, and a workspace change after that run makes it stale and closes the gate with the changed files named.
-- [ ] A Python or JavaScript test file that loses tests or assertions, gains a skip or is deleted opens a review blocker that only the user clears with `/lit-accept-tests <reason>`.
-- [ ] A completion claim while the gate is closed, or in a `lit` session with no goal, ends with a `⛔ LIT: not done` line; `pre_verify` is registered and `plugin.yaml` lists twelve hooks.
-- [ ] The handoff card, sealed resume offer, Desktop pane timeline and gate chip work on Hermes 0.23 gateway sessions; child processes get the allowlist environment.
+- [ ] The Desktop pane shows the proof ring, the gate pill, the receipts list and the onboarding card, flips its pill without raising a notification of its own (the `post_message` toast is the only one), and only the runs the gate names read stale.
+- [ ] Gate, stale and test-guard changes post one keyed message per goal; a failure never reaches the session.
+- [ ] `/lit`, `/lit-loop` and `/litgoal` end with the four-line LIT card, coloured in a local session and plain under `NO_COLOR`.
+- [ ] Shipped skins gain `banner_hero`, `tool_prefix`, `tool_emojis` and `help_header`; a skin is upgraded only when it matches a shipped version byte for byte, and the logo draws as rows in the TUI.
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, `hermes plugins validate` and fresh-clone gates pass; the packed tarball stays under the 13 MiB cap.
 
 ### 1.0.3 factual release scope
@@ -348,7 +348,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.38 version`.
+  from `npm view @litfamily/lithermes@1.0.39 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -370,10 +370,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.38 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.39 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.38 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.38.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.38.tgz"
+  npm pack @litfamily/lithermes@1.0.39 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.39.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.39.tgz"
 rm -rf "$VERIFY_DIR"
 ```

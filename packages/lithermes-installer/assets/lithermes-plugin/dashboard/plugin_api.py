@@ -3,8 +3,9 @@
 Hermes mounts this module's ``router`` under ``/api/plugins/lithermes/`` once the
 plugin is enabled. The single route, ``GET /goal?cwd=<workspace>``, reports the
 goal, its criteria, the evidence on the current attempt, the quality-gate
-verdict and a six-stage timeline (plan, runs, review, gate, handoff, resume) for
-the Desktop pane. It never writes: it only reads the litgoal state files that the
+verdict, a six-stage timeline (plan, runs, review, gate, handoff, resume) and the
+signed runs as receipts (id, exit, when, what cites them, why a stale one no longer
+counts) for the Desktop pane. It never writes: it only reads the litgoal state files that the
 plugin's own tools already keep under ``<cwd>/.hermes``. When the session left a
 ``gate.json`` beside its goal, the gate, runs and blockers shown are that file's,
 labelled ``"source": "session"``: this process cannot re-verify a run another
@@ -21,6 +22,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import re
 import sys
 import types
 from pathlib import Path
@@ -38,6 +40,7 @@ _MAX_SESSIONS = 500
 _MAX_CRITERIA = 100
 _MAX_EVIDENCE = 200
 _MAX_REASONS = 20
+_MAX_RECEIPTS = 8
 
 
 class CwdRefused(ValueError):
@@ -46,6 +49,21 @@ class CwdRefused(ValueError):
 
 def _home_root() -> Path:
     return Path.home()
+
+
+# A path inside some Hermes home's lithermes plugin folder, shown as <lithermes>/...
+_PLUGIN_PATH = re.compile(r"""[^\s"'`]*/plugins/lithermes(?=/)""")
+
+
+def _short_paths(text: str) -> str:
+    """The plugin folder becomes ``<lithermes>`` and the user's home ``~``, so a command
+    preview or reason never shows the account name or the profile layout."""
+    text = text.replace(str(_PLUGIN_DIR), "<lithermes>")
+    text = _PLUGIN_PATH.sub("<lithermes>", text)
+    home = str(_home_root()).rstrip("/")
+    if home:
+        text = re.sub(re.escape(home) + r"(?=/|\b|$)", "~", text)
+    return text
 
 
 def _load_redactor():
@@ -107,6 +125,7 @@ def _empty(error: str = "") -> dict[str, Any]:
         "evidence": [],
         "gate": {"open": False, "reasons": []},
         "stages": [],
+        "receipts": [],
     }
     if error:
         snapshot["error"] = error
@@ -151,10 +170,14 @@ def _stage_inputs(store, runtime, workspace: Path, session_id: str, goal, state,
         }
         observed = importlib.import_module(_VIEW_PACKAGE + ".runs").recent_runs(workspace, session_id, limit=3)
         runs = [
-            {"id": clean(r.get("id"), 40), "exit": r.get("exit_code"), "stale": False} for r in observed
+            {"id": clean(r.get("id"), 40), "exit": r.get("exit_code"), "preview": r.get("cmd_preview", ""),
+             "at": r.get("at", ""), "stale": False, "changed": []}
+            for r in observed
         ]
         blockers = [{"text": clean(b.detail, 300), "resolved": b.resolved} for b in goal.review_blockers]
     card = cards.read_card(workspace, session_id)
+    source = str(state.adopted_from or "")
+    source_card = cards.read_card(workspace, source) if source else None
     stages = _load_by_path("_lithermes_dashboard_goal_stages", "goal_stages.py").build_stages(
         criteria=len(goal.criteria),
         runs=runs,
@@ -163,20 +186,47 @@ def _stage_inputs(store, runtime, workspace: Path, session_id: str, goal, state,
         gate_reasons=gate["reasons"],
         handoff_time=cards.saved_time(card.get("written_at")) if card else "",
         adopted_from=clean(state.adopted_from, 96),
+        adopted_handoff=cards.saved_time(source_card.get("written_at")) if source_card else "",
     )
     stale_runs = {"run:" + str(run.get("id")) for run in runs if run.get("stale")}
-    return {"gate": gate, "stages": stages, "stale_runs": stale_runs}
+    return {"gate": gate, "stages": stages, "stale_runs": stale_runs, "runs": runs}
+
+
+def _receipts(runs: list[dict[str, Any]], cited: dict[str, list[str]], clean) -> list[dict[str, Any]]:
+    """The signed runs, newest first, with what cites each and why a stale one no longer counts."""
+    rows: list[dict[str, Any]] = []
+    for run in reversed(runs[-_MAX_RECEIPTS:]):
+        run_id = clean(run.get("id"), 40)
+        changed = [clean(name, 160) for name in (run.get("changed") or [])[:8]]
+        code = run.get("exit")
+        row: dict[str, Any] = {
+            "id": run_id,
+            "exit": code if type(code) is int else None,
+            "command": clean(run.get("preview"), 100),
+            "at": clean(run.get("at"), 40),
+            "stale": run.get("stale") is True,
+            "cited_by": cited.get(run_id, []),
+        }
+        if row["stale"]:
+            moved = ", ".join(changed[:3]) + (f" and {len(changed) - 3} more" if len(changed) > 3 else "")
+            row["stale_reason"] = (f"{moved} changed after the run" if moved else "the workspace changed after the run")
+        rows.append(row)
+    return rows
 
 
 def goal_snapshot(cwd: str) -> dict[str, Any]:
     """Build the JSON payload for the newest goal in ``cwd``; raise CwdRefused if unsafe."""
     if not str(cwd or "").strip():
         return _empty()
-    workspace = _resolve_workspace(cwd)
+    return workspace_snapshot(_resolve_workspace(cwd))
+
+
+def workspace_snapshot(workspace: Path) -> dict[str, Any]:
+    """The same payload for a workspace the caller already resolved (the plugin's own slash card)."""
     redact = _load_redactor()
 
     def clean(value: Any, limit: int) -> str:
-        return redact(str(value or "")).strip()[:limit]
+        return _short_paths(redact(str(value or ""))).strip()[:limit]
 
     try:
         store, runtime = _load_litgoal()
@@ -194,6 +244,7 @@ def goal_snapshot(cwd: str) -> dict[str, Any]:
 
     criteria: list[dict[str, str]] = []
     evidence: list[dict[str, Any]] = []
+    cited: dict[str, list[str]] = {}
     for criterion in goal.criteria[:_MAX_CRITERIA]:
         criteria.append(
             {
@@ -217,6 +268,11 @@ def goal_snapshot(cwd: str) -> dict[str, Any]:
             if item.ref in shown["stale_runs"]:
                 row["stale"] = True
             evidence.append(row)
+            ref = str(item.ref or "").strip()
+            if ref.startswith("run:"):
+                citing = cited.setdefault(clean(ref[4:], 40), [])
+                if row["criterion"] not in citing:
+                    citing.append(row["criterion"])
     return {
         "goal": {
             "id": clean(goal.id, 40),
@@ -228,6 +284,7 @@ def goal_snapshot(cwd: str) -> dict[str, Any]:
         "evidence": evidence,
         "gate": shown["gate"],
         "stages": shown["stages"],
+        "receipts": _receipts(shown["runs"], cited, clean),
     }
 
 

@@ -1,0 +1,55 @@
+name: lithermes-cyan
+description: LitHermes Cyan accent HUD
+colors:
+  banner_title: "#00F5FF"
+  banner_accent: "#00F5FF"
+  banner_border: "#00F5FF"
+  ui_accent: "#00F5FF"
+  ui_label: "#00F5FF"
+  input_rule: "#00F5FF"
+  response_border: "#00F5FF"
+  status_bar_strong: "#00F5FF"
+  session_label: "#00F5FF"
+dark_colors:
+  banner_title: "#00F5FF"
+  banner_accent: "#00F5FF"
+  banner_border: "#00F5FF"
+  ui_accent: "#00F5FF"
+  ui_label: "#00F5FF"
+  input_rule: "#00F5FF"
+  response_border: "#00F5FF"
+  status_bar_strong: "#00F5FF"
+  session_label: "#00F5FF"
+light_colors:
+  banner_title: "#00878C"
+  banner_accent: "#00878C"
+  banner_border: "#00878C"
+  ui_accent: "#00878C"
+  ui_label: "#00878C"
+  input_rule: "#00878C"
+  response_border: "#00878C"
+  status_bar_strong: "#00878C"
+  session_label: "#00878C"
+spinner:
+  waiting_faces: ["🔥", "🔥", "🔥", "🔥"]
+  thinking_verbs: [igniting, forging, burning, tempering]
+  wings:
+    - ["◜", "◝"]
+    - ["◞", "◟"]
+branding:
+  agent_name: LitHermes
+  response_label: lit
+  prompt_symbol: "🔥 ›"
+  welcome: LIT ready
+  goodbye: stay lit
+banner_logo: |2
+            [#F2EFDF]▄[/][#F2EFDF]▖[/]  [#D7F75B]▄[/][#D7F75B]█[/][#D7F75B]▄[/]     
+  [#FF6337]▗[/][#FF6337]▄[/][#FF6337]▄[/][#FF6337]▖[/]    [#F2EFDF]▄[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]▌[/]  [#D7F75B]▜[/][#D7F75B]█[/][#D7F75B]▛[/]     
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/]  [#F2EFDF]▄[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▜[/][#FF6337]▛[/] 
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/] [#F2EFDF]▐[/][#F2EFDF]█[/][#F2EFDF]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▘[/]  
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/]   [#F2EFDF]▄[/][#F2EFDF]█[/][#F2EFDF]▌[/][#D7F75B]█[/][#D7F75B]█[/][#D7F75B]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]▌[/]  
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/] [#F2EFDF]▄[/][#F2EFDF]█[/][#F2EFDF]█[/][#F2EFDF]▛[/][#F2EFDF]▘[/]  [#F2EFDF]▗[/][#F2EFDF]▄[/][#F2EFDF]▄[/]  [#F2EFDF]▗[/]    
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/][#F2EFDF]▐[/][#F2EFDF]█[/][#F2EFDF]▛[/][#F2EFDF]▘[/]    [#F2EFDF]▐[/][#F2EFDF]█[/][#F2EFDF]█[/]  [#F2EFDF]▝[/][#F2EFDF]▀[/]   
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▌[/][#F2EFDF]▝[/]       [#F2EFDF]▐[/][#F2EFDF]█[/][#F2EFDF]█[/]       
+  [#FF6337]▐[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]█[/][#FF6337]▘[/]    [#F2EFDF]▐[/][#F2EFDF]█[/][#F2EFDF]█[/]       
+  [#FF6337]▝[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/][#FF6337]▀[/]      [#F2EFDF]▝[/][#F2EFDF]▀[/][#F2EFDF]▀[/]       

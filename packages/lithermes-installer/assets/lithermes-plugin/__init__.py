@@ -12,8 +12,11 @@ from . import core
 from . import bounded_work
 from . import bounded_work_tools
 from . import deliverable_hedge_guard
+from . import gate_toasts
 from . import handoff
 from . import handoff_card
+from . import hud_card
+from .workspace import is_hermes_home
 from . import knowledge
 from . import knowledge_tools
 from . import lit_mark
@@ -543,12 +546,43 @@ def _handle_lithermes_cli(args) -> int:
     return 0
 
 
-def _ignited(handler, route):
+# Routes whose slash output carries the HUD card (goal, proof, signed runs, gate).
+_HUD_ROUTES = frozenset({"litwork", "lit-loop", "litgoal"})
+
+
+def _session_surface(ctx) -> str | None:
+    """``cli`` / ``tui`` / ``desktop`` / a platform name, or None on a host without the API."""
+    reader = getattr(ctx, "session_surface", None)
+    if not callable(reader):
+        return None
+    try:
+        return str(reader() or "").strip().lower() or None
+    except Exception:
+        return None
+
+
+def _hud_card_for(ctx, route: str, surface: str | None) -> str | None:
+    if surface is None or route not in _HUD_ROUTES:
+        return None
+    try:
+        reader = getattr(ctx, "session_cwd", None)
+        cwd = str(reader() or "").strip() if callable(reader) else ""
+        workspace = Path(cwd).resolve() if cwd else core.resolve_workspace()
+        if workspace is not None and is_hermes_home(workspace):
+            workspace = None
+        return hud_card.render(hud_card.snapshot_for(workspace), route, surface)
+    except Exception:
+        return None
+
+
+def _ignited(handler, route, ctx=None):
     """Wrap a slash command with a harness mark and a model probe contract."""
 
     @functools.wraps(handler)
     def wrapped(user_args):
-        return core.ignite(handler(user_args), route)
+        result = handler(user_args)
+        surface = _session_surface(ctx)
+        return core.ignite(result, route, surface=surface, card=_hud_card_for(ctx, route, surface))
 
     return wrapped
 
@@ -634,7 +668,7 @@ def _native_command_dispatch(ctx, handler):
 
 def _command_handler(ctx, handler, route=None):
     """Build a command handler that works on both legacy and native Hermes."""
-    ignited = _ignited(handler, route) if route else handler
+    ignited = _ignited(handler, route, ctx) if route else handler
     return _native_command_dispatch(ctx, ignited)
 
 
@@ -694,7 +728,21 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
 def _post_tool_call(**kwargs: Any) -> None:
     # Terminal runs are the only proof a `green` litgoal evidence item can cite.
     litgoal_runs.observe_tool_call(**kwargs)
-    return core.post_tool_call(**kwargs)
+    result = core.post_tool_call(**kwargs)
+    _toast_gate_change(kwargs)
+    return result
+
+
+def _toast_gate_change(kwargs: dict[str, Any]) -> None:
+    """A keyed toast when this call moved the gate (opened, closed, stale run, weakened test)."""
+    try:
+        changed = str(kwargs.get("status") or "ok") == "ok" and bool(
+            core.mutated_tool_paths(str(kwargs.get("tool_name") or ""), kwargs.get("args"), kwargs.get("result"))
+        )
+        session_id = kwargs.get("session_id") or kwargs.get("task_id") or ""
+        gate_toasts.observe(_session_workspace(kwargs), session_id, files_changed=changed)
+    except Exception:
+        return None
 
 
 def _transform_tool_result(**kwargs: Any) -> str | None:
@@ -717,6 +765,7 @@ def _release_bounded_session(**kwargs: Any) -> None:
     # next session reusing the id would see every rule as "already injected".
     core.release_rules_session(session_id)
     core._lit_reentry.forget_offers(session_id)
+    gate_toasts.forget_session(raw_session_id)
     return None
 
 
@@ -729,6 +778,7 @@ def _finalize_session(**kwargs: Any) -> None:
 
 def register(ctx) -> None:
     core.configure_welcome_skin()
+    gate_toasts.bind(ctx)
     base = Path(__file__).resolve().parent
 
     # Session-scoped rule state. Hermes ignores this hook's return value, so it

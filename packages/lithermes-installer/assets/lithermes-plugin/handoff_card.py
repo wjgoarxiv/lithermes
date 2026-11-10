@@ -95,11 +95,14 @@ def _run_row(item: Any) -> dict[str, Any] | None:
     if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not item["id"].strip():
         return None
     code = item.get("exit")
+    changed = item.get("changed") if isinstance(item.get("changed"), list) else []
     return {
         "id": _clip(item["id"], 40),
         "exit": code if type(code) is int else None,
         "preview": _clip(item.get("preview"), 100),
+        "at": _clip(item.get("at"), 40),
         "stale": item.get("stale") is True,
+        "changed": [_clip(name, 160) for name in changed[:8] if isinstance(name, str)],
     }
 
 
@@ -117,7 +120,7 @@ def read_gate_report(path: Path, workspace: Path) -> dict[str, Any] | None:
     """The session's ``gate.json`` as a bounded, typed report, or None when absent or malformed.
 
     Its contract is ``{"open": bool, "reasons": [str], "evaluated_at": str, "runs":
-    [{"id", "exit", "preview", "stale"}], "blockers": [{"source", "text", "resolved"}]}``.
+    [{"id", "exit", "preview", "at", "stale", "changed"}], "blockers": [{"source", "text", "resolved"}]}``.
     Callers show it as "reported by the session": it is a file, not a proof.
     """
     data = _read_json_object(path, workspace)

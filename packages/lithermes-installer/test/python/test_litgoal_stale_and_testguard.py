@@ -494,7 +494,8 @@ class GateSnapshot(Base):
     def test_a_recorded_run_updates_the_snapshot_without_a_gate_call(self):
         run_id = self.terminal("pytest -q tests/", 0)
         (entry,) = self.read()["runs"]
-        self.assertEqual(entry, {"id": run_id, "exit": 0, "preview": "pytest -q tests/", "stale": False})
+        datetime.fromisoformat(entry.pop("at"))
+        self.assertEqual(entry, {"id": run_id, "exit": 0, "preview": "pytest -q tests/", "stale": False, "changed": []})
 
     def test_added_evidence_updates_the_snapshot(self):
         run_id = self.terminal()

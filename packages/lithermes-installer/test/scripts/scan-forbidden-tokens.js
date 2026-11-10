@@ -40,7 +40,9 @@ const DEFAULT_PACK_LIMITS = Object.freeze({
   perMemberMs: 250,
   spawnTimeoutMs: 60000,
   // Skills keep growing; the worst-case repack had only a 2.4 KB margin at 12 MiB.
-  maxArchiveBytes: 13 * 1024 * 1024,
+  // The gzip -9 repack in the scanner test runs ~130 KB above npm's own tarball, and
+  // sat 5.8 KB under 13 MiB just before the Desktop pane v2, with npm's tarball at 12.87 MiB.
+  maxArchiveBytes: 13.5 * 1024 * 1024,
   maxFileBytes: MAX_PACK_FILE_BYTES,
   maxMembers: 2048,
   // 1.0.30 unpacks to ~25.3 MiB: motion vendors three.js, lit-pptx ships its mono font, plus lit-schematic.

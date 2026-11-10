@@ -75,6 +75,24 @@ def color_mode(*, stream=None, env=None, json=False) -> str:
     return "truecolor" if re.search(r"truecolor|24bit", env.get("COLORTERM", ""), re.I) or "direct" in env.get("TERM", "").lower() else "256"
 
 
+_COLOURED_SURFACES = frozenset({"cli", "tui", "local"})
+
+
+def surface_color_mode(surface: str, env=None) -> str:
+    """Colour for the client a slash command came from (``ctx.session_surface()``), not for a tty.
+
+    The classic CLI and the Ink TUI draw ANSI in slash output; Desktop strips it and a
+    messaging platform shows it as text, so those get none. Hermes 0.23 runs plugin slash
+    commands in the gateway and names every local app session ``local`` there (classic
+    CLI, TUI and Desktop alike), so ``local`` is painted too: the terminals draw it and
+    Desktop strips it. NO_COLOR always wins.
+    """
+    env = os.environ if env is None else env
+    if surface not in _COLOURED_SURFACES or "NO_COLOR" in env or not utf8_terminal(env):
+        return "none"
+    return "truecolor" if re.search(r"truecolor|24bit", env.get("COLORTERM", ""), re.I) or "direct" in env.get("TERM", "").lower() else "256"
+
+
 def render(rows, *, env=None, stream=None, json=False, mode=None) -> list[str]:
     if not utf8_terminal(env):
         return ["LIT"]
@@ -208,13 +226,14 @@ def probe_contract(route: str) -> str:
             "The harness renders the mark separately; do not draw or repeat it.")
 
 
-def acknowledgement(route: str, *, color=False, mode=None, **options) -> str:
+def acknowledgement(route: str, *, color=False, mode=None, surface=None, **options) -> str:
     # Slash display accepts ANSI; natural reply transforms enter Markdown and
     # transcripts, where the mark remains plain. Never color the model probe.
+    # A known client surface decides colour; without one (older hosts) a tty does.
     label = f"LIT IGNITED · {discipline(route)}"
     if not utf8_terminal(options.get("env")):
         return f"LIT\n🔥 {label} 🔥"
-    detected = color_mode(**options)
+    detected = surface_color_mode(surface, options.get("env")) if surface else color_mode(**options)
     paint_mode = "none" if not color or detected == "none" else mode or detected
     if paint_mode not in {"none", "256", "truecolor"}:
         raise ValueError("invalid color mode")

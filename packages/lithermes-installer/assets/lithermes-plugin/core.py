@@ -109,6 +109,11 @@ except (ImportError, ModuleNotFoundError):
     import lit_reentry as _lit_reentry
 
 try:
+    from . import hud_card as _hud_card
+except (ImportError, ModuleNotFoundError):
+    import hud_card as _hud_card
+
+try:
     from . import adhd_stack as _adhd_stack
 except (ImportError, ModuleNotFoundError):
     import adhd_stack as _adhd_stack
@@ -300,9 +305,26 @@ def release_rules_session(session_id: Any) -> None:
     _deliverable_hedges.release_session(session_id)
     _lit_reentry.forget(session_id)
 
-def ignite(result: str | dict[str, str], route: str = "litwork") -> str | dict[str, str]:
-    """Draw a command acknowledgement and require a separate model probe."""
-    mark = acknowledgement(route, color=True)
+def _with_card(mark: str, display: str, card: str | None, surface: str | None) -> str:
+    """The visible slash output: mark, the command's own lines, then the HUD card.
+
+    The Ink TUI folds a system line over 400 characters, so there the card (which
+    already names LIT and the route) stands in for the multi-row mark."""
+    if not card:
+        return f"{mark}\n{display}"
+    if surface == "tui":
+        return _hud_card.fit_tui(card, display)
+    return f"{mark}\n{display}\n{card}"
+
+
+def ignite(
+    result: str | dict[str, str], route: str = "litwork", *, surface: str | None = None, card: str | None = None
+) -> str | dict[str, str]:
+    """Draw a command acknowledgement and require a separate model probe.
+
+    ``surface`` is the calling client from ``ctx.session_surface()``; when known it, not
+    a tty check, decides colour. ``card`` is the HUD card the HUD routes add below."""
+    mark = acknowledgement(route, color=True, surface=surface if surface != "tui" or card else None)
     # Skill looks ride only on disciplines that keep one, never on unstyled
     # routes, to protect the per-route byte budgets the budget tests pin. The
     # discipline block folds in the session-state rules (YOUR TURN, ✦ done).
@@ -312,12 +334,12 @@ def ignite(result: str | dict[str, str], route: str = "litwork") -> str | dict[s
         updated = dict(result)
         display = result.get("display")
         if display and not str(display).startswith(mark):
-            updated["display"] = f"{mark}\n{display}"
+            updated["display"] = _with_card(mark, str(display), card, surface)
         if result.get("agent_message"):
             updated["agent_message"] = f"{probe_contract(route)}\n\n{result['agent_message']}{looks_suffix}"
         return updated
     if isinstance(result, str) and result.strip() and not result.startswith(mark):
-        return f"{mark}\n{result}"
+        return _with_card(mark, result, card, surface)
     return result
 
 # browser-drive substitution guard.

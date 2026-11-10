@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-09T22:18:10.361Z",
+  "syncedAt": "2026-11-10T04:44:48.279Z",
   "source": "bundled-payload",
-  "sourceHash": "427f1bf6595ec686cfd0abdb95765c22ecef0d29fc4be9fdf03ce1e0e0e96637",
+  "sourceHash": "61cc9c8f00fbed477d06b9992b72889a18e35e075b20d6e5774c012a58c17ea7",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "c05a6610a9eb8c85079cea3fb654d6136290972d84473f31fa3cfe3e44e3fdcc"
+      "sha256": "bb7877dbb2e4f421b9c0704d69a61dccaa51f560671e168d9caf064dc06d7d27"
     },
     {
       "path": "adhd_stack.py",
@@ -37,7 +37,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "2f5afda8a486d68d50e5e5885faab823533845950cfae7e1711b9bc751d7d1b2"
+      "sha256": "ef16e2d670c924dee5449336b678cf7484eacf2c16e0badbe4732288045c58aa"
     },
     {
       "path": "core_commands.py",
@@ -93,7 +93,7 @@
     },
     {
       "path": "dashboard/plugin_api.py",
-      "sha256": "59d5ba84423c39446cd7a782c56129a37b5bbac98f7d0773aa3334d5f198c7c8"
+      "sha256": "75d57bdae6744383d38190a35b62bad7f9213104c44b512927090754595c0b4f"
     },
     {
       "path": "deliverable_hedge_guard.py",
@@ -101,15 +101,19 @@
     },
     {
       "path": "desktop/plugin.js",
-      "sha256": "3607de7417f5f0c42934e90c4f733cbd0e62d79dd3fceee9dedee1a96bdb692a"
+      "sha256": "099ea4115afb6940258fb39fa68b26a9ffde77bbeac0f27e68c55cb0d2276e80"
     },
     {
       "path": "diagnostics.py",
       "sha256": "d7e60c326289bb71a3ac3995bc05cbf04dbc9654047ce721de5e9daf2eea8cb8"
     },
     {
+      "path": "gate_toasts.py",
+      "sha256": "d5db548b043e47fcf37d7de7b29679b53c3cfee8b24757d77dd5b71d9d10863b"
+    },
+    {
       "path": "goal_stages.py",
-      "sha256": "dbe547bb60b9517ff60cc8424af779a7e8404f83b5f0785cc722ac7ed067d3c8"
+      "sha256": "ea5bd639a2cce991f492e14d79de75f1b6c6cdbd7628cf76b62b4a748966908e"
     },
     {
       "path": "handoff.py",
@@ -117,7 +121,11 @@
     },
     {
       "path": "handoff_card.py",
-      "sha256": "2459126af048b02247d2583432307f354a13435e6934746d421440aaa8003ce1"
+      "sha256": "003472abedc62c6e8bf7d9d658566e20701bd2e0c0d3ded802e8c1e908240f92"
+    },
+    {
+      "path": "hud_card.py",
+      "sha256": "ee921d5d19aa38372cb5d7e86fcdd49ba48e8319be1841cd34fbc9f128468700"
     },
     {
       "path": "humanizer_detector.py",
@@ -141,7 +149,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "edd02789071f21be3586387bf54b8cff9163cbab8cd8a1a4506bd4650559bb54"
+      "sha256": "4a945fbe475c510e6e097dab519f277dfb659e5f1e0b9356f3f6016608feb90d"
     },
     {
       "path": "lit_mark_rows.json",
@@ -165,7 +173,7 @@
     },
     {
       "path": "litgoal/gate_snapshot.py",
-      "sha256": "a43a6a12d5b039fbf144efc93d7d5ac5c88875d8bee190fe9871371ec9babf3b"
+      "sha256": "f5be9aa16d7bf045dd4f6610317cbc49e36baad3d9d45f87092dfab6e4af423c"
     },
     {
       "path": "litgoal/hook.py",
@@ -225,7 +233,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "2808ed166aee86a538f605b18f0110416214074fe372cf601bca5c705e099b50"
+      "sha256": "4422d2c726cecfa7afb6ae2117544aad0184d4360dbac749e6c19d4f613dbecc"
     },
     {
       "path": "provider_metrics.py",
@@ -1373,7 +1381,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/references/complete-contract.md",
-      "sha256": "74c6fefc90ae50b27f2c5d88e0e37aa40b60638193d6455602c821dc9b04b217"
+      "sha256": "77afe8ebfd305a653e087460b51d93ae65e9443b8387d645576663b93e766924"
     },
     {
       "path": "skills/frontend-ui-ux/references/composition.md",
@@ -4985,7 +4993,7 @@
     },
     {
       "path": "skills/visual-qa/references/complete-contract.md",
-      "sha256": "819bc197f1e5b3847a78f6ae3dc01e9df3aa294db5f7af7e3d2a30eb10b3edc6"
+      "sha256": "42d26a06918ff488ea407beab66a937c2343c4c2df5c3ac4aeeab2bf2714d662"
     },
     {
       "path": "skills/visual-qa/schemas/evidence-manifest-v1alpha1.schema.json",

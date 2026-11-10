@@ -21,6 +21,22 @@ def gate_path(workspace: Path, session_id: Any = "") -> Path:
     return store.state_dir(workspace, session_id) / "gate.json"
 
 
+CHANGED_SHOWN = 8
+
+
+def _run_entry(record: dict[str, Any], now: fingerprint.Current) -> dict[str, Any]:
+    """One signed run as the pane shows it: when it ran and, once stale, which files moved since."""
+    moved, names = fingerprint.changed(record.get("fp"), now.get())
+    return {
+        "id": record.get("id"),
+        "exit": record.get("exit_code"),
+        "preview": record.get("cmd_preview", ""),
+        "at": record.get("at", ""),
+        "stale": moved,
+        "changed": names[:CHANGED_SHOWN] if moved else [],
+    }
+
+
 def write(
     workspace: Path, session_id: Any, goal: model.Goal, gate: dict[str, Any], now: fingerprint.Current
 ) -> None:
@@ -30,15 +46,7 @@ def write(
             "open": bool(gate["passed"]),
             "reasons": list(gate["reasons"]),
             "evaluated_at": datetime.now(timezone.utc).isoformat(),
-            "runs": [
-                {
-                    "id": r.get("id"),
-                    "exit": r.get("exit_code"),
-                    "preview": r.get("cmd_preview", ""),
-                    "stale": fingerprint.changed(r.get("fp"), now.get())[0],
-                }
-                for r in recent
-            ],
+            "runs": [_run_entry(r, now) for r in recent],
             "blockers": [
                 {"source": b.source or "review", "text": b.detail, "resolved": b.resolved}
                 for b in goal.review_blockers
