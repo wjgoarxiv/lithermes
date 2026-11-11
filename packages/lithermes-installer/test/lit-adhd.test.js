@@ -603,6 +603,46 @@ test("an ownerless start-work run is never this session's run to continue", asyn
   }
 });
 
+test("a parked run stays this session's running work and the board counts its parked steps", async () => {
+  const ws = roundThreeWs();
+  try {
+    const work = path.join(ws, ".hermes", "lithermes", "work", "work-parked");
+    fs.mkdirSync(work, { recursive: true });
+    // Written before parking existed: paused at a model-requested boundary, plus one parked step.
+    fs.writeFileSync(path.join(work, "state.json"), JSON.stringify({
+      schema: 3, work_id: "work-parked", revision: 4, status: "paused", worktree: ws,
+      plan: path.join(ws, "plans", "open.md"), active_session_id: "me-session", progress: [],
+      boundary: { id: "b-test", action: "execute-test", root: ws }, updated_at: new Date().toISOString(),
+    }));
+    fs.writeFileSync(path.join(work, "parked.json"), JSON.stringify({
+      schema: 1, work_id: "work-parked", entries: [{ id: "parked-1", action: "write", root: path.join(ws, "docs") }],
+    }));
+    const { data, text } = await collectWith(ws, { sessionId: "me-session" });
+    const run = data.startWork.find((item) => item.workId === "work-parked");
+    assert.equal(run.status, "active");
+    assert.equal(run.parked, 2);
+    assert.equal(run.pendingBoundary, undefined);
+    assert.equal(data.next.kind, "continue-work");
+    assert.match(text, /^Doing now: .*· 2 parked/mu);
+    const { renderBoard } = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/board.mjs");
+    const board = renderBoard(data, "en").text;
+    assert.match(board, /2 parked/u);
+    assert.match(board, /🅿️ .*2 parked steps → optional: lit approve or lit deny/u);
+    assert.doesNotMatch(board, /approve, or deny/u);
+
+    const released = JSON.parse(fs.readFileSync(path.join(work, "state.json"), "utf8"));
+    Object.assign(released, { active_session_id: "", boundary: { id: "session-1", action: "continue-session", root: ws } });
+    fs.writeFileSync(path.join(work, "state.json"), JSON.stringify(released));
+    const after = await collectWith(ws, { sessionId: "me-session" });
+    const stopped = after.data.startWork.find((item) => item.workId === "work-parked");
+    assert.equal(stopped.status, "paused");
+    assert.ok(stopped.pendingBoundary);
+    assert.equal(after.data.next.kind, "approve-boundary");
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
 test("HANDOFF Next skips finished items and the newest handoff file wins", async () => {
   const ws = roundThreeWs({ openPlan: false });
   try {

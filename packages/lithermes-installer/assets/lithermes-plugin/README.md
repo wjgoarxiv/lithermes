@@ -41,23 +41,36 @@ CLI/plugin name, not the npm package name.
   then `/lit-loop status`, `/lit-loop resume`, `/lit-loop cancel`, or
   `/lit-loop complete`. Canonical plans and semantic authority roots must stay
   inside the worktree. Null worktree resolves to cwd only with an explicit root
-  grant. Pause is code-owned and cannot be called as a slash shortcut.
+  grant. Pause is code-owned and cannot be called as a slash shortcut. Three
+  whole-prompt words steer a live run from any Hermes session of the project, a
+  nested folder or a linked worktree: `lit cancel` (`lit 취소`) ends it with no work
+  id or revision, `lit approve` (`lit 승인`) turns every parked step into a grant and
+  `lit deny` (`lit 거절`) refuses them; approving and denying are optional.
 - The model reports bounded progress only with `lithermes_work_progress`.
   `pre_tool_call` supplies the real Hermes session and enforces active-work,
   monotonic CAS revision, replay id, and one-use grant checks. First new progress
   continues; same replay is idempotent; later unchanged and stale work/revision
-  calls are silent. Only a genuinely new non-forbidden boundary pauses. A trusted
-  explicit user must invoke the emitted `/lit-loop resume` with matching boundary
-  identity and ACTION@ROOT; the agent has no resume or grant bypass. Consumed grant
-  identities survive event compaction, paused work cannot complete, and terminal
-  reuse returns the existing terminal state.
+  calls are silent. A call outside the grants, or a new non-forbidden boundary the
+  model reports, is parked (up to 16 per run) and the run keeps going; only a
+  session that ends pauses a run, and a trusted explicit user hands it on with
+  `/lit-loop resume ... --grant continue-session@<root>`. The exact resume for a
+  parked boundary still mints a one-use grant identity, and a run paused at a
+  boundary by an older LitHermes reads as active with that step parked. The agent has
+  no resume or grant bypass. Consumed grant identities survive event compaction,
+  paused work cannot complete, and terminal reuse returns the existing terminal state.
 - `pre_tool_call` also gates real Hermes mutation tools with the host-supported
   `action: block` directive. Read-only calls remain available. File writes and
   supported test/build/check terminal calls require exact-session canonical
   action/root authority; paused, wrong-session, out-of-root, ambiguous, and
   unsupported mutations are blocked. Safe action normalization rejects prefixed
   or hyphenated commit, publish, push, release, tag, install, host-config,
-  credential, and destructive equivalents.
+  credential, and destructive equivalents, and none of them is ever parked.
+  While a run is live, secrets and Hermes settings (`~/.ssh`, `~/.aws`, `.env`
+  files, private keys, `config.yaml`, `auth.json`, the litgoal seal key) are
+  refused for reads and writes, and run state, litgoal gate state and git
+  configuration for writes, with no queue and no approval. Hermes' own session
+  transcripts and spill files stay readable. Only a path a call names is checked,
+  so a folder-wide search can still read inside a secret file.
 - Progress arrays, state, replay/history/work collections, and ledger events are
   bounded; evidence is stored as digests instead of raw transcripts. A code-owned
   activation is single-use and fence-safe. Copied slash commands, quoted or fenced

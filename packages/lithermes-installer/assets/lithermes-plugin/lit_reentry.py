@@ -260,12 +260,24 @@ def _resumable_work(workspace: Path) -> dict[str, str] | None:
     for state_file in sorted((base / "work").glob("*/state.json"), key=_mtime, reverse=True)[:20]:
         state = _read_json(state_file)
         if state and state.get("status") in ("active", "paused"):
+            boundary = state.get("boundary") if isinstance(state.get("boundary"), dict) else {}
+            # Only a session release still pauses a run; an older pause at a
+            # boundary reads as active with that step parked.
+            released = state["status"] == "paused" and boundary.get("action") == "continue-session"
+            parked = _parked_count(state_file.parent) + (1 if state["status"] == "paused" and not released else 0)
             found.append((_mtime(state_file), {
                 "kind": "work", "dir": str(state_file.parent), "plan": Path(str(state.get("plan") or "")).name,
-                "id": str(state.get("work_id") or state_file.parent.name), "status": str(state["status"]),
+                "id": str(state.get("work_id") or state_file.parent.name),
+                "status": "released" if released else "active", "parked": str(parked),
             }))
             break
     return max(found, key=lambda item: item[0])[1] if found else None
+
+
+def _parked_count(run_dir: Path) -> int:
+    data = _read_json(run_dir / "parked.json")
+    entries = data.get("entries") if isinstance(data, dict) else None
+    return len(entries) if isinstance(entries, list) else 0
 
 
 def _relative(path: str, workspace: Path) -> str:
@@ -302,11 +314,16 @@ def _resume_note(work: dict[str, str], workspace: Path) -> str:
         action = f"Ledger: {_relative(str(Path(work['dir']) / 'ledger.jsonl'), workspace)}. Continue from the first open item."
     else:
         subject = f"Bounded work {work['id']} ({work['status']}) on plan {plan}."
-        action = (
-            "It is paused: do not mutate anything until the user resolves the pause."
-            if work["status"] == "paused"
-            else "Authority is unchanged; continue through lithermes_work_progress."
-        )
+        parked = int(work.get("parked") or 0)
+        if work["status"] == "released":
+            action = (
+                "Its previous Hermes session ended; the user hands it to this one with "
+                f"/lit-loop resume {work['id']} --revision N --boundary ID --grant continue-session@<root>."
+            )
+        else:
+            action = "Authority is unchanged; continue through lithermes_work_progress."
+            if parked:
+                action += f" {parked} step(s) are parked; carry on with what the grants cover."
     return "\n".join([
         "<lithermes-lit-resume>",
         "Existing work is resuming; no new plan or run is created.",

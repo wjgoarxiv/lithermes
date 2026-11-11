@@ -486,7 +486,7 @@ def status_report(host_version: str | None = None) -> str:
         f"goal tools ({len(GOAL_TOOLS)}): {', '.join(GOAL_TOOLS)}",
         f"bounded work tools ({len(WORK_TOOLS)}): {', '.join(WORK_TOOLS)}",
         f"knowledge tools ({len(KNOWLEDGE_TOOLS)}): {', '.join(KNOWLEDGE_TOOLS)}",
-        "bounded work schema: 3   (/lit-loop init|status|resume|cancel|complete)",
+        "bounded work schema: 3   (/lit-loop init|status|resume|cancel|complete; lit cancel|approve|deny)",
         "litgoal state: .hermes/lithermes/litgoal/   (drive via: hermes lithermes goal status)",
         _knowledge.status_line(_locate_workspace() or Path.cwd()),
         _provider_metrics.capability_line(),

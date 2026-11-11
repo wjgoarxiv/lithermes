@@ -5,7 +5,7 @@ with the words below and never invents a fifth.
 
 | Status | Set when | English | 한국어 |
 | --- | --- | --- | --- |
-| `waiting-on-user` | The last record is the user asking something (a closing `?`, `확인해 주세요`, `할까요`…), or the session holds a paused bounded-work boundary | waiting on you | 나를 기다림 |
+| `waiting-on-user` | The last record is the user asking something (a closing `?`, `확인해 주세요`, `할까요`…), or the session holds a paused bounded-work run (only an older state can still say so: a run whose session ended has no owner) | waiting on you | 나를 기다림 |
 | `active` | A session write within the last 15 minutes and not waiting | active | 진행 중 |
 | `ended` | Quiet for longer than 15 minutes | ended | 끝남 |
 | `unknown` | The record held no timestamp | unknown | 모름 |
@@ -23,7 +23,7 @@ shows only the bucket's icon and words:
 | --- | --- | --- | --- |
 | ticked plan row, passed criterion, plan with every row ticked | done | ✅ Done | ✅ 끝남 |
 | current row of a plan with ticks or a running run, another `active` session, a herdr lane | in progress | 🔄 In progress | 🔄 진행 중 |
-| another `waiting-on-user` session, current row of a `paused` run at a boundary | waiting on you | ⏳ Waiting on you | ⏳ 나를 기다림 |
+| another `waiting-on-user` session, current row of a `paused` run (its session ended) | waiting on you | ⏳ Waiting on you | ⏳ 나를 기다림 |
 | every other open row or criterion | left | ⬜ Left | ⬜ 남음 |
 
 `ended` and `unknown` sessions are not counted: they hold no open item. This session, the one
@@ -36,7 +36,7 @@ running the brief, is never counted as a lane.
 | Status | Set when |
 | --- | --- |
 | `active` | A start-work run whose plan still has an unticked row, or bounded work in progress |
-| `paused` | Bounded work stopped at a boundary that waits on a chat answer |
+| `paused` | Bounded work whose Hermes session ended; the user hands it on with `/lit-loop resume … --grant continue-session@<root>`. A call outside the grants never pauses a run: it is parked, the run stays `active`, and the collector reports `parked: N` beside it. A pause at any other boundary was written before parking and reads as `active` with that step parked |
 | `done` | A start-work run whose plan has every row ticked |
 | `completed` | Bounded work the owner completed |
 
@@ -65,7 +65,7 @@ line and never filled in from memory.
 
 | `next.kind` | Say | English | 한국어 |
 | --- | --- | --- | --- |
-| `approve-boundary` | answer in chat | bounded work waits on a boundary decision | bounded-work가 경계 결정을 기다림 |
+| `approve-boundary` | `/lit-loop resume … continue-session`, or `lit cancel` | bounded work stopped when its session ended | 세션이 끝나 멈춘 bounded-work |
 | `continue-work` | continue in chat | keep running <plan> in chat | <plan> 계속 진행 |
 | `start-plan` | run the command | start <plan> with `/start-work <plan>` | <plan>을 `/start-work <plan>`으로 시작 |
 | `none` | — | no next step on record | 기록된 다음 단계 없음 |

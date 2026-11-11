@@ -1,11 +1,13 @@
 // The one next step a lit-adhd brief offers, chosen by a fixed priority over the collected records.
-// Hermes has no pausable discipline stack, so the source resume-frame branch is omitted. Hermes
-// has no approve/deny command either: a paused bounded-work boundary is shown in chat and the
-// user answers in words, and an active run simply continues in chat. The record `go` reads back
-// lives under the workspace's `.hermes/lithermes/adhd/` directory alongside the stack file.
+// Hermes has no pausable discipline stack, so the source resume-frame branch is omitted. A call
+// outside the grants is parked and the run keeps going, so parked steps never make a step of
+// their own: `lit approve` / `lit deny` are optional and an active run simply continues in chat.
+// The record `go` reads back lives under the workspace's `.hermes/lithermes/adhd/` directory
+// alongside the stack file.
 //
-//   1. a bounded-work run paused at a boundary -> approve-boundary (shown, never started),
-//      even while other lanes are at work: that choice is the user's
+//   1. a bounded-work run whose session ended -> approve-boundary (shown, never started: the
+//      user hands it on with `/lit-loop resume … continue-session`), even while other lanes
+//      are at work: that choice is the user's
 //   2. this session's own active run or bounded work  -> continue-work (continue in chat),
 //      or wait-lanes while other lanes are at work
 //   3. a single open plan with no work running        -> start-plan (`/start-work plans/<f>.md`),

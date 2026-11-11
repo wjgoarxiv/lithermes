@@ -67,7 +67,7 @@ Then the brief has five parts, in this order:
 1. **Headline.** Sessions found, how many wait on the user, the one next step: `3 sessions · 1 waiting on you · next: start plan (run /start-work plans/<plan>.md)` / `세션 3개 · 나를 기다리는 것 1 · 다음: start plan (/start-work plans/<plan>.md 실행)`. The headline doubles as the counts-only status line: session counts first, then plan and goal gauges, each a real `k/n` from the first source that knows it, never `?`, never `k/?`.
 2. **A full card per live session, a table for ended ones.** Waiting, active and unknown sessions get a full card: a status badge (`● waiting on you`, `▶ active`, `○ unknown`, in the user's language), the goal in plain words (the first ask, clipped), a real gauge or the known-facts line, `now:` naming the last tool call on active sessions, what was done (tools used and commits), what is next. Group cards under their worktree when sessions span more than one. Ended sessions collapse to one table row each (id, folder, goal, age, done; at most eight, newest first).
 3. **Roadmap timeline.** Done `✓` (landed commits with dates), now `▶` (the current item of each open plan), later `○` (remaining names), then litgoal objectives with their gauges. Plans from other worktrees carry their worktree name. When `plansOmitted` is above zero, say how many more open plans exist. Only plans changed inside the window are listed, this worktree's too; a fully ticked plan is finished work for the opener, never a roadmap row.
-4. **Paused work.** Each paused bounded-work run from `startWork` with its gauge and an approval offer: `answer in chat to approve or deny the boundary`. Approval stays with the user in words; the grant settles it. Never start or approve it yourself.
+4. **Paused work.** Each bounded-work run from `startWork` whose Hermes session ended, with its gauge and the user's way on: `/lit-loop resume … --grant continue-session@<root>` in a session, or `lit cancel`. A call outside the grants never pauses a run: it is parked and the run stays active, so a run with `parked: N` is running work, shown with `N parked` on its line. Never start, resume or approve anything yourself.
 5. **One next step in a box.** Exactly one, from `next`: what it does, then the slash command when `next.command` names one, otherwise "continue in chat". When `next` is `wait-lanes`, other lanes of this repo are at work (`lanes.count`: other live sessions plus herdr agents working or blocked here, each counted once): the box says to wait for them, or to answer the one waiting on the user (`lanes.waiting`), names no command, and the brief's last line is `Do not type \`go\` until they finish.` / `지금은 \`go\`는 입력하지 마세요.` When `next` is `none`, show the suggestion the collector printed. It ranks live signals first (a session waiting on the user, then lanes at work, with the same last line), then the current item of an open plan, then the first open `## Next` item of this worktree's newest HANDOFF file (`handoffs[].next` with `local: true`, written `HANDOFF.md Next: <item>`; items marked ✅, ✓, `[x]`, ~~struck~~, DONE or SHIPPED are skipped), then other sessions. It is shown, never recorded, and never a second candidate.
 
 **Progress gauges (D9), required.** One real gauge per session and per plan, each copied verbatim from the collector, in the form `[▉▉▉░░] 3/5` (filled `▉` done, light `░` remaining, then done/total). The remaining items are listed by name under each gauge, from its `remaining` array, clipped by the collector to fit. A gauge renders only when both numbers are real: an unknown total is the known-facts line (`… 3 steps`, or `… running` when nothing is counted), never `?`, never a guess, never an estimate, never a gauge of your own.
@@ -152,7 +152,7 @@ English labels: Do this now, At a glance, Milestones, Done lately, Still to do, 
 | --- | --- |
 | ticked plan row, passed litgoal criterion | ✅ done |
 | current row of a plan with ticks or a running start-work, the current step of a running run, another live session at work, a herdr lane agent | 🔄 in progress |
-| current row of a run paused at a boundary, another session whose last word asks you something | ⏳ waiting on you |
+| current row of a run whose session ended, another session whose last word asks you something | ⏳ waiting on you |
 | every other open row or criterion | ⬜ left |
 
 The four counts add up to the overall total, so `전체 진행 4/7` reads the same as the table. This session (the one running the brief) is never counted as a lane.
@@ -161,9 +161,9 @@ The four counts add up to the overall total, so `전체 진행 4/7` reads the sa
 
 **Done lately and Still to do.** Finished runs first, then ticked rows from the most recently changed plan, its last ticked row first; five at most. Still to do lists open rows in plan order, the running or waiting plan first, then the other plans, then open litgoal criteria by their words; seven at most, then `…외 N개` / `…and N more`. Row numbering (`1.`, `F2.`) is dropped so each item reads as a sentence.
 
-**Reminders.** At most five, most urgent first, each written `thing → what to do`, only from facts the collector reads reliably: sessions waiting on you, runs paused at a boundary, uncommitted changes and unpushed commits per worktree (`git status --porcelain`, commits ahead of the upstream), lanes still working (`🏃 … → 끝날 때까지 \`go\` 치지 않기`), the open plan untouched longest-ago among those idle seven days or more (`🕰️ N일째 멈춘 계획`), and this worktree's HANDOFF `## Next` item (`📌`) unless Do this now already names it. A reminder the records do not support is never written.
+**Reminders.** At most five, most urgent first, each written `thing → what to do`, only from facts the collector reads reliably: sessions waiting on you, runs whose session ended, runs with parked steps (`🅿️ … → 선택: lit approve 또는 lit deny`), uncommitted changes and unpushed commits per worktree (`git status --porcelain`, commits ahead of the upstream), lanes still working (`🏃 … → 끝날 때까지 \`go\` 치지 않기`), the open plan untouched longest-ago among those idle seven days or more (`🕰️ N일째 멈춘 계획`), and this worktree's HANDOFF `## Next` item (`📌`) unless Do this now already names it. A reminder the records do not support is never written.
 
-**Do this now.** The same step `next` and the suggestion pick (see "The next step" below), worded as one plain action, one reason, and the text to type: `go` only when the collector recorded the step for this session (`nextRecorded`), the `/start-work plans/<f>.md` command otherwise, `기다리기: 레인 N개가 끝날 때까지` while lanes work, and a chat answer for a paused boundary or a waiting session. An approval never offers `go`.
+**Do this now.** The same step `next` and the suggestion pick (see "The next step" below), worded as one plain action, one reason, and the text to type: `go` only when the collector recorded the step for this session (`nextRecorded`), the `/start-work plans/<f>.md` command otherwise, `기다리기: 레인 N개가 끝날 때까지` while lanes work, the `/lit-loop resume … continue-session` line for a run whose session ended, and a chat answer for a waiting session. That hand-off never offers `go`.
 
 **What never reaches the board.** Session ids, commit hashes, raw status codes (`waiting-on-user`, `ended`, `wait-lanes`), plan file slugs as names, and internal paths; the only path it prints is the command the user types. Empty sections print one plain line: `남은 일이 없어요` / `Nothing left`, `이 기간에 끝낸 일이 없어요` / `Nothing finished in this window`, `이 기간에 계획이나 목표가 없어요` / `No plans or goals in this window`, `지금 챙길 것이 없어요` / `Nothing to remember right now`. With every cap reached the board is 44 lines; a usual one is about 30.
 
@@ -171,7 +171,7 @@ The four counts add up to the overall total, so `전체 진행 4/7` reads the sa
 
 - The user asks where their sessions stand: `lit adhd`, `lit rewind`, `lit-adhd`, "where was I", "what is waiting on me".
 - Several windows, worktrees or interruptions split the work and one brief must cover them all.
-- A paused run needs its one next step (`answer in chat`, `/start-work --resume`).
+- A paused run needs its one next step (`/lit-loop resume … continue-session`, `/start-work --resume`).
 
 Other routes own these neighbours: one running session (`lit-recap`), planning (`lit-plan`), execution (`start-work`), review (`review-work`).
 
@@ -200,14 +200,14 @@ The collector (`skills/lit-adhd/scripts/lib/collect.mjs`, served as `scripts/adh
 | `git log --since` | commits in the window, matched to sessions by time and branch | `git: unknown` |
 | `git status --porcelain`, `git rev-list --count @{upstream}..HEAD` | uncommitted entries and unpushed commits per worktree, for the board's 💾 and 📤 reminders | `gitState: unknown` |
 | `.hermes/lithermes/adhd/stack.json` | active disciplines per session from the prompt hook | `workflowStack: unknown` |
-| start-work runs and bounded-work states | live and finished runs (`done`, `completed`) and their plans, paused boundaries with progress | `startWork: unknown` |
+| start-work runs and bounded-work states | live and finished runs (`done`, `completed`) and their plans, parked steps (`parked.json`), runs whose session ended, with progress | `startWork: unknown` |
 | `herdr agent list` (only when `HERDR_ENV=1`, 2 s limit) | agent panes; one working or blocked in this herdr workspace or inside this repo, other than this pane, is a lane | `herdr: unknown` |
 
 Plans, goals, handoffs, the stack and start-work states are read first; sessions are read after them, newest first, under one 8 MiB budget for the whole run; a session belongs to a worktree when the repo root or cwd its record carries sits inside it. Archived and hidden sessions are skipped. Every string is redacted before it leaves the collector: credential shapes, `NAME=value` with a secret-like name, URI userinfo, any current environment value of eight or more characters, and the home directory (shown as `~`). Assistant text and changed files are not session records on this host, so the brief shows commits and tool names instead.
 
 ## Status taxonomy
 
-- `waiting-on-user`: the session's last word was the user asking something, or it holds a paused bounded-work boundary.
+- `waiting-on-user`: the session's last word was the user asking something, or (in an older state) it holds a paused bounded-work run.
 - `active`: written to within the last 15 minutes and not waiting.
 - `ended`: quiet for longer than that.
 - `unknown`: the record held no timestamp.
@@ -220,14 +220,14 @@ A start-work run whose plan has every row ticked reads `done`, and completed bou
 
 `next` is chosen by code, in this priority order, and the brief offers exactly that one:
 
-1. A bounded-work run paused at a boundary: show what it wants to reach. Answer in chat to approve or deny; this is never automatic and never starts work by itself. Other lanes at work do not replace this step, because the answer is the user's.
+1. A bounded-work run whose Hermes session ended (`approve-boundary`): show it and the user's `/lit-loop resume … --grant continue-session@<root>` line, or `lit cancel`; this is never automatic and never starts work by itself. Other lanes at work do not replace this step, because the choice is the user's. Parked steps never make a step of their own: the run is still this session's running work.
 2. This session's own active bounded work: keep going in chat. While other lanes are at work (`lanes.count` above zero) the step is `wait-lanes` instead, and `go` starts nothing. Another session's run, or a start-work run that records no session, is never this session's to continue. A paused discipline frame is not resumed: Hermes has no stack to continue, and the card does not offer one.
 3. Exactly one open plan in this worktree and no work running: start it with `/start-work plans/<plan>.md`. While other lanes are at work the step is `wait-lanes` instead: wait for them, or answer the one waiting on the user, and do not type `go` until they finish.
 4. Otherwise `none`: show the collector's suggestion, which puts live signals ahead of plan items and the HANDOFF Next item.
 
 ## Continuing after the brief
 
-After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a paused boundary is shown for a chat answer, an active run continues in chat, a single open plan starts through `/start-work`. Before continuing a run, the hook re-reads its state: when the run is no longer active or no longer bound to this session it says the step no longer holds and starts nothing. A `wait-lanes` record starts nothing either. Anything else typed after the brief is an ordinary prompt. A plan saved under `plans/` in a lit-plan turn writes the same record (`start-plan`), so `go` right after planning shows that plan's `/start-work` command too. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
+After a brief, the user's bare `go` (also `lit go`, `ㄱㄱ`, `고`, `진행`, as the whole prompt) continues the step the brief offered, in the same session, within 30 minutes. The prompt hook reads the next-step record the collector wrote for this session and tells the model what to do next: a run whose session ended is shown with its resume line, an active run (parked steps included) continues in chat, a single open plan starts through `/start-work`. Before continuing a run, the hook re-reads its state: when the run is no longer active or no longer bound to this session it says the step no longer holds and starts nothing. A `wait-lanes` record starts nothing either. Anything else typed after the brief is an ordinary prompt. A plan saved under `plans/` in a lit-plan turn writes the same record (`start-plan`), so `go` right after planning shows that plan's `/start-work` command too. There is no typed `go` command on Hermes; `go` is a word the hook consumes, and an expired or missing record reads as no next step on record.
 
 ## Relation to lit-recap
 
@@ -242,7 +242,7 @@ The prompt hook records each lit route activation as a frame in the adhd stack f
 - `bash`: one `node <skill-root>/scripts/adhd.mjs --json --lang <ko|en>` run (`--detail` on request). No other shell, no installs, no second run in one turn.
 - `read_skill`: this skill's references on demand (`references/brief-contract.md`, `references/status-taxonomy.md`, `references/card-examples.md`).
 - Approvals: this skill needs none; it writes no file, spawns no child and mutates no goal. The collector's next-step record is the collector's own write.
-- A boundary stays with the user: a chat answer approves or denies it, and only the bounded-work grant settles it. There is no `lit approve` or `lit deny` command on Hermes.
+- Parked steps stay with the user: `lit approve` or `lit deny`, typed as the whole prompt in the session that holds the run, settles them, and both are optional. Never type, suggest as done, or imitate either word yourself; `lit cancel` ends the run from any session of the project.
 
 ## Evidence
 

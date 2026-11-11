@@ -188,9 +188,14 @@ bounded work schema 3의 lifecycle은 다음과 같습니다.
 /lit-loop resume
 /lit-loop cancel
 /lit-loop complete
+lit cancel     (또는 lit 취소. 프롬프트 전체로, 프로젝트의 어느 세션에서나)
+lit approve    (또는 lit 승인. 선택)
+lit deny       (또는 lit 거절. 선택)
 ```
 
-`pre_tool_call`은 Hermes session, work id, revision, replay id, action/root grant를 확인한 뒤 mutation을 허용합니다. 새로운 boundary를 재개할 수 있는 one-use grant는 trusted explicit user resume만 만들 수 있습니다. 여러 세션을 띄운 gateway에서는 work를 소유하지 않은 세션도 읽기 전용 terminal 명령으로 진행 상황을 볼 수 있습니다. herdr 읽기(`pane list|read|get|layout`, `agent list|get|read`, `tab list`, `workspace list`)와 `grep`, `rg`, `head`, `tail`, `wc`로 이어지는 `grep`/`rg` pipeline이 여기에 해당합니다. redirect, chaining, substitution과 그 밖의 tool call은 계속 막히고, owner 세션의 검사도 그대로입니다. paused work는 complete할 수 없고, commit, publish, push, release, tag, install, host-config, credential, destructive equivalent는 영구 거부됩니다.
+`pre_tool_call`은 Hermes session, work id, revision, replay id, action/root grant를 확인한 뒤 mutation을 허용합니다. grant 밖의 호출이 와도 실행은 멈추지 않습니다. 그 호출 하나만 거부되고 보류(parked, 최대 16개)되며, 실행은 active로 남고 모델은 grant가 허용하는 다음 행으로 넘어가 나머지 행에 `BLOCKED:`를 적습니다. 답의 끝에 보류된 단계를 한 줄로 보여 줍니다. `lit approve`는 보류된 단계를 모두 grant로 바꾸고 `lit deny`는 이번 실행 동안 모두 거부합니다. 둘 다 선택이며, 실행을 가진 세션만 정리할 수 있습니다. `lit cancel`은 프로젝트의 bounded work를 어느 세션, 하위 폴더, 연결된 worktree에서든 work id나 revision 없이 끝냅니다. Hermes 0.22.6 이상에서는 hook이 모델 호출 없이 바로 답하고, 0.21.3-0.22.5에서는 답이 같은 receipt로 바뀝니다. 실행을 가졌던 세션은 다음 프롬프트에서 이 사실을 전달받고, 그때까지는 읽기만 할 수 있습니다. 이제 실행은 세션이 끝날 때만 멈추고, 사용자가 `/lit-loop resume ... --grant continue-session@<root>`로 새 세션에 넘깁니다. 보류된 boundary의 정확한 resume도 여전히 one-use grant를 만듭니다. 예전 LitHermes가 boundary에서 멈춰 둔 실행은 그 단계가 보류된 active 실행으로 읽습니다.
+
+실행 중에는 비밀 정보와 Hermes 설정을 읽기와 쓰기 모두 바로 거부하며, 보류도 승인도 없습니다. `~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.npmrc`, `~/.netrc`, `~/.pypirc`, `~/.git-credentials`, `.env`와 `.env.*` 파일(`.example`, `.sample`, `.template` 제외), `.envrc`, 개인 키, `*.pem`, 각 Hermes home과 profile의 `config.yaml`, `.env`, `auth.json`, `auth.lock`, litgoal seal key가 여기에 해당합니다. 실행 자신의 상태, litgoal gate 상태, git `config`와 `hooks`, Hermes `plugins`, `hooks`, `skins`는 쓰기를 거부합니다. 경로는 링크를 따라간 뒤 대소문자 구분 없이 비교합니다. Hermes의 transcript와 tool result, terminal spill 파일은 계속 읽을 수 있습니다. 호출이 직접 가리킨 경로만 검사하므로 폴더 전체 검색은 비밀 파일 안을 읽을 수 있습니다. bound 세션에서 Hermes 폴더를 terminal로 읽는 호출은 여전히 호출마다 막히고, guard는 실행을 가진 Hermes 프로세스만 지키므로 같은 폴더의 두 번째 CLI 창은 지키지 못합니다. 여러 세션을 띄운 gateway에서는 work를 소유하지 않은 세션도 읽기 전용 terminal 명령으로 진행 상황을 볼 수 있습니다. herdr 읽기(`pane list|read|get|layout`, `agent list|get|read`, `tab list`, `workspace list`)와 `grep`, `rg`, `head`, `tail`, `wc`로 이어지는 `grep`/`rg` pipeline이 여기에 해당합니다. redirect, chaining, substitution과 그 밖의 tool call은 계속 막히고, owner 세션의 검사도 그대로입니다. paused work는 complete할 수 없고, commit, publish, push, release, tag, install, host-config, credential, destructive equivalent는 action으로도, host 설정은 파일 경로로도 영구 거부됩니다. 이들은 보류되지 않으며 `lit approve`로도 grant되지 않습니다.
 
 비동기 위임은 child별 `per-child re-entry receipt`를 사용합니다. 통합 대기는
 없으며, parent가 merge 또는 batch completion을 직접 추적하고 기록합니다.

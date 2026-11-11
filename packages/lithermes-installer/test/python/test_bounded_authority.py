@@ -165,7 +165,7 @@ class SchemaThreeLifecycle(unittest.TestCase):
         self.assertEqual(denied["outcome"], "silent")
         self.assertEqual(core.load_bounded_work(self.ws, work_id)["revision"], 2)
 
-    def test_new_boundary_pauses_forbidden_or_already_granted_boundary_does_not(self):
+    def test_new_boundary_parks_forbidden_or_already_granted_boundary_does_not(self):
         created = self._init()
         work_id = created["state"]["work_id"]
         core.bind_bounded_work(self.ws, work_id, created["activation_token"], session_id="s")
@@ -194,7 +194,7 @@ class SchemaThreeLifecycle(unittest.TestCase):
         self.assertEqual(forbidden["outcome"], "forbidden")
         self.assertEqual(forbidden["state"]["status"], "active")
 
-        paused = core.record_bounded_progress(
+        parked = core.record_bounded_progress(
             self.ws,
             work_id,
             expected_revision=3,
@@ -203,9 +203,11 @@ class SchemaThreeLifecycle(unittest.TestCase):
             progress=[{"id": "T001", "status": "in_progress"}],
             boundary={"id": "b-test", "action": "execute-test", "root": str(self.ws), "reason": "run tests"},
         )
-        self.assertEqual(paused["outcome"], "paused")
-        self.assertEqual(paused["state"]["status"], "paused")
-        self.assertEqual(paused["state"]["boundary"]["id"], "b-test")
+        self.assertEqual(parked["outcome"], "parked")
+        self.assertEqual(parked["state"]["status"], "active")
+        self.assertIsNone(parked["state"]["boundary"])
+        self.assertEqual(parked["boundary"]["id"], "b-test")
+        self.assertEqual([step["id"] for step in core.parked_steps(self.ws, work_id)], ["b-test"])
 
     def test_action_aliases_cannot_bypass_permanent_forbidden_classes(self):
         for action in (
@@ -358,15 +360,10 @@ class SchemaThreeLifecycle(unittest.TestCase):
         created = self._init()
         work_id = created["state"]["work_id"]
         core.bind_bounded_work(self.ws, work_id, created["activation_token"], session_id="s")
-        paused = core.record_bounded_progress(
-            self.ws,
-            work_id,
-            expected_revision=2,
-            replay_id="pause",
-            session_id="s",
-            progress=[{"id": "T001", "status": "blocked"}],
-            boundary={"id": "b-test", "action": "execute-test", "root": str(self.ws), "reason": "run tests"},
-        )
+        # Only a session release pauses a run now; a boundary parks a step instead.
+        core.release_bounded_session("s")
+        paused = {"state": core.load_bounded_work(self.ws, work_id)}
+        self.assertEqual(paused["state"]["status"], "paused")
         with self.assertRaisesRegex(ValueError, "paused"):
             core.complete_bounded_work(self.ws, work_id, paused["state"]["revision"])
         cancelled = core.cancel_bounded_work(self.ws, work_id, paused["state"]["revision"])
@@ -501,7 +498,7 @@ class HermesNativeLoop(unittest.TestCase):
                 self.assertEqual(blocked["action"], "block")
                 self.assertTrue(blocked["message"])
 
-        paused = self.pkg.core.record_bounded_progress(
+        parked = self.pkg.core.record_bounded_progress(
             self.ws,
             work_id,
             expected_revision=state["revision"],
@@ -510,14 +507,15 @@ class HermesNativeLoop(unittest.TestCase):
             progress=[{"id": "T001", "status": "blocked"}],
             boundary={"id": "need-test", "action": "execute-test", "root": str(self.ws), "reason": "test"},
         )
-        self.assertEqual(paused["outcome"], "paused")
-        blocked = self.pkg._pre_tool_call(
-            tool_name="write_file",
-            args={"path": str(inside), "content": "paused"},
-            session_id="session-a",
+        self.assertEqual(parked["outcome"], "parked")
+        # The run keeps going: a write the grant covers still runs after the boundary.
+        self.assertIsNone(
+            self.pkg._pre_tool_call(
+                tool_name="write_file",
+                args={"path": str(inside), "content": "parked"},
+                session_id="session-a",
+            )
         )
-        self.assertEqual(blocked["action"], "block")
-        self.assertIn("paused", blocked["message"].lower())
         self.assertIsNone(
             self.pkg._pre_tool_call(
                 tool_name="search_files",
@@ -749,7 +747,13 @@ class HermesNativeLoop(unittest.TestCase):
         receipt = self.pkg.bounded_work.progress_tool_result(
             spaced, work_id, "space-pause"
         )
-        command = receipt["resume_command"]
+        self.assertEqual(receipt["outcome"], "parked")
+        self.assertNotIn("resume_command", receipt)
+        # The exact resume for a parked boundary still round-trips a spaced worktree.
+        command = (
+            f"/lit-loop resume {work_id} --revision {receipt['revision']} --boundary space-boundary "
+            f"--grant {shlex.quote('execute-test@' + str(spaced))} --worktree {shlex.quote(str(spaced))}"
+        )
         self.assertEqual(shlex.split(command)[0:2], ["/lit-loop", "resume"])
         resumed = self.pkg.core.command_lit_loop(command.removeprefix("/lit-loop "))
         injected = self.pkg._pre_llm_call(

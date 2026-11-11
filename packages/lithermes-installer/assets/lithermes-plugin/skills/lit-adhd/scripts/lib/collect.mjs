@@ -270,7 +270,11 @@ const stacksOf = (root, budget, redact) => {
 
 // Hermes start-work state: newest `runs/*/state.json` with `command: start-work` (a run has no
 // status field, so an unfinished plan reads active and a finished plan reads done), plus
-// bounded-work `work/*/state.json` records, which carry a real status and a pending boundary.
+// bounded-work `work/*/state.json` records, which carry a real status, plus the `parked.json`
+// beside each. A call outside the grants is parked and the run stays active; only a session
+// release still pauses a run (a `continue-session` boundary). A pause at any other boundary was
+// written before parking existed and reads as active with that step parked, the way the next
+// locked read in Python migrates it.
 const startWorkOf = (root, budget, redact) => {
   const items = [];
   const runs = entries(join(root, '.hermes', 'lithermes', 'runs')) ?? [];
@@ -313,13 +317,17 @@ const startWorkOf = (root, budget, redact) => {
     const open = rows.filter((row) => !row.checked);
     const steps = Array.isArray(state.progress) ? state.progress : [];
     const passed = steps.filter((item) => item && typeof item === 'object' && item.status === 'pass').length;
-    const boundary = state.status === 'paused' && state.boundary && typeof state.boundary === 'object' ? state.boundary : null;
+    const pausedAt = state.status === 'paused' && state.boundary && typeof state.boundary === 'object' ? state.boundary : null;
+    const boundary = pausedAt && pausedAt.action === 'continue-session' ? pausedAt : null;
+    const sidecar = readJson(join(root, '.hermes', 'lithermes', 'work', entry.name, 'parked.json'), budget);
+    const parked = (Array.isArray(sidecar?.entries) ? sidecar.entries.length : 0) + (pausedAt && !boundary ? 1 : 0);
     const owner = typeof state.active_session_id === 'string' && state.active_session_id ? state.active_session_id : null;
     items.push({
       worktree: redact(root),
       workId: typeof state.work_id === 'string' ? state.work_id : entry.name,
       plan: plan ? redact(plan) : 'unknown',
-      status,
+      status: pausedAt && !boundary ? 'active' : status,
+      ...(parked ? { parked } : {}),
       atMs: Date.parse(String(state.updated_at ?? state.created_at ?? '')),
       sessionId: owner,
       id8: owner ? owner.slice(0, 8) : 'unknown',
@@ -446,7 +454,7 @@ export const collectAdhd = ({
   const gitState = collectEach((root) => gitStateOf(root, exec, redact));
   const herdr = herdrOf(env, exec, redact, roots.map((root) => resolve(root)));
 
-  // A session waits on the user when it asked something, or holds a paused boundary.
+  // A session waits on the user when it asked something, or holds a paused run.
   for (const session of sessions) {
     const work = (startWork ?? []).find((item) => item.sessionId === session.sessionId);
     if (work?.status === 'paused') {
@@ -576,7 +584,7 @@ const toolsLine = (tools) => {
 // (`/start-work plans/<f>.md`), otherwise the user answers in chat.
 const sessionNext = (session, data) => {
   const boundary = (data.startWork ?? []).find((item) => item.id8 === session.id8 && item.status === 'paused' && item.pendingBoundary);
-  if (boundary) return 'answer in chat to approve or deny the boundary';
+  if (boundary) return 'its session ended: hand it on with `/lit-loop resume … --grant continue-session@<root>`, or type `lit cancel`';
   if (session.status === 'waiting-on-user') return 'answer its question';
   return null;
 };
@@ -648,14 +656,16 @@ const openerLines = (data, nextText) => {
   const running = (data.startWork ?? []).filter((item) => item.status === 'active');
   const work = running.find((item) => item.self);
   const active = (data.sessions ?? []).find((session) => session.status === 'active');
+  // Parked steps ride on the run line: the run is still going, they are not a step of their own.
+  const parked = (item) => (item.parked ? ` · ${item.parked} parked` : '');
   const doing = frame
     ? [frame.skill, frame.stage].filter((part) => part && part !== 'unknown').join(' · ')
     : work
-      ? `start-work ${planInWorktree(work.worktree, work.plan)} ${work.progress.gauge}`
+      ? `start-work ${planInWorktree(work.worktree, work.plan)} ${work.progress.gauge}${parked(work)}`
       : active
         ? clipToWidth(goalOf(active), 80)
         : running[0]
-          ? `start-work ${planInWorktree(running[0].worktree, running[0].plan)} ${running[0].progress.gauge}${running[0].id8 === 'unknown' ? '' : ' (another session)'}`
+          ? `start-work ${planInWorktree(running[0].worktree, running[0].plan)} ${running[0].progress.gauge}${parked(running[0])}${running[0].id8 === 'unknown' ? '' : ' (another session)'}`
           : 'nothing running';
   return [`Done so far: ${done}`, `Doing now: ${doing}`, `Next: ${nextText}`];
 };

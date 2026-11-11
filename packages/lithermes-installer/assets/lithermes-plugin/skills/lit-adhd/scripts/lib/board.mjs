@@ -190,7 +190,8 @@ const T = {
     answer: 'Answer the session that is waiting on you', asked: (goal) => `"${goal}" asked you a question`, question: (q) => `Question: "${q}"`,
     answerType: "answer it in that session's chat", noGoYet: '; do not type `go` yet',
     waitLanes: 'Wait for the other lanes to finish', lanesWorking: (n) => `${n} lane${n === 1 ? ' is' : 's are'} still working in this repo`, waitType: (n) => `wait until ${n === 1 ? 'that lane finishes' : `those ${n} lanes finish`}`,
-    approve: 'Decide whether the paused run may go on', approveWhy: (name) => `"${name}" is waiting for you to approve its next step`, approveStep: (b) => `Waiting before: ${b}`, approveType: 'reply in chat: approve, or deny',
+    approve: 'Hand the paused run to a session', approveWhy: (name) => `"${name}" stopped when its session ended`, approveStep: (b) => `Paused at: ${b}`, approveType: 'type `/lit-loop resume … --grant continue-session@<root>` in a session, or `lit cancel`',
+    parked: (n) => `${n} parked`,
     continueRun: (name) => `Keep going with "${name}"`, continueWhy: (p) => `this session's run is under way${p ? ` (${p})` : ''}`, continueType: 'say "keep going" in chat',
     startPlan: (name) => `Start the plan "${name}"`, startWhy: (open) => `it is the one open plan here, ${open} step${open === 1 ? '' : 's'} left`, nextStep: (s) => `Next step: ${s}`,
     planNext: (name) => `Take the next step of "${name}"`, planWhy: (open) => `${open} step${open === 1 ? '' : 's'} left in this plan`,
@@ -200,7 +201,8 @@ const T = {
     empty: 'Say what to start', emptyWhy: 'no session or plan was found in this window', emptyType: 'describe the next task in chat',
     or: (cmd) => ` (or ${cmd})`,
     rWaiting: (goal) => `⏳ "${goal}" is waiting for your answer → answer in that session`,
-    rBoundary: (name) => `⏳ "${name}" waits for your approval → reply in chat: approve, or deny`,
+    rBoundary: (name) => `⏳ "${name}" stopped when its session ended → hand it on with /lit-loop resume, or type lit cancel`,
+    rParked: (name, n) => `🅿️ "${name}" has ${n} parked step${n === 1 ? '' : 's'} → optional: lit approve or lit deny`,
     rUncommitted: (n, wt) => `💾 ${n} uncommitted change${n === 1 ? '' : 's'} (${wt}) → review, then commit or discard`,
     rUnpushed: (n, wt) => `📤 ${n} unpushed commit${n === 1 ? '' : 's'} (${wt}) → decide whether to push`,
     rLanes: (n) => `🏃 ${n} lane${n === 1 ? '' : 's'} still working → do not type \`go\` until they finish`,
@@ -211,7 +213,8 @@ const T = {
     answer: '나를 기다리는 세션에 답하기', asked: (goal) => `"${goal}" 세션이 질문했어요`, question: (q) => `질문: "${q}"`,
     answerType: '그 세션 창에서 답하기', noGoYet: '. 아직 `go`는 치지 않기',
     waitLanes: '다른 레인이 끝날 때까지 기다리기', lanesWorking: (n) => `이 저장소에서 레인 ${n}개가 아직 일하고 있어요`, waitType: (n) => `기다리기: 레인 ${n}개가 끝날 때까지`,
-    approve: '멈춘 실행을 이어 갈지 정하기', approveWhy: (name) => `"${name}" 실행이 다음 단계 승인을 기다려요`, approveStep: (b) => `멈춘 지점: ${b}`, approveType: '채팅으로 승인 또는 거절이라고 답하기',
+    approve: '멈춘 실행을 새 세션에 넘기기', approveWhy: (name) => `"${name}" 실행은 세션이 끝나서 멈췄어요`, approveStep: (b) => `멈춘 지점: ${b}`, approveType: '세션에서 `/lit-loop resume … --grant continue-session@<root>` 입력, 또는 `lit cancel`',
+    parked: (n) => `${n}개 보류`,
     continueRun: (name) => `"${name}" 이어서 하기`, continueWhy: (p) => `이 세션의 실행이 진행 중이에요${p ? ` (${p})` : ''}`, continueType: '채팅에 "계속"이라고 말하기',
     startPlan: (name) => `"${name}" 계획 시작하기`, startWhy: (open) => `여기서 열린 계획은 이것 하나예요. ${open}단계 남음`, nextStep: (s) => `다음 단계: ${s}`,
     planNext: (name) => `"${name}"의 다음 단계 하기`, planWhy: (open) => `이 계획에 ${open}단계 남음`,
@@ -221,7 +224,8 @@ const T = {
     empty: '무엇을 시작할지 말하기', emptyWhy: '이 기간에 세션도 계획도 없어요', emptyType: '다음 할 일을 채팅으로 말하기',
     or: (cmd) => ` (또는 ${cmd})`,
     rWaiting: (goal) => `⏳ "${goal}" 세션이 답을 기다려요 → 그 세션 창에서 답하기`,
-    rBoundary: (name) => `⏳ "${name}" 실행이 승인을 기다려요 → 채팅으로 승인 또는 거절 답하기`,
+    rBoundary: (name) => `⏳ "${name}" 실행은 세션이 끝나서 멈췄어요 → /lit-loop resume으로 넘기거나 lit cancel`,
+    rParked: (name, n) => `🅿️ "${name}" 실행에 보류된 단계 ${n}개 → 선택: lit approve 또는 lit deny`,
     rUncommitted: (n, wt) => `💾 커밋 안 된 변경 ${n}개 (${wt}) → 확인하고 커밋하거나 되돌리기`,
     rUnpushed: (n, wt) => `📤 push 안 된 커밋 ${n}개 (${wt}) → push할지 정하기`,
     rLanes: (n) => `🏃 아직 일하는 레인 ${n}개 → 끝날 때까지 \`go\` 치지 않기`,
@@ -259,7 +263,11 @@ const nowOf = (data, milestones, lang) => {
     const work = (data.startWork ?? []).find((item) => item.workId === next.target?.workId);
     const item = milestoneNamed(milestones, work?.worktree ?? null, next.target?.plan);
     const name = item?.name ?? planName(next.target?.plan, null);
-    const p = work && known(work.progress?.total) ? `${work.progress.done}/${work.progress.total}` : null;
+    const counts = [
+      work && known(work.progress?.total) ? `${work.progress.done}/${work.progress.total}` : null,
+      work?.parked ? t.parked(work.parked) : null,
+    ].filter(Boolean);
+    const p = counts.length ? counts.join(', ') : null;
     return { source: 'continue', action: t.continueRun(name), why: t.continueWhy(p), detail: item?.openRows?.[0] ? t.nextStep(item.openRows[0]) : null, type: goOr(null) ?? t.continueType };
   }
   if (next.kind === 'start-plan') {
@@ -308,6 +316,10 @@ const remindersOf = (data, milestones, now, lang) => {
     if (session.status === 'waiting-on-user' && session.waitingReason !== 'bounded-work boundary') out.push(t.rWaiting(sessionGoal(session)));
   }
   for (const item of milestones.filter((milestone) => milestone.bucket === 'waiting')) out.push(t.rBoundary(clipToWidth(item.name, NAME_COLS)));
+  for (const work of (data.startWork ?? []).filter((item) => item.status === 'active' && item.parked > 0)) {
+    const plan = planInWorktree(work.worktree, work.plan);
+    out.push(t.rParked(clipToWidth(planName(plan === 'unknown' ? 'start-work run' : plan, null), NAME_COLS), work.parked));
+  }
   for (const state of data.gitState ?? []) {
     if (state.uncommitted > 0) out.push(t.rUncommitted(state.uncommitted, basename(String(state.worktree))));
   }

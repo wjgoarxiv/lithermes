@@ -112,8 +112,20 @@ REWIND <<
 ```
 
 With `--session` named and the step recorded for this session, the type line reads
-`` 👉 입력: `go` (또는 `/start-work plans/<f>.md`) ``; a paused boundary reads
-`👉 입력: 채팅으로 승인 또는 거절이라고 답하기` and never offers `go`.
+`` 👉 입력: `go` (또는 `/start-work plans/<f>.md`) ``; a run whose session ended reads
+`` 👉 입력: 세션에서 `/lit-loop resume … --grant continue-session@<root>` 입력, 또는 `lit cancel` ``
+and never offers `go`.
+
+A run that parked calls outside its grants is still running, so it never becomes a step of its
+own. The count rides on the step line and one reminder names it; `lit approve` and `lit deny`
+stay optional:
+
+```text
+**"README refresh" 이어서 하기** — 이 세션의 실행이 진행 중이에요 (2/5, 2개 보류)
+...
+## 🔔 잊지 말 것
+- 🅿️ "README refresh" 실행에 보류된 단계 2개 → 선택: lit approve 또는 lit deny
+```
 
 ## Detail view (`lit adhd 자세히`, `lit adhd detail`, `--detail`)
 
@@ -132,7 +144,7 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
   "roadmap": { "progress": { "gauge": "[▉▉▉▉░░░░░░] 10/20" }, "plans": [{ "plan": "plans/lit-adhd.md", "local": true, "current": "11. Skill lit-adhd", "progress": { "gauge": "[▉▉▉▉░░░░░░] 10/19" } }], "plansOmitted": 0 },
   "finished": { "runs": [], "plans": [] },
   "commits": [{ "hash": "bdea372", "at": "2026-10-25T09:12:00Z", "subject": "feat(adhd): collect cross-session records" }],
-  "startWork": [{ "id8": "f06fb727", "workId": "work-abc", "status": "paused", "pendingBoundary": { "boundary": "b-1" } }],
+  "startWork": [{ "id8": "unknown", "workId": "work-abc", "status": "paused", "pendingBoundary": { "boundary": "session-1" } }],
   "next": { "kind": "approve-boundary", "target": { "workId": "work-abc" }, "say": null },
   "sources": { "herdr": "unknown" }
 }
@@ -142,7 +154,7 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 
 > Done so far: feat(adhd): collect cross-session records
 > Doing now: pptx lane
-> Next: approve boundary: work-abc. Answer in chat.
+> Next: approve boundary: work-abc. Its session ended: hand it on with `/lit-loop resume … continue-session`, or `lit cancel`.
 >
 > lit-adhd: 3 session(s) · 1 waiting on you · next: approve boundary
 >
@@ -155,7 +167,6 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 > == ▶ active · f06fb727 · pptx lane
 > asked: fix the deck QA
 > […] running
-> next: answer in chat to approve or deny the boundary
 >
 > -- ended · 1 --
 > | id | where | goal | ago | done |
@@ -168,7 +179,7 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 > ✓ bdea372 2026-10-25 feat(adhd): collect cross-session records
 >
 > -- next --
-> > approve boundary: work-abc. Answer in chat.
+> > approve boundary: work-abc. Its session ended: hand it on with `/lit-loop resume … continue-session`, or `lit cancel`.
 >
 > unknown: herdr
 
@@ -176,7 +187,7 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 
 > 지금까지: feat(adhd): collect cross-session records
 > 지금: pptx lane
-> 다음: approve boundary: work-abc. 채팅으로 답하세요.
+> 다음: approve boundary: work-abc. 세션이 끝났어요: `/lit-loop resume … continue-session`으로 넘기거나 `lit cancel`.
 >
 > lit-adhd: 세션 3개 · 나를 기다리는 것 1 · 다음: approve boundary
 >
@@ -189,7 +200,6 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 > == ▶ 진행 중 · f06fb727 · pptx lane
 > 요청: fix the deck QA
 > […] running
-> 다음: 채팅으로 경계를 승인하거나 거부하기
 >
 > -- 끝남 · 1 --
 > | id | where | goal | ago | done |
@@ -202,7 +212,7 @@ verbatim; only the connecting words change with the language. The JSON excerpt c
 > ✓ bdea372 2026-10-25 feat(adhd): collect cross-session records
 >
 > -- next --
-> > approve boundary: work-abc. 채팅으로 답하세요.
+> > approve boundary: work-abc. 세션이 끝났어요: `/lit-loop resume … continue-session`으로 넘기거나 `lit cancel`.
 >
 > 모름: herdr
 

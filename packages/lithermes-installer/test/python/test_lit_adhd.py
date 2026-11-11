@@ -70,9 +70,10 @@ class AdhdSkillRoutes(NaturalRoutingCase):
         self.assertNotIn("lit-adhd", result.get("context", ""))
         route = self.pkg.core.detect_lit_mode("lit approve")
         self.assertIsNotNone(route)
-        # Hermes has no approve/deny command surface: boundaries are answered in
-        # chat, so no route settles them.
         self.assertNotEqual(route.mode, "lit-adhd")
+        # The prompt hook settles parked bounded-work steps before any route runs.
+        for word, token in (("lit approve", "approve"), ("lit deny", "deny"), ("lit cancel", "cancel")):
+            self.assertEqual(self.pkg.bounded_work.parse_prompt_token(word), token)
 
     def test_slash_command_is_registered_and_routes_the_supplied_options(self):
         context = _FakeCtx()
@@ -278,7 +279,7 @@ class AdhdGoContinuation(unittest.TestCase):
 
     def test_an_approval_step_never_carries_a_go_line(self):
         note = self._note("approval-session", _fresh_record("approve-boundary", {"workId": "w", "boundary": "b"}))
-        self.assertIn("Never approve it yourself", note)
+        self.assertIn("Never resume it yourself", note)
         self.assertNotRegex(note, r"(?i)(type|say) `go`")
 
     def test_go_through_the_hook_consumes_the_word(self):

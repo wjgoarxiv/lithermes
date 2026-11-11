@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-11T01:36:07.226Z",
+  "syncedAt": "2026-11-11T02:12:05.120Z",
   "source": "bundled-payload",
-  "sourceHash": "6f557253140c4efbfb656b2f38f9b7202a8d15e362e7f8dc9270a8c7f3a9651b",
+  "sourceHash": "a5f1f4d1ffce7b97fbbb9179c2ec2fc6a491a11508e6e06060c455ea14e3c446",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,15 +9,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "9cb0939eb8e87f75ea3cc801ef058e7f413247e32a2a1cb41957339d1baf1375"
+      "sha256": "62c445f9b5c870c4b871f372c1f0aa81aa3b2852f16943cce998841bb94b2a79"
     },
     {
       "path": "__init__.py",
-      "sha256": "bb7877dbb2e4f421b9c0704d69a61dccaa51f560671e168d9caf064dc06d7d27"
+      "sha256": "1971471c214085fc6efad33dbe4b49bd353932f4cab391076ad3920fef9a7170"
     },
     {
       "path": "adhd_stack.py",
-      "sha256": "c2e31ecd2c1d3bd37b1c630b71d658d0364c9bc199b15a992f05be0da9b933f8"
+      "sha256": "74de2ae2a9feb0729b0ea6742a2996cf9f0795351290b7461e8a23035d60160e"
     },
     {
       "path": "auto_handoff.py",
@@ -25,7 +25,7 @@
     },
     {
       "path": "bounded_work.py",
-      "sha256": "81f3ce453e4c329839ffa7ac346166e3315ead3944712ec9cab249ffa01dfe31"
+      "sha256": "de961ca69a549b6e9066ac8ce798506f6467860e28e200d85724c9fd0e3da257"
     },
     {
       "path": "bounded_work_tools.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "d7e60c326289bb71a3ac3995bc05cbf04dbc9654047ce721de5e9daf2eea8cb8"
+      "sha256": "25b38420880e473f5f0f2f6bcfab4613ab3da529ce8c2f3353544754c9efa739"
     },
     {
       "path": "gate_toasts.py",
@@ -157,7 +157,7 @@
     },
     {
       "path": "lit_reentry.py",
-      "sha256": "23843cec2aca04a34c76ba7abb5857c1acfdeab41aa96630399b89e232af53f1"
+      "sha256": "340a7f1d36ef780c52fb60c683379ffaef7dac75594fe4aae0a32904c4369b93"
     },
     {
       "path": "litgoal/__init__.py",
@@ -1537,19 +1537,19 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "9daae9bb2bffb0f12532c8ca9f0892e6d7d4ff30f2feb78791fea9c0beb5deeb"
+      "sha256": "f8685f61b49ef75c3adfce8fa52b738a147129910829d1508a2cd14baadcf1c0"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
-      "sha256": "e02fcb49ae0d42a77ae427717511a2fde14c247e99d7da6625a996b63579b214"
+      "sha256": "6b8f03583d2159ac4d2ae32bf38f2e8d7690cb14ca43940db1300fef53f1f6a0"
     },
     {
       "path": "skills/lit-adhd/references/card-examples.md",
-      "sha256": "b85214dae89e58961e7595baf2470122c707ae5ad494d3e8f250cbd839b8a3cd"
+      "sha256": "7873e958263887c9c47b264098c99b286b8b3cf72238129508438674cee70e4a"
     },
     {
       "path": "skills/lit-adhd/references/status-taxonomy.md",
-      "sha256": "4cd64aefa27a629ec2accfa5df4885d2c52c47b89e5b2cad32b4c9a74a332814"
+      "sha256": "5ae0fa8cb244c2cd2929086ce89ff6ef89e93b91acf07ef100a590211a9dece7"
     },
     {
       "path": "skills/lit-adhd/scripts/adhd.mjs",
@@ -1557,11 +1557,11 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/board.mjs",
-      "sha256": "5b324e990303a64795c3c52ffce1de832e21b5a7a9e09e6d1bc42a137a742d0b"
+      "sha256": "07e0f54aa575db7b28936d0a8e614d3c9b499f2fa4473565c84db79167bd1e63"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "722de9bb95f6ad7bfa3b8018a5bc869eed7bd96a729176b824ce9482a2916ddd"
+      "sha256": "8a84f6d62018008f4b651620ceaa5d831a26eef135c19150e091c6c04f00367d"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -1573,7 +1573,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/next-step.mjs",
-      "sha256": "c76a7ddb4aee55e9ae698b5d3e2748e3e9d4a9f7b6356a47a7937fe84431d8a4"
+      "sha256": "ad8c8d70722fe919385ea00746eb14d95b3cdbb0ab76f68d5841e0368ed06956"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/plan-task-rows.mjs",
@@ -4777,7 +4777,7 @@
     },
     {
       "path": "skills/litwork/SKILL.md",
-      "sha256": "4539e08ef5c593befddc01cb2e85474ac56d77e81a4e9e5bb87e0c8951b1c212"
+      "sha256": "22366854b5b5bf317fad25bd2db631048d032b171f6d46c190bb780a2a3d71d6"
     },
     {
       "path": "skills/lsp/SKILL.md",
@@ -4981,7 +4981,7 @@
     },
     {
       "path": "skills/start-work/SKILL.md",
-      "sha256": "ed1720955155a30dbb6ef6792f2978ab808220d0a50b41fa7446441e02e5c615"
+      "sha256": "3ed33f04678104313e545b83bea5e5cdcdcb1e1742bbec484460af8135f27ca5"
     },
     {
       "path": "skills/structural-search/SKILL.md",

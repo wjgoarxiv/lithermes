@@ -166,7 +166,8 @@ test("a recorded next step offers `go`, an approval never does", async () => {
     next: { kind: "approve-boundary", target: { workId: "work-1", plan: "/tmp/ws/plans/a.md", boundary: "deploy" } },
     nextRecorded: true,
   }, "en");
-  assert.match(boundary.text, /^\*\*Decide whether the paused run may go on\*\*/mu);
+  assert.match(boundary.text, /^\*\*Hand the paused run to a session\*\*/mu);
+  assert.match(boundary.now.type, /continue-session/u);
   assert.doesNotMatch(boundary.now.type, /`go`/u);
   assert.doesNotMatch(boundary.text, /work-1/u);
 });

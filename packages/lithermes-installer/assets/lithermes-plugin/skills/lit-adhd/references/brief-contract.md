@@ -60,9 +60,11 @@ surfaces; a session id with no recorded value reads `unknown`.
    plans carry their worktree name. `plansOmitted` above zero is stated. Only plans changed
    inside the window are listed, this worktree's included: a stale plan is left out. A plan
    with every row ticked is finished work (`finished.plans`, named in the opener), never roadmap.
-4. **Paused work.** Each paused bounded-work run with its gauge and an approval offer in words.
-   Approval stays with the user: a chat answer approves or denies, and only the bounded-work
-   grant settles it. The brief never starts, approves, or denies anything itself.
+4. **Paused work.** Each bounded-work run whose session ended, with its gauge and the user's
+   route to hand it on (`/lit-loop resume … --grant continue-session@<root>`, or `lit cancel`).
+   A running run with parked steps is not paused: its line says `N parked`, and `lit approve` /
+   `lit deny` stay optional words the user types. The brief never starts, resumes, approves, or
+   denies anything itself.
 5. **One next step in a box.** Exactly the `next` record: what it does, then the slash command
    (`/start-work plans/<f>.md`) when `next.command` names one, otherwise "continue in chat".
    When `next` is `wait-lanes`, other lanes are at work (`lanes.count`): the box says to wait

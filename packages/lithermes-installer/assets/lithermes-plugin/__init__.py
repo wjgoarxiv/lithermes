@@ -422,6 +422,21 @@ def _note_goal_resume_first_turn(kwargs: dict[str, Any], workspace: Path | None)
         return
 
 
+def _prompt_token(kwargs: dict[str, Any]) -> str | None:
+    """`lit cancel|approve|deny` typed as the whole prompt; a scheduled cron prompt is not the user."""
+    if str(kwargs.get("platform") or "").strip().lower() == "cron":
+        return None
+    return bounded_work.parse_prompt_token(str(kwargs.get("user_message") or ""))
+
+
+def _prepend_context(result: dict[str, str] | None, note: str | None) -> dict[str, str] | None:
+    if not note:
+        return result
+    if isinstance(result, dict) and result.get("context"):
+        return {**result, "context": f"{note}\n\n{result['context']}"}
+    return {"context": note}
+
+
 def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     """Compose the Litwork directive and the active-litgoal snapshot.
 
@@ -429,9 +444,29 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     both injections so the model sees the litwork loop discipline and the live
     goal/criteria/evidence gate in one block.
     """
+    session_id = str(kwargs.get("session_id") or "")
+    # A receipt left by a vetoed turn must not replace the next reply.
+    bounded_work.take_token_reply(session_id)
     if core.is_delegate_child_platform(str(kwargs.get("platform") or "")):
         core.release_browser_drive_state(kwargs.get("session_id"))
         return None
+    token = _prompt_token(kwargs)
+    if token:
+        workspace = _session_workspace(kwargs) or bounded_work.locate_workspace(
+            session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"), explicit=kwargs.get("workspace")
+        )
+        result = bounded_work.prompt_token_result(
+            token, session_id=session_id, turn_id=kwargs.get("turn_id"), workspace=workspace
+        )
+        # A veto ends the turn before any model call, so nothing buffered for the
+        # model (a post-edit route) is consumed by it.
+        if result.get("action") == "block":
+            return result
+        return _compose_turn(kwargs, settled=str(result.get("context") or ""))
+    return _prepend_context(_compose_turn(kwargs), bounded_work.take_cancel_notice(session_id))
+
+
+def _compose_turn(kwargs: dict[str, Any], *, settled: str | None = None) -> dict[str, str] | None:
     deliverable_hedge_guard.begin_root_turn(
         kwargs.get("session_id"), kwargs.get("turn_id")
     )
@@ -446,6 +481,17 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     knowledge_context = (
         knowledge.query(workspace, str(kwargs.get("user_message") or "")) if workspace is not None else ""
     )
+    if settled:
+        # A settled `lit approve` / `lit deny` is this turn's whole task: no route
+        # or litwork run is opened for the words themselves.
+        parts = [settled]
+        snapshot = litgoal_hook.snapshot_context(**kwargs)
+        if snapshot:
+            parts.append(snapshot)
+        return _merge_knowledge(
+            _merge_post_edit({"context": "\n\n".join(parts)}, post_edit),
+            knowledge_context,
+        )
     _note_goal_resume_first_turn(kwargs, workspace)
     base = core.pre_llm_call(**kwargs)
     resume_block = core._lit_reentry.take_context(_goal_resume_session(kwargs))
@@ -513,7 +559,8 @@ def _setup_lithermes_cli(parser) -> None:
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
         "hooks: on_session_start, pre_llm_call, pre_tool_call, pre_command, post_tool_call, "
         "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset\n"
-        "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress\n"
+        "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress; "
+        "whole-prompt lit cancel|approve|deny\n"
         "wikify knowledge: hermes lithermes knowledge status|query|capture|save|review\n"
         "run `hermes lithermes status` for versions + full surface, or `doctor` for health checks"
     )
@@ -696,13 +743,30 @@ def _pre_verify(**kwargs: Any) -> dict[str, str] | None:
 
 
 def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
-    """Append the one-line cross-session goal row after whatever mark the reply already gets."""
+    """Append the one-line cross-session goal row after whatever mark the reply already gets.
+
+    A `lit cancel|approve|deny` receipt is the whole reply: it is returned alone,
+    before any other transform can add its mark or row to it.
+    """
+    receipt = bounded_work.take_token_reply(kwargs.get("session_id"))
+    if receipt is not None:
+        return receipt
     named = _transform_llm_output(**kwargs)
-    row = core._lit_reentry.take_visible(_goal_resume_session(kwargs))
-    if not row:
-        return named
-    base = named if named is not None else str(kwargs.get("response_text") or "")
-    return lit_mark.append_row(base, row)
+    for row in (
+        core._lit_reentry.take_visible(_goal_resume_session(kwargs)),
+        _parked_row(kwargs),
+    ):
+        if row:
+            base = named if named is not None else str(kwargs.get("response_text") or "")
+            named = lit_mark.append_row(base, row)
+    return named
+
+
+def _parked_row(kwargs: dict[str, Any]) -> str | None:
+    try:
+        return bounded_work.parked_reply_row(kwargs.get("session_id"))
+    except Exception:  # noqa: BLE001 - a display row never costs the reply
+        return None
 
 
 def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:

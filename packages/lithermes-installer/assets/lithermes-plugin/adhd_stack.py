@@ -239,7 +239,13 @@ def _run_still_owned(workspace: Path | str, target: dict[str, Any], session_id: 
     if not isinstance(state, dict):
         return False
     owner = state.get("active_session_id")
-    return state.get("status") == "active" and bool(owner) and owner == str(session_id or "")
+    boundary = state.get("boundary") if isinstance(state.get("boundary"), dict) else {}
+    # A pause at a boundary from before parking reads as active: the next
+    # locked read turns that boundary into a parked step.
+    live = state.get("status") == "active" or (
+        state.get("status") == "paused" and bool(boundary) and boundary.get("action") != "continue-session"
+    )
+    return live and bool(owner) and owner == str(session_id or "")
 
 
 def go_note(workspace: Path | str, session_id: Any, *, now: float | None = None) -> str:
@@ -299,9 +305,9 @@ def go_note(workspace: Path | str, session_id: Any, *, now: float | None = None)
     if record.get("kind") == "approve-boundary":
         return (
             "YOUR TURN\n"
-            "The user typed `go` after a brief whose next step is a bounded-work boundary "
-            f"({detail}): show what it wants and ask the user to approve or deny it in chat. "
-            "Never approve it yourself."
+            "The user typed `go` after a brief whose next step is bounded work whose session ended "
+            f"({detail}): say so in chat, and show the user the `/lit-loop resume ... --grant continue-session@<root>` "
+            "line that hands it to this session, or `lit cancel` to end it. Never resume it yourself."
         )
     if kind != "none":
         return (

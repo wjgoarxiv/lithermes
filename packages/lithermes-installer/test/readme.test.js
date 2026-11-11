@@ -663,6 +663,7 @@ test("user-visible docs describe the schema-3 bounded-authority lifecycle", () =
       "/lit-loop resume",
       "/lit-loop cancel",
       "/lit-loop complete",
+      "lit cancel",
       "ACTION@ROOT",
       "lithermes_work_progress",
       "pre_tool_call",
