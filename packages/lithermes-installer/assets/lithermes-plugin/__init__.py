@@ -99,18 +99,24 @@ PORTED_SKILLS = [
     ),
     (
         "frontend-ui-ux",
-        "Build and inspect authorized UI with an evolving Design Contract and 20 bundled design references.",
+        "Moved to wjgoarxiv-skills for interface building and design; the stub gives the Hermes install line.",
     ),
     (
         "lit-diagram-drawer",
-        "Create clear, accessible, Korean-ready diagrams with product-local Python verification and optional export.",
+        "Moved to wjgoarxiv-skills for diagrams; the stub gives the Hermes install line.",
     ),
     (
         "lit-schematic",
-        "Draw P&IDs, PFDs, apparatus figures and isometric cutaways; QA-gated SVG with PDF and 600 dpi PNG in full material colour.",
+        "Moved to wjgoarxiv-skills for P&IDs, PFDs and equipment schematics; the stub gives the Hermes install line.",
     ),
-    ("lit-pptx", "Create and inspect PowerPoint decks with the installed Office engine and QA gate."),
-    ("lit-docx", "Create, edit, convert, and audit styled Word documents."),
+    (
+        "lit-pptx",
+        "Moved to wjgoarxiv-skills for PowerPoint decks; the stub gives the Hermes install line.",
+    ),
+    (
+        "lit-docx",
+        "Moved to wjgoarxiv-skills for Word documents; the stub gives the Hermes install line.",
+    ),
     (
         "lit-hijack",
         "Port published know-how into your skill.",
@@ -119,10 +125,13 @@ PORTED_SKILLS = [
         "lit-adhd",
         "Cross-session brief with gauges and one next step.",
     ),
-    ("lit-typographic-motion", "Direct an original film or a README cover loop, gated before delivery."),
+    (
+        "lit-typographic-motion",
+        "Moved to wjgoarxiv-skills for films and README cover loops; the stub gives the Hermes install line.",
+    ),
     (
         "readme-studio",
-        "Write factual READMEs and compose local covers with outlined type, honest image capability and verified motion.",
+        "Moved to wjgoarxiv-skills for READMEs and covers; the stub gives the Hermes install line.",
     ),
     (
         "lit-commit",
@@ -182,7 +191,7 @@ PORTED_SKILLS = [
     ),
     (
         "visual-qa",
-        "Verify a web/TUI surface with the bundled capture playbook, evidence contracts, and two read-only review lanes.",
+        "Moved to wjgoarxiv-skills for visual verification of a built interface; the stub gives the Hermes install line.",
     ),
     (
         "wikify",
@@ -206,7 +215,7 @@ PORTED_SKILLS = [
     ),
     (
         "lit-scientific-visualization",
-        "Create publication-quality figures through the exact bundled scientific visualization source.",
+        "Moved to wjgoarxiv-skills for publication plots of measured data; the stub gives the Hermes install line.",
     ),
     (
         "structural-search",
@@ -969,26 +978,26 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-scientific-visualization",
         _command_handler(ctx, scientific_visualization.command_lit_scientific_visualization),
-        description="Create a publication-quality scientific figure with the bundled source",
+        description="Moved to wjgoarxiv-skills: show how to install the scientific visualization skill",
         args_hint="[figure request or dataset paths]",
     )
     ctx.register_command(
         "lit-diagram-drawer",
         _command_handler(ctx, core.command_lit_diagram_drawer, "lit-diagram-drawer"),
-        description="Create and verify an accessible diagram from a supplied brief",
+        description="Moved to wjgoarxiv-skills: show how to install the diagram skill",
         args_hint="<diagram brief>",
     )
     ctx.register_command(
         "lit-schematic",
         _command_handler(ctx, core.command_lit_schematic, "lit-schematic"),
-        description="Draw and QA-check a P&ID, PFD, apparatus figure or isometric cutaway from a supplied brief",
+        description="Moved to wjgoarxiv-skills: show how to install the schematic skill",
         args_hint="<schematic brief>",
     )
     for name in ("lit-pptx", "lit-docx"):
         ctx.register_command(
             name,
             _command_handler(ctx, lambda raw, skill=name: core.command_office_skill(raw, skill), name),
-            description="Create and verify a PowerPoint deck" if name == "lit-pptx" else "Create and audit a Word document",
+            description=f"Moved to wjgoarxiv-skills: show how to install {name}",
             args_hint="<document brief>",
         )
     ctx.register_command(
@@ -1012,7 +1021,7 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-typographic-motion",
         _command_handler(ctx, core.command_motion_skill, "lit-typographic-motion"),
-        description="Direct and gate an original film from a treatment",
+        description="Moved to wjgoarxiv-skills: show how to install the film skill",
         args_hint="<film request>",
     )
     for name in core.KOREAN_PROSE_COMMANDS:

@@ -81,16 +81,6 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td>딱딱한 AI 문장을 한국어나 영어로 다시 씁니다. 사실과 단서는 남기고, 파일을 멋대로 고치지 않습니다.</td>
 </tr>
 <tr>
-<td><img src="./assets/skills/lit-diagram-drawer.webp" width="240" alt="슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다." /></td>
-<td><code>lit-diagram-drawer</code><br /><sub><code>lit-diagram-drawer &lt;brief&gt;</code> · <code>/lit-diagram-drawer</code></sub></td>
-<td>슬라이드와 문서에 넣을 다이어그램을 편집 가능한 형태로 그리고, 검사한 뒤 PNG와 SVG로 내보냅니다.</td>
-</tr>
-<tr>
-<td></td>
-<td><code>lit-schematic</code><br /><sub><code>lit-schematic &lt;brief&gt;</code> · <code>/lit-schematic</code></sub></td>
-<td>실제 설비 도면 전용입니다. QA 게이트를 거친 P&ID·PFD·장치도·아이소메트릭 단면도를 편집 가능한 SVG와 PDF·600dpi PNG로 만듭니다.</td>
-</tr>
-<tr>
 <td></td>
 <td><code>lit-hijack</code><br /><sub><code>lit hijack &lt;brief&gt;</code> · <code>/lit-hijack</code></sub></td>
 <td>공개 노하우의 클린룸 포팅입니다. 출처 기록과 함께 가져오고, 라이선스 게이트와 원천 없는 명세, 격리된 빌드와 parity 검증으로 옮깁니다.</td>
@@ -99,41 +89,6 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td></td>
 <td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
 <td>여러 세션을 한 번에 브리핑합니다. 각 세션의 질문·작업·대기 상태와 로드맵 게이지, 다음 한 단계를 보여줍니다. 읽기 전용입니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-pptx.webp" width="240" alt="lit으로 발표자료를 요청하면 먼저 열세 가지 디자인 방향 가운데 하나를 고르고 다른 후보 둘과 함께 알려 준 뒤, 편집 가능한 PowerPoint 파일과 원고 Markdown을 만듭니다. 완성된 파일로 제목·배치·채움 검사를 돌립니다." /></td>
-<td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
-<td><code>lit</code>으로 발표자료를 요청하면 편집 가능한 PowerPoint 파일과 원고 Markdown이 나옵니다. 기본은 AZURE-PRO와 Pretendard이고, 완성된 파일로 품질 검사와 무결성 검사를 돌립니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-docx.webp" width="240" alt="lit으로 보고서를 요청하면 여섯 가지 문서 형식 가운데 하나를 고르고 다른 후보 둘과 함께 알려 준 뒤, 절제된 인쇄용 Word 파일과 원고 Markdown을 만듭니다. 렌더링한 페이지를 검사로 확인합니다." /></td>
-<td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
-<td><code>lit</code>으로 보고서를 요청하면 서식을 갖춘 Word 파일과 원고 Markdown이 나옵니다. 한국어는 korean-generic 서식을 쓰고, 문체 검사와 렌더링된 페이지 확인이 뒤따릅니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/frontend-ui-ux.webp" width="240" alt="실제로 동작하는 화면을 만든 뒤, 설치된 측정 프로브로 일곱 가지 모습을 렌더링해 봅니다. 네 가지 폭, 다크 모드, 모션 줄이기, 200% 확대입니다." /></td>
-<td><code>frontend-ui-ux</code><br /><sub><code>lit design &lt;target&gt;</code> · <code>frontend-ui-ux &lt;target&gt;</code></sub></td>
-<td>실제로 동작하는 화면을 만든 뒤, 설치된 측정 프로브로 일곱 가지 모습을 렌더링해 봅니다. 네 가지 폭, 다크 모드, 모션 줄이기, 200% 확대입니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/readme-studio.webp" width="240" alt="사실에 맞는 README와 움직이는 커버를 만들고, 휴대폰과 데스크톱 폭, 라이트와 다크 모드에서 확인합니다." /></td>
-<td><code>readme-studio</code><br /><sub><code>readme-studio &lt;scope&gt;</code></sub></td>
-<td>사실에 맞는 README와 움직이는 커버를 만들고, 휴대폰과 데스크톱 폭, 라이트와 다크 모드에서 확인합니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-typographic-motion.webp" width="240" alt="lit으로 영상을 요청하면 트리트먼트를 먼저 쓰고, 장면을 그리거나 글자를 움직이고, 사운드를 만든 뒤 검사를 거쳐 영상을 넘깁니다." /></td>
-<td><code>lit-typographic-motion</code><br /><sub><code>lit-typographic-motion &lt;request&gt;</code> · <code>/lit-typographic-motion</code></sub></td>
-<td><code>lit</code>으로 영상을 요청하면 트리트먼트를 먼저 쓰고, 장면을 그리거나 글자를 움직이고, 사운드를 만든 뒤 검사를 거쳐 영상을 넘깁니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-scientific-visualization.webp" width="240" alt="학술지 규격 그림을 벡터와 600 DPI로 내보냅니다. 그래프 종류는 데이터 성격에 맞춰 고릅니다." /></td>
-<td><code>lit-scientific-visualization</code><br /><sub><code>lit-scientific-visualization</code> · <code>/lit-scientific-visualization</code></sub></td>
-<td>학술지 규격 그림을 벡터와 600 DPI로 내보냅니다. 그래프 종류는 데이터 성격에 맞춰 고릅니다.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/visual-qa.webp" width="240" alt="실제 화면을 폭별로 확인해 결과를 정직하게 돌려줍니다. 막히면 무엇이 막았는지 정확히 알려줍니다." /></td>
-<td><code>visual-qa</code><br /><sub><code>visual-qa &lt;target&gt;</code></sub></td>
-<td>실제 화면을 폭별로 확인해 결과를 정직하게 돌려줍니다. 막히면 무엇이 막았는지 정확히 알려줍니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/browser-drive.webp" width="240" alt="브라우저 드라이버를 먼저 확인한 뒤 실제 페이지를 조작합니다. 드라이버가 없으면 그렇다고 말합니다." /></td>
@@ -227,49 +182,42 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 | `/lit-loop` | 명시적 반복 작업을 시작하고 확인하고, 다시 잇거나 끝냅니다. |
 | `/litgoal` | 결승선을 정하고 지킵니다. 기준과 근거, 체크포인트와 막힌 지점을 추적합니다. |
 | `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭은 `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`입니다. |
-| `/lit-diagram-drawer <brief>` | 설치된 Python 도구로 내용과 기하 구조를 검사하며 접근성·한국어를 고려한 다이어그램을 만듭니다. |
-| `/lit-schematic <brief>` | QA 게이트를 거친 P&ID·PFD·장치도·아이소메트릭 단면도를 만듭니다. |
-| `/lit-pptx <brief>` | 번들된 AZURE-PRO 엔진으로 발표자료를 만들고 검사합니다. |
-| `/lit-docx <brief>` | 출판 프로필을 적용해 Word 문서를 만들고 편집·검토합니다. |
+| `/lit-diagram-drawer <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
+| `/lit-schematic <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
+| `/lit-pptx <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
+| `/lit-docx <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
 | `/lit-hijack <brief>` | 공개 노하우를 클린룸으로 포팅합니다. 출처 기록·라이선스 게이트·명세·빌드·검증을 거칩니다. |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
-| `/lit-typographic-motion <brief>` | 트리트먼트에서 출발해 스테이지 또는 타입 경로로 원본 영상을 연출하고 검사합니다. |
+| `/lit-typographic-motion <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
 
 Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체 명령 예시와 훅 동작은 [운영 안내](./guide.ko.md)에 있습니다. 명령 뒤에 확인 줄이 뜨면 작업이 시작된 것입니다. 결과를 믿고 쓰기 전에는 화면 확인까지 포함해 직접 살펴보세요.
 
 ## 코드 밖의 결과물
 
-### 보고서와 발표자료
+### wjgoarxiv-skills로 옮겨 간 스킬
 
-보고서나 발표자료를 요청하면서 단독 `lit`을 붙이면, LitHermes가 함께 들어 있는 Word·PowerPoint 스킬에 일을 넘깁니다. 요청에 따라 DOCX나 PPTX, 또는 둘 다 나오고, 파일마다 Markdown 원본이 옆에 남습니다.
+도면, 그래프, 발표자료, 문서, 화면 설계와 점검, 영상, README 표지는 LitHermes를 떠나 `wjgoarxiv-skills` 저장소로 옮겨 간 스킬 아홉 개가 만듭니다. 덕분에 설치가 가벼워지고, 쓰는 스킬만 골라 넣으면 됩니다.
 
-스킬은 무엇을 쓰기 전에 결과물이 어떤 모습이어야 할지부터 정하고 알려 줍니다. 책상에서 읽는 분기 실적 보고라면 표가 많고 글자가 차분해야 합니다. 화면에 띄우는 투자 제안이라면 한 장에 생각 하나가 맞고, 강의라면 단계가 차례대로 보여야 합니다. 그래서 답변은 짧은 방향 카드로 시작합니다. 고른 디자인과 그 이유, 그리고 그다음으로 어울리는 후보 둘이 적혀 있습니다. 단독 `lit` 요청이라면 스타일을 따로 묻지 않습니다. 후보 가운데 다른 쪽이 좋으면 이름만 말하면 다시 만듭니다.
+| 스킬 | `wjgoarxiv-skills` 안의 폴더 |
+| --- | --- |
+| `lit-schematic` | `plugins/figures/skills/lit-schematic` |
+| `lit-diagram-drawer` | `plugins/figures/skills/lit-diagram-drawer` |
+| `lit-scientific-visualization` | `plugins/figures/skills/lit-scientific-visualization` |
+| `lit-pptx` | `plugins/decks/skills/lit-pptx` |
+| `lit-docx` | `plugins/documents/skills/lit-docx` |
+| `frontend-ui-ux` | `plugins/design/skills/frontend-ui-ux` |
+| `visual-qa` | `plugins/design/skills/visual-qa` |
+| `lit-typographic-motion` | `plugins/video-covers/skills/lit-typographic-motion` |
+| `readme-studio` | `plugins/video-covers/skills/readme-studio` |
 
-발표자료의 디자인 방향은 Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night, Computational Brutalism, Neo-Brutalism, Bauhaus, Riso, Newsroom 열세 가지입니다. 방향마다 색, 제목 자리, 슬라이드 배치, 표지·간지·마무리 장이 따로 있어서 같은 메모로 만들어도 덱마다 생김새가 달라집니다. 슬라이드는 기본적으로 정보를 빽빽하게 담고 Pretendard로 짭니다. 제목은 그 장의 주제를 이름으로 달고 주장은 본문에 둡니다. 숫자는 항목 이름, 기준, 출처와 함께 두고 제목보다 크게 키우지 않습니다.
+그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 복사 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다. 복사 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다).
 
-문서는 Report, Brief, Manual, Proposal, Memo, Journal 여섯 가지입니다. 이 여섯을 가르는 것은 구조입니다. 메모는 표지 없이 수신·발신 줄로 시작하고, 개조식 보고는 결론을 번호 붙은 요점으로 먼저 내놓습니다. 제안서는 글자만으로 짠 표지와 결정 요청 상자 하나, 예산표를 갖추고, 한국어 보고서는 번호 붙은 장으로 이어지는 연구원 보고서처럼 읽힙니다. 페이지는 잘 만든 인쇄 보고서처럼 절제합니다. 제목은 먹색으로 두고 강조색은 많아야 하나만 쓰며, 표는 칠하지 않고 가로줄로만 나눕니다. `<표 1>` 표 제목, 단위 줄, 2026. 10. 5. 같은 날짜 표기처럼 한국어 문서 관례도 지킵니다. 학술지 프로필(Elsevier, ACS, IEEE, Nature, korean-generic)을 지정하면 그 프로필을 씁니다.
+```bash
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R "<path to your wjgoarxiv-skills clone>/plugins/<family>/skills/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
 
-두 스킬 중 하나를 처음 쓸 때는 Office 런타임이 필요한 도구를 고정된 버전으로 LitHermes 캐시에 설치합니다. 만든 뒤에는 완성된 파일을 검사합니다. 발표자료는 제목과 배치가 고루 섞였는지, 반쯤 빈 슬라이드가 없는지를 봅니다. 문서는 렌더링한 페이지에서 채움, 쪼개진 표, 페이지 끝에 홀로 남은 제목, 절제 규칙을 확인합니다. 스킬을 바로 부르려면 `/lit-docx <brief>`나 `/lit-pptx <brief>`를 입력하세요.
-
-설치된 스킬 ID는 `lit-pptx`와 `lit-docx`이고, Hermes 목록에는 `lithermes:lit-pptx`와 `lithermes:lit-docx`로 나옵니다.
-
-### 다이어그램
-
-개념도나 기술 다이어그램이 필요하면 `lit-diagram-drawer`를 쓰세요. Hermes 목록에는 `lithermes:lit-diagram-drawer`로 나옵니다. 다이어그램을 부탁하면서 앞이나 뒤에 단독 `lit`만 붙여도 LitHermes가 이 스킬을 고르고, 설치된 진입 파일이 어디 있는지 Hermes에 알려 줍니다. 제품 화면은 `frontend-ui-ux`, 측정한 과학 데이터 그래프는 `lit-scientific-visualization`이 맡습니다. 실제 설비 도면(P&ID·PFD·장치도·아이소메트릭 단면도)은 `lit-schematic`(`lithermes:lit-schematic`, `/lit-schematic <brief>`)이 맡습니다.
-
-### 영상
-
-`lit-typographic-motion`은 `lithermes:lit-typographic-motion`과 `/lit-typographic-motion <brief>`로 쓸 수 있습니다. 영상 요청에 단독 `lit`을 붙이면 감독처럼 먼저 트리트먼트를 씁니다. 그다음 그림과 도형이 필요한 영상은 스테이지 경로(모델이 작성한 HTML 페이지를 프레임 단위로 캡처)로, 글자 자체가 영상일 때는 자체 WebGL2 타입 엔진으로 렌더합니다. 기본으로 생성 사운드 베드를 넣고, 생성한 소리라고 표시합니다.
-
-영상을 만들려면 컴퓨터에 Chrome과 ffmpeg가 있어야 하고, 버전을 고정한 보조 패키지와 폰트도 몇 가지 필요합니다. 렌더링은 스스로 아무것도 내려받지 않기 때문에, 보조 패키지와 폰트는 영상을 만들기 전에 로컬 캐시에 들어 있어야 합니다. `lithermes install`이 설치하면서 이 캐시를 채워 보고, `--offline` 등으로 건너뛰었거나 끝내지 못했으면 그 사실을 한 줄로 알려 줍니다. 그럴 때는 렌더 세션 밖에서 `lithermes motion-runtime install`을 실행해 나중에 채우면 됩니다.
-
-지금 상태가 궁금하면 `lithermes motion-runtime status`를 실행하세요. Chrome, ffmpeg, WebGL2, 소프트웨어 렌더링으로 내려갔는지 여부, 고정 폰트 상태를 보여 줍니다. 마지막 검사를 통과하면 60fps 영상(1920×1080, 스테이지 경로는 1080×1920도 가능), 미리보기, 포스터, 움직임 축소용 정지 이미지, 수치 검사 보고서를 받습니다. 타이포그래피 모션 엔진은 mexicat/pdoom-video (MIT, Giacomo Magnanini), 커밋 `ca251e3`에서 각색했습니다.
-
-README 커버는 영상과 다른 일이라서 따로 다룹니다. README, 히어로, 배너 루프를 요청하면 영상의 비트와 사운드, 엔드 카드를 건너뜁니다. 대신 멈추지 않고 움직이면서 시작점이 보이지 않는 그림 한 장을 만듭니다. 기본은 그림 위로 빛이 지나가는 방식이고, 글자가 움직이는 방식과 작은 궤도 시스템도 있습니다. 렌더러는 이 루프를 2 MiB 이하의 애니메이션 WebP로 인코딩한 뒤 그 파일을 다시 디코딩해서 검사합니다. 손실 인코더가 인코딩 전에는 멀쩡해 보이던 느린 페이드를 조용히 지워 버리기 때문입니다. 넘기기 전에 0.5초마다 무언가 움직이는지, 이음매가 보이지 않는지, README 폭에서도 제목이 읽히는지, 바탕 그림이 첫 프레임에 그대로 보이는지 확인합니다. 커버에는 libwebp의 img2webp와 dwebp가 필요하고(없으면 gifski로 대신합니다), `lithermes motion-runtime status`가 이 도구도 함께 보여 줍니다.
-
-### 화면과 README
-
-`frontend-ui-ux`는 요청한 화면을 만들되, 먼저 중요한 디자인 선택을 물어보고 정합니다. 검토나 계획만 부탁하면 읽고 보고할 뿐 파일은 고치지 않습니다. `readme-studio`(Hermes 목록에서는 `lithermes:readme-studio`)는 사실에 맞는 README와, 내 컴퓨터에서 만든 표지를 함께 만듭니다. 표지에는 Pretendard/Meslo 윤곽 글자와 편집 가능한 소스가 들어가고, 검증할 수 있으면 모션도 붙습니다. Hermes에 기본 이미지 생성기가 없으면 `IMAGE_GENERATION_UNAVAILABLE`로 알려 주고, 직접 건넨 이미지는 그래도 합성할 수 있습니다. 두 스킬 모두 로그인, 전역 설치, 배포는 하지 않습니다.
+복사한 뒤에는 Hermes 세션을 새로 시작하세요. 스크립트가 같은 묶음의 공용 폴더를 쓰는 스킬은 묶음 폴더 전체를 복사해야 하고, 어느 스킬이 그런지는 스텁마다 적혀 있습니다. `hermes lithermes doctor`가 스텁 아홉 개를 확인해 줍니다. litwork가 웹 화면을 고칠 때마다 돌리는 화면 측정 도구는 LitHermes의 `skills/frontend-ui-ux/scripts/`에 그대로 남아 있습니다.
 
 ### 글 다듬기
 

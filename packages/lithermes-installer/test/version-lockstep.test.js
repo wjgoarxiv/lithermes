@@ -162,14 +162,17 @@ test("scoped and tarball stale pins fail even beside the correct version", () =>
 
 
 test("fixed example versions are classified and cannot drift unnoticed", () => withVersionFixture((root) => {
-  const entry = REGISTRY.manifests.find((row) => row.additionalFixedVersions?.length > 0);
-  assert.ok(entry, "native inventory must classify co-located fixed dependency versions");
+  // The co-located dependency pins (README Studio and Office lockfiles) left with their skills;
+  // the remaining fixed example still has to fail the guard when it drifts.
+  const entry = REGISTRY.manifests.find((row) => row.additionalFixedVersions?.length > 0)
+    ?? REGISTRY.manifests.find((row) => row.kind === "fixture" && row.path);
+  assert.ok(entry, "native inventory must classify at least one fixed example version");
   const liveOriginal = readFileSync(path.join(REPO_ROOT, entry.path));
   const target = path.join(root, entry.path);
   const original = readFileSync(target, "utf8");
   const fixedVersions = [
     { versionParts: entry.versionParts, occurrences: entry.occurrences },
-    ...entry.additionalFixedVersions
+    ...(entry.additionalFixedVersions ?? [])
   ];
   try {
     for (const fixed of fixedVersions) {

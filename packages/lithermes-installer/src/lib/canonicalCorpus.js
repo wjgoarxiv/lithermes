@@ -1,32 +1,9 @@
-const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseDocument } = require("yaml");
 
 const DEFAULT_MAX_CAPTURED_FILE_BYTES = 1024 * 1024;
 const DEFAULT_MAX_CAPTURED_TOTAL_BYTES = 4 * 1024 * 1024;
-const MAX_CANONICAL_FILE_BYTES = DEFAULT_MAX_CAPTURED_FILE_BYTES;
-const MAX_CANONICAL_AGGREGATE_BYTES = DEFAULT_MAX_CAPTURED_TOTAL_BYTES;
-
-const EXPECTED = Object.freeze({
-  schema: "lithermes.canonical-frontend-corpus/v1",
-  commit: "8ec16c5129df7b9778959e8367657d0e79c2c3bb",
-  tree: "9188410be0af35f2421ba300d91a0d7a7341caf0",
-  fileCount: 167,
-  totalBytes: 2596360,
-  digest: "c921ed87f41b5aaef14ef480c791f1c36bbd3ec616eaccc32f5e1246fcc547e6",
-  directories: ["design", "designpowers", "perfection", "ui-ux-db"],
-  attributes: "corpus/** -text\nlegal/** -text\n",
-  legal: [
-    ["legal/ATTRIBUTION.md", "frontend-attribution", 12075, "a73cd147a533442218a9adef53d99e0eaf15c10d8db4819d9d1542727f077b92"],
-    ["legal/LICENSE", "source-root-license", 1068, "b083425948376611de9b92b0aeb7377e604505756ea427e541a34d9b030d4dc1"],
-    ["legal/LICENSE-Apache-2.0.txt", "frontend-apache-license", 11296, "9d95806a26532623360eb84bb17d298f394b55ef73fb4c0796d99b4319b2b0da"],
-  ],
-});
-
-function hashBuffer(buffer) {
-  return crypto.createHash("sha256").update(buffer).digest("hex");
-}
 
 function parseJsonRejectingDuplicateKeys(text) {
   const document = parseDocument(text, {
@@ -45,13 +22,6 @@ function safeRelative(value) {
     && value === value.replaceAll("\\", "/")
     && !path.posix.isAbsolute(value)
     && value.split("/").every((part) => part && part !== "." && part !== "..");
-}
-
-function hasExactKeys(value, expected) {
-  return value !== null
-    && typeof value === "object"
-    && !Array.isArray(value)
-    && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort());
 }
 
 function statIdentity(stat) {
@@ -280,157 +250,8 @@ function captureRegularFile(root, relative, options = {}) {
   };
 }
 
-function revalidateCanonicalCapture(capture) {
-  return revalidateDescriptorCapture(capture);
-}
-
-function inventory(root, failures) {
-  const entries = [];
-  function visit(directory, prefix = "") {
-    let children;
-    try {
-      children = fs.readdirSync(directory, { withFileTypes: true });
-    } catch {
-      failures.push(`${prefix || "."}:unreadable-directory`);
-      return;
-    }
-    for (const child of children) {
-      const relative = prefix ? `${prefix}/${child.name}` : child.name;
-      entries.push({ relative, type: child.isDirectory() ? "directory" : child.isFile() ? "file" : "special" });
-      if (child.isDirectory()) visit(path.join(directory, child.name), relative);
-    }
-  }
-  visit(root);
-  return entries;
-}
-
-function inspectCanonicalCorpus(root, includePaths) {
-  const failures = [];
-  const capture = createDescriptorCapture();
-  const manifestRead = readRegular(root, "manifest.json", failures, capture);
-  let manifest;
-  if (manifestRead) {
-    try {
-      manifest = parseJsonRejectingDuplicateKeys(manifestRead.buffer.toString("utf8"));
-    } catch {
-      failures.push("manifest.json:invalid-json-or-duplicate-key");
-    }
-  }
-  if (!manifest || typeof manifest !== "object") {
-    const result = { ok: false, failures, protectedFiles: 0 };
-    return includePaths ? { ...result, paths: new Set(), inventory: new Set(), capture: null } : result;
-  }
-
-  if (!hasExactKeys(manifest, ["schema", "source", "corpus", "files", "legal"])) failures.push("manifest:unknown-or-missing-fields");
-  if (!hasExactKeys(manifest.source, ["commit", "tree", "directories"])) failures.push("manifest:source-fields-invalid");
-  if (!hasExactKeys(manifest.corpus, ["fileCount", "totalBytes", "digest", "digestFormat"])) failures.push("manifest:corpus-fields-invalid");
-
-  if (manifest.schema !== EXPECTED.schema) failures.push("manifest:schema-mismatch");
-  if (manifest.source?.commit !== EXPECTED.commit) failures.push("manifest:commit-mismatch");
-  if (manifest.source?.tree !== EXPECTED.tree) failures.push("manifest:tree-mismatch");
-  if (Object.hasOwn(manifest.source || {}, "root")) failures.push("manifest:unexpected-source-carrier");
-  if (JSON.stringify(manifest.source?.directories) !== JSON.stringify(EXPECTED.directories)) failures.push("manifest:directories-mismatch");
-  if (manifest.corpus?.fileCount !== EXPECTED.fileCount) failures.push("manifest:file-count-mismatch");
-  if (manifest.corpus?.totalBytes !== EXPECTED.totalBytes) failures.push("manifest:byte-count-mismatch");
-  if (manifest.corpus?.digest !== EXPECTED.digest) failures.push("manifest:digest-mismatch");
-  if (manifest.corpus?.digestFormat !== "sorted sha256 two-spaces path newline") failures.push("manifest:digest-format-mismatch");
-  if (!Array.isArray(manifest.files) || manifest.files.length !== EXPECTED.fileCount) failures.push("manifest:files-invalid");
-  if (!Array.isArray(manifest.legal) || manifest.legal.length !== EXPECTED.legal.length) failures.push("manifest:legal-invalid");
-
-  const expectedFiles = new Set(["manifest.json", ".gitattributes"]);
-  const protectedFiles = new Set();
-  const seen = new Set();
-  let totalBytes = 0;
-  let previous = "";
-  let digestStream = "";
-  for (const entry of Array.isArray(manifest.files) ? manifest.files : []) {
-    if (!hasExactKeys(entry, ["path", "size", "sha256"])) failures.push("manifest:file-fields-invalid");
-    if (!entry || !safeRelative(entry.path) || seen.has(entry.path)) {
-      failures.push("manifest:invalid-or-duplicate-file-path");
-      continue;
-    }
-    if (previous && entry.path <= previous) failures.push("manifest:files-not-sorted");
-    previous = entry.path;
-    seen.add(entry.path);
-    if (!EXPECTED.directories.includes(entry.path.split("/")[0])) failures.push(`${entry.path}:outside-corpus-directories`);
-    const relative = `corpus/${entry.path}`;
-    expectedFiles.add(relative);
-    const actual = readRegular(root, relative, failures, capture);
-    if (!actual) continue;
-    totalBytes += actual.stat.size;
-    const actualHash = hashBuffer(actual.buffer);
-    if (!Number.isSafeInteger(entry.size) || entry.size < 0 || actual.stat.size !== entry.size) failures.push(`${relative}:size-mismatch`);
-    if (!/^[a-f0-9]{64}$/.test(entry.sha256 || "") || actualHash !== entry.sha256) failures.push(`${relative}:hash-mismatch`);
-    digestStream += `${entry.sha256}  ${entry.path}\n`;
-    protectedFiles.add(path.resolve(root, relative));
-  }
-  if (totalBytes !== EXPECTED.totalBytes) failures.push("corpus:byte-count-mismatch");
-  if (hashBuffer(Buffer.from(digestStream)) !== EXPECTED.digest) failures.push("corpus:aggregate-digest-mismatch");
-
-  const legalByPath = new Map((Array.isArray(manifest.legal) ? manifest.legal : []).map((entry) => [entry?.path, entry]));
-  for (const entry of Array.isArray(manifest.legal) ? manifest.legal : []) {
-    if (!hasExactKeys(entry, ["path", "role", "size", "sha256"])) failures.push("manifest:legal-fields-invalid");
-  }
-  for (const [relative, role, size, hash] of EXPECTED.legal) {
-    expectedFiles.add(relative);
-    const entry = legalByPath.get(relative);
-    if (!entry || entry.role !== role || entry.size !== size || entry.sha256 !== hash) failures.push(`${relative}:manifest-mismatch`);
-    const actual = readRegular(root, relative, failures, capture);
-    if (!actual) continue;
-    if (actual.stat.size !== size) failures.push(`${relative}:size-mismatch`);
-    if (hashBuffer(actual.buffer) !== hash) failures.push(`${relative}:hash-mismatch`);
-    protectedFiles.add(path.resolve(root, relative));
-  }
-
-  const attributes = readRegular(root, ".gitattributes", failures, capture);
-  if (attributes && attributes.buffer.toString("utf8") !== EXPECTED.attributes) failures.push(".gitattributes:content-mismatch");
-  protectedFiles.add(path.resolve(root, "manifest.json"));
-
-  const listed = inventory(root, failures);
-  const expectedDirectories = new Set();
-  for (const relative of expectedFiles) {
-    const parts = relative.split("/");
-    for (let index = 1; index < parts.length; index += 1) expectedDirectories.add(parts.slice(0, index).join("/"));
-  }
-  for (const entry of listed) {
-    if (entry.type === "directory" && !expectedDirectories.has(entry.relative)) failures.push(`${entry.relative}:unexpected-directory`);
-    if (entry.type !== "directory" && !expectedFiles.has(entry.relative)) failures.push(`${entry.relative}:unexpected`);
-    if (entry.type === "special") failures.push(`${entry.relative}:not-regular`);
-  }
-  for (const relative of expectedFiles) {
-    if (!listed.some((entry) => entry.relative === relative && entry.type === "file")) failures.push(`${relative}:missing-or-not-regular`);
-  }
-  if (!revalidateCanonicalCapture(capture)) failures.push("canonical:capture-identity-changed");
-
-  const result = failures.length
-    ? { ok: false, failures: [...new Set(failures)].sort(), protectedFiles: 0 }
-    : { ok: true, failures: [], protectedFiles: protectedFiles.size };
-  return includePaths
-    ? {
-      ...result,
-      paths: result.ok ? protectedFiles : new Set(),
-      inventory: result.ok ? expectedFiles : new Set(),
-      capture: result.ok ? capture : null,
-    }
-    : result;
-}
-
-function verifyCanonicalCorpus(root) {
-  return inspectCanonicalCorpus(root, false);
-}
-
-function canonicalProtectedPaths(root) {
-  return inspectCanonicalCorpus(root, true);
-}
-
 module.exports = {
-  EXPECTED,
-  MAX_CANONICAL_AGGREGATE_BYTES,
-  MAX_CANONICAL_FILE_BYTES,
   captureRegularFile,
-  canonicalProtectedPaths,
   parseJsonRejectingDuplicateKeys,
-  revalidateCanonicalCapture,
   revalidateDescriptorCapture,
-  verifyCanonicalCorpus,
 };

@@ -75,18 +75,6 @@
       "why": "Payload manifest version the installed plugin reports."
     },
     {
-      "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/frontend-ui-ux/references/complete-contract.md",
-      "kind": "pinned",
-      "occurrences": 2,
-      "why": "Sample install transcript inside the shipped skill reference; a stale version contradicts the payload it ships beside."
-    },
-    {
-      "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/visual-qa/references/complete-contract.md",
-      "kind": "pinned",
-      "occurrences": 2,
-      "why": "Sample install transcript inside the shipped skill reference; a stale version contradicts the payload it ships beside."
-    },
-    {
       "path": "packages/lithermes-installer/test/model-route-choice.test.js",
       "kind": "pinned",
       "occurrences": 2,
@@ -120,75 +108,6 @@
       ],
       "occurrences": 3,
       "why": "Three fixed Hono API example versions are independent of the LitHermes release and must remain unchanged."
-    },
-    {
-      "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/readme-studio/templates/remotion/package-lock.json",
-      "kind": "fixture",
-      "versionParts": [
-        1,
-        0,
-        4
-      ],
-      "occurrences": 4,
-      "why": "npm pinned the acorn-import-phases and chrome-trace-event template dependencies; their versions are independent of the LitHermes release and must remain unchanged.",
-      "additionalFixedVersions": [
-        {
-          "versionParts": [
-            1,
-            0,
-            5
-          ],
-          "occurrences": 3,
-          "why": "npm pinned sisteransi in the README Studio template; its 1.0.5 version is independently pinned and must not follow LitHermes release bumps."
-        },
-        {
-          "versionParts": [
-            1,
-            0,
-            7
-          ],
-          "occurrences": 3,
-          "why": "npm pinned @napi-rs/wasm-runtime in the README Studio template; its exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
-        },
-        {
-          "versionParts": [
-            1,
-            0,
-            8
-          ],
-          "occurrences": 1,
-          "why": "npm pinned @types/estree in the README Studio template; its exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
-        },
-        {
-          "versionParts": [
-            1,
-            0,
-            9
-          ],
-          "occurrences": 2,
-          "why": "npm resolved @types/estree in the README Studio template, in its version field and tarball URL; this exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
-        },
-        {
-          "versionParts": [
-            1,
-            0,
-            30
-          ],
-          "occurrences": 3,
-          "why": "npm pinned caniuse-lite in the README Studio template (range, version field and tarball URL); its long build-number version happens to begin with these three parts, is an independent dependency pin and must not follow LitHermes releases."
-        }
-      ]
-    },
-    {
-      "path": "packages/lithermes-installer/assets/lithermes-plugin/skills/lit-pptx/runtime/package-lock.json",
-      "kind": "fixture",
-      "versionParts": [
-        1,
-        0,
-        11
-      ],
-      "occurrences": 2,
-      "why": "npm resolved pako in the lit-pptx runtime, in its version field and tarball URL; this exact package-lock version is an independent dependency pin and must not follow LitHermes releases."
     }
   ]
 }

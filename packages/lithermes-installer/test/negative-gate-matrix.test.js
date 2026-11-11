@@ -29,15 +29,14 @@ test("negative gate matrix uses completion-eligible fixtures and isolated blocke
 
   assert.equal(result.status, 0, output);
   for (const row of [
-    /01\. valid design contract[^\n]*observed=PASS[^\n]*PASS/,
-    /03\. public evidence lacks host provenance[^\n]*observed=BLOCKED_CAPTURE_PROVENANCE_UNAVAILABLE[^\n]*PASS/,
-    /07\. auth unavailable[^\n]*observed=BLOCKED_AUTH_UNAVAILABLE[^\n]*PASS/,
-    /08\. renderer ownership unverified[^\n]*observed=BLOCKED_RENDERER_OWNERSHIP_UNVERIFIED[^\n]*PASS/,
-    /13\. unsafe test account[^\n]*observed=BLOCKED_TEST_ACCOUNT_UNSAFE[^\n]*PASS/,
+    /01\. tampered installed resource[^\n]*observed=FAIL[^\n]*PASS/,
+    /02\. restored installed resource[^\n]*observed=PASS[^\n]*PASS/,
+    /03\. forbidden brand tokens in packed files[^\n]*observed=0[^\n]*PASS/,
+    /04\. forbidden package paths[^\n]*observed=0[^\n]*PASS/,
   ]) {
     assert.match(output, row);
   }
-  assert.match(output, /summary: rows=18 pass=18 blocked=0 mismatch=0/);
+  assert.match(output, /summary: rows=4 pass=4 blocked=0 mismatch=0/);
   assert.match(output, /temporary roots created=\d+ remaining=0/);
   assertHonestProfileReceipts(output);
 });

@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { canonical, forbidden, scanEngineKeys, scanPaths } from './scripts/motion-forbidden-hashes.mjs';
+import { canonical, forbidden, scanPaths } from './scripts/motion-forbidden-hashes.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(packageRoot, '..', '..');
@@ -50,20 +50,5 @@ test('the extracted pack tarball holds no forbidden hash', () => {
     const extract = spawnSync('tar', ['-xzf', tarball, '-C', dir]);
     assert.equal(extract.status, 0);
     assert.deepEqual(scanPaths([join(dir, 'package')]), []);
-    assert.deepEqual(scanEngineKeys(join(dir, 'package', 'assets', 'lithermes-plugin', 'skills', 'lit-typographic-motion', 'engine')), []);
   } finally { rmSync(dir, { recursive: true, force: true }); }
-});
-
-test('the pre-warmed cache holds no forbidden hash (Hershey trio included)', (t) => {
-  const xdg = process.env.LITHERMES_MOTION_TEST_XDG;
-  if (!xdg || !existsSync(join(xdg, 'lithermes', 'motion'))) {
-    t.skip('LITHERMES_MOTION_TEST_XDG does not name a pre-warmed motion cache');
-    return;
-  }
-  assert.deepEqual(scanPaths([join(xdg, 'lithermes', 'motion')]), []);
-});
-
-test('shipped engine files carry none of the method-only scene-id keys', () => {
-  assert.deepEqual(scanEngineKeys(join(packageRoot, 'assets', 'lithermes-plugin', 'skills', 'lit-typographic-motion', 'engine')), []);
-  assert.deepEqual(scanEngineKeys(join(packageRoot, 'assets', 'lithermes-plugin', 'skills', 'lit-typographic-motion', 'bin')), []);
 });

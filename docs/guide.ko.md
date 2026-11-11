@@ -118,11 +118,11 @@ flowchart LR
 | `/litgoal` | 결승선을 정하고 지킵니다. criteria, evidence, checkpoint, blocker를 관리하며 `lit-loop`와 `start-work`가 그 결승선을 향해 갑니다. |
 | `/lit-recap` | 작업과 evidence를 한국어로 읽기 쉽게 요약합니다. |
 | `/lit-handoff` | live state를 확인한 continuation packet을 작성합니다. |
-| `/lit-scientific-visualization` | 번들 source로 publication figure를 만듭니다. |
+| `/lit-scientific-visualization` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 복사 줄을 알려 줍니다. |
 | `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
 | `/lit_loop`, `/lit_plan` | Telegram dispatch용 gateway alias입니다. |
 
-추가로 `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa` 및 관련 `lithermes:*` skill이 설치됩니다.
+추가로 `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa` 및 관련 `lithermes:*` skill이 설치됩니다.
 
 ### 자동 핸드오프
 
@@ -391,6 +391,11 @@ MIT
 
 현재 skill 이름은 `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-humanizer`, `lit-code`입니다. 이전 이름은 한 릴리스 동안 새 skill로 연결되며 이름 변경 안내 한 줄을 표시합니다. 다음 minor에서 이전 이름을 제거합니다. 설치·업데이트 시 manifest가 관리하는 이전 skill 디렉터리도 새 이름으로 교체됩니다. `lit-team`은 기존 Hermes Kanban 경로를 가리키며 별도 skill을 설치하지 않습니다.
 
-## 화면과 README 제작
+## 옮겨 간 스킬
 
-`frontend-ui-ux`에 구현할 화면을 지정하면 필요한 디자인 선택을 확인한 뒤 구현하고 실제 화면을 검토합니다. 검토만 또는 계획만 요청하면 파일을 수정하지 않습니다. `readme-studio`는 저장소에서 확인한 사실로 README를 작성하고, Pretendard와 Meslo 글자를 윤곽선으로 변환한 표지와 편집 가능한 소스를 만듭니다. Hermes 목록에서는 `lithermes:readme-studio`로 찾을 수 있습니다. 사용할 수 있는 이미지 생성 도구가 없으면 `IMAGE_GENERATION_UNAVAILABLE`을 명시하며, 제공된 배경으로 합성할 수 있습니다. 렌더링이 가능한 경우 모션과 정적 대체 이미지를 검증합니다. 로그인, 전역 설치, 배포는 수행하지 않습니다.
+`frontend-ui-ux`, `visual-qa`, `readme-studio`, `lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`,
+`lit-scientific-visualization`, `lit-typographic-motion`은 `wjgoarxiv-skills` 저장소로 옮겨 갔습니다. 여기에는 같은
+이름의 스텁이 남아 있어 모든 명령과 자연어 경로가 그대로 응답합니다. 스텁은 스킬이 옮겨 간 폴더와
+`${HERMES_HOME:-$HOME/.hermes}/skills/`로 복사하는 줄을 알려 주고, 복사본이 생기면 `skill_view`로 진짜 스킬을
+불러옵니다. 폴더 목록은 [스킬과 명령](./skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)에 있습니다. litwork가 웹 화면을
+고친 뒤 돌리는 화면 측정 도구는 LitHermes에 남아 있습니다.

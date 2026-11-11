@@ -30,7 +30,6 @@ const surfaces = [
   path.join(pluginRoot, "skills", "refactor", "SKILL.md"),
   path.join(pluginRoot, "skills", "lit-init", "SKILL.md"),
   path.join(pluginRoot, "skills", "start-work", "SKILL.md"),
-  path.join(pluginRoot, "skills", "visual-qa", "SKILL.md"),
   path.join(pluginRoot, "skills", "lit-plan", "SKILL.md"),
   path.join(pluginRoot, "skills", "debugging", "references", "methodology", "02-investigate.md"),
   path.join(pluginRoot, "skills", "lit-burnoff", "SKILL.md"),

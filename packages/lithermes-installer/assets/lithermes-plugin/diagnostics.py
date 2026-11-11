@@ -7,14 +7,9 @@ from pathlib import Path
 from typing import assert_never
 
 try:
-    from .child_env import scrubbed_env
+    from .core_contract import MOVED_SKILL_FAMILIES
 except (ImportError, ModuleNotFoundError):
-    from child_env import scrubbed_env  # type: ignore
-
-try:
-    from . import scientific_visualization as _science
-except (ImportError, ModuleNotFoundError):
-    import scientific_visualization as _science  # type: ignore
+    from core_contract import MOVED_SKILL_FAMILIES  # type: ignore
 
 try:
     from . import knowledge as _knowledge
@@ -492,8 +487,7 @@ def status_report(host_version: str | None = None) -> str:
         _provider_metrics.capability_line(),
         _auto_handoff.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
-        f"scientific visualization: {_science.dependency_summary()}",
-        *_motion_runtime_lines(),
+        f"moved to wjgoarxiv-skills ({len(MOVED_SKILL_FAMILIES)} same-name stubs): {', '.join(MOVED_SKILL_FAMILIES)}",
         *_capability_status_lines(version),
     ]
     host_note = _beyond_verified_host_note(version)
@@ -502,27 +496,11 @@ def status_report(host_version: str | None = None) -> str:
     return "\n".join(lines)
 
 
-def _motion_runtime_lines() -> list[str]:
-    import subprocess
-    command = PLUGIN_ROOT / "skills" / "lit-typographic-motion" / "bin" / "runtime.mjs"
-    if not command.is_file():
-        return ["motion Chrome: unavailable", "motion ffmpeg: unavailable", "motion WebGL2 renderer: unavailable",
-                "motion software GL: unknown", "motion pre-warm: missing; run lithermes motion-runtime install",
-                "motion cover encoder: unavailable"]
+def _read_text(path: Path) -> str:
     try:
-        result = subprocess.run(["node", str(command), "status"], capture_output=True, text=True, timeout=35, env=scrubbed_env())
-        if result.returncode == 0 and len(result.stdout.splitlines()) == 6:
-            return ["motion " + line for line in result.stdout.splitlines()]
-    except (OSError, subprocess.TimeoutExpired):
-        pass
-    return ["motion Chrome: unavailable", "motion ffmpeg: unavailable", "motion WebGL2 renderer: unavailable",
-            "motion software GL: unknown", "motion pre-warm: status failed; run lithermes motion-runtime status",
-            "motion cover encoder: unavailable"]
-
-
-def _motion_line_needs_attention(line: str) -> bool:
-    lowered = line.lower()
-    return any(marker in lowered for marker in ("not found", "no webgl2", "warning:", "not ready", "unavailable", "status failed", "not probed"))
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
 
 def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
@@ -554,17 +532,15 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
         else:
             lines.append(f"[WARN] {name} entrypoint missing")
             healthy = False
-    try:
-        import subprocess
-        runtime = PLUGIN_ROOT / "skills" / "lit-pptx" / "bin" / "office.mjs"
-        result = subprocess.run(["node", str(runtime), "doctor"], capture_output=True, text=True, timeout=10, env=scrubbed_env())
-        lines.append("[OK] " + result.stdout.strip() if result.returncode == 0 else "[WARN] Office runtime status unavailable")
-    except (OSError, subprocess.TimeoutExpired):
-        lines.append("[WARN] Office runtime status unavailable")
-    lines.extend(("[WARN] " if _motion_line_needs_attention(line) else "[OK] ") + line for line in _motion_runtime_lines())
-    science = _science.dependency_status()
-    science_tag = "OK" if science["state"] == "READY" else "DEGRADED"
-    lines.append(f"[{science_tag}] scientific visualization: {_science.dependency_summary()}")
+    unmarked = [
+        name for name, family in MOVED_SKILL_FAMILIES.items()
+        if f"plugins/{family}/skills/{name}" not in _read_text(PLUGIN_ROOT / "skills" / name / "SKILL.md")
+    ]
+    if unmarked:
+        lines.append(f"[WARN] moved-skill stubs missing their wjgoarxiv-skills path: {', '.join(unmarked)}")
+        healthy = False
+    else:
+        lines.append(f"[OK] {len(MOVED_SKILL_FAMILIES)} moved skills answer through same-name stubs (wjgoarxiv-skills)")
     try:
         from .litgoal import runtime as _runtime  # noqa: F401
         lines.append("[OK] litgoal durable runtime importable")

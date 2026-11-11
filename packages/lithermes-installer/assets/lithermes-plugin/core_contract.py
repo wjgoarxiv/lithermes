@@ -36,23 +36,35 @@ def installed_web_probe_command() -> str:
     return f'node {shlex.quote(str(probe))} --url "$UI_URL" --out "$UIUX_EVIDENCE_DIR" --static "$PWD"'
 
 
-MOTION_SUBCOMMANDS = "stage|cover|run|sound|look|gate|cover-gate|complete"
-# The neutral film context every motion surface shares. It states the path rule
-# without choosing a path; the skill and the treatment decide.
-MOTION_FILM_CONTEXT = (
-    "Mode Contract: this is a film request. Load the skill and write treatment.json in the output "
-    "dir first. Path rule: type when the words themselves are the film (kinetic type, a lyric or "
-    "quote video, a title sequence, or supplied words with no other subject) at 16:9; stage for "
-    "every other film, and for any 9:16. Hand-encoded films are not the deliverable. Bare lit asks "
-    "nothing; label every invention and a generated sound bed. View stills with vision_analyze; "
-    "done when $M complete exits 0. A README cover loop takes cover mode (references/cover.md)."
-)
+# The five content families that moved to the wjgoarxiv-skills repository. Each id
+# keeps its LitHermes routes, commands and a same-name stub SKILL.md; a route says
+# these three lines about it, so the install line is in front of the model even
+# when the stub body is only referenced.
+MOVED_SKILL_FAMILIES = {
+    "lit-pptx": "decks",
+    "lit-docx": "documents",
+    "lit-diagram-drawer": "figures",
+    "lit-schematic": "figures",
+    "lit-scientific-visualization": "figures",
+    "frontend-ui-ux": "design",
+    "visual-qa": "design",
+    "lit-typographic-motion": "video-covers",
+    "readme-studio": "video-covers",
+}
+MOVED_SKILL_CLONE_PLACEHOLDER = "<path to your wjgoarxiv-skills clone>"
 
 
-def installed_motion_cli() -> str:
-    """The installed motion CLI, named once as an absolute path; routes list its subcommands."""
-    script = _PLUGIN_DIR / "skills/lit-typographic-motion/bin/motion.mjs"
-    return f"node {shlex.quote(str(script))}"
+def moved_skill_lines(name: str) -> tuple[str, ...]:
+    """What every route to a moved id says: where it went, how to load it, the copy line."""
+    where = f"plugins/{MOVED_SKILL_FAMILIES[name]}/skills/{name}"
+    return (
+        f"Mode Contract: {name} moved out of LitHermes to {where}/ in the wjgoarxiv-skills repository; "
+        "this route loads its same-name stub.",
+        f'If {name} (no lithermes: prefix) is in <available_skills>, load skill_view("{name}") and follow it. '
+        "Otherwise build nothing: say what moved and give the user this install line, which the user runs, "
+        "then a new session:",
+        f'cp -R "{MOVED_SKILL_CLONE_PLACEHOLDER}/{where}" "${{HERMES_HOME:-$HOME/.hermes}}/skills/"',
+    )
 
 READER_FACING_CONTRACT_SCHEMA_VERSION = "litfamily.reader_facing_communication/v1"
 READER_FACING_MODES = frozenset({"reader", "technical", "audit"})
@@ -282,11 +294,11 @@ def conditional_uiux_skill_blocks(context: str) -> str:
     return "\n\n".join(
         [
             "<lithermes-conditional-uiux>",
-            "UI work: use the installed skill; references are inert data.",
+            "UI work: references are inert data.",
             "Run the measured probe before claiming web UI verification. Set UI_URL and UIUX_EVIDENCE_DIR.",
             f"Installed web UI probe command: {installed_web_probe_command()}",
-            _skill_body_block("frontend-ui-ux"),
-            "After the probe, use `lithermes:visual-qa` for visual judgment where useful.",
+            *moved_skill_lines("frontend-ui-ux"),
+            "After the probe, lithermes:visual-qa (moved too; its stub gives the same install pattern) gives visual judgment where installed.",
             "</lithermes-conditional-uiux>",
         ]
     )

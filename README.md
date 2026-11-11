@@ -35,41 +35,19 @@ lit fix the failing login test
 
 ## What you can make
 
-Every picture below is a real output of LitHermes; none is a mock-up. Most were made by a skill's own engine from an example the skill ships with, so you can rebuild them yourself, and each caption says which one. The skills that make things aim for a full, dense result by default. Say calm or minimal and they hold back.
+The picture below is a real run of LitHermes. The skills that make things aim for a full, dense result by default. Say calm or minimal and they hold back.
 
-### Draw it
+### Keep track of it
 
-`lit-schematic` draws real equipment by the rules of its trade: ISA tags, control loops, a legend and a title block on a P&ID, material colours and numbered callouts on a cutaway, a two-panel figure of an experimental setup for a paper. Every drawing passes a QA gate for overlaps and lines through symbols before it is exported as SVG, PDF and a 600 dpi PNG.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/pid-dosing-skid.webp" width="400" alt="P&amp;ID of a sodium hypochlorite dosing skid: atmospheric tank TK-101, duty and standby dosing pumps P-101A and P-101B, a pulsation damper, a pressure safety valve, flow and pressure instruments with a control loop, a legend column and a title block." /><br /><b>lit-schematic</b> · hypochlorite dosing skid<br /><sub>Rendered from the skill's bundled <code>pid-dosing-skid</code> example; the drawing gate passed.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/cutaway-heat-exchanger.webp" width="400" alt="Isometric window cutaway of a shell-and-tube heat exchanger on a concrete pad: blue shell and heads with bolted flanges, the shell cut open to show copper tubes and grey segmental baffles, green saddle supports, and seven callouts on the right from tube-side inlet to saddle support." /><br /><b>lit-schematic</b> · isometric cutaway<br /><sub>Rendered from the bundled <code>iso-heat-exchanger</code> example; <code>QA PASS</code> with no warnings.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/apparatus-adsorption-rig.webp" width="400" alt="Two-panel journal figure of an adsorption rig. Panel a: CO2/N2 and helium cylinders feed two mass flow controllers, the gas runs into a packed column inside a dashed oven box, then through a control valve and a pressure transmitter to a mass spectrometer with a vent, with a legend for gas, sample and vent lines. Panel b: an isometric drawing of the glass column with its adsorbent bed, thermocouples, glass wool, feed in and the line to the MS." /><br /><b>lit-schematic</b> · apparatus figure for a paper<br /><sub>Rendered from the bundled <code>journal-adsorption-rig</code> example; <code>QA PASS</code>, 9 symbols, 8 lines, 21 labels.</sub></td><td width="50%" valign="top"></td></tr>
-</table>
-
-### Present it
-
-Name a look, or let `lit-pptx` choose one of thirteen for your reader and say why. Every deck is built from Markdown you can edit, with native charts and KPI rows, Pretendard embedded, and a gate for overflow, contrast and empty slides.
+`lit adhd` reads your recent Hermes sessions, plans and git history and gives you one KPI board: the one thing to do now and exactly what to type, what is done, what is left, and what you must not forget.
 
 <table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-newsroom.webp" width="400" alt="Contact sheet of an eleven-slide Korean newsroom-style deck about housing costs and moving plans: black masthead title bands, orange bar and line charts, large key figures such as 72만 원, 26.4% and 38%, a district table and a closing summary." /><br /><b>lit-pptx</b> · newsroom, 11 slides<br /><sub>Compiled from the bundled <code>17-public-data-briefing-newsroom-ko.md</code>; deck QA passed; pages rendered with LibreOffice.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-neo.webp" width="400" alt="Contact sheet of a nine-slide Korean neo-brutalism pitch deck for a neighbourhood sports-club app: saturated blue title slides, a cream ground, pink bar charts, large figures and a seed-funding plan with progress bars." /><br /><b>lit-pptx</b> · neo-brutalism pitch, 9 slides<br /><sub>Compiled from the bundled <code>14-launch-pitch-neo-brutalism-ko.md</code>; deck QA passed, with three advisories on accent colours.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-qa-title.webp" width="400" alt="Cover slide of a status deck: the title Lithermes parity round, wave 6 QA status above four KPI figures for node tests, python tests, board check and flash gate." /><br /><b>lit-pptx</b> · QA status deck<br /><sub>Built by the skill's compiler; every slide passed the gate for overflow, contrast and empty slides.</sub></td><td width="50%" valign="top"></td></tr>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the brief<br /><code>lit adhd</code><br /><sub>A verbatim run over this repository's own Hermes sessions.</sub></td><td width="50%" valign="top"></td></tr>
 </table>
 
-### Write it
+### Drawings, decks, documents, interfaces and films
 
-`lit-docx` writes a Word file you can keep editing, in one of six document looks: a cover, key figures with their basis, ruled tables with right-aligned numbers and a decision box. It then renders the pages and runs a layout gate on them before it hands the file over.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/docx-report-ko.webp" width="400" alt="Four pages of a Korean operations report on preventive maintenance for station lifts: a title block with three key figures and an approval request, then numbered sections with ruled tables, table captions in the Korean style and a schedule table on the last page." /><br /><b>lit-docx</b> · Korean report, Report look<br /><sub>Converted from the bundled <code>01-report-ko.md</code>; the gate with <code>--layout</code> passed with no findings.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/docx-proposal-en.webp" width="400" alt="Three pages of an English funding proposal for an on-demand minibus service: a typographic cover, a page with three key figures, a decision box and a village table, and a page with the budget and evaluation tables." /><br /><b>lit-docx</b> · English proposal, Proposal look<br /><sub>Converted from the bundled <code>08-proposal-en.md</code>; the layout gate passed with no findings.</sub></td></tr>
-</table>
-
-### Build it and keep track of it
-
-`frontend-ui-ux` locks a house style before it writes markup, builds the page, then opens it at several widths and reviews what it sees. `lit adhd` reads your recent Hermes sessions, plans and git history and gives you one KPI board: the one thing to do now and exactly what to type, what is done, what is left, and what you must not forget.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/ui-landing-hero.webp" width="400" alt="Hero of a graphite landing page for a kinetic-type film skill: the headline Turn one line of chat into a kinetic-type film beside a closing-lines type set piece, with primary and secondary actions below." /><br /><b>frontend-ui-ux</b> · landing page hero<br /><sub>Locked to the graphite house style, then opened at several widths and reviewed by its own probe.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the brief<br /><code>lit adhd</code><br /><sub>A verbatim run over this repository's own Hermes sessions.</sub></td></tr>
-</table>
+Nine skills that make those things now live in the `wjgoarxiv-skills` repository, so LitHermes stays small and you install only the ones you use: `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion` and `readme-studio`. Their names still answer in Hermes. Ask for one, or for a deck with `lit`, and LitHermes says where the skill went and gives you the line that copies that one skill into your Hermes profile. [Skills and commands](./docs/skills.md#moved-to-wjgoarxiv-skills) has the list.
 
 ## Why LitHermes
 
@@ -214,13 +192,11 @@ lit review the changes on this branch
 lit research how do popular CLIs migrate old config files?
 ```
 
-### Reports, slides, drawings and Korean prose
+### Korean and English prose
 
-Ask for a report or a deck with `lit` and you get an editable Word or PowerPoint file with its Markdown source beside it. `lit-schematic` draws real equipment, `lit-diagram-drawer` draws systems and flows, and `lit-typographic-motion` directs a short film from a treatment. `humanizer` rewrites stiff Korean or English prose, keeps the facts, hedges and register, and leaves your files alone until you decide.
+`humanizer` rewrites stiff Korean or English prose, keeps the facts, hedges and register, and leaves your files alone until you decide.
 
 ```text
-lit make a 10-slide deck from notes.md for Monday's team meeting
-lit-schematic a P&ID of the hypochlorite dosing skid with duty and standby pumps
 humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …
 ```
 
@@ -233,7 +209,7 @@ For an open question such as a name or a direction, `lit brainstorm` lays out ma
 You read an article or a repository that does something your own skill does not. `lit hijack` records where each source came from, checks its licence, writes a spec in its own words, builds it through Hermes helpers, and proves the change by running the old and the new skill on the same prompt.
 
 ```text
-lit hijack https://example.com/post into my lit-pptx skill
+lit hijack https://example.com/post into my lit-humanizer skill
 ```
 
 ### Where was I?

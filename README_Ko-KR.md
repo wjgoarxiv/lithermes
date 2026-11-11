@@ -35,41 +35,19 @@ lit 실패하는 로그인 테스트를 고쳐줘
 
 ## 만들 수 있는 것
 
-아래 그림은 모두 LitHermes가 실제로 만든 결과물이고, 꾸며 낸 시안은 하나도 없습니다. 대부분은 스킬이 함께 싣고 다니는 예제를 그 스킬의 엔진이 직접 렌더링한 것이라 누구든 다시 만들어 볼 수 있고, 어느 예제인지는 그림마다 적어 두었습니다. 무언가를 만드는 스킬은 기본적으로 꽉 찬 결과를 냅니다. 차분하게, 미니멀하게라고 말하면 덜어 냅니다.
+아래 그림은 LitHermes를 실제로 돌린 결과입니다. 무언가를 만드는 스킬은 기본적으로 꽉 찬 결과를 냅니다. 차분하게, 미니멀하게라고 말하면 덜어 냅니다.
 
-### 그리기
+### 흐름 붙잡기
 
-`lit-schematic`은 실제 설비를 그 분야의 규칙대로 그립니다. P&ID에는 ISA 태그와 제어 루프, 범례와 표제란이 들어가고, 단면도에는 재질 색과 번호 붙은 설명선이, 논문용 그림에는 실험 장치를 두 패널로 나눈 구성이 들어갑니다. 모든 도면은 겹침과 기호를 지나가는 선을 잡는 QA 관문을 통과한 뒤 SVG, PDF, 600 dpi PNG로 나옵니다.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/pid-dosing-skid.webp" width="400" alt="차아염소산나트륨 주입 스키드의 P&amp;ID: 대기압 탱크 TK-101, 운전용과 예비용 주입 펌프 P-101A와 P-101B, 맥동 완충기, 압력 안전 밸브, 제어 루프가 걸린 유량·압력 계기, 오른쪽 범례 열과 아래 표제란." /><br /><b>lit-schematic</b> · 차아염소산 주입 스키드<br /><sub>스킬에 들어 있는 <code>pid-dosing-skid</code> 예제로 렌더링했고, 도면 관문을 통과했습니다.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/cutaway-heat-exchanger.webp" width="400" alt="콘크리트 받침 위 셸 앤 튜브 열교환기의 등각 단면도: 볼트 플랜지가 달린 파란 셸과 헤드, 셸을 잘라 낸 창으로 보이는 구리 튜브와 회색 분할 배플, 초록 새들 지지대, 오른쪽에 tube-side inlet부터 saddle support까지 설명선 일곱 개." /><br /><b>lit-schematic</b> · 등각 단면도<br /><sub>들어 있는 <code>iso-heat-exchanger</code> 예제로 렌더링했고, 경고 없이 <code>QA PASS</code>가 나왔습니다.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/apparatus-adsorption-rig.webp" width="400" alt="흡착 실험 장치를 그린 두 패널 논문 그림. (a) CO2/N2와 헬륨 실린더가 질량 유량 조절기 두 대로 들어가고, 가스가 점선 오븐 상자 안 충전 컬럼을 지나 조절 밸브와 압력 전송기를 거쳐 배출구가 달린 질량 분석기로 가며, 가스·시료·배출 선의 범례가 있습니다. (b) 흡착제 층, 열전대, 유리솜, 공급 입구, MS로 가는 관이 보이는 유리 컬럼의 등각 그림." /><br /><b>lit-schematic</b> · 논문용 실험 장치 그림<br /><sub>들어 있는 <code>journal-adsorption-rig</code> 예제로 렌더링했고, 기호 9개, 선 8개, 라벨 21개로 <code>QA PASS</code>가 나왔습니다.</sub></td><td width="50%" valign="top"></td></tr>
-</table>
-
-### 발표하기
-
-원하는 스타일을 말하거나, `lit-pptx`가 열세 가지 가운데 읽는 사람에게 맞는 것을 고르고 이유를 알려 주게 두면 됩니다. 덱은 모두 고칠 수 있는 Markdown에서 만들어지고, 네이티브 차트와 KPI 줄, 내장된 Pretendard를 갖추며, 넘침·대비·빈 슬라이드를 잡는 관문을 거칩니다.
+`lit adhd`는 최근 Hermes 세션과 계획, git 기록을 읽어 KPI 보드 한 장으로 정리합니다. 지금 할 일 하나와 그때 입력할 말, 끝낸 일, 남은 일, 잊지 말아야 할 것까지요.
 
 <table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-newsroom.webp" width="400" alt="집값과 이사 계획을 다룬 한국어 뉴스룸 스타일 덱 11장의 모음: 검은 마스트헤드 제목 띠, 주황 막대·선 차트, 72만 원·26.4%·38% 같은 큰 수치, 동별 표와 마무리 요약." /><br /><b>lit-pptx</b> · 뉴스룸, 11장<br /><sub>들어 있는 <code>17-public-data-briefing-newsroom-ko.md</code>로 컴파일했고 덱 QA를 통과했습니다. 페이지는 LibreOffice로 렌더링했습니다.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-neo.webp" width="400" alt="동네 운동 모임 앱을 소개하는 한국어 네오 브루탈리즘 피칭 덱 9장의 모음: 짙은 파랑 제목 슬라이드, 크림색 바탕, 분홍 막대 차트, 큰 수치, 진행 막대가 달린 시드 투자 사용 계획." /><br /><b>lit-pptx</b> · 네오 브루탈리즘 피칭, 9장<br /><sub>들어 있는 <code>14-launch-pitch-neo-brutalism-ko.md</code>로 컴파일했고, 강조색에 관한 권고 세 건과 함께 덱 QA를 통과했습니다.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/deck-qa-title.webp" width="400" alt="상태 보고 덱의 표지 슬라이드: Lithermes parity round, wave 6 QA status라는 제목 아래 node 테스트, python 테스트, 보드 점검, 깜빡임 관문의 KPI 수치 네 개." /><br /><b>lit-pptx</b> · QA 상태 보고 덱<br /><sub>스킬의 컴파일러로 만들었고, 모든 슬라이드가 넘침·대비·빈 슬라이드 관문을 통과했습니다.</sub></td><td width="50%" valign="top"></td></tr>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="lit-adhd 브리핑이 뜬 터미널: 세션 하나와 다음 단계를 담은 머리줄, 끝난 세션 표, 계획 게이지와 반영된 커밋이 있는 로드맵, 상자로 감싼 다음 단계." /><br /><b>lit-adhd</b> · 브리핑<br /><code>lit adhd</code><br /><sub>이 저장소의 실제 Hermes 세션을 대상으로 돌린 결과 그대로입니다.</sub></td><td width="50%" valign="top"></td></tr>
 </table>
 
-### 문서 쓰기
+### 도면, 발표자료, 문서, 화면, 영상
 
-`lit-docx`는 계속 고쳐 쓸 수 있는 Word 파일을 여섯 가지 문서 형태 가운데 하나로 만듭니다. 표지, 근거가 붙은 핵심 수치, 숫자를 오른쪽에 맞춘 괘선 표, 결정 요청 상자가 들어가고, 건네기 전에 페이지를 렌더링해 레이아웃 관문을 돌립니다.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/docx-report-ko.webp" width="400" alt="역사 승강설비 예방정비 운영 결과를 담은 한국어 보고서 네 쪽: 핵심 수치 세 개와 승인 요청이 있는 제목 영역, 번호 붙은 장과 괘선 표, 한국식 표 제목, 마지막 쪽의 향후 일정 표." /><br /><b>lit-docx</b> · 한국어 보고서, Report 형태<br /><sub>들어 있는 <code>01-report-ko.md</code>를 변환했고, <code>--layout</code>을 붙인 관문에서 지적 사항 없이 통과했습니다.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/docx-proposal-en.webp" width="400" alt="수요응답형 미니버스 사업을 다룬 영어 지원금 제안서 세 쪽: 글자만으로 짠 표지, 핵심 수치 세 개와 결정 요청 상자와 마을 표가 있는 쪽, 예산 표와 평가 표가 있는 쪽." /><br /><b>lit-docx</b> · 영어 제안서, Proposal 형태<br /><sub>들어 있는 <code>08-proposal-en.md</code>를 변환했고, 레이아웃 관문에서 지적 사항 없이 통과했습니다.</sub></td></tr>
-</table>
-
-### 화면 만들기와 흐름 붙잡기
-
-`frontend-ui-ux`는 마크업을 쓰기 전에 하우스 스타일부터 고정하고, 페이지를 만든 다음 여러 너비로 열어 보고 스스로 검토합니다. `lit adhd`는 최근 Hermes 세션과 계획, git 기록을 읽어 KPI 보드 한 장으로 정리합니다. 지금 할 일 하나와 그때 입력할 말, 끝낸 일, 남은 일, 잊지 말아야 할 것까지요.
-
-<table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/ui-landing-hero.webp" width="400" alt="키네틱 타이포 영상 스킬을 소개하는 그래파이트 랜딩 페이지 상단: Turn one line of chat into a kinetic-type film이라는 헤드라인 옆에 마지막 줄들이 겹친 타이포 장식, 아래에 주 버튼과 보조 버튼." /><br /><b>frontend-ui-ux</b> · 랜딩 페이지 상단<br /><sub>그래파이트 하우스 스타일로 고정한 뒤, 여러 너비로 열어 자체 점검 도구로 검토했습니다.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="lit-adhd 브리핑이 뜬 터미널: 세션 하나와 다음 단계를 담은 머리줄, 끝난 세션 표, 계획 게이지와 반영된 커밋이 있는 로드맵, 상자로 감싼 다음 단계." /><br /><b>lit-adhd</b> · 브리핑<br /><code>lit adhd</code><br /><sub>이 저장소의 실제 Hermes 세션을 대상으로 돌린 결과 그대로입니다.</sub></td></tr>
-</table>
+이런 것을 만드는 스킬 아홉 개는 이제 `wjgoarxiv-skills` 저장소에 있습니다. LitHermes는 가볍게 두고, 쓰는 스킬만 골라 설치하도록 옮겼습니다. `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`입니다. 이름은 Hermes에서 그대로 통합니다. 하나를 부르거나 `lit`으로 발표자료를 부탁하면, LitHermes가 스킬이 어디로 갔는지 알려 주고 그 스킬 하나를 Hermes 프로필로 복사하는 줄을 건넵니다. 목록은 [스킬과 명령](./docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)에 있습니다.
 
 ## 왜 LitHermes인가요
 
@@ -214,13 +192,11 @@ lit review 이 브랜치의 변경 사항
 lit research 널리 쓰이는 CLI들은 오래된 설정 파일을 어떻게 옮길까?
 ```
 
-### 보고서, 발표자료, 도면, 한국어 글
+### 한국어와 영어 글
 
-`lit`을 붙여 보고서나 발표자료를 부탁하면 고칠 수 있는 Word나 PowerPoint 파일과 그 Markdown 원본이 함께 나옵니다. `lit-schematic`은 실제 설비를, `lit-diagram-drawer`는 시스템과 흐름을 그리고, `lit-typographic-motion`은 트리트먼트부터 써서 짧은 영상을 연출합니다. `humanizer`는 딱딱한 한국어나 영어 문장을 다듬으면서 사실과 단서, 존댓말과 말투를 지키고, 직접 결정하기 전까지 파일은 그대로 둡니다.
+`humanizer`는 딱딱한 한국어나 영어 문장을 다듬으면서 사실과 단서, 존댓말과 말투를 지키고, 직접 결정하기 전까지 파일은 그대로 둡니다.
 
 ```text
-lit notes.md로 월요일 팀 회의용 슬라이드 10장 만들어줘
-lit-schematic 운전용·예비용 펌프가 있는 차아염소산 주입 스키드 P&ID
 humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …
 ```
 
@@ -233,7 +209,7 @@ humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …
 내 스킬에는 없는 걸 해내는 글이나 저장소를 봤다면, `lit hijack`이 출처마다 어디서 왔는지 기록하고 라이선스를 확인한 뒤, 자기 말로 사양을 쓰고, Hermes 도우미로 만들어, 같은 프롬프트로 예전 스킬과 새 스킬을 돌려 차이를 증명합니다.
 
 ```text
-lit hijack https://example.com/post 내 lit-pptx 스킬에
+lit hijack https://example.com/post 내 lit-humanizer 스킬에
 ```
 
 ### 어디까지 했더라?

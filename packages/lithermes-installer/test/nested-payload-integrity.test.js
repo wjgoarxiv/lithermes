@@ -35,14 +35,14 @@ test("doctor verifies every registered nested skill asset hash", (t) => {
     "lithermes",
     "skills",
     "frontend-ui-ux",
-    "resources",
-    "design-intelligence.json",
+    "scripts",
+    "probe-rules.json",
   );
   fs.appendFileSync(nested, "\n");
   const doctor = run(["doctor", "--offline", "--hermes-home", home]);
   assert.equal(doctor.status, 1, doctor.stdout + doctor.stderr);
   assert.match(doctor.stdout, /installed skill payload: FAIL/i);
-  assert.match(doctor.stdout, /frontend-ui-ux.*design-intelligence\.json.*hash mismatch/i);
+  assert.match(doctor.stdout, /frontend-ui-ux.*probe-rules\.json.*hash mismatch/i);
 });
 
 test("source payload inspection hash-checks representative nested family SKILL.md files", (t) => {
@@ -135,7 +135,7 @@ test("doctor rejects an unreadable unlisted directory when permissions are enfor
     "plugins",
     "lithermes",
     "skills",
-    "visual-qa",
+    "frontend-ui-ux",
     "scripts",
     "unreadable-unlisted",
   );
@@ -161,18 +161,18 @@ test("doctor rejects an unreadable unlisted directory when permissions are enfor
 
 for (const [label, mutate, expected] of [
   [
-    "shared UIUX runtime tamper",
-    (plugin) => fs.appendFileSync(path.join(plugin, "uiux_runtime_common.py"), "\n"),
-    /uiux_runtime_common\.py.*hash mismatch/i,
+    "shared plugin module tamper",
+    (plugin) => fs.appendFileSync(path.join(plugin, "core_contract.py"), "\n"),
+    /core_contract\.py.*hash mismatch/i,
   ],
   [
-    "shared UIUX runtime missing",
-    (plugin) => fs.rmSync(path.join(plugin, "uiux_runtime_common.py")),
-    /uiux_runtime_common\.py.*missing/i,
+    "shared plugin module missing",
+    (plugin) => fs.rmSync(path.join(plugin, "core_contract.py")),
+    /core_contract\.py.*missing/i,
   ],
   [
     "unexpected unlisted plugin entry",
-    (plugin) => fs.writeFileSync(path.join(plugin, "skills", "visual-qa", "scripts", "unlisted.py"), "pass\n"),
+    (plugin) => fs.writeFileSync(path.join(plugin, "skills", "frontend-ui-ux", "scripts", "unlisted.py"), "pass\n"),
     /unlisted\.py.*unexpected/i,
   ],
   [

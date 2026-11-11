@@ -75,38 +75,15 @@ test("package metadata invokes the source-only prepublish guard without packing 
   assert.equal(paths.includes("scripts/prepublish-guard.js"), false);
 });
 
-test("packed complete-contract transcripts match plugin version and skill count", () => {
+// The two sample install transcripts (references/complete-contract.md) left with
+// frontend-ui-ux and visual-qa; only the plugin manifest version is pinned here now.
+test("plugin.yaml carries the package version", () => {
   const pkg = require(path.join(__dirname, "..", "package.json"));
   const payloadRoot = path.join(__dirname, "..", "assets", "lithermes-plugin");
   const pluginYaml = fs.readFileSync(path.join(payloadRoot, "plugin.yaml"), "utf8");
   const versionMatch = pluginYaml.match(/^version:\s*(.+)$/m);
   assert.ok(versionMatch, "plugin.yaml has no version field");
   assert.equal(versionMatch[1].trim(), pkg.version);
-
-  const skillsRoot = path.join(payloadRoot, "skills");
-  const skillCount = fs.readdirSync(skillsRoot, { withFileTypes: true }).filter(
-    (entry) => entry.isDirectory() && fs.existsSync(path.join(skillsRoot, entry.name, "SKILL.md")),
-  ).length;
-  for (const skill of ["frontend-ui-ux", "visual-qa"]) {
-    const transcript = fs.readFileSync(
-      path.join(skillsRoot, skill, "references", "complete-contract.md"),
-      "utf8",
-    );
-    assert.deepEqual(
-      [...transcript.matchAll(/^Installed LitHermes (\S+)$/gm)].map((match) => match[1]),
-      [pkg.version],
-    );
-    assert.deepEqual(
-      [...transcript.matchAll(/^\[OK\] plugin\.yaml readable \(version (\S+)\)$/gm)].map(
-        (match) => match[1],
-      ),
-      [pkg.version],
-    );
-    assert.deepEqual(
-      [...transcript.matchAll(/^\[OK\] skills bundled: (\d+)$/gm)].map((match) => Number(match[1])),
-      [skillCount],
-    );
-  }
 });
 
 test("CHANGELOG documents the 0.2.0 release", () => {

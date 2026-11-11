@@ -1,6 +1,0 @@
-{
-  "name": "lithermes-readme-html-motion",
-  "private": true,
-  "type": "module",
-  "devDependencies": {"hyperframes": "0.8.51"}
-}

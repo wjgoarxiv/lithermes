@@ -196,44 +196,6 @@ test("top-level bundled skill corpus stays above the reference coverage floor", 
   assert.ok(totalWords >= wordFloor, `top-level skill corpus is too small: ${totalWords} < ${wordFloor}`);
 });
 
-test("concise UI/UX entrypoints preserve the dense contracts as lazy references", () => {
-  const lazy = lockPolicy.lazyEntrypoints;
-  assert.deepEqual(lazy.skills, ["frontend-ui-ux", "visual-qa"]);
-  for (const name of lazy.skills) {
-    const entrypoint = fs.readFileSync(skillPath(name), "utf8");
-    const detail = fs.readFileSync(path.join(skillsRoot, name, lazy.reference), "utf8");
-    assert.ok(Buffer.byteLength(entrypoint, "utf8") <= lazy.maxSkillBytes, `${name} entrypoint exceeds the safer prompt budget`);
-    assert.ok(Buffer.byteLength(detail, "utf8") >= lazy.minReferenceBytes, `${name} detailed contract was not preserved`);
-    assert.match(entrypoint, /references\/complete-contract\.md/);
-  }
-
-  const authoring = fs.readFileSync(skillReferencePath("frontend-ui-ux", "complete-contract.md"), "utf8");
-  assert.match(authoring, /canonical_state:\s*"litfamily\.design-contract\/v1beta2"/);
-  assert.match(authoring, /v1beta1[^\n]*(compatibility|evidence-eligible)/i);
-  assert.match(authoring, /v1alpha1[^\n]*(diagnostic|compatibility)/i);
-
-  const visual = fs.readFileSync(skillReferencePath("visual-qa", "complete-contract.md"), "utf8");
-  assert.match(visual, /validate-evidence[\s\S]{0,160}--evidence-root/);
-  assert.match(visual, /smoke[^\n]*zero reviewer receipt hashes/i);
-  assert.match(visual, /full\/reference-fidelity[^\n]*BLOCKED_INDEPENDENT_REVIEW_UNAVAILABLE/i);
-  assert.doesNotMatch(visual, /compatibility-only\. It and/);
-});
-
-test("UI/UX documentation separates canonical design and evidence schemas", () => {
-  const frontend = fs.readFileSync(skillPath("frontend-ui-ux"), "utf8");
-  const visual = fs.readFileSync(skillPath("visual-qa"), "utf8");
-  const visualDetail = fs.readFileSync(skillReferencePath("visual-qa", "complete-contract.md"), "utf8");
-  const docs = [frontend, visual, visualDetail].join("\n");
-
-  for (const text of [frontend, visual, visualDetail]) {
-    assert.match(text, /design-contract\/v1beta2/, "each requested surface must name canonical design-contract/v1beta2");
-    assert.match(text, /design-contract\/v1beta1[\s\S]{0,180}(valid|evidence-eligible|compatibility)/i,
-      "each requested surface must preserve valid v1beta1 compatibility input");
-  }
-  assert.match(docs, /evidence-manifest\/v1beta1[\s\S]{0,180}separate schema/i,
-    "the requested surfaces must identify evidence-manifest/v1beta1 as a separate schema");
-});
-
 test("all bundled skill entrypoints expose the stable LitHermes LLM contract schema", () => {
   for (const name of allBundledSkillNames) {
     const text = fs.readFileSync(skillPath(name), "utf8");
@@ -249,10 +211,7 @@ test("every bundled skill declares a valid output channel contract", () => {
     ["working_note", "inline"],
     ["no_artifact", "reply"],
   ]);
-  const referenceDeclarations = new Map([
-    ["frontend-ui-ux/SKILL.md", skillReferencePath("frontend-ui-ux", "complete-contract.md")],
-    ["visual-qa/SKILL.md", skillReferencePath("visual-qa", "complete-contract.md")],
-  ]);
+  const referenceDeclarations = new Map();
   const docs = bundledSkillDocs();
 
   assert.equal(docs.length, 62, `expected 62 bundled SKILL.md files, found ${docs.length}`);
@@ -379,265 +338,6 @@ test("core and litwork skill agree on the canonical first-line LIT probe banner"
   assert.match(litwork, /The first model-emitted line this turn MUST be exactly this\nline, once, on its own, before any other reply content:\n`🔥 \*\*LIT IGNITED · litwork\*\* 🔥`/);
   assert.doesNotMatch(litwork, /The first model-emitted line this turn MUST be exactly this\nline, once, on its own, before any other reply content:\n`(?!🔥 \*\*LIT IGNITED · litwork\*\* 🔥`)[^`]+`/);
   assert.doesNotMatch(coreContract + "\n" + litwork, /LITWORK MODE ENABLED!/);
-});
-
-test("visual-qa uses only bounded Hermes host browser or CDP capability", () => {
-  const visualQa = [
-    fs.readFileSync(skillPath("visual-qa"), "utf8"),
-    fs.readFileSync(skillReferencePath("visual-qa", "complete-contract.md"), "utf8"),
-  ].join("\n");
-  for (const required of [
-    "current Hermes host browser/CDP capability",
-    "session-scoped",
-    "PID, port, and command",
-    "BLOCKED receipt",
-    "advisory metrics",
-    "timeout",
-    "cancel",
-    "cleanup",
-    "no cookie or profile sharing",
-    "no cross-repo daemon",
-    "no automatic auth persistence",
-    "no dependency or browser install",
-    "no host config mutation",
-    "callable capability gate must pass before Playwright",
-  ]) {
-    assert.match(visualQa, new RegExp(escapeRegExp(required), "i"), `visual-qa missing ${required}`);
-  }
-});
-
-test("UI/UX entrypoints route to every bundled reference and keep the blocked floor", () => {
-  const frontend = fs.readFileSync(skillPath("frontend-ui-ux"), "utf8");
-  const frontendDetail = fs.readFileSync(skillReferencePath("frontend-ui-ux", "complete-contract.md"), "utf8");
-  const frontendReferences = fs
-    .readdirSync(path.join(skillsRoot, "frontend-ui-ux", "references"))
-    .filter((entry) => entry.endsWith(".md"))
-    .sort();
-  const frontendTopics = frontendReferences.filter(
-    (entry) => entry !== "complete-contract.md" && entry !== "README.md",
-  );
-  assert.equal(frontendTopics.length, 20, "the focused frontend reference set changed size");
-  assert.ok(frontendTopics.includes("motion-guide.md"), "the motion guide must be a routed focused reference");
-  assert.match(frontend, /`references\/complete-contract\.md`/);
-  for (const reference of frontendTopics) {
-    assert.match(
-      frontendDetail,
-      new RegExp(`\\|\\s*\`references/${escapeRegExp(reference)}\`\\s*\\|`),
-      `frontend-ui-ux detailed router has no row for ${reference}`,
-    );
-  }
-  assert.match(frontend, /Design Contract/);
-  assert.ok((frontend + "\n" + frontendDetail).includes("schemas/design-contract-v1alpha1.schema.json"));
-  assert.ok((frontend + "\n" + frontendDetail).includes("schemas/design-contract-v1beta1.schema.json"));
-
-  const visualQa = [
-    fs.readFileSync(skillPath("visual-qa"), "utf8"),
-    fs.readFileSync(skillReferencePath("visual-qa", "complete-contract.md"), "utf8"),
-  ].join("\n");
-  assert.match(visualQa, /schemas\/evidence-manifest-v1beta1\.schema\.json/);
-  const playbook = fs.readFileSync(
-    skillReferencePath("visual-qa", "capture-playbook.md"),
-    "utf8",
-  );
-  assert.match(
-    visualQa,
-    /\|\s*`references\/capture-playbook\.md`\s*\|/,
-    "visual-qa router has no row for the capture playbook",
-  );
-  for (const code of [
-    "BLOCKED_AUTH_UNAVAILABLE",
-    "BLOCKED_RENDERER_UNAVAILABLE",
-    "BLOCKED_INDEPENDENT_REVIEW_UNAVAILABLE",
-    "BLOCKED_TEST_ACCOUNT_UNSAFE",
-    "BLOCKED_RENDERER_OWNERSHIP_UNVERIFIED",
-    "BLOCKED_EVIDENCE_STALE",
-    "BLOCKED_EVIDENCE_FUTURE",
-    "BLOCKED_CLEANUP_INCOMPLETE",
-    "BLOCKED_REVIEW_TIMEOUT",
-  ]) {
-    assert.ok(visualQa.includes(code), `visual-qa entrypoint missing ${code}`);
-    assert.ok(playbook.includes(code), `capture playbook missing ${code}`);
-  }
-
-  // A review that ran and rejected the work is FAIL; only an absent capability is BLOCKED.
-  for (const [label, text] of [["visual-qa", visualQa], ["capture playbook", playbook]]) {
-    assert.match(text, /BLOCKED outranks FAIL/i, `${label} missing the outcome ranking`);
-    assert.match(
-      text,
-      /(?:ran and rejected|rejected the work)[^\n]{0,120}FAIL/i,
-      `${label} does not route review failure to FAIL`,
-    );
-  }
-
-  for (const channel of [
-    "Web surfaces",
-    "Terminal and TUI surfaces",
-    "Reference-fidelity targets",
-    "Motion and transient states",
-    "Responsive width sweeps",
-    "Accessibility channels",
-    "CJK and IME text",
-    "Authentication-limited surfaces",
-  ]) {
-    assert.match(playbook, new RegExp(`^## ${escapeRegExp(channel)}$`, "m"), `playbook missing ${channel}`);
-  }
-  assert.match(playbook, /^## Failure patterns$/m, "playbook must end in a failure-patterns list");
-
-  for (const [label, text] of [
-    ["frontend-ui-ux", frontend + "\n" + frontendDetail],
-    ["visual-qa", visualQa],
-  ]) {
-    for (const required of ["--hermes-home", "lithermes doctor", "bundled skill payload", "inert data"]) {
-      assert.ok(text.includes(required), `${label} entrypoint missing ${required}`);
-    }
-    assert.equal(text.includes("--home "), false, `${label} must never document --home`);
-  }
-});
-
-test("frontend-ui-ux exposes the carried taste dials and payload reference", () => {
-  const frontend = fs.readFileSync(skillPath("frontend-ui-ux"), "utf8");
-  for (const dial of ["variance", "motion", "density"]) {
-    assert.match(frontend, new RegExp(`\\b${dial}\\b`), `frontend-ui-ux missing taste dial ${dial}`);
-  }
-  assert.match(frontend, /references\/taste-direction\.md/, "frontend-ui-ux must route to taste-direction.md");
-  assert.equal(
-    fs.existsSync(skillReferencePath("frontend-ui-ux", "taste-direction.md")),
-    true,
-    "taste-direction.md must exist beside the entrypoint",
-  );
-
-  const payload = JSON.parse(fs.readFileSync(path.join(pluginRoot, "payload-version.json"), "utf8"));
-  const tasteEntries = payload.files.filter(
-    (entry) => entry.path === "skills/frontend-ui-ux/references/taste-direction.md",
-  );
-  assert.equal(tasteEntries.length, 1, "payload-version must list taste-direction.md exactly once");
-});
-
-test("frontend-ui-ux defaults to an original crisp pixel illustration", () => {
-  const profilePath = skillReferencePath("frontend-ui-ux", "default-editorial-pixel.json");
-  const profile = JSON.parse(fs.readFileSync(profilePath, "utf8"));
-  const pixel = profile.pixel_illustration;
-  const production = fs.readFileSync(
-    skillReferencePath("frontend-ui-ux", "production.md"),
-    "utf8",
-  );
-
-  assert.equal(pixel.default_when_unspecified, true);
-  assert.equal(pixel.original_task_specific, true);
-  assert.equal(pixel.primary_visual_anchor, true);
-  assert.equal(pixel.minimum_rendered_cell_px, 6);
-  assert.equal(pixel.smooth_scaling, false);
-  assert.match(pixel.rendering, /crisp|nearest.neighbor/i);
-  assert.match(production, /original, task.specific pixel.illustration/i);
-  assert.match(production, /primary visual anchor/i);
-  assert.match(production, /6 CSS.px/i);
-  assert.match(production, /Choose a visual medium that fits the subject and audience/i);
-  assert.match(production, /appropriate use rights/i);
-  assert.match(production, /complete, coherent sample content/i);
-  assert.match(production, /never present invented details as verified facts/i);
-  assert.match(production, /Remove authoring notes and unfinished prompts from the delivered interface/i);
-  assert.match(production, /consistent naming and visual identity/i);
-  assert.match(production, /text against its background.*phone widths/i);
-  assert.doesNotMatch(production, /café|restaurant|venue|address and hours/i);
-});
-
-test("frontend-ui-ux and readme-studio route bounded multi-round production interviews", () => {
-  const frontend = fs.readFileSync(skillPath("frontend-ui-ux"), "utf8");
-  const frontendProduction = fs.readFileSync(skillReferencePath("frontend-ui-ux", "production.md"), "utf8");
-  const readme = fs.readFileSync(skillPath("readme-studio"), "utf8");
-  const readmeInterviewPath = skillReferencePath("readme-studio", "production-interview.md");
-  const readmeInterview = fs.readFileSync(readmeInterviewPath, "utf8");
-  const payload = JSON.parse(fs.readFileSync(path.join(pluginRoot, "payload-version.json"), "utf8"));
-
-  assert.match(frontend, /references\/production\.md/);
-  assert.match(readme, /references\/production-interview\.md/);
-  for (const [name, interview] of [
-    ["frontend-ui-ux", frontendProduction],
-    ["readme-studio", readmeInterview],
-  ]) {
-    assert.match(interview, /no mandatory interview/i, `${name} must proceed without a required questionnaire`);
-    assert.match(interview, /two plausible answers/i, `${name} must gate questions on a real choice`);
-    assert.match(interview, /scope, architecture, permissions, accessibility, or visual direction/i,
-      `${name} must limit questions to material design decisions`);
-    assert.match(interview, /one high-impact question at a time/i, `${name} must ask one question per turn`);
-    assert.match(interview, /as many rounds as materially necessary/i, `${name} must allow adaptive rounds`);
-    assert.match(interview, /retain earlier answers across rounds/i, `${name} must carry resolved choices forward`);
-    assert.match(interview, /do not re-ask a resolved question/i, `${name} must not repeat settled questions`);
-    assert.match(interview, /state the default and proceed/i, `${name} must proceed when the brief is bounded`);
-    assert.match(interview, /review, plan, and keyword-only requests remain read-only/i,
-      `${name} must preserve read-only intent`);
-  }
-
-  const payloadEntries = new Map(payload.files.map((entry) => [entry.path, entry.sha256]));
-  for (const [relative, absolute] of [
-    ["skills/frontend-ui-ux/SKILL.md", skillPath("frontend-ui-ux")],
-    ["skills/frontend-ui-ux/references/production.md", skillReferencePath("frontend-ui-ux", "production.md")],
-    ["skills/readme-studio/SKILL.md", skillPath("readme-studio")],
-    ["skills/readme-studio/references/production-interview.md", readmeInterviewPath],
-  ]) {
-    const expectedHash = payloadEntries.get(relative);
-    assert.ok(expectedHash, `payload-version missing ${relative}`);
-    assert.equal(
-      crypto.createHash("sha256").update(fs.readFileSync(absolute)).digest("hex"),
-      expectedHash,
-      `payload-version hash is stale for ${relative}`,
-    );
-  }
-});
-
-test("an open choice between named directions is its own round, not a default", () => {
-  const frontend = fs.readFileSync(skillPath("frontend-ui-ux"), "utf8");
-  const readme = fs.readFileSync(skillPath("readme-studio"), "utf8");
-  for (const [name, body] of [
-    ["frontend-ui-ux", fs.readFileSync(skillReferencePath("frontend-ui-ux", "production.md"), "utf8")],
-    ["readme-studio", fs.readFileSync(skillReferencePath("readme-studio", "production-interview.md"), "utf8")],
-  ]) {
-    assert.match(body, /lists competing (?:visual )?directions.{0,160}(?:undecided|unchosen)/is,
-      `${name} must treat undecided named directions as unresolved`);
-    assert.match(body, /"acceptable".{0,120}is not a choice or a delegation/is,
-      `${name} must not read acceptability as a selection`);
-    assert.match(body, /separate round/i, `${name} must ask the open direction on its own round`);
-    assert.match(body, /do not declare a default.{0,80}or start building/is,
-      `${name} must not default or build an open direction`);
-    assert.match(body, /gives no visual direction.{0,200}without asking/is,
-      `${name} must keep the default for briefs that name no direction`);
-  }
-  assert.match(frontend, /references\/production\.md/, "frontend entry must route to the open-direction rule");
-  const hotContext = fs.readFileSync(path.join(pluginRoot, "core_contexts.py"), "utf8");
-  assert.match(hotContext, /named directions stay undecided \(not defaults\)/,
-    "the per-turn frontend hot context must not let a sufficient target override an open direction");
-  assert.match(readme, /open competing directions.{0,80}ask before choosing/is,
-    "README entry must not default an open direction choice");
-});
-
-test("frontend reference counts stay aligned across product-visible surfaces", () => {
-  const registration = fs.readFileSync(path.join(pluginRoot, "__init__.py"), "utf8");
-  const pluginReadme = fs.readFileSync(path.join(pluginRoot, "README.md"), "utf8");
-  assert.match(registration, /frontend-ui-ux[\s\S]*?20 bundled design references/);
-  assert.match(pluginReadme, /frontend-ui-ux[\s\S]*?routes 20 focused design references/);
-});
-
-test("uiux evidence review keeps optional narrative checks advisory", () => {
-  const evidenceReview = fs.readFileSync(
-    skillReferencePath("frontend-ui-ux", "evidence-review.md"),
-    "utf8",
-  );
-
-  assert.match(
-    evidenceReview,
-    /Optional narrative check/u,
-    "G13_GUIDANCE_PRESENT: evidence-review.md must name the optional narrative check",
-  );
-  assert.match(
-    evidenceReview,
-    /implied narrative or progression[\s\S]*?semantic feel[\s\S]*?not schema fields/u,
-    "G13_OPTIONAL_ADVISORY_QUESTIONS: evidence-review.md must keep narrative questions advisory",
-  );
-  assert.match(
-    evidenceReview,
-    /does not assign a rendered verdict[\s\S]*?visual-qa owns rendered evidence and verdicts/u,
-    "G13_PRESERVES_EXISTING_CONTRACT: visual-qa must own rendered evidence and verdicts",
-  );
 });
 
 test("registered skill set stays aligned with README and Hermes diagnostic surfaces", () => {
@@ -812,7 +512,7 @@ print(json.dumps(ctx.skills, sort_keys=True))
   }
 });
 
-test("design named routes supply production guidance while keeping references inert", () => {
+test("design named routes reach the moved-skill stubs while keeping references inert", () => {
   const result = spawnSync("python3", ["-c", `
 import json
 from core_routing import detect_lit_mode
@@ -827,13 +527,13 @@ print(json.dumps(rows))
   assert.equal(result.status, 0, result.stderr);
   const rows = JSON.parse(result.stdout);
   assert.deepEqual(rows.map((row) => row.mode), ["readme-studio", "readme-studio", "frontend-ui-ux", "frontend-ui-ux", null, null, null]);
+  // Both skills moved to wjgoarxiv-skills: each route now reaches the same-name stub and its copy line.
   for (const row of rows.slice(0, 4)) {
-    assert.match(row.context, /Review|review/);
-    assert.match(row.context, /read.only|do not edit/i);
-    assert.doesNotMatch(row.context, /author against a frozen|BEFORE any token/);
+    const family = row.mode === "readme-studio" ? "video-covers" : "design";
+    assert.ok(row.context.includes(`plugins/${family}/skills/${row.mode}`), row.context);
+    assert.ok(row.context.includes("<path to your wjgoarxiv-skills clone>"), row.context);
+    assert.doesNotMatch(row.context, /author against a frozen|BEFORE any token|IMAGE_GENERATION_UNAVAILABLE/);
   }
-  assert.match(rows[0].context, /IMAGE_GENERATION_UNAVAILABLE/);
-  assert.match(rows[2].context, /implement|implementation/);
 });
 
 test("LitHumanizer is the registered skill and carries its reader-preserving contract", () => {
@@ -869,49 +569,6 @@ test("lit-code skill carries the build-decision gate before the language gate", 
       codeSkill.indexOf("PHASE 0 — LANGUAGE GATE"),
     "build-decision gate must precede the language gate",
   );
-});
-
-test("design skills ask the look first, before the build step", () => {
-  const bodies = {
-    "lit-pptx": fs.readFileSync(skillPath("lit-pptx"), "utf8"),
-    "lit-schematic": fs.readFileSync(skillPath("lit-schematic"), "utf8"),
-    "frontend-ui-ux": fs.readFileSync(skillPath("frontend-ui-ux"), "utf8"),
-    "lit-docx": fs.readFileSync(skillPath("lit-docx"), "utf8"),
-    "lit-diagram-drawer": fs.readFileSync(skillPath("lit-diagram-drawer"), "utf8"),
-    "readme-studio": fs.readFileSync(skillPath("readme-studio"), "utf8"),
-    "lit-typographic-motion": fs.readFileSync(skillPath("lit-typographic-motion"), "utf8"),
-  };
-  const buildMarkers = {
-    "lit-pptx": "## Direction card",
-    "lit-schematic": "**Build.**",
-    "frontend-ui-ux": "lock the look",
-    "lit-docx": "## Direction card",
-    "lit-diagram-drawer": "### 3. Select a semantic pattern",
-    "readme-studio": "## #contract.outputs",
-    "lit-typographic-motion": "Author the stage page",
-  };
-  const askMarkers = {
-    "lit-pptx": "style question first",
-    "lit-schematic": "ask the look first",
-    "frontend-ui-ux": "ask the look first",
-    "lit-docx": "style question first",
-    "lit-diagram-drawer": "ask the theme first",
-    "readme-studio": "ask the cover look first",
-    "lit-typographic-motion": "ask the style first",
-  };
-  for (const [name, body] of Object.entries(bodies)) {
-    assert.match(body, /Hermes clarify/, `${name} must name the host question tool`);
-    assert.match(body, /recommended first/, `${name} must put the recommended look first`);
-    assert.match(body, /you choose/, `${name} must skip the question when the user said you choose`);
-    assert.match(body, /non-interactive/i, `${name} must cover the non-interactive run`);
-    const lowered = body.toLowerCase();
-    const askAt = lowered.indexOf(askMarkers[name]);
-    assert.ok(askAt >= 0, `${name} must carry an ask-first step`);
-    assert.ok(askAt < body.indexOf(buildMarkers[name]), `${name} must ask before the build step`);
-    assert.doesNotMatch(body, /gets no style question|ask nothing for a bare request/, `${name} must not refuse the style question`);
-  }
-  const contexts = fs.readFileSync(path.join(pluginRoot, "core_contexts.py"), "utf8");
-  assert.match(contexts, /ask the look first with the host's question tool/, "route context must carry the ask-first step");
 });
 
 test("lit planning and review surfaces enforce minimum-first without underbuilding", () => {

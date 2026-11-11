@@ -27,9 +27,9 @@ test("forbidden source hashes are absent from the shipped package tree", () => {
     { cwd: packageRoot, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
   assert.equal(packed.status, 0, packed.stderr);
   const files = JSON.parse(packed.stdout)[0].files.map(({ path: relative }) => relative)
-    .filter((relative) => relative.startsWith("assets/lithermes-plugin/skills/frontend-ui-ux/"))
     .map((relative) => path.join(packageRoot, relative));
-  assert.ok(files.length > 20, "packed frontend skill inventory is incomplete");
+  // frontend-ui-ux now ships only its stub and the interface probe, so the whole tarball is scanned.
+  assert.ok(files.length > 100, "packed inventory is incomplete");
   const collisions = files.flatMap((file) => {
     const sha256 = createHash("sha256").update(fs.readFileSync(file)).digest("hex");
     const source = byHash.get(sha256);

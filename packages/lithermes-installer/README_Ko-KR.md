@@ -50,15 +50,15 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `lit brainstorm <요청>` | `lit-brainstorm` | 열린 요청에 대한 여러 선택지와, 고를 수 있는 짧은 목록 |
 | `lit research <질문>` | `litresearch` | 출처 메모가 있는 조사 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
-| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | 검사를 거친, 편집 가능한 다이어그램 |
-| `/lit-schematic <brief>` | `lit-schematic` | QA 게이트를 거친 P&ID·장치도·아이소메트릭 단면도 |
+| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-schematic <brief>` | `lit-schematic` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-hijack <brief>` | `lit-hijack` | 라이선스 게이트와 parity 검증을 거친 공개 노하우의 클린룸 포팅 |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
-| `/lit-pptx <brief>` | `lit-pptx` | 열세 가지 디자인 방향 가운데 하나로 만든 PowerPoint 발표자료와 Markdown 원본 |
-| `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
-| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |
+| `/lit-pptx <brief>` | `lit-pptx` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-docx <brief>` | `lit-docx` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:lit-pptx`, `lithermes:lit-docx`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에서 그림과 함께 볼 수 있습니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:review-work`, `lithermes:lit-humanizer`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에 있습니다. 그 가운데 아홉 개는 `wjgoarxiv-skills`로 옮겨 간 스킬의 스텁입니다.
 
 ## 확인, 업데이트, 삭제
 

@@ -142,12 +142,10 @@ test("the release checklist distinguishes pinned CI bootstrap from local import-
   }
 });
 
-test("scientific capability and execution guards use actual import probes, never find_spec", () => {
+// The scientific dependency probe left with lit-scientific-visualization; its adapter
+// now only routes to the stub and must not grow a dependency probe back.
+test("the scientific-visualization adapter probes no Python packages", () => {
   const packageRoot = path.resolve(__dirname, "..");
   const adapter = fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", "scientific_visualization.py"), "utf8");
-  const execution = fs.readFileSync(path.join(packageRoot, "test", "python", "test_scientific_visualization_execution.py"), "utf8");
-  assert.doesNotMatch(adapter, /find_spec/);
-  assert.match(adapter, /import_module/);
-  assert.doesNotMatch(execution, /find_spec/);
-  assert.match(execution, /import_module/);
+  assert.doesNotMatch(adapter, /find_spec|import_module|matplotlib/);
 });

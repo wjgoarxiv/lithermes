@@ -1,6 +1,5 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
 const { spawnTool } = require("./hostExec");
 const { configHasLitHermes, formatConcurrencyCapability, inspectHermesCapabilities, readConfig, readExternalSkillDirsConfig, readStatusBarFields, suggestStatusBarFields } = require("./config");
 const { detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, expandHome, inspectHermesHostCapabilities, LitHermesError } = require("./hermesDiscovery");
@@ -205,28 +204,6 @@ function checkLitHermes(flags = {}) {
   return { message: lines.join("\n") };
 }
 
-// MO-A-44: the motion runtime's five probes (Chrome, ffmpeg and preview rung,
-// WebGL2 renderer, software-GL warning, pre-warm state) and the cover encoder,
-// on every doctor run.
-// They report; they never change the doctor's pass/fail.
-function motionProbeLines(pluginPath, hermesHome) {
-  const installed = path.join(pluginPath, "skills", "lit-typographic-motion", "bin", "runtime.mjs");
-  const bundled = path.join(assetRoot, "skills", "lit-typographic-motion", "bin", "runtime.mjs");
-  const script = fs.existsSync(installed) ? installed : bundled;
-  const result = spawnSync(process.execPath, [script, "status"], {
-    encoding: "utf8", timeout: 60000, env: { ...process.env, HERMES_HOME: hermesHome },
-  });
-  const lines = String(result.stdout || "").split(/\r?\n/).filter(Boolean);
-  if (result.status === 0 && lines.length === 6) return lines.map((line) => `motion ${line}`);
-  const reason = (result.stderr || result.error?.message || "no output").split(/\r?\n/)[0];
-  return [
-    "motion Chrome: unknown (status failed)", "motion ffmpeg: unknown (status failed)",
-    "motion WebGL2 renderer: unknown (status failed)", "motion software GL: unknown (status failed)",
-    `motion pre-warm: status failed (${reason}); run \`lithermes motion-runtime status\``,
-    "motion cover encoder: unknown (status failed)",
-  ];
-}
-
 function formatStatusBarFields(configText) {
   const suggested = suggestStatusBarFields(configText);
   if (suggested) {
@@ -316,7 +293,6 @@ function doctorLitHermes(flags = {}) {
     `tui payload dispatch: ${tui.ok ? formatDispatchStatus(tui) : "PATCH_AVAILABLE"}`,
     `gateway underscore dispatch: ${gateway.ok ? formatDispatchStatus(gateway) : "PATCH_AVAILABLE"}`,
     ...autoUpdateDoctorLines(hermesHome),
-    ...motionProbeLines(pluginPath, hermesHome),
   ];
 	return {
 		message: lines.join("\n"),

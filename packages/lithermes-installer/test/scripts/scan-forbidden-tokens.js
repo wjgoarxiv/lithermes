@@ -7,9 +7,7 @@ const { spawnSync } = require("node:child_process");
 const { TextDecoder } = require("node:util");
 const {
   captureRegularFile,
-  canonicalProtectedPaths,
   parseJsonRejectingDuplicateKeys,
-  revalidateCanonicalCapture,
   revalidateDescriptorCapture,
 } = require("../../src/lib/canonicalCorpus");
 const {
@@ -19,14 +17,7 @@ const {
 } = require("../../src/lib/skillPayload");
 
 const LEGACY_ALLOWLISTS = Object.freeze([]);
-const CANONICAL_RELATIVE = path.join(
-  "assets",
-  "lithermes-plugin",
-  "skills",
-  "frontend-ui-ux",
-  "references",
-  "_canonical-corpus",
-);
+const PLUGIN_RELATIVE = path.join("assets", "lithermes-plugin");
 const PAYLOAD_MANIFEST_RELATIVE = "assets/lithermes-plugin/payload-version.json";
 const FAMILY_PARITY_RELATIVE = path.join("tools", "payload-substance-parity.json");
 const FAMILY_PARITY_SCHEMA = "litfamily.payload-parity/v1";
@@ -229,27 +220,12 @@ function walkFiles(root, options = {}) {
   return out;
 }
 
-function canonicalRootFor(root) {
+function pluginRootFor(root) {
   const candidates = [
-    path.join(root, "packages", "lithermes-installer", CANONICAL_RELATIVE),
-    path.join(root, CANONICAL_RELATIVE),
+    path.join(root, "packages", "lithermes-installer", PLUGIN_RELATIVE),
+    path.join(root, PLUGIN_RELATIVE),
   ];
-  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
-}
-
-function canonicalProtection(files, root) {
-  const canonicalRoot = canonicalRootFor(root);
-  if (!canonicalRoot) return { paths: new Set(), capture: null, failure: null };
-  const resolvedRoot = path.resolve(canonicalRoot);
-  const touchesCanonical = files.some((file) => {
-    const resolved = path.resolve(file);
-    return resolved === resolvedRoot || resolved.startsWith(`${resolvedRoot}${path.sep}`);
-  });
-  if (!touchesCanonical) return { paths: new Set(), capture: null, failure: null };
-  const result = canonicalProtectedPaths(canonicalRoot);
-  return result.ok
-    ? { paths: result.paths, capture: result.capture, failure: null }
-    : { paths: new Set(), capture: null, failure: { path: path.relative(root, canonicalRoot), where: "canonical-verification-failed" } };
+  return candidates.find((candidate) => fs.existsSync(path.join(candidate, "payload-version.json"))) || null;
 }
 
 function familyParityManifestPath(root) {
@@ -301,10 +277,9 @@ function familyParityProtection(files, root) {
 }
 
 function payloadManifestProtection(files, root) {
-  const canonicalRoot = canonicalRootFor(root);
-  if (!canonicalRoot) return { paths: new Set(), capture: null, failure: null };
-  const pluginRoot = path.resolve(canonicalRoot, "..", "..", "..", "..");
-  const manifestPath = path.join(pluginRoot, "payload-version.json");
+  const pluginRoot = pluginRootFor(root);
+  if (!pluginRoot) return { paths: new Set(), capture: null, failure: null };
+  const manifestPath = path.resolve(pluginRoot, "payload-version.json");
   if (!files.some((file) => path.resolve(file) === manifestPath)) {
     return { paths: new Set(), capture: null, failure: null };
   }
@@ -326,18 +301,15 @@ function payloadManifestProtection(files, root) {
 function scanFiles(files, root = repoRoot()) {
   const ns = needles();
   const hits = [];
-  const protection = canonicalProtection(files, root);
-  if (protection.failure) hits.push(protection.failure);
   const payloadProtection = payloadManifestProtection(files, root);
   if (payloadProtection.failure) hits.push(payloadProtection.failure);
   const parityProtection = familyParityProtection(files, root);
   if (parityProtection.failure) hits.push(parityProtection.failure);
   for (const file of files) {
     const resolved = path.resolve(file);
-    const canonicalRecord = protection.capture?.files.get(resolved);
     const payloadRecord = payloadProtection.capture?.files.get(resolved);
     const parityRecord = parityProtection.capture?.files.get(resolved);
-    const protectedRecord = canonicalRecord || payloadRecord || parityRecord;
+    const protectedRecord = payloadRecord || parityRecord;
     const relative = path.relative(root, file) || file;
     if (!protectedRecord) {
       for (const needle of ns) {
@@ -350,7 +322,7 @@ function scanFiles(files, root = repoRoot()) {
     if (protectedRecord) {
       // Verified exemptions consume exact descriptor-captured bytes, never a
       // later path read. Matches in that immutable snapshot are scoped to the
-      // verified carrier/corpus; all other buffers use the ordinary scanner.
+      // verified carrier; all other buffers use the ordinary scanner.
       buffer = protectedRecord.buffer;
     } else {
       try {
@@ -372,9 +344,6 @@ function scanFiles(files, root = repoRoot()) {
       }
     }
   }
-  if (protection.capture && !revalidateCanonicalCapture(protection.capture)) {
-    hits.push({ path: path.relative(root, canonicalRootFor(root)), where: "canonical-verification-failed" });
-  }
   if (payloadProtection.capture && !revalidateDescriptorCapture(payloadProtection.capture)) {
     hits.push({
       path: path.relative(root, [...payloadProtection.paths][0]),
@@ -390,61 +359,10 @@ function scanFiles(files, root = repoRoot()) {
   return hits;
 }
 
-function isContainedCanonicalRelative(root, relative) {
-  if (typeof relative !== "string" || !relative || relative !== relative.replaceAll("\\", "/")) return false;
-  if (path.posix.isAbsolute(relative)) return false;
-  const parts = relative.split("/");
-  if (parts.some((part) => !part || part === "." || part === "..")) return false;
-  const resolvedRoot = path.resolve(root);
-  const candidate = path.resolve(resolvedRoot, ...parts);
-  const relation = path.relative(resolvedRoot, candidate);
-  return relation !== ""
-    && !path.isAbsolute(relation)
-    && relation !== ".."
-    && !relation.startsWith(`..${path.sep}`);
-}
-
-function canonicalPackProjection(entries, root) {
-  const prefix = `${CANONICAL_RELATIVE.split(path.sep).join("/")}/`;
-  const projected = entries.filter((entry) => entry.startsWith(prefix));
-  if (!projected.length) return { protectedPaths: new Set(), capturedBytes: new Map(), capture: null, hits: [] };
-  const canonicalRoot = canonicalRootFor(root);
-  if (!canonicalRoot) {
-    return { protectedPaths: new Set(), capturedBytes: new Map(), capture: null, hits: [{ path: prefix, where: "canonical-source-missing" }] };
-  }
-  const protection = canonicalProtectedPaths(canonicalRoot);
-  if (!protection.ok) {
-    return { protectedPaths: new Set(), capturedBytes: new Map(), capture: null, hits: [{ path: prefix, where: "canonical-verification-failed" }] };
-  }
-  const expected = new Set();
-  const capturedBytes = new Map();
-  for (const relative of protection.inventory) {
-    if (!isContainedCanonicalRelative(canonicalRoot, relative)) {
-      return { protectedPaths: new Set(), capturedBytes: new Map(), capture: null, hits: [{ path: prefix, where: "canonical-inventory-outside-root" }] };
-    }
-    const packedPath = `${prefix}${relative}`;
-    expected.add(packedPath);
-    const record = protection.capture.files.get(path.resolve(canonicalRoot, ...relative.split("/")));
-    if (record) capturedBytes.set(packedPath, record.buffer);
-  }
-  const actual = new Set(projected);
+function scanPackPathsWithProjection(entries) {
   const hits = [];
-  for (const entry of actual) {
-    if (!isContainedCanonicalRelative(canonicalRoot, entry.slice(prefix.length))) {
-      hits.push({ path: prefix, where: "canonical-pack-outside-root" });
-    }
-  }
-  for (const entry of expected) if (!actual.has(entry)) hits.push({ path: prefix, where: "canonical-pack-missing" });
-  for (const entry of actual) if (!expected.has(entry)) hits.push({ path: prefix, where: "canonical-pack-extra" });
-  if (capturedBytes.size !== expected.size) hits.push({ path: prefix, where: "canonical-capture-incomplete" });
-  return { protectedPaths: expected, capturedBytes, capture: protection.capture, hits };
-}
-
-function scanPackPathsWithProjection(entries, projection) {
-  const hits = [...projection.hits];
   const ns = needles();
   for (const entry of entries) {
-    if (projection.protectedPaths.has(entry)) continue;
     for (const needle of ns) {
       if (needle.re.test(entry)) hits.push({ path: entry, where: `pack-path:${needle.label}` });
     }
@@ -452,13 +370,8 @@ function scanPackPathsWithProjection(entries, projection) {
   return hits;
 }
 
-function scanPackPaths(entries, root) {
-  const projection = canonicalPackProjection(entries, root);
-  const hits = scanPackPathsWithProjection(entries, projection);
-  if (projection.capture && !revalidateCanonicalCapture(projection.capture)) {
-    hits.push({ path: CANONICAL_RELATIVE, where: "canonical-verification-failed" });
-  }
-  return hits;
+function scanPackPaths(entries) {
+  return scanPackPathsWithProjection(entries);
 }
 
 function safePackMember(member, type) {
@@ -621,15 +534,14 @@ function payloadPackProjection(entries, root) {
   if (!entries.includes(PAYLOAD_MANIFEST_RELATIVE)) {
     return { capture: null, capturedBytes: new Map(), hits: [] };
   }
-  const canonicalRoot = canonicalRootFor(root);
-  if (!canonicalRoot) {
+  const pluginRoot = pluginRootFor(root);
+  if (!pluginRoot) {
     return {
       capture: null,
       capturedBytes: new Map(),
       hits: [{ path: PAYLOAD_MANIFEST_RELATIVE, where: "payload-pack-verification-failed" }],
     };
   }
-  const pluginRoot = path.resolve(canonicalRoot, "..", "..", "..", "..");
   const protection = capturePayloadInventory(pluginRoot);
   if (!protection.ok) {
     return {
@@ -740,13 +652,11 @@ function scanPackSnapshot(archive, root, options = {}) {
   deadlineAt = archiveRead.deadlineAt;
   if (deadlineHit()) return [{ path: "<pack-tar>", where: "pack-tar-deadline" }];
   const files = archiveRead.filePaths;
-  const projection = canonicalPackProjection(files, root);
-  if (deadlineHit()) return [{ path: "<pack-tar>", where: "pack-tar-deadline" }];
   const payloadProjection = payloadPackProjection(files, root);
   if (deadlineHit()) return [{ path: "<pack-tar>", where: "pack-tar-deadline" }];
   const hits = [
     ...archiveRead.hits,
-    ...scanPackPathsWithProjection(files, projection),
+    ...scanPackPathsWithProjection(files),
     ...payloadProjection.hits,
   ];
   if (options.requirePackageIdentity !== false) {
@@ -757,15 +667,10 @@ function scanPackSnapshot(archive, root, options = {}) {
   }
   const ns = needles();
   for (const file of archiveRead.regularFiles) {
-    const canonicalExpected = projection.capturedBytes.get(file.path);
-    const payloadExpected = payloadProjection.capturedBytes.get(file.path);
-    const expected = canonicalExpected || payloadExpected;
+    const expected = payloadProjection.capturedBytes.get(file.path);
     if (expected) {
       if (!file.buffer.equals(expected)) {
-        hits.push({
-          path: file.path,
-          where: canonicalExpected ? "canonical-pack-byte-mismatch" : "payload-pack-byte-mismatch",
-        });
+        hits.push({ path: file.path, where: "payload-pack-byte-mismatch" });
       }
     } else {
       const expectedBinaryHash = KNOWN_PACK_BINARY_SHA256[file.path];
@@ -781,9 +686,6 @@ function scanPackSnapshot(archive, root, options = {}) {
         }
       }
     }
-  }
-  if (projection.capture && !revalidateCanonicalCapture(projection.capture)) {
-    hits.push({ path: CANONICAL_RELATIVE, where: "canonical-verification-failed" });
   }
   if (payloadProjection.captures?.some((capture) => !revalidateDescriptorCapture(capture))) {
     hits.push({ path: PAYLOAD_MANIFEST_RELATIVE, where: "payload-pack-verification-failed" });

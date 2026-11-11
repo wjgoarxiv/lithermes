@@ -50,15 +50,15 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `lit brainstorm <ask>` | `lit-brainstorm` | Many options for an open ask, then a short list to pick from |
 | `lit research <question>` | `litresearch` | Research with source notes |
 | `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose, meaning kept |
-| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A checked, editable diagram |
-| `/lit-schematic <brief>` | `lit-schematic` | A QA-gated P&ID, apparatus figure or isometric cutaway |
-| `/lit-pptx <brief>` | `lit-pptx` | A PowerPoint deck in one of thirteen named looks, with its Markdown source |
-| `/lit-docx <brief>` | `lit-docx` | A restrained Word document in one of six named shapes, with its Markdown source |
+| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-schematic <brief>` | `lit-schematic` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-pptx <brief>` | `lit-pptx` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-docx <brief>` | `lit-docx` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
 | `/lit-hijack <brief>` | `lit-hijack` | A clean-room port of published know-how, licence-gated with parity proof |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | A cross-session KPI board: do this now, done and left counts, milestones and reminders; `--detail` adds the per-session brief. Read-only |
-| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
+| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 40 with pictures.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:review-work` or `lithermes:lit-humanizer`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) lists all 40; nine are stubs for skills that moved to `wjgoarxiv-skills`.
 
 ## Check, update, remove
 

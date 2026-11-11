@@ -60,12 +60,16 @@ package-file change, `git add` any new file first (only tracked files are measur
 npm --prefix packages/lithermes-installer run sync:lock    # check:lock is the read-only form
 ```
 
-`policy` (the old per-skill SKILL.md floors, the 150000 B total, the 42789-word corpus floor,
-the lazy UI/UX entrypoint cap) and `budgets` are hand-owned; a sync never lowers or reseeds
+`policy` (the old per-skill SKILL.md floors, the 150000 B total and the 42789-word corpus floor)
+and `budgets` are hand-owned; a sync never lowers or reseeds
 them. A new skill needs `-- --accept-new <id>`, a removed one `-- --drop <id>`; otherwise the
 sync writes nothing and exits 1, as it does when the pack would ship a file Git does not
 track. Raise a budget by hand when a skill grows on purpose. Turning a
 skill into a smaller stub means lowering its floor by hand in the same commit, with the reason.
+The nine skills that moved to `wjgoarxiv-skills` on 2026-11-11 are such stubs: their budgets
+were lowered by hand (one file each, seven for `frontend-ui-ux`, which keeps the interface probe),
+the lazy UI/UX cap went with their bodies, and both totals still clear their floors, so neither
+floor was lowered. A stub that grows back past its budget fails `check:lock`.
 
 ## Do not touch
 

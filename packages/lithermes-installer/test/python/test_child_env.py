@@ -155,15 +155,10 @@ class CallSiteTests(unittest.TestCase):
         self.assertTrue(all(kwargs.get("timeout") for _argv, kwargs in self.rec.calls))
         self.assertTrue(all(argv[0] == "git" for argv, _kwargs in self.rec.calls))
 
-    def test_diagnostics_motion_status(self):
-        diagnostics._motion_runtime_lines()
-        self.assert_every_call_scrubbed(1)
-        self.assertTrue(all(kwargs.get("timeout") for _argv, kwargs in self.rec.calls))
-
-    def test_diagnostics_doctor_office_runtime(self):
+    def test_diagnostics_doctor_starts_no_process(self):
+        # The motion and Office runtime probes left with their skills; doctor now reads files only.
         diagnostics.doctor_report("0.0.0")
-        self.assertTrue(any(argv[0] == "node" for argv, _k in self.rec.calls))
-        self.assert_every_call_scrubbed(2)
+        self.assertEqual(self.rec.calls, [])
 
     def test_hedge_guard_detector(self):
         deliverable_hedge_guard._run_detector("A new sentence.", "report.md")
@@ -256,7 +251,7 @@ class InventoryGuardTests(unittest.TestCase):
         # fingerprint.py runs git for the litgoal run fingerprint with its own four-name
         # allowlist (PATH, HOME, LANG, LC_ALL): it must stay importable by file path in the
         # gateway, where child_env is not reachable, and the allowlist is stricter.
-        known = {"core_review.py", "diagnostics.py", "deliverable_hedge_guard.py", "fingerprint.py"}
+        known = {"core_review.py", "deliverable_hedge_guard.py", "fingerprint.py"}
         actual = {path.name for path in self._plugin_python_files() if _spawn_calls(path)}
         self.assertEqual(actual, known)
 

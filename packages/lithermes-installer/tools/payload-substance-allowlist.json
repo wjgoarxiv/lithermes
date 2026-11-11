@@ -18,6 +18,32 @@
     "review-work": "Plan review, completion review, evidence skepticism, registration, and receipts form a complete bounded contract.",
     "rules": "Supported locations, discovery order, precedence, hook behavior, and checks form a complete rules explanation.",
     "start-work": "Approved-plan resume, state and ledger gates, native progress tooling, verification, and cleanup are fully specified.",
-    "structural-search": "The honest native fallback and its intent gating, bounded search, review, and evidence contract are complete instructions."
+    "structural-search": "The honest native fallback and its intent gating, bounded search, review, and evidence contract are complete instructions.",
+    "lit-pptx": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/decks/skills/lit-pptx/), and its corpus moved with it.",
+    "lit-docx": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/documents/skills/lit-docx/), and its corpus moved with it.",
+    "lit-diagram-drawer": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/figures/skills/lit-diagram-drawer/), and its corpus moved with it.",
+    "lit-schematic": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/figures/skills/lit-schematic/), and its corpus moved with it.",
+    "lit-scientific-visualization": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/figures/skills/lit-scientific-visualization/), and its corpus moved with it.",
+    "visual-qa": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/design/skills/visual-qa/), and its corpus moved with it.",
+    "lit-typographic-motion": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/video-covers/skills/lit-typographic-motion/), and its corpus moved with it.",
+    "readme-studio": "A same-name stub: the skill moved to wjgoarxiv-skills (plugins/video-covers/skills/readme-studio/), and its corpus moved with it."
+  },
+  "parityDivergences": {
+    "lit-diagram-drawer": {
+      "date": "2026-11-11",
+      "reason": "Moved to wjgoarxiv-skills (plugins/figures/skills/lit-diagram-drawer/) behind a same-name stub; extras carry no cross-product parity."
+    },
+    "lit-scientific-visualization": {
+      "date": "2026-11-11",
+      "reason": "Moved to wjgoarxiv-skills (plugins/figures/skills/lit-scientific-visualization/) behind a same-name stub; extras carry no cross-product parity."
+    },
+    "visual-qa": {
+      "date": "2026-11-11",
+      "reason": "Moved to wjgoarxiv-skills (plugins/design/skills/visual-qa/) behind a same-name stub; extras carry no cross-product parity."
+    },
+    "frontend-ui-ux": {
+      "date": "2026-11-11",
+      "reason": "Moved to wjgoarxiv-skills (plugins/design/skills/frontend-ui-ux/) behind a same-name stub; extras carry no cross-product parity."
+    }
   }
 }

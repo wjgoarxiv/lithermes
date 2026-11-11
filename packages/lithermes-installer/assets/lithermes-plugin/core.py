@@ -89,11 +89,6 @@ except (ImportError, ModuleNotFoundError):
     import provider_metrics as _provider_metrics
 
 try:
-    from . import motion_receipts as _motion_receipts
-except (ImportError, ModuleNotFoundError):
-    import motion_receipts as _motion_receipts
-
-try:
     from .workflow_map import workflow_row
 except (ImportError, ModuleNotFoundError):
     from workflow_map import workflow_row
@@ -145,13 +140,6 @@ def post_tool_call(**kwargs: Any) -> None:
     """
     if str(kwargs.get("status") or "ok") != "ok":
         return None
-    _motion_receipts.observe(
-        str(kwargs.get("tool_name") or ""),
-        kwargs.get("args"),
-        workspace=locate_workspace(
-            session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"), explicit=kwargs.get("workspace")
-        ),
-    )
     paths = mutated_tool_paths(
         str(kwargs.get("tool_name") or ""), kwargs.get("args"), kwargs.get("result")
     )

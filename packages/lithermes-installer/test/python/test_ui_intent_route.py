@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import shlex
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -62,49 +63,17 @@ class UiIntentRoute(unittest.TestCase):
         self.assertEqual(route.mode, "frontend-ui-ux")
         context = self.core.build_natural_mode_context(route)
         self.assertIn("lithermes:frontend-ui-ux", context)
-        self.assertIn('<lithermes-skill-body name="frontend-ui-ux">', context)
-        self.assertIn(_skill_body("frontend-ui-ux"), context)
+        self.assertIn("skills/frontend-ui-ux/SKILL.md", context)
+        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
 
-    def test_ui_route_names_an_installed_probe_command_before_visual_qa(self):
+    def test_ui_route_points_at_the_moved_skill_instead_of_building(self):
         route = self.core.detect_lit_mode("build a settings page UI lit")
         self.assertIsNotNone(route)
         context = self.core.build_natural_mode_context(route)
-        marker = "Installed web UI probe command: "
-        self.assertIn(marker, context)
-        command = context.split(marker, 1)[1].splitlines()[0]
-        argv = shlex.split(command)
-        self.assertEqual(argv[0], "node")
-        expected = Path(self.pkg.__file__).resolve().parent / "skills/frontend-ui-ux/scripts/probe.mjs"
-        self.assertEqual(Path(argv[1]), expected)
-        self.assertTrue(expected.is_file(), "probe must exist in the plugin payload")
-        self.assertIn("--url", argv)
-        self.assertIn("--out", argv)
-        self.assertIn("--static", argv)
-        self.assertLess(context.index(marker), context.index("lithermes:visual-qa"))
-        self.assertIn("Run the measured probe before claiming web UI verification", context)
-
-    def test_ui_build_route_carries_behavioral_acceptance_guidance(self):
-        route = self.core.detect_lit_mode(
-            "build a finance dashboard with charts and transaction search, filtering, and pagination"
-        )
-        self.assertIsNotNone(route)
-        self.assertEqual(route.mode, "frontend-ui-ux")
-        context = self.core.build_natural_mode_context(route)
-        self.assertIn("references/operating-lanes.md", context)
-        reference = (
-            Path(__file__).resolve().parents[2]
-            / "assets/lithermes-plugin/skills/frontend-ui-ux/references/operating-lanes.md"
-        )
-        guidance = reference.read_text(encoding="utf-8")
-        for requirement in (
-            "## Behavioral acceptance",
-            "list each requested behavior separately",
-            "accessible name",
-            "semantic, operable controls",
-            "exercise every requested interaction at the target viewports",
-        ):
-            with self.subTest(requirement=requirement):
-                self.assertIn(requirement, guidance)
+        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
+        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+        self.assertNotIn("design-lock", context)
+        self.assertNotIn("design_contract_validation", context)
 
     # -- discrimination: the point of the conjunction ------------------------
 
@@ -241,7 +210,10 @@ class UiIntentRoute(unittest.TestCase):
                 route = self.core.detect_lit_mode(message)
                 self.assertIsNotNone(route)
                 self.assertEqual(route.mode, "frontend-ui-ux")
-                self.assertIn(f"Frontend mode: {mode}.", self.core.build_natural_mode_context(route))
+                # The edit-boundary text moved with the skill; the classifier still reads the mode.
+                routing = sys.modules[self.pkg.__name__ + ".core_routing"]
+                self.assertEqual(routing.detect_ui_mode(route.objective) or "build", mode)
+                self.assertIn("plugins/design/skills/frontend-ui-ux", self.core.build_natural_mode_context(route))
 
     def test_explicit_litwork_hands_web_interface_to_frontend_review(self):
         message = "litwork build a small web app with a settings screen"
@@ -257,10 +229,16 @@ class UiIntentRoute(unittest.TestCase):
                 os.chdir(previous)
         context = result["context"]
         self.assertIn("<lithermes-litwork-ui-handoff>", context)
-        self.assertIn('<lithermes-skill-body name="frontend-ui-ux">', context)
+        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
         self.assertIn("scripts/probe.mjs", context)
         self.assertIn("Installed web UI probe command: ", context)
         self.assertIn("HIGH", context)
+        marker = "Installed web UI probe command: "
+        argv = shlex.split(context.split(marker, 1)[1].splitlines()[0])
+        self.assertEqual(argv[0], "node")
+        expected = Path(self.pkg.__file__).resolve().parent / "skills/frontend-ui-ux/scripts/probe.mjs"
+        self.assertEqual(Path(argv[1]), expected)
+        self.assertTrue(expected.is_file(), "the kept probe must stay in the plugin payload")
 
     def test_explicit_litwork_backend_and_cli_do_not_start_ui_handoff(self):
         for message in ("litwork build a CLI subcommand", "litwork implement an API retry policy"):
@@ -304,7 +282,7 @@ class UiIntentRoute(unittest.TestCase):
                 os.chdir(prev)
             self.assertIsInstance(out, dict, "must be delivered by pre_llm_call")
             self.assertIn("lithermes:frontend-ui-ux", out["context"])
-            self.assertIn("Installed web UI probe command: ", out["context"])
+            self.assertIn("plugins/design/skills/frontend-ui-ux", out["context"])
             self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
 
     def test_a_delegate_child_never_activates_on_intent(self):

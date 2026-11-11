@@ -18,15 +18,6 @@ const {
 
 const packageRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(packageRoot, "..", "..");
-const canonicalRoot = path.join(
-  packageRoot,
-  "assets",
-  "lithermes-plugin",
-  "skills",
-  "frontend-ui-ux",
-  "references",
-  "_canonical-corpus",
-);
 
 function copyManifestPayload(sourcePlugin, targetPlugin) {
   const manifestName = "payload-version.json";
@@ -923,19 +914,6 @@ test("external-term scanner rejects malformed external terms with a controlled e
   }
 });
 
-test("exact verified canonical bytes are protected without creating a general scanner allowlist", () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(canonicalRoot, "manifest.json"), "utf8"));
-  const canonicalFiles = [
-    ...manifest.files.map((entry) => path.join(canonicalRoot, "corpus", ...entry.path.split("/"))),
-    ...manifest.legal.map((entry) => path.join(canonicalRoot, ...entry.path.split("/"))),
-  ];
-  assert.deepEqual(scanFiles(canonicalFiles, path.resolve(packageRoot, "..", "..")), []);
-
-  const scanner = require("./scripts/scan-forbidden-tokens");
-  assert.deepEqual(scanner.LEGACY_ALLOWLISTS, []);
-  assert.equal("allowlistedPaths" in scanner, false);
-});
-
 test("family payload-parity inventory is protected at its exact verified path without a general allowlist", (t) => {
   const parity = path.join(packageRoot, "tools", "payload-substance-parity.json");
   assert.ok(fs.existsSync(parity), "family parity manifest must exist");
@@ -953,124 +931,6 @@ test("family payload-parity inventory is protected at its exact verified path wi
     scanFiles([copied], copiedRoot).length >= 1,
     "copied family parity bytes outside the exact path must fail",
   );
-});
-
-test("canonical protection does not follow copied, altered, or carrier-field token bytes", (t) => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(canonicalRoot, "manifest.json"), "utf8"));
-  const blocked = VENDOR_TOKENS.otherHarness;
-  const carrier = path.join(canonicalRoot, "manifest.json");
-  const carrierManifest = JSON.parse(fs.readFileSync(carrier, "utf8"));
-  carrierManifest.note = blocked;
-  const carrierTemp = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-carrier-field."));
-  t.after(() => fs.rmSync(carrierTemp, { recursive: true, force: true }));
-  const carrierFile = path.join(carrierTemp, "manifest.json");
-  fs.writeFileSync(carrierFile, JSON.stringify(carrierManifest));
-  assert.ok(scanFiles([carrierFile], carrierTemp).length >= 1, "carrier field token must be scanned");
-
-  const sourceEntry = manifest.files.find((entry) => {
-    const bytes = fs.readFileSync(path.join(canonicalRoot, "corpus", ...entry.path.split("/")), "latin1");
-    return bytes.toLowerCase().includes(blocked);
-  });
-  assert.ok(sourceEntry, "fixture corpus must include a blocked source token");
-  const outside = path.join(carrierTemp, "copied.md");
-  fs.copyFileSync(path.join(canonicalRoot, "corpus", ...sourceEntry.path.split("/")), outside);
-  assert.ok(scanFiles([outside], carrierTemp).length >= 1, "copied canonical bytes outside the exact path must fail");
-});
-
-test("package-root and pack projections protect only a complete verified canonical inventory", (t) => {
-  const script = path.join(__dirname, "scripts", "scan-forbidden-tokens.js");
-  const packageScan = spawnSync(process.execPath, [script, "--root", path.resolve(packageRoot, "..", ".."), "--package-root"], {
-    encoding: "utf8",
-  });
-  assert.equal(packageScan.status, 0, packageScan.stdout + packageScan.stderr);
-
-  const manifest = JSON.parse(fs.readFileSync(path.join(canonicalRoot, "manifest.json"), "utf8"));
-  const prefix = "assets/lithermes-plugin/skills/frontend-ui-ux/references/_canonical-corpus/";
-  const canonicalPackPaths = [
-    `${prefix}.gitattributes`,
-    `${prefix}manifest.json`,
-    ...manifest.files.map((entry) => `${prefix}corpus/${entry.path}`),
-    ...manifest.legal.map((entry) => `${prefix}${entry.path}`),
-  ];
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-canonical-pack."));
-  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
-  const pack = path.join(temp, "pack.json");
-  fs.writeFileSync(pack, JSON.stringify({ files: canonicalPackPaths.map((entry) => ({ path: entry })) }));
-  const complete = spawnSync(process.execPath, [script, "--root", path.resolve(packageRoot, "..", ".."), "--pack-json", pack], { encoding: "utf8" });
-  assert.equal(complete.status, 0, complete.stdout + complete.stderr);
-
-  fs.writeFileSync(pack, JSON.stringify({ files: canonicalPackPaths.slice(1).map((entry) => ({ path: entry })) }));
-  const missing = spawnSync(process.execPath, [script, "--root", path.resolve(packageRoot, "..", ".."), "--pack-json", pack], { encoding: "utf8" });
-  assert.equal(missing.status, 1, "missing canonical pack projection must fail closed");
-
-  fs.writeFileSync(pack, JSON.stringify({ files: [...canonicalPackPaths, `${prefix}extra.md`].map((entry) => ({ path: entry })) }));
-  const extra = spawnSync(process.execPath, [script, "--root", path.resolve(packageRoot, "..", ".."), "--pack-json", pack], { encoding: "utf8" });
-  assert.equal(extra.status, 1, "extra canonical pack projection must fail closed");
-});
-
-test("scanPackPaths rejects traversal without reopening the canonical carrier", () => {
-  const root = path.resolve(packageRoot, "..", "..");
-  const carrier = path.resolve(canonicalRoot, "manifest.json");
-  const manifest = JSON.parse(fs.readFileSync(carrier, "utf8"));
-  const prefix = "assets/lithermes-plugin/skills/frontend-ui-ux/references/_canonical-corpus/";
-  const firstProjected = `${prefix}corpus/${manifest.files[0].path}`;
-  const traversalProjected = `${prefix}corpus/../outside-canonical-root`;
-  const entries = [
-    `${prefix}.gitattributes`,
-    `${prefix}manifest.json`,
-    ...manifest.files.map((entry) => `${prefix}corpus/${entry.path}`),
-    ...manifest.legal.map((entry) => `${prefix}${entry.path}`),
-  ].map((entry) => entry === firstProjected ? traversalProjected : entry);
-  const originalOpen = fs.openSync;
-  let carrierOpens = 0;
-  fs.openSync = function guardedOpen(file, ...args) {
-    if (path.resolve(file) === carrier) {
-      carrierOpens += 1;
-    }
-    return originalOpen.call(this, file, ...args);
-  };
-  let hits;
-  try {
-    hits = scanPackPaths(entries, root);
-  } finally {
-    fs.openSync = originalOpen;
-  }
-
-  assert.equal(carrierOpens, 1, "pack projection must open the verified carrier once");
-  assert.ok(hits.some((hit) => hit.where === "canonical-pack-outside-root"), JSON.stringify(hits));
-  assert.ok(hits.some((hit) => hit.where === "canonical-pack-missing"), JSON.stringify(hits));
-  assert.ok(hits.some((hit) => hit.where === "canonical-pack-extra"), JSON.stringify(hits));
-});
-
-test("scanner rejects verifier-to-scan canonical substitution using captured bytes", (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-canonical-scan-swap."));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const targetRoot = path.join(root, "assets", "lithermes-plugin", "skills", "frontend-ui-ux", "references", "_canonical-corpus");
-  fs.mkdirSync(path.dirname(targetRoot), { recursive: true });
-  fs.cpSync(canonicalRoot, targetRoot, { recursive: true });
-  const manifest = JSON.parse(fs.readFileSync(path.join(targetRoot, "manifest.json"), "utf8"));
-  const target = path.join(targetRoot, "corpus", ...manifest.files[0].path.split("/"));
-  const trigger = path.join(root, "scan-trigger.txt");
-  fs.writeFileSync(trigger, "safe trigger bytes\n");
-  const originalRead = fs.readFileSync;
-  let replaced = false;
-  fs.readFileSync = function replaceBeforeCanonicalScan(file, ...args) {
-    const bytes = originalRead.call(this, file, ...args);
-    if (!replaced && path.resolve(file) === path.resolve(trigger)) {
-      replaced = true;
-      fs.appendFileSync(target, `\n${VENDOR_TOKENS.otherHarness}\n`);
-    }
-    return bytes;
-  };
-  let hits;
-  try {
-    hits = scanFiles([trigger, target], root);
-  } finally {
-    fs.readFileSync = originalRead;
-  }
-
-  assert.equal(replaced, true, "fixture must substitute after canonical verification");
-  assert.ok(hits.some((hit) => hit.where === "canonical-verification-failed"), JSON.stringify(hits));
 });
 
 test("scanner rejects verifier-to-scan payload manifest substitution using captured bytes", (t) => {
@@ -1162,9 +1022,9 @@ function repackAtNpmCompression(archive, extracted) {
   return result;
 }
 
-test("actual npm tar validation compares produced canonical bytes", (t) => {
+test("actual npm tar validation catches tampered packed bytes", (t) => {
   assert.equal(typeof scanPackArchive, "function");
-  const destination = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-canonical-tar."));
+  const destination = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-packed-tar."));
   t.after(() => fs.rmSync(destination, { recursive: true, force: true }));
   const packed = spawnSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", destination], {
     cwd: packageRoot,
@@ -1187,45 +1047,6 @@ test("actual npm tar validation compares produced canonical bytes", (t) => {
   const ordinaryHits = scanPackArchive(ordinaryTamper, path.resolve(packageRoot, "..", ".."));
   assert.ok(ordinaryHits.some((hit) => hit.where.startsWith("pack-content:")), JSON.stringify(ordinaryHits));
   fs.writeFileSync(packedReadme, originalReadme);
-  const manifest = JSON.parse(fs.readFileSync(path.join(canonicalRoot, "manifest.json"), "utf8"));
-  const packedCanonical = path.join(
-    extracted,
-    "package",
-    "assets",
-    "lithermes-plugin",
-    "skills",
-    "frontend-ui-ux",
-    "references",
-    "_canonical-corpus",
-    "corpus",
-    ...manifest.files[0].path.split("/"),
-  );
-  fs.appendFileSync(packedCanonical, "\ntampered produced bytes\n");
-  const tampered = path.join(destination, "tampered.tgz");
-  const repack = repackAtNpmCompression(tampered, extracted);
-  assert.equal(repack.status, 0, repack.stderr);
-  const hits = scanPackArchive(tampered, path.resolve(packageRoot, "..", ".."));
-  assert.ok(hits.some((hit) => hit.where === "canonical-pack-byte-mismatch"), JSON.stringify(hits));
-});
-
-test("in-place canonical carrier fields cannot inherit scanner exemption", (t) => {
-  const blocked = VENDOR_TOKENS.otherHarness;
-  for (const [label, mutate] of [
-    ["top", (manifest) => { manifest.note = blocked; }],
-    ["file", (manifest) => { manifest.files[0].note = blocked; }],
-    ["legal", (manifest) => { manifest.legal[0].note = blocked; }],
-  ]) {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), `lithermes-canonical-carrier-${label}.`));
-    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-    const target = path.join(root, "assets", "lithermes-plugin", "skills", "frontend-ui-ux", "references", "_canonical-corpus");
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.cpSync(canonicalRoot, target, { recursive: true });
-    const carrier = path.join(target, "manifest.json");
-    const manifest = JSON.parse(fs.readFileSync(carrier, "utf8"));
-    mutate(manifest);
-    fs.writeFileSync(carrier, JSON.stringify(manifest));
-    assert.ok(scanFiles([carrier], root).length >= 1, `${label} carrier must be scanned in place`);
-  }
 });
 
 test("in-place payload carrier fields cannot inherit scanner exemption after source hashes match", (t) => {
@@ -1247,26 +1068,8 @@ test("in-place payload carrier fields cannot inherit scanner exemption after sou
   }
 });
 
-test("duplicate raw canonical and payload carrier keys cannot bypass scanner protection", (t) => {
+test("duplicate raw payload carrier keys cannot bypass scanner protection", (t) => {
   const blocked = VENDOR_TOKENS.otherHarness;
-  for (const [label, mutate] of [
-    ["canonical-top", (raw) => raw.replace('"schema": "lithermes.canonical-frontend-corpus/v1"', `"schema": "${blocked}",\n  "schema": "lithermes.canonical-frontend-corpus/v1"`)],
-    ["canonical-entry", (raw) => raw.replace('"path": "design/', `"path": "${blocked}",\n      "path": "design/`)],
-    ["canonical-legal", (raw) => {
-      const start = raw.indexOf('"legal": [');
-      return `${raw.slice(0, start)}${raw.slice(start).replace('"path": "legal/', `"path": "${blocked}",\n      "path": "legal/`)}`;
-    }],
-  ]) {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), `lithermes-duplicate-${label}.`));
-    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-    const target = path.join(root, "assets", "lithermes-plugin", "skills", "frontend-ui-ux", "references", "_canonical-corpus");
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.cpSync(canonicalRoot, target, { recursive: true });
-    const carrier = path.join(target, "manifest.json");
-    fs.writeFileSync(carrier, mutate(fs.readFileSync(carrier, "utf8")));
-    assert.ok(scanFiles([carrier], root).length >= 1, `${label} duplicate carrier must be scanned`);
-  }
-
   const sourcePlugin = path.join(packageRoot, "assets", "lithermes-plugin");
   for (const [label, mutate] of [
     ["payload-top", (raw) => raw.replace('"source": "bundled-payload"', `"source": "${blocked}",\n  "source": "bundled-payload"`)],

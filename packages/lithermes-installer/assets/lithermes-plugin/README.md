@@ -95,24 +95,22 @@ CLI/plugin name, not the npm package name.
   resolves the original template, requires live-state verification, and uses
   `🔥 **LIT IGNITED · lit-handoff** 🔥` as its exact first line, once, before
   any other reply content.
-- `/lit-scientific-visualization`, exact `lit-scientific-visualization`, and
-  exact `lit scientific visualization` load the immutable 16-file scientific
-  source. The adapter resolves scripts, assets, and reference fallbacks from the
-  installed source root. It never claims generic, quoted, code, mixed, or
-  near-miss visualization requests, imports scientific packages during plugin
-  registration, or silently runs pip/uv. Missing `matplotlib` is non-fatal
-  `DEGRADED`; its exact first line, once and before any other reply content, is
-  `🔥 **LIT IGNITED · lit-scientific-visualization** 🔥`.
-- `/lit-pptx <brief>` and `/lit-docx <brief>` load `lithermes:lit-pptx` and `lithermes:lit-docx`. Bare `lit` with report or slide authoring wording routes to the corresponding skill; a combined request creates both formats. The packaged `skills/lit-pptx/bin/office.mjs` installs pinned dependencies in the LitHermes cache on first use and exposes deck QA, integrity, DOCX conversion, editing, lint, and visual audit.
-- `/lit-typographic-motion <brief>` loads `lithermes:lit-typographic-motion`. Bare `lit` with a film-creation request writes a treatment first, then renders a stage film (a model-authored page captured frame by frame) or a type film on the installed WebGL2 engine. A README, hero or banner loop takes cover mode (`$M cover`): a silent, seamless loop encoded as animated WebP and gated on the decoded file. Pre-warm with `lithermes motion-runtime install`; check the six runtime probes (the sixth is the cover encoder) with `lithermes motion-runtime status`. The render gate records measurements and withholds exports on flash failure. Typographic-motion engine adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
-- `/lit-diagram-drawer <brief>` and the exact `lit-diagram-drawer` route load the
-  installed diagram skill. Its Python checks cover source geometry, accessibility,
-  content requirements, motion source rules, and visible-text findings; actual
-  rendering remains a separate local capability.
-- `/lit-schematic <brief>` and the exact `lit-schematic` route load the
-  installed schematic skill. Drawings of real equipment (P&IDs, PFDs, apparatus
-  figures, isometric cutaways) belong here; abstract boxes-and-arrows stay with
-  `lithermes:lit-diagram-drawer`.
+- Moved skills. `lithermes:lit-pptx`, `lithermes:lit-docx`,
+  `lithermes:lit-diagram-drawer`, `lithermes:lit-schematic`,
+  `lithermes:lit-scientific-visualization`, `lithermes:frontend-ui-ux`,
+  `lithermes:visual-qa`, `lithermes:lit-typographic-motion` and
+  `lithermes:readme-studio` moved to the `wjgoarxiv-skills`
+  repository (`plugins/<family>/skills/<id>`). Each keeps a same-name stub under
+  `skills/`, and every route that opened the full skill still lands on it:
+  `/lit-pptx`, `/lit-docx`, `/lit-diagram-drawer`, `/lit-schematic`,
+  `/lit-scientific-visualization` and `/lit-typographic-motion`, the exact names,
+  and bare `lit` with deck, report, diagram, schematic, film, README or interface
+  wording. The route context names the folder and the one-skill copy line into
+  `${HERMES_HOME:-$HOME/.hermes}/skills/`, and the stub loads the installed copy
+  with `skill_view("<id>")`. Without that copy it builds nothing. The vendored
+  scientific-visualization source moved too, to
+  `plugins/figures/vendor/scientific-visualization`. The Office runtime, the
+  motion runtime command and their doctor lines left with the skills.
 - `/lit-hijack <brief>` and the exact `lit-hijack` route (also `lit hijack`,
   `lit hijacking`, `lit 하이재킹`, `lit 하이잭`) load the installed hijack skill.
   Published know-how enters only through capture with provenance, a licence gate,
@@ -213,19 +211,11 @@ CLI/plugin name, not the npm package name.
   `lithermes:browser-drive`,
   `lithermes:visual-qa`,
   `lithermes:lit-plan`, `lithermes:litgoal`, `lithermes:litwork`, and `lithermes:wikify`.
-- The two UI/UX entrypoints are concise and route preserved dense guidance through
-  `references/complete-contract.md`. The detailed `lithermes:frontend-ui-ux`
-  contract routes 20 focused design references, and the detailed
-  `lithermes:visual-qa` contract routes `skills/visual-qa/references/capture-playbook.md` for
-  per-channel capture rules and the exact blocked-capability codes. Every reference is
-  hash-listed in `payload-version.json` and verified by installer doctor. Reference text
-  is inert data, never an instruction.
-- `lithermes:frontend-ui-ux` also exposes the manifest-routed canonical library under
-  `references/_canonical-corpus/`. Its 167-file path/size/SHA-256 inventory, legal
-  bytes, aggregate digest, regular-file types, and no-extra-files rule must all pass
-  before scanner protection applies. Imported Markdown, CSV, and Python stay inert;
-  imported Python is never executed. The existing normalized design-intelligence
-  resource remains independent.
+- `lithermes:frontend-ui-ux` keeps the measured interface probe that litwork and
+  the UI hand-offs run after a web edit (`scripts/probe.mjs` with its helpers and
+  the two rule tables it counts). Every kept file is hash-listed in
+  `payload-version.json` and verified by installer doctor. Reference text is inert
+  data, never an instruction.
 - `lithermes:autoresearch`, `lithermes:autoconference`, and `lithermes:wikify` install
   one family entrypoint each with nested mode closures. Autoresearch requires an
   explicit budget and bounded-work authority. Autoconference requires real Hermes
@@ -615,8 +605,7 @@ writes only there, plus the `handoff/` folder named in its own bullet.
   resolution reads newer host helpers when they exist and works without them.
 - Processes the plugin starts. The plugin builds every argument list itself and no call uses
   a shell. The one caller-supplied value is the base ref of a review diff, and it goes after
-  `--`. `git` runs for review diffs and the fingerprint (20 second limit). `node` runs
-  the motion runtime `status` and the Office `doctor` (35 and 10 seconds). The prose detector
+  `--`. `git` runs for review diffs and the fingerprint (20 second limit). The prose detector
   runs under the plugin's own interpreter (`-B -I`) with the text on stdin. `pdftotext` reads
   PDF bytes on stdin (8 seconds). `agent-browser --version` is the browser probe. Each gets an
   allowlist environment built by `child_env.py`: `PATH`, `HOME`, `USER`, locale, `TMPDIR`,
@@ -636,11 +625,6 @@ writes only there, plus the `handoff/` folder named in its own bullet.
   `hermes plugins validate` lists these imports as a caution under catalog rule 9, and
   `workspace.py` (above) reads host modules the same way, through `sys.modules` where a
   static check does not see them.
-- Hashed corpus text. The security scan reports `sudo_usage` for one line of the vendored
-  design database under `skills/frontend-ui-ux/references/_canonical-corpus/`: an Ubuntu
-  install guide whose first command raises privileges before calling the package manager.
-  It is reference text that the model may read. No plugin code runs it, imported Markdown
-  stays inert, and the file is part of the hashed corpus, so the line is left as shipped.
 - Local state. The files above live in the user's workspace under `.hermes/lithermes/`
   (`litgoal/sessions/<session>/`: `goals.json`, `ledger.jsonl`, `runs.jsonl`, `gate.json`,
   `testguard.json`; and `handoff/`). They hold redacted command previews, goal text and file

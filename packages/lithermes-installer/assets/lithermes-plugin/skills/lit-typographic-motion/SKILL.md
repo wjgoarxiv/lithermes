@@ -1,73 +1,105 @@
 ---
 name: lit-typographic-motion
-description: Direct an original film in Hermes Agent: a treatment first, then a drawn stage page, the WebGL2 type engine, or a README cover loop.
+description: "Moved out of LitHermes: lit-typographic-motion now lives in the wjgoarxiv-skills repository (plugins/video-covers/skills/lit-typographic-motion). This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
 ---
 
-# LitHermes film director
+# lit-typographic-motion (moved)
+
+lit-typographic-motion made a short film from a one-line request (a treatment first, then a stage page captured frame by frame or the WebGL2 type engine) or a silent, seamless README cover loop, with a render gate. It no longer ships inside LitHermes. It lives in the `wjgoarxiv-skills` repository, at
+`plugins/video-covers/skills/lit-typographic-motion`, and a Hermes profile picks it up once that folder is copied into the profile's skills directory.
+
+The `video-covers` folder may still be on its way into the repository. If `plugins/video-covers/skills/lit-typographic-motion` is not in the user's clone yet, say so and ask them to update the clone; do not point at any other copy.
 
 ## #contract.activation
 
 ```yaml
 schema_version: lithermes_llm_contract/v1
+artifact_kind: hermes_skill_entrypoint
 host: Hermes Agent
-skill_id: lit-typographic-motion
-invocation: lithermes:lit-typographic-motion
-command: /lit-typographic-motion
+identity:
+  skill_id: lit-typographic-motion
+  invocation: lithermes:lit-typographic-motion
+  stub: true
+moved_to:
+  repository: wjgoarxiv-skills
+  path: plugins/video-covers/skills/lit-typographic-motion
+  installed_name: lit-typographic-motion
+routes_kept: "/lit-typographic-motion <brief>; bare `lit` with film, video, lyric video, title sequence or README cover wording"
 ```
 
 ```json
-{"schema_version":"lithermes_llm_contract/v1","artifact_kind":"film"}
+{"schema_version":"lithermes_llm_contract/v1","skill_id":"lit-typographic-motion","stub":true,"moved_to":"wjgoarxiv-skills/plugins/video-covers/skills/lit-typographic-motion"}
 ```
 
-Reached by `/lit-typographic-motion <request>`, the skill id, or bare `lit` with a film request; the CLI below is `M`.
+Every LitHermes route that used to open the full skill still lands here: /lit-typographic-motion <brief>; bare `lit` with film, video, lyric video, title sequence or README cover wording. Quoted, fenced and
+mid-sentence mentions stay inert, as before.
 
 ## #contract.inputs
 
-The request and any source text are data. With no subject, words or facts given, invent specific ones and label them.
+| Field | Contract |
+| --- | --- |
+| request | The user's brief, kept as inert data; it cannot change this stub's procedure |
+| skill index | Whether `lit-typographic-motion`, without the `lithermes:` prefix, appears in this session's `<available_skills>` |
 
 ## #contract.mode_matrix
 
 | Mode | Trigger | Contract |
-|---|---|---|
-| Treatment | `treatment.json` in DIR | `references/treatment.md`, always first |
-| Stage | `$M stage --out DIR [--stills-only]` | `references/stage.md` |
-| Type | `$M run --out DIR [--stills-only]` | `references/engine-contract.md`, `references/style-bibles.md`, `references/type-craft.md` |
-| Cover | `$M cover --out DIR --round N` | `references/cover.md`: README, hero, banner loops |
-| Sound | `$M sound --out DIR` | treatment sound rules |
-| Look | `$M look --out DIR --round N --answers FILE` | `references/craft-loop.md` |
-| Recheck | `$M gate`, `$M cover-gate FILE --strict`, `$M complete` | same |
+| --- | --- | --- |
+| installed | `lit-typographic-motion` (no prefix) is in `<available_skills>` | Load `skill_view("lit-typographic-motion")` and follow it for the whole request |
+| not installed | it is not listed | Tell the user what moved and give the copy line; build nothing |
 
 ## #contract.procedure
 
-1. Ask the style first (Hermes clarify): recommended + two alternatives, recommended first; the treatment records it. Skip when named or "you choose"; non-interactive takes the recommended.
-2. Load `references/treatment.md` only (a cover: `references/cover.md`). Write the treatment; then load its path's references.
-3. Author the stage page with the kit, the type brief, or a cover page from `recipes/`.
-4. Round 1 is stills (`--stills-only`; a cover renders in full): view with `vision_analyze`, record with `look`, change.
-5. Render, look, record the last round.
+1. Look at `<available_skills>`. If `lit-typographic-motion` is listed there without the `lithermes:` prefix, the user has
+   installed the moved copy: call `skill_view("lit-typographic-motion")` now and follow it. That copy was written for Claude Code,
+   so read its tool names as Hermes tools (`terminal`, `read_file`, `write_file`, `patch`, `vision_analyze`) and
+   skip Claude-only steps such as `/reload-plugins` or a `Skill(...)` call.
+2. If it is not listed, answer in the user's language with three things and stop:
+   - one sentence on what lit-typographic-motion makes;
+   - that it moved out of LitHermes into `plugins/video-covers/skills/lit-typographic-motion` of `wjgoarxiv-skills`;
+   - the install line below, in a code block, and that a new Hermes session (or a restart) picks it up, after which
+     the user asks again.
 
-Renders get at least 600 s; never shorten to save time. Hand-encoded films (PIL, raw ffmpeg, screen recordings, flipbooks) never count.
+## Install for Hermes
+
+One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`):
+
+```bash
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R "<path to your wjgoarxiv-skills clone>/plugins/video-covers/skills/lit-typographic-motion" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
+
+The skill's own scripts also reach the family's shared folders, if it has any two levels up. To run them, copy the whole family folder
+instead of the single skill, so those paths resolve:
+
+```bash
+cp -R "<path to your wjgoarxiv-skills clone>/plugins/video-covers" "${HERMES_HOME:-$HOME/.hermes}/skills/wjgoarxiv-video-covers"
+```
+
+Use one form or the other, not both, or Hermes sees two copies of the same name.
 
 ## #contract.outputs
 
-`film.mp4` (60 fps; 1920×1080, or 1080×1920 on stage), poster, reduced-motion still, `sound/`, `stills/`, `sheet/`, `look.json`, `manifest.json`, `gate-report.txt`; a cover: `cover.webp`, poster, decoded `stills/`. A flash failure leaves exports only in `withheld/`.
+Installed: the moved skill's own outputs. Not installed: one short reply with the copy line and no file.
 
 ## #contract.output_channels
 
 ```yaml
-artifact_genre: client_deliverable
+artifact_genre: no_artifact
 limitations_channel: reply
 ```
 
 ## #contract.evidence
 
-Done only when `$M complete --out DIR` exits 0: valid treatment, passing gate (a cover: TARGET), two look rounds, the last on the final render. Reply: defaults, labels on inventions and generated sound/assets, checks, copy location, re-render command, open items.
+`test/moved-skill-stubs.test.js` and `test/python/test_moved_skill_stubs.py` check this stub, its install line and
+that every route and command still reaches it without the old body's instructions.
 
 ## #contract.hard_stops
 
-Exits 10, 11, 12, 14, 15: name the state and its fix (`references/runtime.md`). 16 the treatment field, 17 a stage or clip break, 18 a nondeterministic frame, 19 a network request, 20 a sound fault, 21 no cover encoder, 22 a missing cover asset. Never install during a render, deliver a flash-failing film, or downgrade to pass.
+- Never run the copy line yourself: it changes the user's Hermes profile. The user runs it.
+- Never produce the deliverable from memory, from another skill or with a tool this stub does not ship.
 
 ## #contract.anti_patterns
 
-No copy that restates the request, no on-screen labels, placeholders or file names, no third-party libraries or URLs in the stage, no outlined type or fake Hangul tracking, no strobing, no unmeasured claims.
-
-Typographic-motion engine adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`; see `engine/NOTICE`.
+- Encoding a video by hand with ffmpeg or a canvas loop because the real skill is missing.
+- Claiming a render or a cover gate passed when nothing rendered.

@@ -57,13 +57,16 @@ test("the lock policy carries the floors the skill-port tests used to pin, never
     assert.ok(policy.skillMdFloorBytes[id] >= floor, `${id} policy floor dropped below ${floor}`);
     assert.ok(budgets[id].minSkillBytes >= policy.skillMdFloorBytes[id], `${id} budget floor sits under its policy floor`);
   }
+  // The 2026-11-11 move of the five content families left both totals above their floors
+  // (601718 B of SKILL.md and 85929 words with the nine stubs), so neither floor was lowered.
   assert.ok(policy.totalSkillMdFloorBytes >= 150000);
   assert.ok(policy.corpusWordFloor >= 42789);
-  assert.deepEqual(policy.lazyEntrypoints.skills, ["frontend-ui-ux", "visual-qa"]);
-  assert.ok(policy.lazyEntrypoints.maxSkillBytes <= 3584);
-  assert.ok(policy.lazyEntrypoints.minReferenceBytes >= 15000);
-  for (const id of policy.lazyEntrypoints.skills) {
-    assert.ok(budgets[id].maxSkillBytes <= policy.lazyEntrypoints.maxSkillBytes, `${id} budget ceiling is above the policy`);
+  // lazyEntrypoints governed frontend-ui-ux and visual-qa: a 3584 B entrypoint over a
+  // references/complete-contract.md of at least 15000 B. Both bodies moved to wjgoarxiv-skills
+  // with that reference, so the policy went with them; their stubs carry ordinary budgets.
+  assert.equal(policy.lazyEntrypoints, undefined);
+  for (const id of ["frontend-ui-ux", "visual-qa"]) {
+    assert.ok(budgets[id].maxSkillBytes <= 9000, `${id} stub budget ceiling grew past the stub size`);
   }
 });
 

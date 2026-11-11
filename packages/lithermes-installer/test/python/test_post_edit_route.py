@@ -107,7 +107,7 @@ class PostEditConditionTable(unittest.TestCase):
 
     def test_ui_shaped_hot_context_keeps_a_safety_margin_below_the_host_cap(self):
         block = self.core.conditional_uiux_skill_blocks("src/App.tsx")
-        self.assertIn('<lithermes-skill-body name="frontend-ui-ux">', block)
+        self.assertIn("plugins/design/skills/frontend-ui-ux", block)
         self.assertIn("lithermes:visual-qa", block)
         self.assertNotIn(_skill_body("visual-qa"), block)
         # The block names the probe by its absolute install path. Measure it at a
@@ -303,8 +303,8 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertLessEqual(len(context.encode("utf-8")), 4096)
         self.assertIn("lithermes:frontend-ui-ux", context)
         self.assertIn("lithermes:visual-qa", context)
-        self.assertIn("BLOCKED is a correct verdict", context)
-        self.assertIn("references/complete-contract.md", context)
+        self.assertIn("plugins/design/skills/visual-qa", context)
+        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
         self.assertLess(
             context.index("<lithermes-post-edit-route"),
             context.index("<lithermes-natural-route"),
@@ -332,8 +332,8 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertIn("truncated path", context)
         self.assertIn("sha256=", context)
         self.assertNotIn("a" * 1000, context)
-        self.assertIn("BLOCKED is a correct verdict", context)
-        self.assertIn("references/complete-contract.md", context)
+        self.assertIn("plugins/design/skills/visual-qa", context)
+        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
 
     def test_docs_only_mutation_delivers_nothing(self):
         """The path is observed; the condition table is what refuses to emit."""
@@ -443,8 +443,13 @@ class IntentShapedSkillRoutes(unittest.TestCase):
                 self.assertEqual(route.mode, skill)
                 context = self.core.build_natural_mode_context(route)
                 self.assertIn(f"lithermes:{skill}", context)
-                self.assertIn(f'<lithermes-skill-body name="{skill}">', context)
-                self.assertIn(_skill_body(skill), context)
+                if skill in {"frontend-ui-ux", "visual-qa"}:
+                    # Moved to wjgoarxiv-skills: the route carries the stub's copy line, not a body.
+                    self.assertIn(f"plugins/design/skills/{skill}", context)
+                    self.assertNotIn(f'<lithermes-skill-body name="{skill}">', context)
+                else:
+                    self.assertIn(f'<lithermes-skill-body name="{skill}">', context)
+                    self.assertIn(_skill_body(skill), context)
                 self.assertIn("#contract.activation", context)
 
     def test_substrings_compounds_and_code_spans_do_not_route(self):
@@ -509,7 +514,7 @@ class DesignSkillChatRoute(unittest.TestCase):
         cls.pkg = _load_plugin_package()
         cls.core = cls.pkg.core
 
-    def test_naming_the_skill_routes_to_it_and_injects_its_body(self):
+    def test_naming_the_skill_routes_to_it_and_injects_its_stub_line(self):
         for message, skill in [
             ("frontend-ui-ux the checkout flow", "frontend-ui-ux"),
             ("visual-qa the dashboard", "visual-qa"),
@@ -523,8 +528,8 @@ class DesignSkillChatRoute(unittest.TestCase):
                 self.assertEqual(route.mode, skill)
                 context = self.core.build_natural_mode_context(route)
                 self.assertIn(f"lithermes:{skill}", context)
-                self.assertIn(f'<lithermes-skill-body name="{skill}">', context)
-                self.assertIn(_skill_body(skill), context)
+                self.assertIn(f"plugins/design/skills/{skill}", context)
+                self.assertIn("<path to your wjgoarxiv-skills clone>", context)
 
     def test_the_route_reaches_the_model_through_pre_llm_call(self):
         """post_tool_call and on_session_start have their returns discarded."""
@@ -578,7 +583,7 @@ class DesignSkillChatRoute(unittest.TestCase):
         self.assertIn("lithermes:visual-qa", block)
         # and the regex-gated review-time injection is untouched
         self.assertIn(
-            '<lithermes-skill-body name="frontend-ui-ux">',
+            "plugins/design/skills/frontend-ui-ux",
             self.core.conditional_uiux_skill_blocks("src/theme.css\n"),
         )
 

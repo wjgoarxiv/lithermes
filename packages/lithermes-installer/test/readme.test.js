@@ -44,18 +44,6 @@ function assertCoverImage(text, label, repository) {
   assert.ok(text.indexOf(heroPicture) < h1Index, label + " cover image must appear before the title");
 }
 
-test("the painted-light recipe keeps the five-robot painting it was measured on", () => {
-  const { createHash } = require("node:crypto");
-  const base = fs.readFileSync(path.join(repoRoot, "docs", "assets", "recipes", "painted-light-base.png"));
-  assert.equal(createHash("sha256").update(base).digest("hex"), "955ccd875bd0da509ba850b76a83ac7aa76f2ecc5c019bcb2d04043e8d46179e");
-  assert.equal(base.toString("ascii", 1, 4), "PNG");
-  assert.deepEqual([base.readUInt32BE(16), base.readUInt32BE(20)], [1536, 1024], "PAINTING.panels are x ranges on a 1536x1024 painting");
-  const qa = fs.readFileSync(path.join(packageRoot, "qa", "cover-recipes.js"), "utf8");
-  assert.ok(qa.includes('"docs", "assets", "recipes", "painted-light-base.png"'), "the recipe QA must render from the retained painting");
-  const landing = fs.readFileSync(path.join(repoRoot, "docs", "assets", "litfamily-machines.png"));
-  assert.notEqual(createHash("sha256").update(landing).digest("hex"), createHash("sha256").update(base).digest("hex"), "the landing painting shows seven machines, not the recipe base");
-});
-
 test("repository covers match the Hermes outlined vector and WebP exports", () => {
   const { createHash } = require("node:crypto");
   const vector = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover.svg"), "utf8");
@@ -253,7 +241,8 @@ test("skill table captures ship as identical repository and package copies", () 
       assert.deepEqual(fs.readFileSync(path.join(packageDir, name)), fs.readFileSync(path.join(repoDir, name)), `${folder}/${name} package copy must match the repository copy`);
     }
   }
-  assert.equal(files.skills.length, 36, "one snapshot per user-facing skill");
+  // The nine skills that moved to wjgoarxiv-skills left the gallery (eight had a snapshot).
+  assert.equal(files.skills.length, 28, "one snapshot per user-facing skill");
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     // The npm card links to the GitHub gallery instead of repeating it.
     const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
@@ -270,7 +259,7 @@ test("skill table captures ship as identical repository and package copies", () 
       assert.ok(skillsAt >= 0, `${file} needs its gallery section`);
       const skillsEnd = text.indexOf("\n## ", skillsAt + 1);
       const rows = [...text.slice(skillsAt, skillsEnd).matchAll(/<td><img src="[^"]*\/skills\/([a-z0-9-]+)\.webp" width="240" alt="[^"]+" \/><\/td>\n<td><code>([a-z0-9-]+)<\/code>/g)];
-      assert.equal(rows.length, 36, `${file} skill table must hold 36 illustrated rows`);
+      assert.equal(rows.length, 28, `${file} skill table must hold 28 illustrated rows`);
       for (const [, image, id] of rows) assert.equal(image, id, `${file}: ${id} row must show its own snapshot`);
     }
   }
@@ -744,7 +733,7 @@ test("public READMEs describe current behavior and delegate history to the chang
 
 test("QA matrix docs avoid stale row counts and describe isolated profile execution", () => {
   const { rows } = require(path.join(packageRoot, "qa", "negative-gate-matrix.js"));
-  assert.equal(rows.length, 18, "the release-prep matrix is expected to contain 18 real rows");
+  assert.equal(rows.length, 4, "the release-prep matrix is expected to contain 4 real rows");
   for (const [label, text] of [
     ["packages/lithermes-installer/README.md", read(path.join(packageRoot, "README.md"))],
     ["packages/lithermes-installer/README_Ko-KR.md", read(path.join(packageRoot, "README_Ko-KR.md"))],
@@ -1065,7 +1054,6 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
   const lib = (name) => fs.readFileSync(path.join(packageRoot, "src", "lib", name), "utf8");
   const plugin = (name) => fs.readFileSync(path.join(packageRoot, "assets", "lithermes-plugin", name), "utf8");
   for (const [source, printed] of [
-    [fs.readFileSync(path.join(packageRoot, "src", "cli.js"), "utf8"), "Motion runtime: pre-warm skipped (--offline)"],
     [lib("install.js"), "Installed LitHermes"],
     [lib("check.js"), "LitHermes check PASS"],
     [lib("check.js"), "installed skill payload"],

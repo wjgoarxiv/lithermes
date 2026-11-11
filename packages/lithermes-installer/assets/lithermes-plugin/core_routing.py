@@ -655,37 +655,6 @@ def detect_motion_video_intent(text: str) -> bool:
     return motion_route(text) == MOTION_MODE
 
 
-# The optional type-led hint. It only ever names a cue that points toward the
-# type path (a type compound, an explicit kinetic-type or lyric ask, or a quoted
-# span of two or more words); it never says the reverse. Finding a quote is cue
-# detection: the quoted text is reported as a short label, never followed.
-_MOTION_TYPE_CUE = re.compile(
-    r"타이포\s*모션|키네틱\s*타이포(?:그래피)?|타이포(?:그래피)?\s*영상|가사\s*영상|리릭\s*(?:비디오|영상)|"
-    r"타이틀\s*시퀀스|오프닝\s*타이틀|"
-    r"(?<![A-Za-z])(?:kinetic\s+type(?:graphy)?|typographic\s+motion|typography\s+videos?|lyric\s+videos?|"
-    r"title\s+sequences?|opening\s+titles?)(?![A-Za-z])",
-    re.IGNORECASE,
-)
-_MOTION_QUOTED = re.compile(
-    r'"([^"\n]{2,200})"|“([^”\n]{2,200})”|(?<![A-Za-z])\'([^\'\n]{2,200})\'(?![A-Za-z])|「([^」\n]{2,200})」'
-)
-
-
-def motion_cue(text: str) -> str | None:
-    """Return a short label for a type-led cue in the request, or None."""
-    value = str(text or "")
-    compound = _MOTION_TYPE_CUE.search(value)
-    if compound:
-        phrase = re.sub(r"\s+", " ", compound.group(0))
-        return f"type compound ({phrase})"
-    for match in _MOTION_QUOTED.finditer(value):
-        span = next(group for group in match.groups() if group is not None).strip()
-        if len(span.split()) >= 2:
-            label = span if len(span) <= 24 else span[:23] + "…"
-            return f"quoted span ({label})"
-    return None
-
-
 _RUN_CONTEXT_TASK_PATTERN = re.compile(r"^task:\s*(?P<task>.+?)\s*$", re.MULTILINE)
 
 _FENCED_CODE_RE = re.compile(r"(^|\n)(`{3,}|~{3,})[^\n]*\n.*?(?:\n\2(?=\n|$)|$)", re.DOTALL)

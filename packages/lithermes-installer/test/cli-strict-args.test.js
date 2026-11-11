@@ -154,22 +154,6 @@ test("hud set and hud off refuse unknown options and preview with --dry-run", ()
   assert.match(result.stdout, /would remove display\.skin/);
 });
 
-test("motion-runtime install refuses unknown options and --dry-run downloads nothing", () => {
-  const box = sandbox();
-  for (const extra of [["--bogus"], ["-n"], ["--dry-run=1"], ["now"]]) {
-    assertUnchanged(box, ["motion-runtime", "install", "--hermes-home", box.hermesHome, ...extra], { refused: true });
-  }
-  for (const args of [
-    ["motion-runtime", "install", "--dry-run"],
-    ["--dry-run", "motion-runtime", "install"],
-    ["motion-runtime", "install", "--dry-run=true", "--audio"],
-  ]) {
-    const result = assertUnchanged(box, [...args, "--hermes-home", box.hermesHome], { refused: false });
-    assert.match(result.stdout, /cache: /);
-  }
-  assert.equal(fs.existsSync(path.join(box.dir, "npm-was-called")), false, "a dry run never reaches npm");
-});
-
 test("read-only commands also refuse options they do not document, and an unknown command is an error", () => {
   const box = sandbox();
   for (const args of [
@@ -192,7 +176,7 @@ test("help lists the options of every command, and each one is accepted", () => 
     const block = result.stdout.split("\n").slice(line).join("\n").split(/\n {2}(?=[a-z])/)[0];
     for (const flag of Object.keys(spec.flags)) assert.ok(block.includes(`--${flag}`), `help for ${command} must list --${flag}`);
   }
-  for (const [command, flag] of [["uninstall", "--dry-run"], ["hud", "--dry-run"], ["motion-runtime", "--dry-run"], ["install", "--offline"], ["install", "--no-style"]]) {
+  for (const [command, flag] of [["uninstall", "--dry-run"], ["hud", "--dry-run"], ["install", "--offline"], ["install", "--no-style"]]) {
     assert.ok(Object.hasOwn(COMMAND_SPECS[command].flags, flag.slice(2)), `${command} must accept ${flag}`);
   }
   for (const word of ["--help", "-h"]) {

@@ -6,7 +6,6 @@ const {
   captureRegularFile,
   parseJsonRejectingDuplicateKeys,
   revalidateDescriptorCapture,
-  verifyCanonicalCorpus,
 } = require("./canonicalCorpus");
 
 const MAX_PAYLOAD_MANIFEST_BYTES = 1024 * 1024;
@@ -265,29 +264,11 @@ function inspectSkillPayload(pluginPath, manifest, verifySourceHash = false, opt
   if (traversal.issue) {
     failures.push({ id: "payload", path: ".", reason: traversal.issue });
   }
-  const canonical = inspectCanonicalFrontend(pluginPath);
-  if (!canonical.ok) {
-    failures.push({
-      id: "frontend-ui-ux",
-      path: "references/_canonical-corpus",
-      reason: "canonical verification failed",
-    });
-  }
   return {
     failures,
     manifestIssue: inspected.issue,
     ok: !inspected.issue && failures.length === 0,
   };
-}
-
-function inspectCanonicalFrontend(pluginPath) {
-  return verifyCanonicalCorpus(path.join(
-    pluginPath,
-    "skills",
-    "frontend-ui-ux",
-    "references",
-    "_canonical-corpus",
-  ));
 }
 
 function scanPluginSkills(pluginPath, manifest, verifySourceHash = false) {
@@ -322,7 +303,6 @@ module.exports = {
   capturePayloadInventory,
   capturePayloadManifest,
   formatSkillPayload,
-  inspectCanonicalFrontend,
   inspectSkillPayload,
   readPayloadManifest,
   requiredSkills,

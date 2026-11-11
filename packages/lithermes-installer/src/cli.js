@@ -1,5 +1,4 @@
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
 const readline = require("node:readline");
 const { installLitHermes, previewModelRoute, previewUninstall, uninstallLitHermes } = require("./lib/install");
 const { promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
@@ -52,13 +51,6 @@ const COMMAND_SPECS = {
     usage: "doctor",
     positionals: [0, 0],
     flags: { offline: "", json: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
-  },
-  "motion-runtime": {
-    usage: "motion-runtime install|status",
-    positionals: [1, 1],
-    actions: ["install", "status"],
-    flags: { "dry-run": "", audio: "", "word-timing": "", ...HOME },
-    note: "Typographic-motion engine adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit ca251e3.",
   },
   uninstall: {
     usage: "uninstall",
@@ -171,39 +163,6 @@ function packageVersion() {
   // command is `lithermes` even though the npm package is named `@litfamily/lithermes`.
   const brand = Object.keys(pkg.bin || {})[0] || pkg.name;
   return `${brand} ${pkg.version}`;
-}
-
-function motionRuntime(action, flags = {}) {
-  const script = path.join(__dirname, "..", "assets", "lithermes-plugin", "skills", "lit-typographic-motion", "bin", "runtime.mjs");
-  const result = spawnSync(process.execPath, [script, action, ...(flags.audio ? ["--audio"] : []), ...(flags["word-timing"] ? ["--word-timing"] : [])], {
-    encoding: "utf8", timeout: action === "install" ? 300000 : 45000,
-    env: { ...process.env, HERMES_HOME: resolveHome(flags) },
-  });
-  return {
-    status: result.status,
-    output: (result.stdout || result.stderr || result.error?.message || "motion runtime did not return a result").trim(),
-  };
-}
-
-// Dry run of `motion-runtime install`: the runtime module only reads its pins and the cache here.
-async function motionRuntimePlan(flags = {}) {
-  const { pathToFileURL } = require("node:url");
-  const script = path.join(__dirname, "..", "assets", "lithermes-plugin", "skills", "lit-typographic-motion", "bin", "runtime.mjs");
-  const runtime = await import(pathToFileURL(script).href);
-  const env = { ...process.env, HERMES_HOME: resolveHome(flags) };
-  const ready = runtime.findCache(env);
-  const fonts = runtime.fontState(env);
-  const lines = ["DRY RUN: would install the motion runtime", `cache: ${ready || runtime.cacheRoots(env)[0]}`];
-  if (flags["word-timing"]) lines.push(`word-timing: would be refused (fail-closed): ${runtime.wordTimingPlan().reason}`);
-  else if (ready && fonts.ok) lines.push("node packages and fonts: already READY; nothing to install");
-  else lines.push(`would run npm ci for the pinned node packages and fetch ${runtime.FONT_PINS.length} pinned fonts`);
-  if (flags.audio && !flags["word-timing"]) {
-    lines.push(runtime.audioState(env).state === "ready"
-      ? "audio venv: already READY"
-      : "would create the audio venv and pip-install the hash-pinned requirements.lock");
-  }
-  lines.push("Nothing was downloaded or written.");
-  return lines.join("\n");
 }
 
 function printCommandBanner(command, flags, runtime = {}) {
@@ -489,17 +448,6 @@ async function main(argv, runtime = {}) {
     }
     return;
   }
-  if (command === "motion-runtime") {
-    const action = positionals[1];
-    if (action === "install" && flags["dry-run"]) {
-      console.log(await motionRuntimePlan(flags));
-      return;
-    }
-    const result = motionRuntime(action, flags);
-    console.log(result.output);
-    if (result.status !== 0) process.exitCode = result.status || 1;
-    return;
-  }
   const lifecycle = await runLifecycleUpdateSafely(command, flags, runtime);
   if (lifecycle.status === "failed" && (lifecycle.state === "unknown" || lifecycle.rollback?.status === "failed")) {
     console.error("LitHermes automatic update left the Hermes home in an unknown state; run `lithermes doctor --offline --hermes-home PATH` before continuing.");
@@ -531,18 +479,6 @@ async function main(argv, runtime = {}) {
       });
       if (spinner) spinner.succeed("Installing LitHermes complete");
       console.log(spinner ? renderInstallReceipt(result.message) : result.message);
-      if (!flags['dry-run']) {
-        // The motion pre-warm never fails the install; it leaves one receipt line.
-        let receipt;
-        if (flags.offline) receipt = "Motion runtime: pre-warm skipped (--offline); run `lithermes motion-runtime install` before rendering a film.";
-        else {
-          const warm = motionRuntime('install', flags);
-          receipt = warm.status === 0
-            ? `Motion runtime: ${warm.output.split(/\r?\n/)[0]}`
-            : `Motion runtime: pre-warm incomplete (${warm.output.split(/\r?\n/).filter(Boolean).at(-1)}); run \`lithermes motion-runtime install\` before rendering a film.`;
-        }
-        (flags.json ? console.error : console.log)(receipt);
-      }
     } catch (error) {
       if (spinner) spinner.fail(error instanceof Error ? error.message : "Unexpected install error.");
       throw error;

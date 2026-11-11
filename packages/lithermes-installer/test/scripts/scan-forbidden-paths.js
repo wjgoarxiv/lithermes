@@ -50,18 +50,9 @@ const FORBIDDEN_FILE_PATTERNS = [
 ];
 
 // Explicit, reasoned exceptions. Key = exact packed path.
-const ALLOWED = new Map([
-  [
-    "assets/lithermes-plugin/vendor/scientific-visualization/tests/test_figure_export.py",
-    "pinned upstream corpus shipped byte-exact; executed by " +
-      "test/python/test_scientific_visualization_execution.py::test_canonical_upstream_python_tests_pass",
-  ],
-  [
-    "assets/lithermes-plugin/vendor/scientific-visualization/tests/test_style_presets.py",
-    "pinned upstream corpus shipped byte-exact; executed by " +
-      "test/python/test_scientific_visualization_execution.py::test_canonical_upstream_python_tests_pass",
-  ],
-]);
+// The scientific-visualization source, and the two upstream tests it shipped, moved to
+// wjgoarxiv-skills with lit-scientific-visualization; nothing is excepted now.
+const ALLOWED = new Map([]);
 
 function segmentsOf(entry) {
   return entry.split("/").filter(Boolean);

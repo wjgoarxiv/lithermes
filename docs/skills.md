@@ -81,16 +81,6 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>Rewrites stiff model prose in English or Korean. Facts and hedges stay, and no file is edited on its own.</td>
 </tr>
 <tr>
-<td><img src="./assets/skills/lit-diagram-drawer.webp" width="240" alt="A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports." /></td>
-<td><code>lit-diagram-drawer</code><br /><sub><code>lit-diagram-drawer &lt;brief&gt;</code> · <code>/lit-diagram-drawer</code></sub></td>
-<td>A checked, editable diagram for slides and documents, with PNG and Office-safe SVG exports.</td>
-</tr>
-<tr>
-<td></td>
-<td><code>lit-schematic</code><br /><sub><code>lit-schematic &lt;brief&gt;</code> · <code>/lit-schematic</code></sub></td>
-<td>Drawings of real equipment: QA-gated P&IDs, PFDs, apparatus figures and isometric cutaways as editable SVG with PDF and 600 dpi PNG.</td>
-</tr>
-<tr>
 <td></td>
 <td><code>lit-hijack</code><br /><sub><code>lit hijack &lt;brief&gt;</code> · <code>/lit-hijack</code></sub></td>
 <td>A clean-room port of published know-how: capture with provenance, licence gate, source-free spec, fenced build and parity proof.</td>
@@ -99,41 +89,6 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td></td>
 <td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
 <td>A cross-session brief: what each recent session was asked, did and waits on, roadmap gauges and one next step. Read-only.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-pptx.webp" width="240" alt="Ask for slides with lit and the skill first picks one of thirteen looks for your deck, names it with two alternatives, then builds an editable PowerPoint file and its Markdown source. QA checks title, layout and fill variety on the finished file." /></td>
-<td><code>lit-pptx</code><br /><sub><code>lit-pptx &lt;brief&gt;</code> · <code>/lit-pptx</code></sub></td>
-<td>Ask for slides with <code>lit</code> and get an editable PowerPoint deck and its Markdown source, AZURE-PRO with Pretendard by default. QA and integrity checks run on the finished file.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-docx.webp" width="240" alt="Ask for a report with lit and the skill picks one of six document shapes, names it with two alternatives, and sets a restrained, print-grade Word file with its Markdown source. A gate checks the rendered pages." /></td>
-<td><code>lit-docx</code><br /><sub><code>lit-docx &lt;brief&gt;</code> · <code>/lit-docx</code></sub></td>
-<td>Ask for a report with <code>lit</code> and get a styled Word file and its Markdown source. Korean text uses the korean-generic profile; prose lint and a rendered-page check follow.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/frontend-ui-ux.webp" width="240" alt="Builds a working interface, then renders it with the installed measuring probe in seven views: four widths, dark, reduced motion and 200% zoom." /></td>
-<td><code>frontend-ui-ux</code><br /><sub><code>lit design &lt;target&gt;</code> · <code>frontend-ui-ux &lt;target&gt;</code></sub></td>
-<td>Builds a working interface, then renders it with the installed measuring probe in seven views: four widths, dark, reduced motion and 200% zoom.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/readme-studio.webp" width="240" alt="A factual README with a moving cover, checked at phone and desktop widths in light and dark." /></td>
-<td><code>readme-studio</code><br /><sub><code>readme-studio &lt;scope&gt;</code></sub></td>
-<td>A factual README with a moving cover, checked at phone and desktop widths in light and dark.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-typographic-motion.webp" width="240" alt="Ask for a video with lit. A treatment comes first, then drawn scenes or moving type, a generated sound bed and a gate before the film is delivered." /></td>
-<td><code>lit-typographic-motion</code><br /><sub><code>lit-typographic-motion &lt;request&gt;</code> · <code>/lit-typographic-motion</code></sub></td>
-<td>Ask for a video with <code>lit</code>. A treatment comes first, then drawn scenes or moving type, a generated sound bed and a gate before the film is delivered.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/lit-scientific-visualization.webp" width="240" alt="A journal-sized figure with vector and 600 DPI exports. The chart type follows the data." /></td>
-<td><code>lit-scientific-visualization</code><br /><sub><code>lit-scientific-visualization</code> · <code>/lit-scientific-visualization</code></sub></td>
-<td>A journal-sized figure with vector and 600 DPI exports. The chart type follows the data.</td>
-</tr>
-<tr>
-<td><img src="./assets/skills/visual-qa.webp" width="240" alt="Checks a real screen at each viewport and returns an honest verdict, or names exactly what blocked it." /></td>
-<td><code>visual-qa</code><br /><sub><code>visual-qa &lt;target&gt;</code></sub></td>
-<td>Checks a real screen at each viewport and returns an honest verdict, or names exactly what blocked it.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/browser-drive.webp" width="240" alt="Drives a real page after verifying the browser driver. If there is none, it says so." /></td>
@@ -227,49 +182,42 @@ These are all the skills you can call in LitHermes, with the words that start ea
 | `/lit-loop` | Start, inspect, resume or close an explicit loop. |
 | `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints and blockers. |
 | `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases include `/lit-korean`, `/text-naturalization`, `/text-neutralization` and `/korean-ai-slop-remover`. |
-| `/lit-diagram-drawer <brief>` | Create an accessible, Korean-ready diagram and check its content and geometry with the installed Python tools. |
-| `/lit-schematic <brief>` | Draw a QA-gated P&ID, PFD, apparatus figure or isometric cutaway as editable SVG with PDF and 600 dpi PNG. |
-| `/lit-pptx <brief>` | Create and check a PowerPoint deck with the bundled AZURE-PRO engine. |
-| `/lit-docx <brief>` | Create, edit and audit a Word report with publisher profiles. |
+| `/lit-diagram-drawer <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
+| `/lit-schematic <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
+| `/lit-pptx <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
+| `/lit-docx <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
 | `/lit-hijack <brief>` | Port published know-how into your own skill, clean-room: capture, licence gate, spec, build, parity. |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | A KPI board of recent sessions: the one thing to do now, done and left counts, milestones, reminders; `--detail` adds the per-session brief. Read-only. |
-| `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
+| `/lit-typographic-motion <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.
 
 ## Beyond code
 
-### Reports and slides
+### Moved to wjgoarxiv-skills
 
-Ask for a report or a presentation with a bare `lit`, and LitHermes hands it to its bundled Word and PowerPoint skills. You get a DOCX, a PPTX or both, with the Markdown source kept beside each file.
+Drawings, plots, decks, documents, interface design and review, films and README covers come from nine skills that left LitHermes for the `wjgoarxiv-skills` repository. Keeping them out makes the install small, and you copy in only the ones you use.
 
-Before anything is written, the skill works out how the result should look and tells you. A quarterly review that people read at their desks wants tables and quiet type. A pitch on a projector wants one idea per slide, and a lecture wants its steps laid out in order. So the reply starts with a short direction card: the look that was chosen, why it suits your reader and your material, and the two looks that came next. A bare request gets no style question. If you would rather have one of the alternatives, name it and the file is rebuilt.
+| Skill | Folder in `wjgoarxiv-skills` |
+| --- | --- |
+| `lit-schematic` | `plugins/figures/skills/lit-schematic` |
+| `lit-diagram-drawer` | `plugins/figures/skills/lit-diagram-drawer` |
+| `lit-scientific-visualization` | `plugins/figures/skills/lit-scientific-visualization` |
+| `lit-pptx` | `plugins/decks/skills/lit-pptx` |
+| `lit-docx` | `plugins/documents/skills/lit-docx` |
+| `frontend-ui-ux` | `plugins/design/skills/frontend-ui-ux` |
+| `visual-qa` | `plugins/design/skills/visual-qa` |
+| `lit-typographic-motion` | `plugins/video-covers/skills/lit-typographic-motion` |
+| `readme-studio` | `plugins/video-covers/skills/readme-studio` |
 
-Decks have thirteen of these looks, called Ledger, Signal, Atlas, Chalk, Paper, Gazette, Studio, Night, Computational Brutalism, Neo-Brutalism, Bauhaus, Riso and Newsroom. Each brings its own colours, title placements, slide layouts and cover, section and closing pages, so two decks made from the same notes come out looking different. Slides are dense by default and set in Pretendard. A slide title names its topic and leaves the argument to the body, and every figure keeps its label, basis and source and is never blown up past title size.
+Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the copy line, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over. The copy line puts one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`):
 
-Documents have six looks: Report, Brief, Manual, Proposal, Memo and Journal. What tells them apart is structure. A memo opens with its To and From lines and has no cover; a brief leads with its conclusion as numbered points; a proposal gets a typographic cover, one decision box and a budget table; a Korean report reads like an institute paper with numbered sections. The pages stay as restrained as a good printed report: near-black headings, one accent colour at most, ruled tables without fills, and Korean conventions such as `<표 1>` captions, a units line and dates written as 2026. 10. 5. If you name a journal profile (Elsevier, ACS, IEEE, Nature or korean-generic), that profile is used instead.
+```bash
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R "<path to your wjgoarxiv-skills clone>/plugins/<family>/skills/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
 
-The first time you use either skill, its Office runtime installs the pinned versions of the tools it needs into a LitHermes cache. After building, it checks the finished file. A deck is checked for title and layout variety and for slides left half empty; a document is checked for page fill, split tables, stranded headings and the restraint rules on its rendered pages. To call a skill directly, type `/lit-docx <brief>` or `/lit-pptx <brief>`.
-
-The installed skill IDs are `lit-pptx` and `lit-docx`; Hermes lists them as `lithermes:lit-pptx` and `lithermes:lit-docx`.
-
-### Diagrams
-
-For concept maps and technical diagrams, use `lit-diagram-drawer` (Hermes lists it as `lithermes:lit-diagram-drawer`). You can also just ask for a diagram and put a bare `lit` before or after the request; LitHermes picks this skill and tells Hermes where its installed entrypoint is. Product pages belong to `frontend-ui-ux`, and plots of measured scientific data to `lit-scientific-visualization`. Drawings of real equipment (P&IDs, PFDs, apparatus figures, isometric cutaways) belong to `lit-schematic` (`lithermes:lit-schematic`, `/lit-schematic <brief>`).
-
-### Films
-
-`lit-typographic-motion` is available as `lithermes:lit-typographic-motion` and `/lit-typographic-motion <brief>`. Ask for a film with a bare `lit` and it works like a director: it writes a treatment first. Then it renders a stage film (a model-authored HTML page captured frame by frame) or, when the words themselves are the film, a type film on its original WebGL2 engine. By default it adds a generated sound bed and labels it as generated.
-
-A film needs Chrome and ffmpeg on your machine, plus a few pinned helper packages and fonts. Rendering never downloads anything by itself, so those helpers wait in a local cache until a film needs them. `lithermes install` tries to fill that cache for you. If that step was skipped (with `--offline`, say) or did not finish, the installer prints one line saying so, and you can fill the cache later with `lithermes motion-runtime install`, run outside the render session.
-
-To see where things stand, run `lithermes motion-runtime status`. It reports Chrome, ffmpeg, WebGL2, whether rendering has fallen back to software, and the pinned fonts. When the film passes its final check, the skill delivers a 60 fps film (1920×1080, or 1080×1920 on the stage path), a compact preview, a poster, a reduced-motion still and a numeric QA report. The typographic-motion engine is adapted from mexicat/pdoom-video (MIT, Giacomo Magnanini), commit `ca251e3`.
-
-A README cover is a different job, and the skill treats it as one. Ask for a README, hero or banner loop and it skips the film's beats, sound and end card. It builds one picture that keeps moving and never shows where it starts: a painting relit by a travelling light by default, or moving type, or a small system of orbits. The renderer encodes it as an animated WebP of at most 2 MiB, decodes that file again, and checks the decoded frames, because a lossy encoder quietly drops slow fades that look fine before encoding. Before it hands the loop over, it confirms that something moves in every half second, the seam is invisible, the title stays readable at README width, and a painted base still shows in the first frame. Covers need img2webp and dwebp from libwebp (gifski as a fallback), and `lithermes motion-runtime status` now reports them too.
-
-### Interfaces and READMEs
-
-`frontend-ui-ux` builds the interface you describe, after checking with you on the design choices that matter. Ask it only for a review or a plan, and it reads and reports without editing anything. `readme-studio` (listed in Hermes as `lithermes:readme-studio`) writes a factual README and a cover made on your own machine: outlined Pretendard/Meslo type, an editable source, and motion when it can be verified. When Hermes has no built-in image generator, the skill says so with `IMAGE_GENERATION_UNAVAILABLE` and can still compose images you give it. Neither skill logs in, installs anything globally or publishes.
+Start a new Hermes session after copying. A skill whose scripts reach the family's shared folders needs the whole family folder instead; each stub says which. `hermes lithermes doctor` confirms the nine stubs. The interface probe that litwork runs on every web edit stays in LitHermes, under `skills/frontend-ui-ux/scripts/`.
 
 ### Rewriting prose
 

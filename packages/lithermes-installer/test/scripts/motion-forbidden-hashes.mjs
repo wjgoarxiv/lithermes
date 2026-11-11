@@ -37,18 +37,6 @@ export function scanPaths(paths, hashes = forbidden) {
   return offenders;
 }
 
-export function scanEngineKeys(directory) {
-  const offenders = [];
-  const keys = /\b(?:shoggoth|paperclips|leftturn|ilya)\b/i;
-  const visit = path => {
-    const stat = statSync(path);
-    if (stat.isDirectory()) for (const name of readdirSync(path)) visit(join(path, name));
-    else if (stat.isFile() && /\.(?:mjs|js|ts|json)$/.test(path) && keys.test(readFileSync(path, 'utf8'))) offenders.push(path);
-  };
-  visit(directory);
-  return offenders;
-}
-
 if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: resolve(root, '..', '..'), encoding: 'buffer' });
   if (tracked.status !== 0) throw new Error('git ls-files failed');
@@ -56,7 +44,6 @@ if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToP
   const files = tracked.stdout.toString().split('\0').filter(Boolean).map(path => join(repo, path));
   const paths = [...files, ...process.argv.slice(2).map(path => resolve(path))];
   const offenders = scanPaths(paths);
-  offenders.push(...scanEngineKeys(join(root, 'assets', 'lithermes-plugin', 'skills', 'lit-typographic-motion', 'engine')).map(path => ({ path, digest: 'scene-id key' })));
   if (offenders.length) { for (const row of offenders) console.error(`${row.digest} ${row.path}`); process.exitCode = 1; }
   else console.log(`motion forbidden-hash guard PASS (${canonical.length} canonical + 5 extra hashes; ${paths.length} roots)`);
 }

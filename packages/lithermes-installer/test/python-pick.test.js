@@ -6,14 +6,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 
 const skills = path.join(__dirname, "..", "assets", "lithermes-plugin", "skills");
+// The deck, film and diagram copies left with their skills; the interface probe keeps the last one.
 const copies = [
-  path.join(skills, "lit-pptx", "bin", "hostexec.mjs"),
-  path.join(skills, "lit-typographic-motion", "engine", "hostexec.mjs"),
-  path.join(skills, "lit-diagram-drawer", "scripts", "hostexec.mjs"),
   path.join(skills, "frontend-ui-ux", "scripts", "hostexec.mjs"),
 ];
 const posixOnly = { skip: process.platform === "win32" };
@@ -80,42 +77,3 @@ for (const file of copies) {
     assert.match(broken.detail, /LITHERMES_TEST_PYTHON is set to \/nonexistent\/python, which does not run/);
   });
 }
-
-test("office.mjs stops before any install when the host has no supported python", posixOnly, () => {
-  const bin = fakeBin({ python3: "3.15.0" });
-  const xdg = tmp("lh-office-cold-");
-  const run = spawnSync(process.execPath, [path.join(skills, "lit-pptx", "bin", "office.mjs"), "gate", "missing.docx"], {
-    encoding: "utf8", env: { PATH: bin, HOME: xdg, XDG_CACHE_HOME: xdg }, timeout: 60000,
-  });
-  assert.notEqual(run.status, 0);
-  assert.match(run.stderr, /OFFICE_RUNTIME_PYTHON_UNAVAILABLE/);
-  assert.match(run.stderr, /LITHERMES_OFFICE_BOOTSTRAP_PYTHON/);
-  assert.equal(fs.existsSync(path.join(xdg, "lithermes", "office")), false, "no cache directory is created before a python is found");
-});
-
-test("the motion audio venv takes the same supported-python pick as office, from 3.11 (numpy 2.4)", posixOnly, async () => {
-  const { pickAudioPython } = await import(pathToFileURL(path.join(skills, "lit-typographic-motion", "bin", "runtime.mjs")).href);
-  const bin = fakeBin({ python3: "3.15.0", "python3.13": "3.13.1", "python3.12": "3.12.4" });
-  assert.equal(pickAudioPython({ PATH: bin }).python, "python3.13");
-  const newest = fakeBin({ python3: "3.15.0", "python3.15": "3.15.0", "python3.14": "3.14.7" });
-  assert.equal(pickAudioPython({ PATH: newest }).python, "python3.14");
-  const only15 = fakeBin({ python3: "3.15.0" });
-  const none = pickAudioPython({ PATH: only15 });
-  assert.equal(none.python, null);
-  assert.match(none.detail, /no supported Python \(3\.11 to 3\.14\)/);
-  assert.match(none.detail, /python3 3\.15\.0/);
-  const old = fakeBin({ "python3.10": "3.10.9" });
-  assert.equal(pickAudioPython({ PATH: old }).python, null, "motion pins need numpy 2.4, which starts at Python 3.11");
-  const pinned = path.join(fakeBin({ mypy: "3.12.1" }), "mypy");
-  assert.equal(pickAudioPython({ PATH: bin, LITHERMES_MOTION_PYTHON: pinned }).python, pinned);
-});
-
-test("the audio lock carries audioread's Python 3.13 dependencies, hashed and marked", () => {
-  const lock = fs.readFileSync(path.join(skills, "lit-typographic-motion", "runtime", "requirements.lock"), "utf8");
-  for (const name of ["audioop-lts", "standard-aifc", "standard-chunk", "standard-sunau"]) {
-    const block = lock.split(/\n(?=[A-Za-z])/).find((entry) => entry.startsWith(`${name}==`));
-    assert.ok(block, `${name} is pinned`);
-    assert.match(block.split("\n")[0], /; python_full_version >= '3\.13' \\$/, `${name} only installs on Python 3.13 or newer`);
-    assert.ok(/--hash=sha256:[0-9a-f]{64}/.test(block), `${name} carries hashes`);
-  }
-});

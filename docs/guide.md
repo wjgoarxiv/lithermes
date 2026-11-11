@@ -118,11 +118,11 @@ flowchart LR
 | `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints, and blockers. `lit-loop` and `start-work` run toward it. |
 | `/lit-recap` | Read a concise Korean recap of work and evidence. |
 | `/lit-handoff` | Write a verified continuation packet. |
-| `/lit-scientific-visualization` | Build publication figures from the bundled source. |
+| `/lit-scientific-visualization` | Moved to `wjgoarxiv-skills`; says where the skill went and gives the copy line. |
 | `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
 | `/lit_loop`, `/lit_plan` | Gateway-friendly aliases for Telegram dispatch. |
 
-The installed workflow skill set also includes `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `frontend-ui-ux`, `readme-studio`, `lsp`, `lsp-setup`, `refactor`, `review-work`, `visual-qa`, and related `lithermes:*` skills.
+The installed workflow skill set also includes `autoresearch`, `autoconference`, `wikify`, `lit-code`, `debugging`, `lit-commit`, `lsp`, `lsp-setup`, `refactor`, `review-work`, and related `lithermes:*` skills.
 
 ### Automatic handoff
 
@@ -411,6 +411,11 @@ MIT
 
 The current skill ids are `lit-crucible`, `lit-init`, `lit-commit`, `lit-burnoff`, `lit-burnoff-file`, `lit-humanizer`, and `lit-code`. Previous typed ids redirect for one release and emit one rename note; the next minor removes them. Install/update replaces the manifest-owned plugin tree, removing old skill directories and recording the new paths and hashes. The earlier Korean slash commands (`/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`) redirect to `/lit-humanizer`. `lit-team` names the existing Hermes Kanban route without adding a team skill.
 
-## Design and README production
+## Moved skills
 
-Ask `frontend-ui-ux` to build a specified interface; Hermes implements and inspects the result, asking only about material ambiguity. Review-only and plan-only requests stay read-only. Use `readme-studio` to create a factual README and local cover with outlined Pretendard/Meslo type, editable source and verified motion when available. The skill is also listed as `lithermes:readme-studio` by Hermes. A missing native image generator is reported as `IMAGE_GENERATION_UNAVAILABLE`; explicitly supplied imagery enables composition without a generation claim. No login, global install or publication is part of either workflow.
+`frontend-ui-ux`, `visual-qa`, `readme-studio`, `lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`,
+`lit-scientific-visualization` and `lit-typographic-motion` moved to the `wjgoarxiv-skills` repository. Each keeps a
+same-name stub here, so every command and natural route still answers: the stub names the folder the skill moved to
+and the line that copies it into `${HERMES_HOME:-$HOME/.hermes}/skills/`, and once that copy exists it loads the real
+skill with `skill_view`. [Skills and commands](./skills.md#moved-to-wjgoarxiv-skills) has the folders. The interface
+probe that litwork runs after a web edit stays in LitHermes.

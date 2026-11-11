@@ -11,8 +11,11 @@ const { copyTree, sha256 } = require("../src/lib/files");
 const packageVersion = require("../package.json").version;
 const migrations = [
   { legacy: "vendor/022_handoff", canonical: "vendor/handoff" },
-  { legacy: "vendor/045_scientific-visualization", canonical: "vendor/scientific-visualization" },
 ];
+// The scientific-visualization source left the payload with lit-scientific-visualization
+// (it now lives in wjgoarxiv-skills). An old install can still hold its numbered folder, so the
+// fixture plants one; a pristine migration must drop it and write no canonical copy.
+const RETIRED_SCIENCE = "vendor/045_scientific-visualization";
 
 function digest(bytes) {
   return crypto.createHash("sha256").update(bytes).digest("hex");
@@ -43,6 +46,8 @@ function seedNumberedInstallation(t) {
     const newPath = path.join(dest, canonical);
     if (fs.existsSync(newPath)) fs.renameSync(newPath, oldPath);
   }
+  fs.mkdirSync(path.join(dest, RETIRED_SCIENCE), { recursive: true });
+  fs.writeFileSync(path.join(dest, RETIRED_SCIENCE, "SKILL.md"), "retired numbered science source\n");
 
   const files = regularFiles(dest).map((relative) => ({
     path: relative,
@@ -85,7 +90,7 @@ test("[slice31-hermes] migrates pristine numbered vendor payloads to canonical p
 
   const installed = manifestEntries(home).map((entry) => entry.path);
   assert.ok(installed.some((entry) => entry.startsWith("vendor/handoff/")), "canonical handoff path is recorded");
-  assert.ok(installed.some((entry) => entry.startsWith("vendor/scientific-visualization/")), "canonical science path is recorded");
+  assert.equal(installed.some((entry) => entry.startsWith("vendor/scientific-visualization/")), false, "the retired science source is not reinstalled");
   assert.equal(installed.some((entry) => entry.startsWith("vendor/022_handoff/")), false, "numbered handoff path is absent");
   assert.equal(installed.some((entry) => entry.startsWith("vendor/045_scientific-visualization/")), false, "numbered science path is absent");
   for (const [legacy, expected] of beforeVendor) {
@@ -96,6 +101,7 @@ test("[slice31-hermes] migrates pristine numbered vendor payloads to canonical p
   }
   assert.equal(fs.existsSync(path.join(dest, "vendor", "022_handoff")), false);
   assert.equal(fs.existsSync(path.join(dest, "vendor", "045_scientific-visualization")), false);
+  assert.equal(fs.existsSync(path.join(dest, "vendor", "scientific-visualization")), false);
 });
 
 for (const mutation of ["modified", "foreign", "symlink", "nonregular", "unsupported"]) {
@@ -147,7 +153,7 @@ for (const mutation of ["modified", "foreign", "symlink", "nonregular", "unsuppo
 
 test("[slice31-hermes] canonical migration preserves vendor bytes and modes", (t) => {
   const { home, dest, flags, files: before } = seedNumberedInstallation(t);
-  const records = before.filter((entry) => entry.path.startsWith("vendor/"));
+  const records = before.filter((entry) => entry.path.startsWith("vendor/") && !entry.path.startsWith(`${RETIRED_SCIENCE}/`));
   installLitHermes(flags);
   for (const entry of records) {
     const canonical = mapCanonical(entry.path);
