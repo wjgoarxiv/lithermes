@@ -125,6 +125,35 @@ class AdhdSkillRoutes(NaturalRoutingCase):
         self.assertIsNone(self.pkg.core.detect_lit_mode(line))
         self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
 
+    def test_hook_hands_the_collector_detail_only_when_the_prompt_asks(self):
+        session = "adhd-detail-1"
+        base = f"Collector: `--session {session}` records the next step for `go`."
+        for prompt in ("lit adhd 자세히", "lit adhd detail", "lit rewind details", "lit-adhd --detail", "lit adhd 자세하게"):
+            with self.subTest(prompt=prompt):
+                context = self._hook(prompt, session=session)["context"]
+                line = next(item for item in context.split("\n") if item.startswith("Collector:"))
+                self.assertEqual(line, f"{base} Asked for detail: add `--detail`.")
+                self.assertIsNone(self.pkg.core.detect_lit_mode(line))
+                self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
+        for prompt in ("lit adhd", "lit rewind", "lit adhd --here"):
+            with self.subTest(prompt=prompt):
+                context = self._hook(prompt, session=session)["context"]
+                line = next(item for item in context.split("\n") if item.startswith("Collector:"))
+                self.assertEqual(line, base)
+
+    def test_hook_and_slash_routes_ask_for_the_kpi_board(self):
+        context = self._hook("lit adhd 자세히", session="adhd-board-1")["context"]
+        self.assertIn("KPI board (board.text) verbatim", context)
+        self.assertIn("adhd.mjs --json --lang ko|en", context)
+        self.assertIn("--detail for 자세히/detail", context)
+        self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
+        ctx = _FakeCtx()
+        self.pkg.register(ctx)
+        result = ctx.command_handlers["lit-adhd"]("--detail")
+        self.assertIn("KPI board", result["display"])
+        self.assertIn("[--detail]", result["agent_message"])
+        self.assertIn("--detail", result["agent_message"])
+
     def test_skill_load_entrypoint_carries_the_rewind_look_contract(self):
         body = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("lit-rewind", body)
@@ -400,6 +429,7 @@ class AdhdEnrollment(unittest.TestCase):
             "scripts/lib/plan-task-rows.mjs",
             "scripts/lib/next-step.mjs",
             "scripts/lib/hermes-sessions.mjs",
+            "scripts/lib/board.mjs",
             "references/status-taxonomy.md",
             "references/card-examples.md",
             "references/brief-contract.md",

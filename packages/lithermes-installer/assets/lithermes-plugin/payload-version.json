@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-10T04:44:48.279Z",
+  "syncedAt": "2026-11-11T01:36:07.226Z",
   "source": "bundled-payload",
-  "sourceHash": "61cc9c8f00fbed477d06b9992b72889a18e35e075b20d6e5774c012a58c17ea7",
+  "sourceHash": "6f557253140c4efbfb656b2f38f9b7202a8d15e362e7f8dc9270a8c7f3a9651b",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "f48767414569881038ab13b01c6702c61163d9e62da67e1dcba798ad7ff2faa5"
+      "sha256": "9cb0939eb8e87f75ea3cc801ef058e7f413247e32a2a1cb41957339d1baf1375"
     },
     {
       "path": "__init__.py",
@@ -41,11 +41,11 @@
     },
     {
       "path": "core_commands.py",
-      "sha256": "ba48826cf202d8c15d05e56ca75a21fcdd01a23a96487bbaa21396e5480d8042"
+      "sha256": "24218d3f9e07ed7c35ee89f5d616b1d9f9e64d9c051fed65019be6cc5305e5d3"
     },
     {
       "path": "core_contexts.py",
-      "sha256": "b9bb1c44b0106a7bb12f71ab93e3fb6c3b3ad1580acaf4ecc728eb7909d52824"
+      "sha256": "e6e2a4404d2d7beb9d02ad43f6692be440361d1197528782fd8a9d79f2b1a55a"
     },
     {
       "path": "core_contract.py",
@@ -149,7 +149,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "4a945fbe475c510e6e097dab519f277dfb659e5f1e0b9356f3f6016608feb90d"
+      "sha256": "8404894e62c55feb3dbd82223734f8f1495c32185c1e35400d7b488a1510f5b4"
     },
     {
       "path": "lit_mark_rows.json",
@@ -1537,27 +1537,31 @@
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "9b3f05d71da59e7f68024f2e9104e07aeb9f6d0e9562f6d6023d30bd40163cf0"
+      "sha256": "9daae9bb2bffb0f12532c8ca9f0892e6d7d4ff30f2feb78791fea9c0beb5deeb"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
-      "sha256": "1eb34945f8035b5e997ccd5986fe073b7e6c8dfea5750833d8bdaea35b973bdf"
+      "sha256": "e02fcb49ae0d42a77ae427717511a2fde14c247e99d7da6625a996b63579b214"
     },
     {
       "path": "skills/lit-adhd/references/card-examples.md",
-      "sha256": "b077110d4eb04ce96640646280544dd4eb5ca287d0492356dd62b376aa162129"
+      "sha256": "b85214dae89e58961e7595baf2470122c707ae5ad494d3e8f250cbd839b8a3cd"
     },
     {
       "path": "skills/lit-adhd/references/status-taxonomy.md",
-      "sha256": "3f18ce0e1509d0c3e8d48730fb29625883d52eb05cc7bdf4dbac35c5df77291d"
+      "sha256": "4cd64aefa27a629ec2accfa5df4885d2c52c47b89e5b2cad32b4c9a74a332814"
     },
     {
       "path": "skills/lit-adhd/scripts/adhd.mjs",
       "sha256": "ff3aa2e86fd0b5f12c3b116d2a5c39e7fa7fe6789cf28d94b0abc60527d3d0d5"
     },
     {
+      "path": "skills/lit-adhd/scripts/lib/board.mjs",
+      "sha256": "5b324e990303a64795c3c52ffce1de832e21b5a7a9e09e6d1bc42a137a742d0b"
+    },
+    {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "b8c5463c8c5f877dca3e8ba48ab38763da6c6e23469e729b6e348d8786f76495"
+      "sha256": "722de9bb95f6ad7bfa3b8018a5bc869eed7bd96a729176b824ce9482a2916ddd"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -1569,7 +1573,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/next-step.mjs",
-      "sha256": "f17467ce2371170408d9a1429218c027e70d34e1f3e438e6a654b2aa48d11d70"
+      "sha256": "c76a7ddb4aee55e9ae698b5d3e2748e3e9d4a9f7b6356a47a7937fe84431d8a4"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/plan-task-rows.mjs",

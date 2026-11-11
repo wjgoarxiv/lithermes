@@ -123,8 +123,8 @@ _LOOK_DISCIPLINES = {"lit-adhd": "rewind", "lit-rewind": "rewind", "review-work"
 
 _LOOK_BLOCKS = {
     "rewind": (
-        "Look: REWIND <<. Open the brief with `REWIND <<` on its own line "
-        "(badges and gauges follow the skill). A wait opens with `YOUR TURN` "
+        "Look: REWIND <<. The board opens with `REWIND <<` on its own line "
+        "(the collector draws its icons and bars). A wait opens with `YOUR TURN` "
         "(plain text); done closes once with `✦ done`."
     ),
     "lanes": (

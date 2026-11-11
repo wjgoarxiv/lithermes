@@ -65,7 +65,7 @@ Name a look, or let `lit-pptx` choose one of thirteen for your reader and say wh
 
 ### Build it and keep track of it
 
-`frontend-ui-ux` locks a house style before it writes markup, builds the page, then opens it at several widths and reviews what it sees. `lit adhd` reads your recent Hermes sessions, plans and git history and gives you one screen: what each session was asked, what it did, what waits on you and one next step.
+`frontend-ui-ux` locks a house style before it writes markup, builds the page, then opens it at several widths and reviews what it sees. `lit adhd` reads your recent Hermes sessions, plans and git history and gives you one KPI board: the one thing to do now and exactly what to type, what is done, what is left, and what you must not forget.
 
 <table>
 <tr><td width="50%" valign="top"><img src="./docs/assets/showcase/ui-landing-hero.webp" width="400" alt="Hero of a graphite landing page for a kinetic-type film skill: the headline Turn one line of chat into a kinetic-type film beside a closing-lines type set piece, with primary and secondary actions below." /><br /><b>frontend-ui-ux</b> · landing page hero<br /><sub>Locked to the graphite house style, then opened at several widths and reviewed by its own probe.</sub></td><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the brief<br /><code>lit adhd</code><br /><sub>A verbatim run over this repository's own Hermes sessions.</sub></td></tr>
@@ -238,7 +238,7 @@ lit hijack https://example.com/post into my lit-pptx skill
 
 ### Where was I?
 
-After a day of several windows, `lit adhd` (or `lit rewind`) reads the recent Hermes sessions of this repository with their plans, handoffs and git history, and gives you the brief pictured above. It changes nothing. If its next step is what you want, answer `go` within half an hour; while other sessions are still at work, it tells you to wait for them.
+After a day of several windows, `lit adhd` (or `lit rewind`) reads the recent Hermes sessions of this repository with their plans, handoffs and git history, and gives you a board: 🎯 the one thing to do now with the exact text to type, 📊 done / in progress / waiting on you / left counts with an overall bar, 🏁 each plan's progress, ✅ what finished lately, ⬜ what is still to do, and 🔔 reminders such as a session waiting on your answer, uncommitted changes, or a plan nobody touched for a week. It changes nothing. If its next step is what you want, answer `go` within half an hour; while other sessions are still at work, it tells you to wait for them. Add `detail` (`lit adhd detail`) for the per-session brief pictured above, under the board.
 
 ### From a phone, through a gateway
 

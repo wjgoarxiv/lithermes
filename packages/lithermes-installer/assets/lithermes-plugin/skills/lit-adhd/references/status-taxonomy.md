@@ -14,6 +14,21 @@ with the words below and never invents a fifth.
 
 Order in the brief: waiting sessions first, then active, ended and unknown; newest first inside each group.
 
+## Board buckets
+
+The KPI board never shows the codes above. It maps every record into one of four buckets and
+shows only the bucket's icon and words:
+
+| Record | Bucket | English | 한국어 |
+| --- | --- | --- | --- |
+| ticked plan row, passed criterion, plan with every row ticked | done | ✅ Done | ✅ 끝남 |
+| current row of a plan with ticks or a running run, another `active` session, a herdr lane | in progress | 🔄 In progress | 🔄 진행 중 |
+| another `waiting-on-user` session, current row of a `paused` run at a boundary | waiting on you | ⏳ Waiting on you | ⏳ 나를 기다림 |
+| every other open row or criterion | left | ⬜ Left | ⬜ 남음 |
+
+`ended` and `unknown` sessions are not counted: they hold no open item. This session, the one
+running the brief, is never counted as a lane.
+
 ## Start-work statuses
 
 `startWork[].status` describes a run, not a session:

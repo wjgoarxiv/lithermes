@@ -1,6 +1,18 @@
 # lit-adhd brief contract
 
-The brief the model writes from one collector run. Three opener lines, then five parts, in order:
+## The board comes first
+
+Since lit-adhd v2 the reply is the KPI board the collector draws (`board.text`); the model shows
+it as given and adds at most one short line. The board's rules (fixed section order, four
+buckets, ten-cell bars, the caps of four milestone rows, five done items, seven remaining items
+and five reminders, the empty-state lines, the 44-line ceiling) live in the skill's "The KPI
+board" section and are enforced by `test/lit-adhd-board.test.js`. Everything below describes
+the detail view, `board.detailText`, which the collector renders under the board only with
+`--detail` (`lit adhd 자세히`, `lit adhd detail`). Its rules are unchanged.
+
+## The detail brief
+
+The brief the collector writes from one run. Three opener lines, then five parts, in order:
 headline, one card per session, roadmap timeline, paused work, one next step. Dense, pretty,
 plain words.
 

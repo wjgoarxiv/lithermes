@@ -12,6 +12,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { parsePlanTaskRows } from './plan-task-rows.mjs';
 import { aggregateProgress, clipToWidth, displayWidth, progressOf } from './gauge.mjs';
 import { chooseNextStep, suggestNext, waitText, writeNextStep } from './next-step.mjs';
+import { renderBoard } from './board.mjs';
 import { makeRedactor } from './redact.mjs';
 import { findHermesSessions, hermesSessionRecord, hermesStorePath, makeBudget, normalizeRoot, readHermesMessages } from './hermes-sessions.mjs';
 
@@ -23,6 +24,9 @@ const DEFAULT_MAX = 12;
 const NAME_MAX = 90;
 const PLAN_LIMIT = 8;
 const GOAL_LIMIT = 8;
+// A plan with open rows and no change for this long is a reminder, not a milestone.
+const STALE_MS = 7 * 86_400_000;
+const STALE_LIMIT = 8;
 
 /** `7d`, `12h`, `30m` in milliseconds, or null. */
 export const parseSince = (text) => {
@@ -117,10 +121,12 @@ const plansIn = (root, budget, redact, local, skipped) => {
     if (!rows.length) return [];
     const open = rows.filter((row) => !row.checked);
     const done = rows.length - open.length;
+    const heading = /^# +(.+?)\s*#*\s*$/mu.exec(text);
     // Every row ticked: kept and marked complete, as finished work for the opener, never roadmap.
     return [{
       worktree: redact(root),
       plan: `plans/${entry.name}`,
+      title: heading ? clipToWidth(redact(heading[1]), NAME_MAX) : null,
       local,
       complete: open.length === 0,
       changedMs: mtimeOf(path),
@@ -153,12 +159,16 @@ const goalsOf = (root, budget, redact) => {
       const criteria = goal.criteria.filter((criterion) => criterion && typeof criterion === 'object');
       const passed = criteria.filter((criterion) => criterion.status === 'pass');
       const remaining = criteria.filter((criterion) => criterion.status !== 'pass').map((criterion) => clipToWidth(redact(String(criterion.id ?? 'unknown')), NAME_MAX));
+      // The board lists open criteria by their words, falling back to the id only when none is recorded.
+      const remainingText = criteria.filter((criterion) => criterion.status !== 'pass')
+        .map((criterion) => clipToWidth(redact(String(criterion.text ?? criterion.description ?? criterion.title ?? criterion.id ?? 'unknown').split('\n')[0]), NAME_MAX));
       return {
         worktree: redact(root),
         file: basename(dirname(path) === 'litgoal' ? path : dirname(path)),
         status: typeof goal.status === 'string' ? goal.status : 'unknown',
         objective: clipToWidth(redact(String(goal.objective ?? goal.title ?? 'unknown').split('\n')[0]), 120),
         progress: progressOf(passed.length, criteria.length, remaining),
+        remainingText,
       };
     });
   });
@@ -212,6 +222,25 @@ const commitsOf = (root, sinceMs, now, exec, redact) => {
       const [hash, at, ...subject] = line.split('\t');
       return { worktree: redact(root), branch: redact(branch), hash: hash.slice(0, 7), at, atMs: Date.parse(at), subject: clipToWidth(redact(subject.join('\t')), 100) };
     });
+  } catch {
+    return null;
+  }
+};
+
+// Uncommitted entries (`git status --porcelain`, untracked included) and commits ahead of the
+// upstream; a worktree with no upstream counts no unpushed commits. Unreadable git reads null.
+const gitStateOf = (root, exec, redact) => {
+  try {
+    const status = exec('git', ['status', '--porcelain=v1'], { cwd: root, timeout: GIT_TIMEOUT_MS });
+    let unpushed = 0;
+    try {
+      unpushed = Number.parseInt(exec('git', ['rev-list', '--count', '@{upstream}..HEAD'], { cwd: root, timeout: GIT_TIMEOUT_MS }).trim(), 10) || 0;
+    } catch {
+      unpushed = 0;
+    }
+    // `.hermes/` holds this collector's own next-step record and the plugin's state: never a change to commit.
+    const changes = status.split('\n').filter((entry) => entry.trim() && !/^\S{0,2}\s+"?\.hermes(?:\/|"?$)/u.test(entry));
+    return [{ worktree: redact(root), uncommitted: changes.length, unpushed }];
   } catch {
     return null;
   }
@@ -371,6 +400,9 @@ export const collectAdhd = ({
   now = Date.now(),
   exec = defaultExec,
   record = true,
+  lang = 'en',
+  detail = false,
+  width = 100,
 } = {}) => {
   const home = env.HOME || homedir();
   const redact = makeRedactor({ env, home });
@@ -411,6 +443,7 @@ export const collectAdhd = ({
   }
 
   const commits = collectEach((root) => commitsOf(root, sinceMs, now, exec, redact));
+  const gitState = collectEach((root) => gitStateOf(root, exec, redact));
   const herdr = herdrOf(env, exec, redact, roots.map((root) => resolve(root)));
 
   // A session waits on the user when it asked something, or holds a paused boundary.
@@ -451,6 +484,7 @@ export const collectAdhd = ({
       plans: known(plans),
       handoffs: handoffs.length ? 'ok' : 'unknown',
       git: known(commits),
+      gitState: known(gitState),
       workflowStack: known(workflows),
       startWork: known(startWork),
       herdr: herdr.status,
@@ -475,8 +509,15 @@ export const collectAdhd = ({
       runs: (startWork ?? [])
         .filter((work) => ['done', 'completed'].includes(work.status) && Number.isFinite(work.atMs) && now - work.atMs <= sinceMs)
         .map(({ worktree, plan, workId }) => ({ worktree, plan: planInWorktree(worktree, plan), workId })),
-      plans: (plans ?? []).filter((plan) => plan.complete && recent(plan)).map(({ worktree, plan, local, progress }) => ({ worktree, plan, local, gauge: progress.gauge })),
+      plans: (plans ?? []).filter((plan) => plan.complete && recent(plan)).map(({ worktree, plan, title, local, changedMs, rows, progress }) => ({ worktree, plan, title, local, changedMs, rows, progress, gauge: progress.gauge })),
     },
+    // Open plans nobody touched for seven days or more: a reminder to resume or drop each one.
+    stalePlans: (plans ?? [])
+      .filter((plan) => !plan.complete && plan.changedMs !== null && now - plan.changedMs >= STALE_MS)
+      .sort((a, b) => Number(b.local) - Number(a.local) || (b.changedMs ?? 0) - (a.changedMs ?? 0))
+      .slice(0, STALE_LIMIT)
+      .map(({ worktree, plan, title, local, changedMs }) => ({ worktree, plan, title, local, days: Math.floor((now - changedMs) / 86_400_000) })),
+    gitState: gitState ?? [],
     workflows: (workflows ?? []).map((frame) => ({ ...frame, self: Boolean(sessionId) && frame.sessionId === sessionId })),
     startWork: startWork ?? [],
     handoffs,
@@ -504,6 +545,10 @@ export const collectAdhd = ({
     delete work.sessionId;
     delete work.atMs;
   }
+  // The board is drawn last, from the finished record, so it shows exactly what the JSON holds.
+  // The per-session brief rides under it only when the user asked for detail.
+  data.board = renderBoard(data, lang, { width });
+  if (detail) data.board.detailText = renderAdhd(data, width, sessionId);
   return data;
 };
 
@@ -675,12 +720,14 @@ export const renderAdhd = (data, width = 100, sessionId = null) => {
   return `${out.join('\n')}\n`;
 };
 
-/** `adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--width N]`. */
+export { renderBoard };
+
+/** `adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko] [--detail] [--width N]`. */
 export const runAdhdCli = (args, cwd = process.cwd(), { env = process.env, stdout = process.stdout, stderr = process.stderr } = {}) => {
-  const options = { cwd, env, here: false, since: DEFAULT_SINCE, max: DEFAULT_MAX, sessionId: null };
+  const options = { cwd, env, here: false, since: DEFAULT_SINCE, max: DEFAULT_MAX, sessionId: null, lang: 'en', detail: false };
   let json = false;
   let width = Number(stdout.columns) || 100;
-  const usage = 'Usage: adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--width N]';
+  const usage = 'Usage: adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko] [--detail] [--width N]';
   if (args.some((arg) => arg === '--help' || arg === '-h')) {
     stdout.write(`${usage}\n`);
     return 0;
@@ -693,12 +740,16 @@ export const runAdhdCli = (args, cwd = process.cwd(), { env = process.env, stdou
     else if (arg === '--max' && /^\d{1,2}$/u.test(args[index + 1] ?? '')) options.max = Number(args[++index]);
     else if (arg === '--session' && /^[A-Za-z0-9._:-]{1,160}$/u.test(args[index + 1] ?? '')) options.sessionId = args[++index];
     else if (arg === '--width' && /^\d{2,3}$/u.test(args[index + 1] ?? '')) width = Number(args[++index]);
+    else if (arg === '--lang' && ['en', 'ko'].includes(args[index + 1])) options.lang = args[++index];
+    else if (arg === '--detail') options.detail = true;
     else {
       stderr.write(`adhd: unknown argument ${JSON.stringify(basename(String(arg)))}. ${usage}\n`);
       return 64;
     }
   }
-  const data = collectAdhd(options);
-  stdout.write(json ? `${JSON.stringify(data, null, 2)}\n` : renderAdhd(data, width, options.sessionId));
+  const data = collectAdhd({ ...options, width });
+  // Text mode prints the board; `--detail` adds the per-session brief under it.
+  const text = `${data.board.text}\n${options.detail ? `\n${data.board.detailText}` : ''}`;
+  stdout.write(json ? `${JSON.stringify(data, null, 2)}\n` : text);
   return 0;
 };

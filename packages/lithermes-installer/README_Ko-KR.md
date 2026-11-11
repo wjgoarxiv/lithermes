@@ -53,7 +53,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | 검사를 거친, 편집 가능한 다이어그램 |
 | `/lit-schematic <brief>` | `lit-schematic` | QA 게이트를 거친 P&ID·장치도·아이소메트릭 단면도 |
 | `/lit-hijack <brief>` | `lit-hijack` | 라이선스 게이트와 parity 검증을 거친 공개 노하우의 클린룸 포팅 |
-| `/lit-adhd [--here] [--since 7d] [--max 12]` | `lit-adhd` | 게이지와 다음 한 단계로 최근 세션을 브리핑합니다. 읽기 전용입니다. |
+| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
 | `/lit-pptx <brief>` | `lit-pptx` | 열세 가지 디자인 방향 가운데 하나로 만든 PowerPoint 발표자료와 Markdown 원본 |
 | `/lit-docx <brief>` | `lit-docx` | 여섯 가지 문서 형식 가운데 하나로 짠 절제된 Word 문서와 Markdown 원본 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | 트리트먼트부터 쓰는 짧은 영상 |

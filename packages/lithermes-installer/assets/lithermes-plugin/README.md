@@ -104,8 +104,10 @@ CLI/plugin name, not the npm package name.
   `lit hijacking`, `lit 하이재킹`, `lit 하이잭`) load the installed hijack skill.
   Published know-how enters only through capture with provenance, a licence gate,
   a source-free spec and a parity proof.
-- `/lit-adhd [--here] [--since 7d] [--max 12]` and the exact `lit-adhd` route
-  (also `lit adhd`, `lit rewind`, `lit-rewind`) load the installed adhd skill.
+- `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` and the exact `lit-adhd` route
+  (also `lit adhd`, `lit rewind`, `lit-rewind`) load the installed adhd skill. Its collector
+  draws a KPI board (do this now, at a glance, milestones, done lately, still to do, don't
+  forget) that the reply shows as given; `--detail` (`lit adhd 자세히`) adds the per-session brief.
   One collector run reads the session store read-only and prints the
   cross-session brief; a bare `go` continues the offered step within 30 minutes.
 - The `pre_llm_call` hook injects an Litwork directive when the user says

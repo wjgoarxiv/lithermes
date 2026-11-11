@@ -232,7 +232,7 @@ These are all the skills you can call in LitHermes, with the words that start ea
 | `/lit-pptx <brief>` | Create and check a PowerPoint deck with the bundled AZURE-PRO engine. |
 | `/lit-docx <brief>` | Create, edit and audit a Word report with publisher profiles. |
 | `/lit-hijack <brief>` | Port published know-how into your own skill, clean-room: capture, licence gate, spec, build, parity. |
-| `/lit-adhd [--here] [--since 7d] [--max 12]` | Brief recent sessions with gauges and one next step, read-only. |
+| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | A KPI board of recent sessions: the one thing to do now, done and left counts, milestones, reminders; `--detail` adds the per-session brief. Read-only. |
 | `/lit-typographic-motion <brief>` | Direct and gate an original film from a treatment, on the stage or the type path. |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.

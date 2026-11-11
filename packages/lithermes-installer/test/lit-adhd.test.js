@@ -117,7 +117,8 @@ test("the text brief carries the next command and names unknown sources once", {
     writeFixtureDb(db, ws);
     const env = baseEnv({ HERMES_SESSION_STORE: db });
     // The brief runs as the fixture's live session, so no other lane holds the plan back.
-    const brief = runCLI(["--here", "--width", "100", "--session", "sess-active-1"], { cwd: ws, env });
+    // The per-session brief is the detail view now; the board sits above it.
+    const brief = runCLI(["--here", "--detail", "--width", "100", "--session", "sess-active-1"], { cwd: ws, env });
     assert.equal(brief.status, 0, brief.stderr);
     assert.match(brief.stdout, /lit-adhd: 1 session\(s\) · 0 waiting on you · next: start plan/);
     assert.match(brief.stdout, /\(run \/start-work plans\/a\.md\)/);
@@ -147,7 +148,7 @@ test("ended sessions fold to a table and a missing step becomes a suggestion", {
     ].join("\n");
     assert.equal(spawnSync("sqlite3", [db], { input: sql, encoding: "utf8" }).status, 0);
     const env = baseEnv({ HERMES_SESSION_STORE: db });
-    const brief = runCLI(["--here", "--width", "160"], { cwd: ws, env });
+    const brief = runCLI(["--here", "--detail", "--width", "160"], { cwd: ws, env });
     assert.equal(brief.status, 0, brief.stderr);
     // The other live session is a lane at work, which outranks every other suggestion.
     assert.match(brief.stdout, /next: wait for lanes/);
@@ -160,7 +161,7 @@ test("ended sessions fold to a table and a missing step becomes a suggestion", {
     assert.match(brief.stdout, /used read_file/);
     const gauge = await import("../assets/lithermes-plugin/skills/lit-adhd/scripts/lib/gauge.mjs");
     for (const raw of brief.stdout.split("\n")) assert.ok(gauge.displayWidth(raw) <= 160, `line exceeds width: ${raw}`);
-    const narrow = runCLI(["--here", "--width", "100"], { cwd: ws, env });
+    const narrow = runCLI(["--here", "--detail", "--width", "100"], { cwd: ws, env });
     assert.equal(narrow.status, 0, narrow.stderr);
     for (const raw of narrow.stdout.split("\n")) assert.ok(gauge.displayWidth(raw) <= 100, `line exceeds width: ${raw}`);
   } finally {
@@ -181,7 +182,7 @@ test("the skill body carries its contracts and cross-links lit-recap both ways",
     assert.ok(text.includes(ref), ref);
     assert.ok(fs.existsSync(path.join(SKILL, ref)), ref);
   }
-  for (const lib of ["scripts/adhd.mjs", "scripts/lib/collect.mjs", "scripts/lib/gauge.mjs", "scripts/lib/redact.mjs", "scripts/lib/secret-shapes.mjs", "scripts/lib/plan-task-rows.mjs", "scripts/lib/next-step.mjs", "scripts/lib/hermes-sessions.mjs"]) {
+  for (const lib of ["scripts/adhd.mjs", "scripts/lib/collect.mjs", "scripts/lib/gauge.mjs", "scripts/lib/redact.mjs", "scripts/lib/secret-shapes.mjs", "scripts/lib/plan-task-rows.mjs", "scripts/lib/next-step.mjs", "scripts/lib/hermes-sessions.mjs", "scripts/lib/board.mjs"]) {
     assert.ok(fs.existsSync(path.join(SKILL, lib)), `${lib} ships`);
   }
   const description = /^description: "(.*)"$/mu.exec(text)[1];

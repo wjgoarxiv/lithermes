@@ -1,6 +1,124 @@
-# lit-adhd brief examples
+# lit-adhd board and brief examples
 
-Both examples render the same collector JSON. Gauges, ids, titles and names are copied from it
+## The KPI board (default)
+
+Both boards below are real collector output from one temporary fixture repository: a fully
+ticked plan, a plan with two of five rows ticked, a plan nobody touched for eleven days, a
+HANDOFF.md with a `## Next` item, uncommitted files, and another Hermes session whose last
+word asks the user a question. The reply shows `board.text` exactly like this; only the labels
+change with `--lang`.
+
+`node scripts/adhd.mjs --json --here --lang ko --session <id>` → `board.text`:
+
+```text
+REWIND <<
+## 🎯 지금 할 일
+**나를 기다리는 세션에 답하기** — "Choose the gateway port" 세션이 질문했어요
+질문: "Should the gateway listen on 8080 or 8443?"
+👉 입력: 그 세션 창에서 답하기. 아직 `go`는 치지 않기
+
+## 📊 한눈에 보기
+| ✅ 끝남 | 🔄 진행 중 | ⏳ 나를 기다림 | ⬜ 남음 |
+|:--:|:--:|:--:|:--:|
+| 5 | 1 | 1 | 2 |
+
+전체 진행  ██████░░░░  5/9 (56%)
+
+## 🏁 마일스톤
+| 마일스톤 | 상태 | 진행 | 최근 |
+|---|---|---|---|
+| README refresh | 🔄 진행 중 | ████░░░░░░ 2/5 (40%) | 방금 |
+| KPI board for lit-adhd | ✅ 끝남 | ██████████ 3/3 (100%) | 방금 |
+
+## ✅ 최근 끝낸 일
+- Rewrite the Korean section
+- Rewrite the Where was I section
+- Show the board as given in the skill
+- Draw the board in the collector
+- Write the RED board tests
+
+## ⬜ 남은 일
+1. Proofread both READMEs
+2. Record a rendered sample
+3. Ask for a release review
+
+## 🔔 잊지 말 것
+- ⏳ "Choose the gateway port" 세션이 답을 기다려요 → 그 세션 창에서 답하기
+- 💾 커밋 안 된 변경 2개 (fixture-repo) → 확인하고 커밋하거나 되돌리기
+- 🕰️ 11일째 멈춘 계획: Gateway notes → 이어 할지, 접을지 정하기
+- 📌 HANDOFF 다음 할 일: Publish the release notes after review → 이어 할지 정하기
+```
+
+The same run with `--lang en`:
+
+```text
+REWIND <<
+## 🎯 Do this now
+**Answer the session that is waiting on you** — "Choose the gateway port" asked you a question
+Question: "Should the gateway listen on 8080 or 8443?"
+👉 Type: answer it in that session's chat; do not type `go` yet
+
+## 📊 At a glance
+| ✅ Done | 🔄 In progress | ⏳ Waiting on you | ⬜ Left |
+|:--:|:--:|:--:|:--:|
+| 5 | 1 | 1 | 2 |
+
+Overall  ██████░░░░  5/9 (56%)
+
+## 🏁 Milestones
+| Milestone | Status | Progress | Last change |
+|---|---|---|---|
+| README refresh | 🔄 In progress | ████░░░░░░ 2/5 (40%) | just now |
+| KPI board for lit-adhd | ✅ Done | ██████████ 3/3 (100%) | just now |
+
+## ✅ Done lately
+- Rewrite the Korean section
+- Rewrite the Where was I section
+- Show the board as given in the skill
+- Draw the board in the collector
+- Write the RED board tests
+
+## ⬜ Still to do
+1. Proofread both READMEs
+2. Record a rendered sample
+3. Ask for a release review
+
+## 🔔 Don't forget
+- ⏳ "Choose the gateway port" is waiting for your answer → answer in that session
+- 💾 2 uncommitted changes (fixture-repo) → review, then commit or discard
+- 🕰️ Plan untouched for 11 days: Gateway notes → decide whether to resume it or drop it
+- 📌 HANDOFF next: Publish the release notes after review → decide whether to pick it up
+```
+
+What to notice:
+
+- The waiting session outranks the open plan, exactly as `next` ranks it (`wait-lanes` with a
+  session waiting), so Do this now says to answer it and not to type `go` yet.
+- The four counts add up to the overall total (5 + 1 + 1 + 2 = 9). The current row of the
+  half-ticked plan is the one item in progress; the waiting session is the one item waiting.
+- The eleven-day-old plan is a 🕰️ reminder, not a milestone row, and never the next step.
+- No session id, commit hash, raw status code or plan file name appears; the HANDOFF item and
+  the worktree folder name are the only things quoted from disk.
+
+When the other session is gone, the same repository's board opens with the plan instead. The
+command is the one thing the user types, so its path is shown:
+
+```text
+REWIND <<
+## 🎯 지금 할 일
+**"README refresh" 계획 시작하기** — 여기서 열린 계획은 이것 하나예요. 3단계 남음
+다음 단계: Proofread both READMEs
+👉 입력: `/start-work plans/2026-11-09-readme-refresh.md`
+```
+
+With `--session` named and the step recorded for this session, the type line reads
+`` 👉 입력: `go` (또는 `/start-work plans/<f>.md`) ``; a paused boundary reads
+`👉 입력: 채팅으로 승인 또는 거절이라고 답하기` and never offers `go`.
+
+## Detail view (`lit adhd 자세히`, `lit adhd detail`, `--detail`)
+
+The per-session brief below is what `board.detailText` holds; it is shown under the board only
+when the user asks for detail. Both examples render the same collector JSON. Gauges, ids, titles and names are copied from it
 verbatim; only the connecting words change with the language. The JSON excerpt comes first.
 
 ```json

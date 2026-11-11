@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from html import escape
 from pathlib import Path
 
@@ -15,6 +16,9 @@ except (ImportError, ModuleNotFoundError):
     from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, installed_motion_cli, MOTION_FILM_CONTEXT, MOTION_SUBCOMMANDS, route_look_block
     from core_review import review_mode_line, review_target
     from core_routing import NaturalLitRoute, detect_ui_mode, motion_cue
+
+# `lit adhd 자세히`, `lit adhd detail`, `--detail`: the per-session brief under the board.
+_ADHD_DETAIL = re.compile(r"(?:^|\s)(?:--detail|details?|자세히|자세하게)(?=\s|$)", re.IGNORECASE)
 
 # Intent-shaped skill routes: one wrapper each, same shape as the hand-written
 # mode branches below. They differ only in the objective label and the mode
@@ -154,8 +158,8 @@ _SKILL_ROUTE_CONTRACTS = {
     ),
     "lit-adhd": (
         "Brief task",
-        "Mode Contract: read-only. Run the installed collector once and write the five-part brief from its JSON only, after the Done so far/Doing now/Next opener: headline, one card per session, roadmap timeline, paused work, one next step. Gauges are copied verbatim and never drawn by hand.",
-        "Read the installed lit-adhd skill first. Run node scripts/adhd.mjs --json from the installed skill root (--here/--since/--max only when asked). Copy every gauge verbatim; an unknown total is the pulse line, never ?, never a guess. End with the one next step from next: the /start-work command when next.command names one, otherwise continue in chat. Hermes has no typed go; offer `lit adhd` for the next brief.",
+        "Mode Contract: read-only. Run the installed collector once and show its KPI board (board.text) verbatim: do this now with one next step to type, at a glance, milestones, done, left, reminders. The five-part brief is the detail view, shown under the board only on request.",
+        "Read the installed lit-adhd skill first. Run node scripts/adhd.mjs --json --lang ko|en from the installed skill root (--detail for 자세히/detail; --here/--since/--max only when asked). Never count, draw or re-rank anything; an unknown total stays in words, never ?, never a guess. Hermes has no typed go; the board says when `go` applies.",
         "Single-session recaps stay with lit-recap; execution stays with start-work.",
     ),
     "readme-studio": (
@@ -369,8 +373,11 @@ def _build_skill_route_context(
     # LH-3: the collector cannot know the hook session on its own, so the hook
     # names it here and the skill passes `--session` with it. Inside render()
     # the route byte cap still holds: the objective absorbs these bytes.
+    # A detail request is read here, not left to the model, so the collector
+    # gets `--detail` exactly when the prompt asked for the per-session brief.
     collector_session = (
-        [f"Collector: `--session {session_id}` records the next step for `go`."]
+        [f"Collector: `--session {session_id}` records the next step for `go`."
+         + (" Asked for detail: add `--detail`." if _ADHD_DETAIL.search(route.objective or "") else "")]
         if route.mode == "lit-adhd" and session_id
         else []
     )

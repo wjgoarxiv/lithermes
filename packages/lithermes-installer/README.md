@@ -55,7 +55,7 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `/lit-pptx <brief>` | `lit-pptx` | A PowerPoint deck in one of thirteen named looks, with its Markdown source |
 | `/lit-docx <brief>` | `lit-docx` | A restrained Word document in one of six named shapes, with its Markdown source |
 | `/lit-hijack <brief>` | `lit-hijack` | A clean-room port of published know-how, licence-gated with parity proof |
-| `/lit-adhd [--here] [--since 7d] [--max 12]` | `lit-adhd` | A cross-session brief with gauges and one next step, read-only |
+| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | A cross-session KPI board: do this now, done and left counts, milestones and reminders; `--detail` adds the per-session brief. Read-only |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A short film, treatment first |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:lit-pptx` or `lithermes:lit-docx`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) shows all 40 with pictures.
