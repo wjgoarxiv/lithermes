@@ -64,13 +64,13 @@ class UiIntentRoute(unittest.TestCase):
         context = self.core.build_natural_mode_context(route)
         self.assertIn("lithermes:frontend-ui-ux", context)
         self.assertIn("skills/frontend-ui-ux/SKILL.md", context)
-        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
+        self.assertIn("variants/lithermes/frontend-ui-ux", context)
 
     def test_ui_route_points_at_the_moved_skill_instead_of_building(self):
         route = self.core.detect_lit_mode("build a settings page UI lit")
         self.assertIsNotNone(route)
         context = self.core.build_natural_mode_context(route)
-        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
+        self.assertIn("variants/lithermes/frontend-ui-ux", context)
         self.assertIn("<path to your wjgoarxiv-skills clone>", context)
         self.assertNotIn("design-lock", context)
         self.assertNotIn("design_contract_validation", context)
@@ -213,7 +213,7 @@ class UiIntentRoute(unittest.TestCase):
                 # The edit-boundary text moved with the skill; the classifier still reads the mode.
                 routing = sys.modules[self.pkg.__name__ + ".core_routing"]
                 self.assertEqual(routing.detect_ui_mode(route.objective) or "build", mode)
-                self.assertIn("plugins/design/skills/frontend-ui-ux", self.core.build_natural_mode_context(route))
+                self.assertIn("variants/lithermes/frontend-ui-ux", self.core.build_natural_mode_context(route))
 
     def test_explicit_litwork_hands_web_interface_to_frontend_review(self):
         message = "litwork build a small web app with a settings screen"
@@ -229,7 +229,7 @@ class UiIntentRoute(unittest.TestCase):
                 os.chdir(previous)
         context = result["context"]
         self.assertIn("<lithermes-litwork-ui-handoff>", context)
-        self.assertIn("plugins/design/skills/frontend-ui-ux", context)
+        self.assertIn("variants/lithermes/frontend-ui-ux", context)
         self.assertIn("scripts/probe.mjs", context)
         self.assertIn("Installed web UI probe command: ", context)
         self.assertIn("HIGH", context)
@@ -282,7 +282,7 @@ class UiIntentRoute(unittest.TestCase):
                 os.chdir(prev)
             self.assertIsInstance(out, dict, "must be delivered by pre_llm_call")
             self.assertIn("lithermes:frontend-ui-ux", out["context"])
-            self.assertIn("plugins/design/skills/frontend-ui-ux", out["context"])
+            self.assertIn("variants/lithermes/frontend-ui-ux", out["context"])
             self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
 
     def test_a_delegate_child_never_activates_on_intent(self):

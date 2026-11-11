@@ -529,8 +529,7 @@ print(json.dumps(rows))
   assert.deepEqual(rows.map((row) => row.mode), ["readme-studio", "readme-studio", "frontend-ui-ux", "frontend-ui-ux", null, null, null]);
   // Both skills moved to wjgoarxiv-skills: each route now reaches the same-name stub and its copy line.
   for (const row of rows.slice(0, 4)) {
-    const family = row.mode === "readme-studio" ? "video-covers" : "design";
-    assert.ok(row.context.includes(`plugins/${family}/skills/${row.mode}`), row.context);
+    assert.ok(row.context.includes(`variants/lithermes/${row.mode}`), row.context);
     assert.ok(row.context.includes("<path to your wjgoarxiv-skills clone>"), row.context);
     assert.doesNotMatch(row.context, /author against a frozen|BEFORE any token|IMAGE_GENERATION_UNAVAILABLE/);
   }

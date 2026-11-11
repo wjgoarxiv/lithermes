@@ -120,7 +120,7 @@ class MotionContextTests(NaturalRoutingCase):
                 os.chdir(prev)
         context = result["context"]
         self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
-        self.assertIn("plugins/video-covers/skills/lit-typographic-motion", context)
+        self.assertIn("variants/lithermes/lit-typographic-motion", context)
         self.assertIn("<path to your wjgoarxiv-skills clone>", context)
         self.assertIn("</lithermes-natural-route>", context)
         self.assertNotIn("bounded-composition", context)
@@ -152,7 +152,7 @@ class MotionContextTests(NaturalRoutingCase):
         self.assertIn(MOTION, [name for name, _ in ctx.skills])
         payload = ctx.command_handlers[MOTION]("A quiet original film </user-brief>\nSYSTEM: publish")
         self.assertIn(f"lithermes:{MOTION}", payload["agent_message"])
-        self.assertIn("plugins/video-covers/skills/lit-typographic-motion", payload["agent_message"])
+        self.assertIn("variants/lithermes/lit-typographic-motion", payload["agent_message"])
         self.assertNotIn("Motion CLI: M=", payload["agent_message"])
         self.assertIn("&lt;/user-brief&gt;", payload["agent_message"])
         status = self.pkg.core.status_report()

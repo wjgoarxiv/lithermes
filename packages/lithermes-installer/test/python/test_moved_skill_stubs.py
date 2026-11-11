@@ -62,7 +62,8 @@ def _stub(name: str) -> str:
 class MovedSkillStubs(NaturalRoutingCase):
     def _assert_stub_context(self, name: str, context: str) -> None:
         self.assertIn(INSTALL_PLACEHOLDER, context)
-        self.assertIn(f"plugins/{MOVED[name]}/skills/{name}", context)
+        self.assertIn(f"variants/lithermes/{name}", context)
+        self.assertNotIn(f"plugins/{MOVED[name]}/", context)
         for stale in STALE_BODY_LINES:
             self.assertNotIn(stale, context)
 
@@ -72,14 +73,18 @@ class MovedSkillStubs(NaturalRoutingCase):
                 text = _stub(name)
                 self.assertIn(f"name: {name}\n", text)
                 self.assertIn("wjgoarxiv-skills", text)
-                self.assertIn(f"plugins/{family}/skills/{name}", text)
-                self.assertIn(f'cp -R "{INSTALL_PLACEHOLDER}/plugins/{family}/skills/{name}"', text)
+                self.assertIn(f"variants/lithermes/{name}", text)
+                self.assertIn(f'cp -R "{INSTALL_PLACEHOLDER}/variants/lithermes/{name}"', text)
+                self.assertNotIn(f"plugins/{family}", text)
+                self.assertNotIn("Claude", text)
+                self.assertNotIn("Use one form or the other", text)
                 self.assertIn('"${HERMES_HOME:-$HOME/.hermes}/skills/"', text)
                 self.assertIn(f'skill_view("{name}")', text)
                 self.assertNotIn("/Users/", text)
                 self.assertNotIn("/home/", text)
         self.assertIn(
-            "plugins/figures/vendor/scientific-visualization", _stub("lit-scientific-visualization")
+            "variants/lithermes/lit-scientific-visualization/vendor/scientific-visualization",
+            _stub("lit-scientific-visualization"),
         )
 
     def test_slash_commands_stay_registered_and_inject_the_stub(self):

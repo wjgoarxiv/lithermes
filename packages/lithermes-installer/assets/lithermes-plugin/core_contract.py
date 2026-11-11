@@ -36,10 +36,11 @@ def installed_web_probe_command() -> str:
     return f'node {shlex.quote(str(probe))} --url "$UI_URL" --out "$UIUX_EVIDENCE_DIR" --static "$PWD"'
 
 
-# The five content families that moved to the wjgoarxiv-skills repository. Each id
-# keeps its LitHermes routes, commands and a same-name stub SKILL.md; a route says
-# these three lines about it, so the install line is in front of the model even
-# when the stub body is only referenced.
+# The five content families that moved to the wjgoarxiv-skills repository (the value is
+# the family folder of the generic body there). Hermes installs the Hermes edition,
+# variants/lithermes/<id>, a self-contained folder. Each id keeps its LitHermes routes,
+# commands and a same-name stub SKILL.md; a route says these three lines about it, so
+# the install line is in front of the model even when the stub body is only referenced.
 MOVED_SKILL_FAMILIES = {
     "lit-pptx": "decks",
     "lit-docx": "documents",
@@ -52,11 +53,14 @@ MOVED_SKILL_FAMILIES = {
     "readme-studio": "video-covers",
 }
 MOVED_SKILL_CLONE_PLACEHOLDER = "<path to your wjgoarxiv-skills clone>"
+MOVED_SKILL_EDITION = "variants/lithermes"
 
 
 def moved_skill_lines(name: str) -> tuple[str, ...]:
     """What every route to a moved id says: where it went, how to load it, the copy line."""
-    where = f"plugins/{MOVED_SKILL_FAMILIES[name]}/skills/{name}"
+    if name not in MOVED_SKILL_FAMILIES:
+        raise KeyError(name)
+    where = f"{MOVED_SKILL_EDITION}/{name}"
     return (
         f"Mode Contract: {name} moved out of LitHermes to {where}/ in the wjgoarxiv-skills repository; "
         "this route loads its same-name stub.",

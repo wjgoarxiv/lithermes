@@ -198,26 +198,26 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 
 도면, 그래프, 발표자료, 문서, 화면 설계와 점검, 영상, README 표지는 LitHermes를 떠나 `wjgoarxiv-skills` 저장소로 옮겨 간 스킬 아홉 개가 만듭니다. 덕분에 설치가 가벼워지고, 쓰는 스킬만 골라 넣으면 됩니다.
 
-| 스킬 | `wjgoarxiv-skills` 안의 폴더 |
+| 스킬 | `wjgoarxiv-skills` 안의 Hermes판 폴더 |
 | --- | --- |
-| `lit-schematic` | `plugins/figures/skills/lit-schematic` |
-| `lit-diagram-drawer` | `plugins/figures/skills/lit-diagram-drawer` |
-| `lit-scientific-visualization` | `plugins/figures/skills/lit-scientific-visualization` |
-| `lit-pptx` | `plugins/decks/skills/lit-pptx` |
-| `lit-docx` | `plugins/documents/skills/lit-docx` |
-| `frontend-ui-ux` | `plugins/design/skills/frontend-ui-ux` |
-| `visual-qa` | `plugins/design/skills/visual-qa` |
-| `lit-typographic-motion` | `plugins/video-covers/skills/lit-typographic-motion` |
-| `readme-studio` | `plugins/video-covers/skills/readme-studio` |
+| `lit-schematic` | `variants/lithermes/lit-schematic` |
+| `lit-diagram-drawer` | `variants/lithermes/lit-diagram-drawer` |
+| `lit-scientific-visualization` | `variants/lithermes/lit-scientific-visualization` |
+| `lit-pptx` | `variants/lithermes/lit-pptx` |
+| `lit-docx` | `variants/lithermes/lit-docx` |
+| `frontend-ui-ux` | `variants/lithermes/frontend-ui-ux` |
+| `visual-qa` | `variants/lithermes/visual-qa` |
+| `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
+| `readme-studio` | `variants/lithermes/readme-studio` |
 
 그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 복사 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다. 복사 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다).
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/<family>/skills/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
 ```
 
-복사한 뒤에는 Hermes 세션을 새로 시작하세요. 스크립트가 같은 묶음의 공용 폴더를 쓰는 스킬은 묶음 폴더 전체를 복사해야 하고, 어느 스킬이 그런지는 스텁마다 적혀 있습니다. `hermes lithermes doctor`가 스텁 아홉 개를 확인해 줍니다. litwork가 웹 화면을 고칠 때마다 돌리는 화면 측정 도구는 LitHermes의 `skills/frontend-ui-ux/scripts/`에 그대로 남아 있습니다.
+복사한 뒤에는 Hermes 세션을 새로 시작하세요. `variants/lithermes/<id>` 폴더는 Hermes에 맞춰 쓴, 그 자체로 완결된 폴더라서 스킬마다 폴더 하나면 됩니다. 복사본은 `plugins/lithermes/` 밖, 프로필의 `skills/` 폴더에 있으므로 LitHermes를 업그레이드하거나 지워도 그대로 남고, `lithermes doctor`는 이를 가림(shadow)이 아니라 옮겨 간 스킬의 복사본으로 보여 줍니다. `hermes lithermes doctor`가 스텁 아홉 개를 확인해 줍니다. litwork가 웹 화면을 고칠 때마다 돌리는 화면 측정 도구는 LitHermes의 `skills/frontend-ui-ux/scripts/`에 그대로 남아 있습니다.
 
 ### 글 다듬기
 

@@ -240,7 +240,7 @@
       "maxBytes": 120000
     },
     "readme-studio": {
-      "minSkillBytes": 4600,
+      "minSkillBytes": 4500,
       "maxSkillBytes": 9000,
       "minFiles": 1,
       "maxFiles": 1,
@@ -353,12 +353,12 @@
     },
     "frontend-ui-ux": {
       "skillMd": {
-        "bytes": 5550,
-        "sha256": "9074f876fb175e00e328c6f4c06959cd4b5e7fe0509a7a73461eea90b2edabf7"
+        "bytes": 5693,
+        "sha256": "62e38b49899684d07cbc364f9f14cf1e0e1af5480e0d52de662e7aab62af41ca"
       },
       "files": 7,
-      "bytes": 92094,
-      "sha256": "2bd3eb9a0b0a424d480e79c452000f935c2dead74570005ba9226392f068e81e"
+      "bytes": 92237,
+      "sha256": "36da247516b4eaae2919c2d8ffc0e815ef655f8baa15c08e6650e76480668e7e"
     },
     "lit-adhd": {
       "skillMd": {
@@ -434,21 +434,21 @@
     },
     "lit-diagram-drawer": {
       "skillMd": {
-        "bytes": 4694,
-        "sha256": "969496266456f3499120f297907041554e893cd79e9faa39fc6f67658a6708db"
+        "bytes": 4958,
+        "sha256": "03349c01d8c69cd75116599deddad87a1d27c60b5f98956346e4f0e16846664e"
       },
       "files": 1,
-      "bytes": 4694,
-      "sha256": "bd16281180fcfc88b4b680b631fdffdb1440381524d03430e78a4d40289f6b96"
+      "bytes": 4958,
+      "sha256": "2b74c72fe7aa57459621cb8f8e72583cd457f905279a903eb06f933f251d86a7"
     },
     "lit-docx": {
       "skillMd": {
-        "bytes": 4562,
-        "sha256": "4bec6b868932cc7add1a1c35d6c5bf17a10ae8fbf23ae50c61906ffabd4ac313"
+        "bytes": 4759,
+        "sha256": "6a215c5b5fb0b93064a950bb43ac9bd4c32c322dcfd16e9bde82b7db9e15bd74"
       },
       "files": 1,
-      "bytes": 4562,
-      "sha256": "e558d17bdfb51bdd23116f2c3d97fcfba0b045fbb2a9c386e6524c4428b25113"
+      "bytes": 4759,
+      "sha256": "6d961c4f11cf0b0d20479d641e74a2fdbda51f7c16cf49fc81c868e619a7d74c"
     },
     "lit-handoff": {
       "skillMd": {
@@ -497,12 +497,12 @@
     },
     "lit-pptx": {
       "skillMd": {
-        "bytes": 4369,
-        "sha256": "9facc5dacc6c4068b5b7a12baac99911f7f841826269746c3dd780ced44cecef"
+        "bytes": 4598,
+        "sha256": "2c43af9b1357c0c98e2e0c3a51f61af0485ccc05a474d8685bf415a111fc1780"
       },
       "files": 1,
-      "bytes": 4369,
-      "sha256": "6cfa55ace209b38d2fd31ec551a54e5b6f05611a6acdef09c0fbf8bd710e61d0"
+      "bytes": 4598,
+      "sha256": "5b6291ebd943792f220f2bf8d5e5f22f03a98a3e9087d25c469ca690d8322786"
     },
     "lit-recap": {
       "skillMd": {
@@ -515,30 +515,30 @@
     },
     "lit-schematic": {
       "skillMd": {
-        "bytes": 4700,
-        "sha256": "0a37eb10d74d8d6382ce1b529f9a616df52856599b974ca36db074e5d222d04a"
+        "bytes": 4936,
+        "sha256": "63661f70b6bac419b82cdc3aedd44c72c46d8dca6e5eb8b0a422d854286aadff"
       },
       "files": 1,
-      "bytes": 4700,
-      "sha256": "71f800334178a40feb6fb95c932b8a28c336ea94dfba9d9d8cf581dc997bbff8"
+      "bytes": 4936,
+      "sha256": "f245497e6ca52264b670629a676bc2fabe0be18cfdbb6f2a8502e138bc3429cc"
     },
     "lit-scientific-visualization": {
       "skillMd": {
-        "bytes": 5075,
-        "sha256": "ab98862a63c0d6c0da33515066406abd49582971d04a261eb4826f156075640d"
+        "bytes": 5368,
+        "sha256": "3d86c9de1fabeb2b80db049190eb8ab7af961acceba2758e7f9181cd5b7b1853"
       },
       "files": 1,
-      "bytes": 5075,
-      "sha256": "3676c67fc598fe57e7874618ada1038c9868cd11c82037119101fe7d72d5be7d"
+      "bytes": 5368,
+      "sha256": "f577e10d8fdf988233d4b47efe811e47cd917f5e0ddd4aca7ac336eec6c888ca"
     },
     "lit-typographic-motion": {
       "skillMd": {
-        "bytes": 5045,
-        "sha256": "171ca3ab1b6249d073c10364fb098829b2f2e76e415fa9e32ce4be7497bf9637"
+        "bytes": 5087,
+        "sha256": "4992c769f3300edce52f212637e44078a1a0f9f048fb60a9c6bcc77878f6620b"
       },
       "files": 1,
-      "bytes": 5045,
-      "sha256": "242b49a4912fd24aee287a403bfa74f5c0424702a2c83a1dc93f7f8110e85fbb"
+      "bytes": 5087,
+      "sha256": "ca67735ee1fdc23c0e692181c85a70fe965511f4688870ead82451c51831710f"
     },
     "litgoal": {
       "skillMd": {
@@ -587,12 +587,12 @@
     },
     "readme-studio": {
       "skillMd": {
-        "bytes": 4656,
-        "sha256": "85fad1c12accb5d7398bacb35cec5b90e877f1c0e72e65ec64dad3730b7d5cb1"
+        "bytes": 4591,
+        "sha256": "da9dbf6daa31c0ff2fd4a1ab585110cff9ea68b22d6a87d545f97a15e5050fa6"
       },
       "files": 1,
-      "bytes": 4656,
-      "sha256": "30d56dc96b4b8dc32e2f2d8855bd9ad298e5e505a4473966e785223c00bc8c10"
+      "bytes": 4591,
+      "sha256": "713d25e8c89bae35b4d048267c508856dcbbe08b13d8b850528c79dbd7e45a68"
     },
     "refactor": {
       "skillMd": {
@@ -641,12 +641,12 @@
     },
     "visual-qa": {
       "skillMd": {
-        "bytes": 4468,
-        "sha256": "1f1af839a406cf7547407afd1bd63865520176f2c3b710fb18580c36a3026cf5"
+        "bytes": 4591,
+        "sha256": "040842649ea76a2dce9f1a3f996f4391cbf475849a376e96c47fd8e9d1a27716"
       },
       "files": 1,
-      "bytes": 4468,
-      "sha256": "e947a916dd431a731a0814fd323e429d5bfd721c1aad80a7a712a05bd4bfd1ae"
+      "bytes": 4591,
+      "sha256": "e467486dbb1abe7287ebfd17723127cfa574cc35aa9160cdf65b14c045af0b3d"
     },
     "wikify": {
       "skillMd": {

@@ -41,9 +41,9 @@ class CommandBehaviour(unittest.TestCase):
                 review_module, "_run_git", return_value="+parse bytes",
             ):
                 backend_result = self.core.command_review_work(f"--worktree {tmp} --base HEAD")
-        self.assertIn("plugins/design/skills/frontend-ui-ux", ui_result["agent_message"])
+        self.assertIn("variants/lithermes/frontend-ui-ux", ui_result["agent_message"])
         self.assertIn("lithermes:visual-qa", ui_result["agent_message"])
-        self.assertNotIn("plugins/design/skills/frontend-ui-ux", backend_result["agent_message"])
+        self.assertNotIn("variants/lithermes/frontend-ui-ux", backend_result["agent_message"])
         self.assertNotIn("lithermes:visual-qa", backend_result["agent_message"])
 
     def test_review_work_loads_uiux_skills_for_untracked_nul_safe_path(self):
@@ -61,7 +61,7 @@ class CommandBehaviour(unittest.TestCase):
             result = self.core.command_review_work(f"--worktree {tmp} --base HEAD")
 
         message = result["agent_message"]
-        self.assertIn("plugins/design/skills/frontend-ui-ux", message)
+        self.assertIn("variants/lithermes/frontend-ui-ux", message)
         self.assertIn("lithermes:visual-qa", message)
         self.assertIn(r"new\npanel.tsx", message)
 

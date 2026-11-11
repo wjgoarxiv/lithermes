@@ -264,9 +264,9 @@ class StartWorkContract(unittest.TestCase):
         )
         ui_result = core.command_start_work(f"--worktree {self.ws} ui-plan")
         backend_result = core.command_start_work(f"--worktree {self.ws} backend-plan")
-        self.assertIn("plugins/design/skills/frontend-ui-ux", ui_result["agent_message"])
+        self.assertIn("variants/lithermes/frontend-ui-ux", ui_result["agent_message"])
         self.assertIn("lithermes:visual-qa", ui_result["agent_message"])
-        self.assertNotIn("plugins/design/skills/frontend-ui-ux", backend_result["agent_message"])
+        self.assertNotIn("variants/lithermes/frontend-ui-ux", backend_result["agent_message"])
         self.assertNotIn("lithermes:visual-qa", backend_result["agent_message"])
 
     def test_start_work_redacts_plan_secrets_from_display_and_run_state(self):

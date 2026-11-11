@@ -107,7 +107,7 @@ class PostEditConditionTable(unittest.TestCase):
 
     def test_ui_shaped_hot_context_keeps_a_safety_margin_below_the_host_cap(self):
         block = self.core.conditional_uiux_skill_blocks("src/App.tsx")
-        self.assertIn("plugins/design/skills/frontend-ui-ux", block)
+        self.assertIn("variants/lithermes/frontend-ui-ux", block)
         self.assertIn("lithermes:visual-qa", block)
         self.assertNotIn(_skill_body("visual-qa"), block)
         # The block names the probe by its absolute install path. Measure it at a
@@ -303,7 +303,7 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertLessEqual(len(context.encode("utf-8")), 4096)
         self.assertIn("lithermes:frontend-ui-ux", context)
         self.assertIn("lithermes:visual-qa", context)
-        self.assertIn("plugins/design/skills/visual-qa", context)
+        self.assertIn("variants/lithermes/visual-qa", context)
         self.assertIn("<path to your wjgoarxiv-skills clone>", context)
         self.assertLess(
             context.index("<lithermes-post-edit-route"),
@@ -332,7 +332,7 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertIn("truncated path", context)
         self.assertIn("sha256=", context)
         self.assertNotIn("a" * 1000, context)
-        self.assertIn("plugins/design/skills/visual-qa", context)
+        self.assertIn("variants/lithermes/visual-qa", context)
         self.assertIn("<path to your wjgoarxiv-skills clone>", context)
 
     def test_docs_only_mutation_delivers_nothing(self):
@@ -445,7 +445,7 @@ class IntentShapedSkillRoutes(unittest.TestCase):
                 self.assertIn(f"lithermes:{skill}", context)
                 if skill in {"frontend-ui-ux", "visual-qa"}:
                     # Moved to wjgoarxiv-skills: the route carries the stub's copy line, not a body.
-                    self.assertIn(f"plugins/design/skills/{skill}", context)
+                    self.assertIn(f"variants/lithermes/{skill}", context)
                     self.assertNotIn(f'<lithermes-skill-body name="{skill}">', context)
                 else:
                     self.assertIn(f'<lithermes-skill-body name="{skill}">', context)
@@ -528,7 +528,7 @@ class DesignSkillChatRoute(unittest.TestCase):
                 self.assertEqual(route.mode, skill)
                 context = self.core.build_natural_mode_context(route)
                 self.assertIn(f"lithermes:{skill}", context)
-                self.assertIn(f"plugins/design/skills/{skill}", context)
+                self.assertIn(f"variants/lithermes/{skill}", context)
                 self.assertIn("<path to your wjgoarxiv-skills clone>", context)
 
     def test_the_route_reaches_the_model_through_pre_llm_call(self):
@@ -583,7 +583,7 @@ class DesignSkillChatRoute(unittest.TestCase):
         self.assertIn("lithermes:visual-qa", block)
         # and the regex-gated review-time injection is untouched
         self.assertIn(
-            "plugins/design/skills/frontend-ui-ux",
+            "variants/lithermes/frontend-ui-ux",
             self.core.conditional_uiux_skill_blocks("src/theme.css\n"),
         )
 

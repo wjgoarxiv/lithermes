@@ -7,7 +7,7 @@ import unittest
 from natural_routing_test_support import NaturalRoutingCase, _skill_body
 from plugin_register_test_support import _FakeCtx
 
-_STUB_PATH = "plugins/figures/skills/lit-schematic"
+_STUB_PATH = "variants/lithermes/lit-schematic"
 
 
 class SchematicSkillRoutes(NaturalRoutingCase):

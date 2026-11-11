@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import assert_never
 
 try:
-    from .core_contract import MOVED_SKILL_FAMILIES
+    from .core_contract import MOVED_SKILL_EDITION, MOVED_SKILL_FAMILIES
 except (ImportError, ModuleNotFoundError):
-    from core_contract import MOVED_SKILL_FAMILIES  # type: ignore
+    from core_contract import MOVED_SKILL_EDITION, MOVED_SKILL_FAMILIES  # type: ignore
 
 try:
     from . import knowledge as _knowledge
@@ -533,8 +533,8 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
             lines.append(f"[WARN] {name} entrypoint missing")
             healthy = False
     unmarked = [
-        name for name, family in MOVED_SKILL_FAMILIES.items()
-        if f"plugins/{family}/skills/{name}" not in _read_text(PLUGIN_ROOT / "skills" / name / "SKILL.md")
+        name for name in MOVED_SKILL_FAMILIES
+        if f"{MOVED_SKILL_EDITION}/{name}" not in _read_text(PLUGIN_ROOT / "skills" / name / "SKILL.md")
     ]
     if unmarked:
         lines.append(f"[WARN] moved-skill stubs missing their wjgoarxiv-skills path: {', '.join(unmarked)}")

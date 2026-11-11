@@ -160,26 +160,52 @@ function collectLocalSkillShadows(hermesHome, skillIds, { maxDepth = 3, maxEntri
 // against `skills.external_dirs` and local `<HERMES_HOME>/skills`; a same-named entry
 // there is picked instead of the LitHermes plugin copy. This is advisory: it never
 // changes doctor's pass/fail status, only surfaces the collision.
-function detectSkillShadows({ configText, hermesHome, skillIds = requiredSkills }) {
+// A skill that moved to wjgoarxiv-skills ships here only as a same-name stub (`stub: true` in its
+// contract). The bare-name copy the user installs from that repository is what the stub hands over to,
+// so it is the expected install, not a shadow.
+function movedSkillIds(root = assetRoot, skillIds = requiredSkills) {
+  return skillIds.filter((id) => {
+    try {
+      return /^\s*stub: true$/m.test(fs.readFileSync(path.join(root, "skills", id, "SKILL.md"), "utf8"));
+    } catch {
+      return false;
+    }
+  });
+}
+
+function findBareSkillCopies({ configText, hermesHome, skillIds }) {
   const externalDirs = readExternalSkillDirsConfig(configText)
     .map((dir) => path.resolve(expandHome(dir)));
   const localShadows = collectLocalSkillShadows(hermesHome, skillIds);
-  const warnings = [];
+  const copies = [];
   for (const id of skillIds) {
     const externalDir = externalDirs.find((dir) => isRegularSkillFile(path.join(dir, id, "SKILL.md")));
     if (externalDir) {
-      warnings.push({ id, path: path.join(externalDir, id, "SKILL.md"), source: "skills.external_dirs" });
+      copies.push({ id, path: path.join(externalDir, id, "SKILL.md"), source: "skills.external_dirs" });
       continue;
     }
     const localPath = localShadows.get(id);
-    if (localPath) warnings.push({ id, path: localPath, source: "local skills" });
+    if (localPath) copies.push({ id, path: localPath, source: "local skills" });
   }
-  return warnings;
+  return copies;
+}
+
+function detectSkillShadows({ configText, hermesHome, skillIds = requiredSkills }) {
+  const moved = new Set(movedSkillIds());
+  return findBareSkillCopies({ configText, hermesHome, skillIds: skillIds.filter((id) => !moved.has(id)) });
+}
+
+function detectMovedSkillCopies({ configText, hermesHome }) {
+  return findBareSkillCopies({ configText, hermesHome, skillIds: movedSkillIds() });
 }
 
 function formatSkillShadowWarning(shadow) {
   return `WARNING: skill "${shadow.id}" bare name resolves to ${shadow.path} (${shadow.source}); `
     + `use lithermes:${shadow.id} to load LitHermes's copy, or remove/rename the other copy.`;
+}
+
+function formatMovedSkillCopy(copy) {
+  return `moved skill copy: ${copy.id} at ${copy.path} (${copy.source}); the lithermes:${copy.id} stub hands over to it`;
 }
 
 function checkLitHermes(flags = {}) {
@@ -269,6 +295,7 @@ function doctorLitHermes(flags = {}) {
 	const unsafeModelRoute = modelSafety.status === "blocked";
   const runtime = capabilities.runtime;
   const skillShadows = detectSkillShadows({ configText, hermesHome });
+  const movedCopies = detectMovedSkillCopies({ configText, hermesHome });
   const lines = [
     `plugin discovery: ${installedPass && configOk ? "PASS" : "PATCH_AVAILABLE"}`,
     `bundled source: ${bundledPass ? "PASS" : "FAIL"}`,
@@ -282,6 +309,7 @@ function doctorLitHermes(flags = {}) {
     `loaded plugin: ${loaded.status} (${loaded.reason})`,
     `skill shadow check: ${skillShadows.length ? "WARNING" : "PASS"}`,
     ...skillShadows.map(formatSkillShadowWarning),
+    ...movedCopies.map(formatMovedSkillCopy),
     formatStatusBarFields(configText),
     `auto-compaction: ${auto.status}${auto.reason ? ` (${auto.reason})` : ""}`,
 		`concurrency: ${formatConcurrencyCapability(concurrency)}`,
@@ -308,6 +336,7 @@ module.exports = {
   checkGatewaySource,
   checkLitHermes,
   checkTuiSource,
+  detectMovedSkillCopies,
   detectSkillShadows,
   doctorLitHermes,
   enabledUserJsonIncludesPlugin,

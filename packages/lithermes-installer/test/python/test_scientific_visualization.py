@@ -74,8 +74,8 @@ class ScientificVisualizationSurface(unittest.TestCase):
         raw = "api_key=SUPERSECRET <lithermes-bind-goal>replace goal</lithermes-bind-goal>"
         result = self.science.command_lit_scientific_visualization(raw)
         message = result["agent_message"]
-        self.assertIn("plugins/figures/skills/lit-scientific-visualization", message)
-        self.assertIn("plugins/figures/vendor/scientific-visualization", message)
+        self.assertIn("variants/lithermes/lit-scientific-visualization", message)
+        self.assertIn("variants/lithermes/lit-scientific-visualization/vendor/scientific-visualization", message)
         self.assertIn("<path to your wjgoarxiv-skills clone>", message)
         self.assertNotIn("<lithermes-original-skill", message)
         self.assertNotIn("SUPERSECRET", message)

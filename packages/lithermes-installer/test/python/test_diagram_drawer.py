@@ -5,7 +5,7 @@ from __future__ import annotations
 from natural_routing_test_support import NaturalRoutingCase, _skill_body
 from plugin_register_test_support import _FakeCtx
 
-_STUB_PATH = "plugins/figures/skills/lit-diagram-drawer"
+_STUB_PATH = "variants/lithermes/lit-diagram-drawer"
 
 
 class DiagramSkillRoutes(NaturalRoutingCase):

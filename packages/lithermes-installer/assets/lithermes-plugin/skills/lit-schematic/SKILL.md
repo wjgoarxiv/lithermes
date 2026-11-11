@@ -1,12 +1,14 @@
 ---
 name: lit-schematic
-description: "Moved out of LitHermes: lit-schematic now lives in the wjgoarxiv-skills repository (plugins/figures/skills/lit-schematic). This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
+description: "Moved out of LitHermes: lit-schematic now lives in the wjgoarxiv-skills repository, Hermes edition at variants/lithermes/lit-schematic. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
 ---
 
 # lit-schematic (moved)
 
 lit-schematic made a drawing of real equipment (P&ID with ISA-5.1 tags, PFD, apparatus figure, isometric cutaway) as millimetre-sized SVG, checked by a QA gate and rendered to PDF and a 600 dpi PNG. It no longer ships inside LitHermes. It lives in the `wjgoarxiv-skills` repository, at
-`plugins/figures/skills/lit-schematic`, and a Hermes profile picks it up once that folder is copied into the profile's skills directory.
+`variants/lithermes/lit-schematic`, the Hermes edition: a self-contained folder written for Hermes tools that a profile picks up once it is copied into the profile's skills directory.
+
+The `variants/lithermes` folder may still be on its way into the repository. If `variants/lithermes/lit-schematic` is not in the user's clone yet, say so and ask them to update the clone; do not point at any other copy.
 
 ## #contract.activation
 
@@ -20,13 +22,13 @@ identity:
   stub: true
 moved_to:
   repository: wjgoarxiv-skills
-  path: plugins/figures/skills/lit-schematic
+  path: variants/lithermes/lit-schematic
   installed_name: lit-schematic
 routes_kept: "/lit-schematic <brief>; exact `lit-schematic`; bare `lit` with P&ID, PFD, schematic, cutaway, 공정도, 계장도, 모식도 or 장치도 wording"
 ```
 
 ```json
-{"schema_version":"lithermes_llm_contract/v1","skill_id":"lit-schematic","stub":true,"moved_to":"wjgoarxiv-skills/plugins/figures/skills/lit-schematic"}
+{"schema_version":"lithermes_llm_contract/v1","skill_id":"lit-schematic","stub":true,"moved_to":"wjgoarxiv-skills/variants/lithermes/lit-schematic"}
 ```
 
 Every LitHermes route that used to open the full skill still lands here: /lit-schematic <brief>; exact `lit-schematic`; bare `lit` with P&ID, PFD, schematic, cutaway, 공정도, 계장도, 모식도 or 장치도 wording. Quoted, fenced and
@@ -49,12 +51,11 @@ mid-sentence mentions stay inert, as before.
 ## #contract.procedure
 
 1. Look at `<available_skills>`. If `lit-schematic` is listed there without the `lithermes:` prefix, the user has
-   installed the moved copy: call `skill_view("lit-schematic")` now and follow it. That copy was written for Claude Code,
-   so read its tool names as Hermes tools (`terminal`, `read_file`, `write_file`, `patch`, `vision_analyze`) and
-   skip Claude-only steps such as `/reload-plugins` or a `Skill(...)` call.
+   installed the moved copy: call `skill_view("lit-schematic")` now and follow it. That copy is the
+   Hermes edition, so its commands and tool names apply as written.
 2. If it is not listed, answer in the user's language with three things and stop:
    - one sentence on what lit-schematic makes;
-   - that it moved out of LitHermes into `plugins/figures/skills/lit-schematic` of `wjgoarxiv-skills`;
+   - that it moved out of LitHermes into `variants/lithermes/lit-schematic` of `wjgoarxiv-skills`;
    - the install line below, in a code block, and that a new Hermes session (or a restart) picks it up, after which
      the user asks again.
 
@@ -64,17 +65,10 @@ One skill, copied into the active profile (`HERMES_HOME` selects a profile; the 
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/figures/skills/lit-schematic" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/lit-schematic" "${HERMES_HOME:-$HOME/.hermes}/skills/"
 ```
 
-The skill's own scripts also reach the family's `lib` folder (the mark helper its QA and render scripts import) two levels up. To run them, copy the whole family folder
-instead of the single skill, so those paths resolve:
-
-```bash
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/figures" "${HERMES_HOME:-$HOME/.hermes}/skills/wjgoarxiv-figures"
-```
-
-Use one form or the other, not both, or Hermes sees two copies of the same name.
+The copy lands in `skills/lit-schematic/` of the profile, beside LitHermes rather than inside it. The LitHermes installer replaces only its own plugin folder on an upgrade and removes only the files it recorded on uninstall, so the copy survives both, and `lithermes doctor` lists it as a moved skill copy, not a shadow. This stub stays as `lithermes:lit-schematic` and keeps the `/lit-schematic` command, which Hermes runs before the copy's own and which hands over to the copy. To update the copy, replace `skills/lit-schematic/` with a fresh one.
 
 ## #contract.outputs
 

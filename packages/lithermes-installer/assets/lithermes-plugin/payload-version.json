@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-11T03:51:51.865Z",
+  "syncedAt": "2026-11-11T06:05:39.085Z",
   "source": "bundled-payload",
-  "sourceHash": "5ce356e7cb57c60916be7c2d7046895136ef2d5f86e7f3a298640c5449d537e5",
+  "sourceHash": "cff37f078f713272ff94968125b3f1bdc0fd82820a19120027d7ecb1001f0b44",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,7 +9,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "203af3fb34d3b718afc96cd753fa3fe49bf6ae86bd107aaca82006745934f5aa"
+      "sha256": "c0ff9410887f92c8da242e879b599d039bea46a258a93d805ff6ebd2b01c260b"
     },
     {
       "path": "__init__.py",
@@ -49,7 +49,7 @@
     },
     {
       "path": "core_contract.py",
-      "sha256": "bd7c19f44eb54471a37c264e7416670bcdebe6526c36391f4965946cbfef492f"
+      "sha256": "60ff89c0d3f58b7ae553754a2073a3d0178f1e69c6e6d659f5a20fa766eb7a86"
     },
     {
       "path": "core_plans.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "c4aa23ac4f43de0a15b98957370182485b03f491668744bd2609e8887cf583cc"
+      "sha256": "0f3c51d466e95e219387cecada1a33a0657317c759f39e025b995b7c047b4703"
     },
     {
       "path": "gate_toasts.py",
@@ -281,7 +281,7 @@
     },
     {
       "path": "scientific_visualization.py",
-      "sha256": "5199650fb9126a05cb6ced8c1435e209616e72d4545ecefc2b46fae33093c7ae"
+      "sha256": "d6d88f1ae89bf54be75ea6eea5836534025f6af83756a86fd8977a5bdaf0e3e1"
     },
     {
       "path": "session_context.py",
@@ -625,7 +625,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/SKILL.md",
-      "sha256": "9074f876fb175e00e328c6f4c06959cd4b5e7fe0509a7a73461eea90b2edabf7"
+      "sha256": "62e38b49899684d07cbc364f9f14cf1e0e1af5480e0d52de662e7aab62af41ca"
     },
     {
       "path": "skills/frontend-ui-ux/references/craft-floor.md",
@@ -1033,11 +1033,11 @@
     },
     {
       "path": "skills/lit-diagram-drawer/SKILL.md",
-      "sha256": "969496266456f3499120f297907041554e893cd79e9faa39fc6f67658a6708db"
+      "sha256": "03349c01d8c69cd75116599deddad87a1d27c60b5f98956346e4f0e16846664e"
     },
     {
       "path": "skills/lit-docx/SKILL.md",
-      "sha256": "4bec6b868932cc7add1a1c35d6c5bf17a10ae8fbf23ae50c61906ffabd4ac313"
+      "sha256": "6a215c5b5fb0b93064a950bb43ac9bd4c32c322dcfd16e9bde82b7db9e15bd74"
     },
     {
       "path": "skills/lit-handoff/ORIGIN.json",
@@ -1345,7 +1345,7 @@
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
-      "sha256": "9facc5dacc6c4068b5b7a12baac99911f7f841826269746c3dd780ced44cecef"
+      "sha256": "2c43af9b1357c0c98e2e0c3a51f61af0485ccc05a474d8685bf415a111fc1780"
     },
     {
       "path": "skills/lit-recap/SKILL.md",
@@ -1353,15 +1353,15 @@
     },
     {
       "path": "skills/lit-schematic/SKILL.md",
-      "sha256": "0a37eb10d74d8d6382ce1b529f9a616df52856599b974ca36db074e5d222d04a"
+      "sha256": "63661f70b6bac419b82cdc3aedd44c72c46d8dca6e5eb8b0a422d854286aadff"
     },
     {
       "path": "skills/lit-scientific-visualization/SKILL.md",
-      "sha256": "ab98862a63c0d6c0da33515066406abd49582971d04a261eb4826f156075640d"
+      "sha256": "3d86c9de1fabeb2b80db049190eb8ab7af961acceba2758e7f9181cd5b7b1853"
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
-      "sha256": "171ca3ab1b6249d073c10364fb098829b2f2e76e415fa9e32ce4be7497bf9637"
+      "sha256": "4992c769f3300edce52f212637e44078a1a0f9f048fb60a9c6bcc77878f6620b"
     },
     {
       "path": "skills/litgoal/.gitkeep",
@@ -1489,7 +1489,7 @@
     },
     {
       "path": "skills/readme-studio/SKILL.md",
-      "sha256": "85fad1c12accb5d7398bacb35cec5b90e877f1c0e72e65ec64dad3730b7d5cb1"
+      "sha256": "da9dbf6daa31c0ff2fd4a1ab585110cff9ea68b22d6a87d545f97a15e5050fa6"
     },
     {
       "path": "skills/refactor/SKILL.md",
@@ -1513,7 +1513,7 @@
     },
     {
       "path": "skills/visual-qa/SKILL.md",
-      "sha256": "1f1af839a406cf7547407afd1bd63865520176f2c3b710fb18580c36a3026cf5"
+      "sha256": "040842649ea76a2dce9f1a3f996f4391cbf475849a376e96c47fd8e9d1a27716"
     },
     {
       "path": "skills/wikify/LICENSE",
@@ -1573,7 +1573,7 @@
     },
     {
       "path": "vendor/NOTICE.md",
-      "sha256": "8606647e932792dab27588b639e43e4384f1047392c807b18882c051050f1790"
+      "sha256": "38dad0cafdefcd0918b815ee948bd667bb00c9804c9c597a4c29109414f6a8ac"
     },
     {
       "path": "vendor/handoff/SKILL.md",

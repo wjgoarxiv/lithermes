@@ -1,12 +1,14 @@
 ---
 name: lit-pptx
-description: "Moved out of LitHermes: lit-pptx now lives in the wjgoarxiv-skills repository (plugins/decks/skills/lit-pptx). This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
+description: "Moved out of LitHermes: lit-pptx now lives in the wjgoarxiv-skills repository, Hermes edition at variants/lithermes/lit-pptx. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
 ---
 
 # lit-pptx (moved)
 
 lit-pptx made a finished PowerPoint deck built from a Markdown slide source in a named design direction, checked by a QA gate and by its rendered pages. It no longer ships inside LitHermes. It lives in the `wjgoarxiv-skills` repository, at
-`plugins/decks/skills/lit-pptx`, and a Hermes profile picks it up once that folder is copied into the profile's skills directory.
+`variants/lithermes/lit-pptx`, the Hermes edition: a self-contained folder written for Hermes tools that a profile picks up once it is copied into the profile's skills directory.
+
+The `variants/lithermes` folder may still be on its way into the repository. If `variants/lithermes/lit-pptx` is not in the user's clone yet, say so and ask them to update the clone; do not point at any other copy.
 
 ## #contract.activation
 
@@ -20,13 +22,13 @@ identity:
   stub: true
 moved_to:
   repository: wjgoarxiv-skills
-  path: plugins/decks/skills/lit-pptx
+  path: variants/lithermes/lit-pptx
   installed_name: lit-pptx
 routes_kept: "/lit-pptx <brief>; bare `lit` with slide or deck wording"
 ```
 
 ```json
-{"schema_version":"lithermes_llm_contract/v1","skill_id":"lit-pptx","stub":true,"moved_to":"wjgoarxiv-skills/plugins/decks/skills/lit-pptx"}
+{"schema_version":"lithermes_llm_contract/v1","skill_id":"lit-pptx","stub":true,"moved_to":"wjgoarxiv-skills/variants/lithermes/lit-pptx"}
 ```
 
 Every LitHermes route that used to open the full skill still lands here: /lit-pptx <brief>; bare `lit` with slide or deck wording. Quoted, fenced and
@@ -49,12 +51,11 @@ mid-sentence mentions stay inert, as before.
 ## #contract.procedure
 
 1. Look at `<available_skills>`. If `lit-pptx` is listed there without the `lithermes:` prefix, the user has
-   installed the moved copy: call `skill_view("lit-pptx")` now and follow it. That copy was written for Claude Code,
-   so read its tool names as Hermes tools (`terminal`, `read_file`, `write_file`, `patch`, `vision_analyze`) and
-   skip Claude-only steps such as `/reload-plugins` or a `Skill(...)` call.
+   installed the moved copy: call `skill_view("lit-pptx")` now and follow it. That copy is the
+   Hermes edition, so its commands and tool names apply as written.
 2. If it is not listed, answer in the user's language with three things and stop:
    - one sentence on what lit-pptx makes;
-   - that it moved out of LitHermes into `plugins/decks/skills/lit-pptx` of `wjgoarxiv-skills`;
+   - that it moved out of LitHermes into `variants/lithermes/lit-pptx` of `wjgoarxiv-skills`;
    - the install line below, in a code block, and that a new Hermes session (or a restart) picks it up, after which
      the user asks again.
 
@@ -64,17 +65,10 @@ One skill, copied into the active profile (`HERMES_HOME` selects a profile; the 
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/decks/skills/lit-pptx" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/lit-pptx" "${HERMES_HOME:-$HOME/.hermes}/skills/"
 ```
 
-The skill's own scripts also reach the family's `lib` folder (the Office runtime installer and its lockfiles) two levels up. To run them, copy the whole family folder
-instead of the single skill, so those paths resolve:
-
-```bash
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/decks" "${HERMES_HOME:-$HOME/.hermes}/skills/wjgoarxiv-decks"
-```
-
-Use one form or the other, not both, or Hermes sees two copies of the same name.
+The copy lands in `skills/lit-pptx/` of the profile, beside LitHermes rather than inside it. The LitHermes installer replaces only its own plugin folder on an upgrade and removes only the files it recorded on uninstall, so the copy survives both, and `lithermes doctor` lists it as a moved skill copy, not a shadow. This stub stays as `lithermes:lit-pptx` and keeps the `/lit-pptx` command, which Hermes runs before the copy's own and which hands over to the copy. To update the copy, replace `skills/lit-pptx/` with a fresh one.
 
 ## #contract.outputs
 

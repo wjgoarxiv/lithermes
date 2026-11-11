@@ -6,7 +6,8 @@ const { test } = require("node:test");
 const { requiredSkills } = require("../src/lib/skillPayload");
 const { readLock } = require("../scripts/sync-skills-lock");
 
-// The five content families moved to wjgoarxiv-skills; each id keeps a same-name stub here.
+// The five content families moved to wjgoarxiv-skills; each id keeps a same-name stub here. The family is
+// where the generic body sits in that repository; Hermes installs the Hermes edition, variants/lithermes/<id>.
 const MOVED = {
   "lit-pptx": "decks",
   "lit-docx": "documents",
@@ -31,15 +32,18 @@ const pkg = path.resolve(__dirname, "..");
 const plugin = path.join(pkg, "assets", "lithermes-plugin");
 const stub = (id) => fs.readFileSync(path.join(plugin, "skills", id, "SKILL.md"), "utf8");
 
-test("every moved id is a stub that names its wjgoarxiv-skills path and the Hermes copy line", () => {
+test("every moved id is a stub that names its Hermes edition and the copy line", () => {
   for (const [id, family] of Object.entries(MOVED)) {
     const text = stub(id);
     assert.match(text, new RegExp(`^---\\nname: ${id}\\n`), id);
-    assert.ok(text.includes(`plugins/${family}/skills/${id}`), `${id} names its repository path`);
+    assert.ok(text.includes(`variants/lithermes/${id}`), `${id} names its Hermes edition`);
     assert.ok(
-      text.includes(`cp -R "<path to your wjgoarxiv-skills clone>/plugins/${family}/skills/${id}" "\${HERMES_HOME:-$HOME/.hermes}/skills/"`),
+      text.includes(`cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/${id}" "\${HERMES_HOME:-$HOME/.hermes}/skills/"`),
       `${id} carries the one-skill copy line`,
     );
+    assert.ok(!text.includes(`plugins/${family}`), `${id} no longer points at the generic body or its family folder`);
+    assert.doesNotMatch(text, /Claude|reload-plugins|Skill\(|Use one form or the other/, `${id} gives no tool-mapping or family-copy advice`);
+    assert.ok(text.includes("replaces only its own plugin folder"), `${id} says the installer leaves the copy alone`);
     assert.ok(text.includes(`skill_view("${id}")`), `${id} loads the installed copy by its bare name`);
     assert.doesNotMatch(text, /\/Users\/|\/home\/|\/private\/tmp/, `${id} names no private path`);
     for (const heading of ["#contract.activation", "#contract.inputs", "#contract.mode_matrix", "#contract.procedure",
@@ -48,7 +52,7 @@ test("every moved id is a stub that names its wjgoarxiv-skills path and the Herm
     }
     assert.ok(requiredSkills.includes(id), `${id} stays a required payload skill`);
   }
-  assert.ok(stub("lit-scientific-visualization").includes("plugins/figures/vendor/scientific-visualization"));
+  assert.ok(stub("lit-scientific-visualization").includes("variants/lithermes/lit-scientific-visualization/vendor/scientific-visualization"));
 });
 
 test("no moved body ships: the pack holds the stubs, the kept probe and nothing else of the five families", () => {

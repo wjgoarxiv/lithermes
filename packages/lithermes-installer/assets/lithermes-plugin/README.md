@@ -100,7 +100,8 @@ CLI/plugin name, not the npm package name.
   `lithermes:lit-scientific-visualization`, `lithermes:frontend-ui-ux`,
   `lithermes:visual-qa`, `lithermes:lit-typographic-motion` and
   `lithermes:readme-studio` moved to the `wjgoarxiv-skills`
-  repository (`plugins/<family>/skills/<id>`). Each keeps a same-name stub under
+  repository, which keeps a self-contained Hermes edition of each at
+  `variants/lithermes/<id>`. Each keeps a same-name stub under
   `skills/`, and every route that opened the full skill still lands on it:
   `/lit-pptx`, `/lit-docx`, `/lit-diagram-drawer`, `/lit-schematic`,
   `/lit-scientific-visualization` and `/lit-typographic-motion`, the exact names,
@@ -108,8 +109,8 @@ CLI/plugin name, not the npm package name.
   wording. The route context names the folder and the one-skill copy line into
   `${HERMES_HOME:-$HOME/.hermes}/skills/`, and the stub loads the installed copy
   with `skill_view("<id>")`. Without that copy it builds nothing. The vendored
-  scientific-visualization source moved too, to
-  `plugins/figures/vendor/scientific-visualization`. The Office runtime, the
+  scientific-visualization source moved too, into
+  `variants/lithermes/lit-scientific-visualization/vendor/scientific-visualization`. The Office runtime, the
   motion runtime command and their doctor lines left with the skills.
 - `/lit-hijack <brief>` and the exact `lit-hijack` route (also `lit hijack`,
   `lit hijacking`, `lit 하이재킹`, `lit 하이잭`) load the installed hijack skill.

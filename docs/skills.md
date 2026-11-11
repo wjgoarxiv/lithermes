@@ -198,26 +198,26 @@ On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./
 
 Drawings, plots, decks, documents, interface design and review, films and README covers come from nine skills that left LitHermes for the `wjgoarxiv-skills` repository. Keeping them out makes the install small, and you copy in only the ones you use.
 
-| Skill | Folder in `wjgoarxiv-skills` |
+| Skill | Hermes edition in `wjgoarxiv-skills` |
 | --- | --- |
-| `lit-schematic` | `plugins/figures/skills/lit-schematic` |
-| `lit-diagram-drawer` | `plugins/figures/skills/lit-diagram-drawer` |
-| `lit-scientific-visualization` | `plugins/figures/skills/lit-scientific-visualization` |
-| `lit-pptx` | `plugins/decks/skills/lit-pptx` |
-| `lit-docx` | `plugins/documents/skills/lit-docx` |
-| `frontend-ui-ux` | `plugins/design/skills/frontend-ui-ux` |
-| `visual-qa` | `plugins/design/skills/visual-qa` |
-| `lit-typographic-motion` | `plugins/video-covers/skills/lit-typographic-motion` |
-| `readme-studio` | `plugins/video-covers/skills/readme-studio` |
+| `lit-schematic` | `variants/lithermes/lit-schematic` |
+| `lit-diagram-drawer` | `variants/lithermes/lit-diagram-drawer` |
+| `lit-scientific-visualization` | `variants/lithermes/lit-scientific-visualization` |
+| `lit-pptx` | `variants/lithermes/lit-pptx` |
+| `lit-docx` | `variants/lithermes/lit-docx` |
+| `frontend-ui-ux` | `variants/lithermes/frontend-ui-ux` |
+| `visual-qa` | `variants/lithermes/visual-qa` |
+| `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
+| `readme-studio` | `variants/lithermes/readme-studio` |
 
 Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the copy line, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over. The copy line puts one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`):
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/plugins/<family>/skills/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
 ```
 
-Start a new Hermes session after copying. A skill whose scripts reach the family's shared folders needs the whole family folder instead; each stub says which. `hermes lithermes doctor` confirms the nine stubs. The interface probe that litwork runs on every web edit stays in LitHermes, under `skills/frontend-ui-ux/scripts/`.
+Start a new Hermes session after copying. Each `variants/lithermes/<id>` folder is self-contained and written for Hermes, so one folder is all a skill needs. The copy sits in the profile's `skills/` folder, outside `plugins/lithermes/`, so a LitHermes upgrade or uninstall leaves it alone, and `lithermes doctor` lists it as a moved skill copy rather than a shadow. `hermes lithermes doctor` confirms the nine stubs. The interface probe that litwork runs on every web edit stays in LitHermes, under `skills/frontend-ui-ux/scripts/`.
 
 ### Rewriting prose
 
