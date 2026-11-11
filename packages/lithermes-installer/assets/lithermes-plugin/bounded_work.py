@@ -1331,15 +1331,47 @@ def _named_paths(tool_name: str, args: dict[str, Any]) -> list[tuple[Path, bool]
         workdir = _absolute(args.get("workdir"), anchor) or anchor
         if workdir is not None:
             named.append((Path(workdir), False))
-        try:
-            words = shlex.split(str(args.get("command") or ""))
-        except ValueError:
-            words = []
-        for word in words:
+        base = workdir
+        words = _shell_words(str(args.get("command") or ""))
+        for index, word in enumerate(words):
+            if set(word) <= _SHELL_OPERATOR_CHARS:
+                continue
             for candidate in {word, word.rpartition(":")[2]}:
                 if candidate and ("/" in candidate or candidate.startswith((".", "~"))):
-                    named.append((_absolute(candidate, workdir), False))
+                    named.append((_absolute(candidate, base), False))
+                elif candidate and base is not None and _bare_name_counts(Path(base), candidate):
+                    named.append((Path(base) / candidate, False))
+            if index and words[index - 1] in {"cd", "pushd"}:
+                base = _absolute(word, base) or base
     return [(path, write) for path, write in named if path is not None]
+
+
+_SHELL_OPERATOR_CHARS = set("();<>|&")
+
+
+def _shell_words(command: str) -> list[str]:
+    """Shell words with operators such as `&&`, `;` and `<` split off as their own words."""
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    try:
+        return list(lexer)
+    except ValueError:
+        return []
+
+
+def _bare_name_counts(base: Path, word: str) -> bool:
+    """Whether a bare word (no slash) in a command is checked as a file in the current folder.
+
+    Hermes setting names always are, since they are refused only inside a Hermes home or
+    profile; any other word only when that file exists, so ordinary words are not refused.
+    """
+    folded = _fold(word)
+    if folded in _HERMES_SETTING_NAMES or folded.startswith("config.yaml.") or folded == "litgoal.key":
+        return True
+    try:
+        return os.path.lexists(base / word)
+    except (OSError, ValueError):
+        return False
 
 
 def _protected_block(path: Path, action_class: str) -> dict[str, str]:

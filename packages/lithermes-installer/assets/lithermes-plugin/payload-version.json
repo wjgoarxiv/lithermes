@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-11T06:05:39.085Z",
+  "syncedAt": "2026-11-11T06:44:04.360Z",
   "source": "bundled-payload",
-  "sourceHash": "cff37f078f713272ff94968125b3f1bdc0fd82820a19120027d7ecb1001f0b44",
+  "sourceHash": "35df71ac56c043ba1d4c4e60aa343723e1af8bccc353537542518e6ba6e3962c",
   "files": [
     {
       "path": "NOTICE.md",
@@ -25,7 +25,7 @@
     },
     {
       "path": "bounded_work.py",
-      "sha256": "de961ca69a549b6e9066ac8ce798506f6467860e28e200d85724c9fd0e3da257"
+      "sha256": "579124311f24ad16f8ca48426453ce398b271e5aa2131d3022d3c678fa6f765a"
     },
     {
       "path": "bounded_work_tools.py",

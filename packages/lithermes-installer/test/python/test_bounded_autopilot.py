@@ -456,6 +456,43 @@ class ProtectedPaths(_AutopilotCase):
         )
         self._assert_protected(observer)
 
+    def test_terminal_bare_names_resolve_against_the_workdir_and_a_leading_cd(self):
+        (self.hermes / "auth.json").write_text("{}", encoding="utf-8")
+        (self.hermes / "config.yaml").write_text("x: 1\n", encoding="utf-8")
+        (self.hermes / "lithermes").mkdir()
+        (self.hermes / "lithermes" / "litgoal.key").write_text("k", encoding="utf-8")
+        (self.hermes / "profiles" / "p").mkdir(parents=True)
+        (self.ws / "id_ed25519").write_text("k", encoding="utf-8")
+        refused = [
+            ("cat auth.json", self.hermes),
+            ("cat config.yaml", self.hermes),
+            ("head -n 5 auth.lock", self.hermes),
+            ("cat litgoal.key", self.hermes / "lithermes"),
+            ("cat ../auth.json", self.hermes / "profiles"),
+            ("cat auth.json", self.hermes / "profiles" / "p"),
+            (f"cd {self.hermes} && cat auth.json", self.ws),
+            (f"cd {self.hermes};cat config.yaml", self.ws),
+            ("cd lithermes && cat litgoal.key", self.hermes),
+            (f"cat <{self.hermes}/auth.json", self.ws),
+            ("cat id_ed25519", self.ws),
+        ]
+        for command, workdir in refused:
+            with self.subTest(command=command, workdir=str(workdir)):
+                self._assert_protected(self._tool("terminal", {"command": command, "workdir": str(workdir)}))
+        for command, workdir in (
+            ("grep -rn auth src", self.ws),
+            ("grep -rn id_rsa src", self.ws),
+            ("cat config.yaml", self.ws),
+            ("ls sessions", self.hermes),
+            (f"cd {self.hermes} && ls sessions", self.ws),
+            ("echo config.yaml", self.ws),
+        ):
+            with self.subTest(command=command, workdir=str(workdir)):
+                named = self.bw._named_paths("terminal", {"command": command, "workdir": str(workdir)})
+                classes = [self.bw._protected_path(path, write=w, worktrees=[self.ws]) for path, w in named]
+                self.assertEqual([c for c in classes if c], [])
+        self._assert_untouched()
+
     def test_ordinary_lookalikes_and_hermes_session_folders_stay_readable(self):
         for target in (
             self.ws / ".env.example",
