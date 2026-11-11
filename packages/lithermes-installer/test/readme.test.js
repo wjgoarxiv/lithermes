@@ -18,13 +18,13 @@ const localPublishCommand = "npm publish --access public";
 function assertCoverImage(text, label, repository) {
   const staticSrc = repository
     ? "./docs/assets/cover.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.39/readme-assets/cover.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.40/readme-assets/cover.webp";
   const reducedMotionSrc = repository
     ? "./docs/assets/cover-motion-still.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.39/readme-assets/cover-motion-still.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.40/readme-assets/cover-motion-still.webp";
   const motionSrc = repository
     ? "./docs/assets/cover-motion.webp"
-    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.39/readme-assets/cover-motion.webp";
+    : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.40/readme-assets/cover-motion.webp";
   assert.ok(
     text.includes('<picture><source media="(prefers-reduced-motion: reduce)" srcset="' + reducedMotionSrc + '" /><img src="' + motionSrc + '" width="100%"'),
     label + " must use the animated cover and its reduced-motion still",
@@ -92,13 +92,13 @@ test("bilingual entry pages open with one cover, and the tour page keeps the can
       assert.doesNotMatch(text, /ascii-readme\.svg|lithermes-wordmark\.svg|lithermes-clay-icon\.png/, file + " must not stack logo images under the cover");
       const coverSrc = directory === repoRoot
         ? "./docs/assets/cover-motion.webp"
-        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.39/readme-assets/cover-motion.webp";
+        : "https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.40/readme-assets/cover-motion.webp";
       assert.ok(text.includes('src="' + coverSrc + '"'), file + " must resolve artwork from its own surface");
       assertCoverImage(text, file, directory === repoRoot);
       if (directory === repoRoot) {
         assert.doesNotMatch(text, /cdn\.jsdelivr/, "GitHub landing keeps repository-relative artwork");
       } else {
-        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.39\/readme-assets\//, "package landing must load artwork from the published tarball");
+        assert.match(text, /cdn\.jsdelivr\.net\/npm\/@litfamily\/lithermes@1\.0\.40\/readme-assets\//, "package landing must load artwork from the published tarball");
         assert.doesNotMatch(text, /raw\.githubusercontent/, "package landing must not depend on GitHub raw URLs");
       }
       assert.match(text, /```text\nlit [^\n]+\n```/, `${file} must show first bare lit use`);
@@ -421,9 +421,9 @@ function localPublishPolicyErrors(text) {
     for (const [pattern, message] of [
       [/nonzero/i, "nonzero-result handling"],
       [/never blind-retry/i, "no blind retry rule"],
-      [/npm view @litfamily\/lithermes@1\.0\.39 version/, "exact-version registry query"],
+      [/npm view @litfamily\/lithermes@1\.0\.40 version/, "exact-version registry query"],
       [/published artifact/i, "published-artifact inspection"],
-      [/npm pack @litfamily\/lithermes@1\.0\.39/, "published-artifact download"],
+      [/npm pack @litfamily\/lithermes@1\.0\.40/, "published-artifact download"],
     ]) {
       if (!pattern.test(followUp)) errors.push(`missing nearby ${message}`);
     }
@@ -501,7 +501,7 @@ test("root README files present polished GitHub landing pages", () => {
     for (const required of [
       "https://github.com/wjgoarxiv/lithermes",
       "https://www.npmjs.com/package/@litfamily/lithermes",
-      "@litfamily/lithermes@1.0.39",
+      "@litfamily/lithermes@1.0.40",
       "Hermes Goal Tools",
       "PREPARING INSTALL",
       "INSTALL RECEIPT",
@@ -556,7 +556,7 @@ test("English and Korean root/package docs explain the bounded Node update notic
 test("package metadata points at the renamed GitHub repository", () => {
   const pkg = require(path.join(packageRoot, "package.json"));
   assert.equal(pkg.name, "@litfamily/lithermes");
-   assert.equal(pkg.version, "1.0.39");
+   assert.equal(pkg.version, "1.0.40");
   assert.equal(pkg.bin.lithermes, "bin/lithermes.js");
   assert.equal(pkg.repository.type, "git");
   assert.equal(pkg.repository.url, "git+https://github.com/wjgoarxiv/lithermes.git");
@@ -615,8 +615,8 @@ guard protects this path, but its inspected preflight archive is not byte-identi
 \`\`\`sh
 npm publish --access public
 \`\`\`
-After any nonzero result, npm view @litfamily\/lithermes@1.0.39 version and never blind-retry. After success,
-download the published artifact with npm pack @litfamily\/lithermes@1.0.39 and inspect it.
+After any nonzero result, npm view @litfamily\/lithermes@1.0.40 version and never blind-retry. After success,
+download the published artifact with npm pack @litfamily\/lithermes@1.0.40 and inspect it.
 `;
   assert.deepEqual(localPublishPolicyErrors(sanctioned), [], "a fully sanctioned HUMAN-ONLY block must pass");
 });
@@ -692,7 +692,7 @@ test("README files document Korean prose cleanup command boundaries", () => {
   for (const [file, text] of docs) {
     const language = file.includes("Ko-KR") ? "ko" : "en";
     for (const required of [
-      "@litfamily/lithermes@1.0.39",
+      "@litfamily/lithermes@1.0.40",
       "lit-humanizer",
       "/lit-humanizer",
       "/lit-korean",
@@ -1079,7 +1079,7 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
     const { version } = require("../package.json");
     assert.ok(pictures[0][3].includes(`Installed LitHermes ${version}`), `${name}: the install alt must quote the first line`);
     assert.ok(pictures[3][3].includes("🔥 LIT IGNITED · litwork 🔥"), `${name}: the acknowledgement alt must quote the line`);
-    assert.ok(pictures[4][3].includes(`LitHermes update available: ${version} → 1.0.40`), `${name}: the notice alt must quote the notice`);
+    assert.ok(pictures[4][3].includes(`LitHermes update available: ${version} → 1.0.41`), `${name}: the notice alt must quote the notice`);
     const captions = [...section.matchAll(/^\*([^*\n]+)\*$/gm)].map((match) => match[1]);
     assert.equal(captions.length, 5, `${name} needs one caption per picture`);
     for (const caption of captions) assert.match(caption, labels[lang], `${name}: caption must label the picture honestly`);
@@ -1090,5 +1090,34 @@ test("terminal screens ship on the GitHub pages only, in both themes, with capti
   assert.ok(!fs.existsSync(path.join(packageRoot, "readme-assets", "screens")), "the package must not carry copies of the screens");
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /assets\/screens|(?:install|doctor|welcome|lit-ack|update-notice)-(?:dark|light)\.webp/, `${name} npm card must not embed the pictures`);
+  }
+});
+
+test("README pages and their linked docs no longer promise the film pre-warm or the Office tool downloads", () => {
+  const pages = [
+    path.join(repoRoot, "README.md"),
+    path.join(repoRoot, "README_Ko-KR.md"),
+    path.join(packageRoot, "README.md"),
+    path.join(packageRoot, "README_Ko-KR.md"),
+  ];
+  const removed = [
+    /fetches the film helpers/i,
+    /first run takes a minute/i,
+    /film tools were fetched/i,
+    /the film and Office helpers/i,
+    /pinned helper tools/i,
+    /Office tools the first time/i,
+    /A film also needs Chrome and ffmpeg/i,
+    /영상용 도구/,
+    /영상 도구를 받았는지/,
+    /Office용 도구/,
+    /처음에는 1분쯤/,
+    /Chrome과 ffmpeg도 있어야/,
+  ];
+  for (const file of pages) {
+    const text = read(file);
+    for (const phrase of removed) {
+      assert.doesNotMatch(text, phrase, `${path.relative(repoRoot, file)} or a docs page it links still says ${phrase}`);
+    }
   }
 });

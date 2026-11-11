@@ -131,7 +131,7 @@ test("CHANGELOG documents the 0.8.14 hyperplan release prep", () => {
 test("CHANGELOG assigns the notifier and skill integrity fixes to 0.8.31", () => {
   const text = read("CHANGELOG.md");
   const unreleasedStart = text.indexOf("## [Unreleased]");
-  const currentReleaseStart = text.indexOf("## [1.0.39]");
+  const currentReleaseStart = text.indexOf("## [1.0.40]");
   const releaseStart = text.indexOf("## [0.8.31]");
   const nextReleaseStart = text.indexOf("## [0.8.30]");
   assert.ok(
