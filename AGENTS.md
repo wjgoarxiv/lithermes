@@ -67,7 +67,8 @@ sync writes nothing and exits 1, as it does when the pack would ship a file Git 
 track. Raise a budget by hand when a skill grows on purpose. Turning a
 skill into a smaller stub means lowering its floor by hand in the same commit, with the reason.
 The nine skills that moved to `wjgoarxiv-skills` on 2026-11-11 are such stubs: their budgets
-were lowered by hand (one file each, seven for `frontend-ui-ux`, which keeps the interface probe),
+are stub budgets set by hand (one file and at most 9000 B each; seven files and 120000 B for
+`frontend-ui-ux`, which keeps the interface probe),
 the lazy UI/UX cap went with their bodies, and both totals still clear their floors, so neither
 floor was lowered. A stub that grows back past its budget fails `check:lock`.
 

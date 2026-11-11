@@ -61,8 +61,8 @@
       "minSkillBytes": 3100,
       "maxSkillBytes": 9000,
       "minFiles": 7,
-      "maxFiles": 341,
-      "maxBytes": 6164000
+      "maxFiles": 7,
+      "maxBytes": 120000
     },
     "lit-adhd": {
       "minSkillBytes": 29600,
@@ -122,17 +122,17 @@
     },
     "lit-diagram-drawer": {
       "minSkillBytes": 4600,
-      "maxSkillBytes": 40000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 479,
-      "maxBytes": 5155000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "lit-docx": {
       "minSkillBytes": 4500,
-      "maxSkillBytes": 25000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 89,
-      "maxBytes": 977000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "lit-handoff": {
       "minSkillBytes": 7400,
@@ -171,10 +171,10 @@
     },
     "lit-pptx": {
       "minSkillBytes": 4300,
-      "maxSkillBytes": 27000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 192,
-      "maxBytes": 12824000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "lit-recap": {
       "minSkillBytes": 7300,
@@ -185,24 +185,24 @@
     },
     "lit-schematic": {
       "minSkillBytes": 4700,
-      "maxSkillBytes": 29000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 48,
-      "maxBytes": 583000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "lit-scientific-visualization": {
       "minSkillBytes": 5000,
-      "maxSkillBytes": 16000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 3,
-      "maxBytes": 20000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "lit-typographic-motion": {
       "minSkillBytes": 3500,
       "maxSkillBytes": 6000,
       "minFiles": 1,
-      "maxFiles": 141,
-      "maxBytes": 3357000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "litgoal": {
       "minSkillBytes": 28200,
@@ -241,10 +241,10 @@
     },
     "readme-studio": {
       "minSkillBytes": 4600,
-      "maxSkillBytes": 14000,
+      "maxSkillBytes": 9000,
       "minFiles": 1,
-      "maxFiles": 32,
-      "maxBytes": 386000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "refactor": {
       "minSkillBytes": 32800,
@@ -285,8 +285,8 @@
       "minSkillBytes": 2000,
       "maxSkillBytes": 7000,
       "minFiles": 1,
-      "maxFiles": 23,
-      "maxBytes": 170000
+      "maxFiles": 1,
+      "maxBytes": 9000
     },
     "wikify": {
       "minSkillBytes": 10000,
