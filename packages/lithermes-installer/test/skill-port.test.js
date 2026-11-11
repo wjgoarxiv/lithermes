@@ -6,10 +6,13 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { test } = require("node:test");
 const { requiredSkills } = require("../src/lib/skillPayload");
+const { readLock } = require("../scripts/sync-skills-lock");
 
 const packageRoot = path.resolve(__dirname, "..");
 const pluginRoot = path.join(packageRoot, "assets", "lithermes-plugin");
 const skillsRoot = path.join(pluginRoot, "skills");
+// The hand-owned floors these tests enforce live in skills.lock.json `policy` (npm run sync:lock keeps them).
+const lockPolicy = readLock().policy;
 
 const workflowSkills = [
   "lit-burnoff-file",
@@ -167,16 +170,8 @@ test("bundled plugin includes the full workflow skill set", () => {
 });
 
 test("bundled skills are rich workflows rather than LitHermes placeholders", () => {
-  const minimumBytes = new Map([
-    ["debugging", 10000],
-    ["lit-code", 30000],
-    ["refactor", 24000],
-    ["lit-burnoff", 18000],
-    ["review-work", 7000],
-    ["litgoal", 10000],
-    ["lit-brainstorm", 12000],
-    ["litwork", 10000],
-  ]);
+  const minimumBytes = new Map(Object.entries(lockPolicy.skillMdFloorBytes));
+  assert.ok(minimumBytes.size >= 8, "the policy lost a per-skill floor");
 
   for (const [name, minBytes] of minimumBytes) {
     const bytes = Buffer.byteLength(fs.readFileSync(skillPath(name), "utf8"));
@@ -188,7 +183,8 @@ test("bundled skills are rich workflows rather than LitHermes placeholders", () 
     .filter((entry) => entry.isDirectory())
     .map((entry) => Buffer.byteLength(fs.readFileSync(skillPath(entry.name), "utf8")))
     .reduce((sum, size) => sum + size, 0);
-  assert.ok(totalBytes >= 150000, `workflow skill payload is too small: ${totalBytes}`);
+  const totalFloor = lockPolicy.totalSkillMdFloorBytes;
+  assert.ok(totalBytes >= totalFloor, `workflow skill payload is too small: ${totalBytes} < ${totalFloor}`);
 });
 
 test("top-level bundled skill corpus stays above the reference coverage floor", () => {
@@ -196,15 +192,18 @@ test("top-level bundled skill corpus stays above the reference coverage floor", 
     .map((file) => whitespaceWordCount(fs.readFileSync(file, "utf8")))
     .reduce((sum, count) => sum + count, 0);
 
-  assert.ok(totalWords >= 42789, `top-level skill corpus is too small: ${totalWords} < 42789`);
+  const wordFloor = lockPolicy.corpusWordFloor;
+  assert.ok(totalWords >= wordFloor, `top-level skill corpus is too small: ${totalWords} < ${wordFloor}`);
 });
 
 test("concise UI/UX entrypoints preserve the dense contracts as lazy references", () => {
-  for (const name of ["frontend-ui-ux", "visual-qa"]) {
+  const lazy = lockPolicy.lazyEntrypoints;
+  assert.deepEqual(lazy.skills, ["frontend-ui-ux", "visual-qa"]);
+  for (const name of lazy.skills) {
     const entrypoint = fs.readFileSync(skillPath(name), "utf8");
-    const detail = fs.readFileSync(skillReferencePath(name, "complete-contract.md"), "utf8");
-    assert.ok(Buffer.byteLength(entrypoint, "utf8") <= 3584, `${name} entrypoint exceeds the safer prompt budget`);
-    assert.ok(Buffer.byteLength(detail, "utf8") >= 15000, `${name} detailed contract was not preserved`);
+    const detail = fs.readFileSync(path.join(skillsRoot, name, lazy.reference), "utf8");
+    assert.ok(Buffer.byteLength(entrypoint, "utf8") <= lazy.maxSkillBytes, `${name} entrypoint exceeds the safer prompt budget`);
+    assert.ok(Buffer.byteLength(detail, "utf8") >= lazy.minReferenceBytes, `${name} detailed contract was not preserved`);
     assert.match(entrypoint, /references\/complete-contract\.md/);
   }
 

@@ -29,6 +29,7 @@ A Node installer that ships a **Python plugin payload**. Git root is this direct
 npm --prefix packages/lithermes-installer test          # ~347 pass as of 2026-08-01
 npm --prefix packages/lithermes-installer run test:python
 npm --prefix packages/lithermes-installer run pack:dry
+npm --prefix packages/lithermes-installer run check:lock
 ```
 
 **Python tests must go through that runner.** A bare `python3 -m unittest` reports roughly
@@ -47,6 +48,24 @@ node packages/lithermes-installer/scripts/sync-plugin.js --in-place
 Otherwise the content-hashed `payload-version.json` goes stale. Note that this script always
 bumps `syncedAt` even when nothing changed — check whether `sourceHash` actually moved before
 committing the diff, and revert a timestamp-only change.
+
+## Skills lock
+
+`packages/lithermes-installer/skills.lock.json` (tracked, not packed) holds per-skill size
+budgets and the exact `npm pack --dry-run --json --ignore-scripts` file list. It sits beside
+`payload-version.json`, which stays the authority for payload integrity. After a skill or
+package-file change, `git add` any new file first (only tracked files are measured), then run:
+
+```bash
+npm --prefix packages/lithermes-installer run sync:lock    # check:lock is the read-only form
+```
+
+`policy` (the old per-skill SKILL.md floors, the 150000 B total, the 42789-word corpus floor,
+the lazy UI/UX entrypoint cap) and `budgets` are hand-owned; a sync never lowers or reseeds
+them. A new skill needs `-- --accept-new <id>`, a removed one `-- --drop <id>`; otherwise the
+sync writes nothing and exits 1, as it does when the pack would ship a file Git does not
+track. Raise a budget by hand when a skill grows on purpose. Turning a
+skill into a smaller stub means lowering its floor by hand in the same commit, with the reason.
 
 ## Do not touch
 
