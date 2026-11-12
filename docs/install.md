@@ -40,6 +40,30 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 
 </details>
 
+## Hand the install to a coding agent
+
+You can hand the install to a coding agent. With this prompt it checks your setup, waits for your yes, installs the official package, runs the offline check and leaves the restart to you:
+
+```text
+Install LitHermes, the lit workflow plugin for Hermes Agent, on this machine.
+
+1. Check first: Hermes Agent is installed (hermes --version), Node.js is 18 or later
+   (node --version), and I can write to my Hermes home (~/.hermes, or $HERMES_HOME if set).
+2. Show me your plan and the exact commands, and wait for my yes before you change
+   anything. You may preview the install first; it changes nothing:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
+3. Use only the official npm package @litfamily/lithermes. Do not clone a repository,
+   copy plugin files by hand or install any other package. Install with:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
+4. Verify with:
+   npx --package @litfamily/lithermes -- lithermes doctor --offline
+   Report the result to me, including every line that is not PASS. "loaded plugin:
+   PARTIAL" is expected offline, and model routes may show as unavailable.
+5. Do not restart Hermes or its gateway yourself. Remind me to restart the Hermes CLI
+   and any running Hermes gateway (Telegram, Discord and so on) so the plugin loads,
+   and then to start a task with lit in front.
+```
+
 ## Updates
 
 LitHermes updates itself, and it does so carefully. Here is what actually happens.

@@ -167,6 +167,71 @@ These are all the skills you can call in LitHermes, with the words that start ea
 </tr>
 </table>
 
+## Everyday routes
+
+The routes you will use most days, each started with a word or two. The README sums them up in one table; this section gives each its full story.
+
+### A task that ends checked
+
+A plain `lit` keeps a notepad and takes each criterion through the same loop: a failing test, a passing one, a check against the running result, then cleanup. You get the change and a list of what was verified. Typing `lit` again in the same session carries on in the mode you are in, and `lit new …` starts fresh.
+
+```text
+lit fix the failing login test
+```
+
+### Plan first, then build
+
+`lit plan` writes a plan file with numbered task rows and leaves your code alone. Read it, and when it looks right, run `/start-work` with the plan file; it runs the plan row by row and ticks a box only after all five gates pass. Right after a plan is saved, a bare `go` in the same session shows you that exact command to run.
+
+```text
+lit plan add CSV export to the reports page
+/start-work <the plan file it wrote>
+```
+
+### A second look before you merge
+
+`lit review` has two modes. A plan review checks a plan after `lit plan` and before `start-work`. A work review hands the finished change to five reviewers who read it separately, and each one leads with what it found; fixing comes after. It picks the mode from what exists in your project, says which one on its first line, and `lit review plan` or `lit review work` forces one.
+
+```text
+lit review the changes on this branch
+```
+
+### Research with sources
+
+`lit research` splits a question, sends searchers out in parallel and follows every lead before it answers. Each claim comes back with its source, anything it fetches is read as plain data, and it stops at logins and paywalls.
+
+```text
+lit research how do popular CLIs migrate old config files?
+```
+
+### Korean and English prose
+
+`humanizer` rewrites stiff Korean or English prose, keeps the facts, hedges and register, and leaves your files alone until you decide.
+
+```text
+humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …
+```
+
+### Ideas before a plan
+
+For an open question such as a name or a direction, `lit brainstorm` lays out many different options first, then a short list with the trade-offs. You pick, and it hands the pick to an interview or to `lit plan`. It never builds anything itself.
+
+### Bring in a technique you read about
+
+You read an article or a repository that does something your own skill does not. `lit hijack` records where each source came from, checks its licence, writes a spec in its own words, builds it through Hermes helpers, and proves the change by running the old and the new skill on the same prompt.
+
+```text
+lit hijack https://example.com/post into my lit-humanizer skill
+```
+
+### Where was I?
+
+After a day of several windows, `lit adhd` (or `lit rewind`) reads the recent Hermes sessions of this repository with their plans, handoffs and git history, and gives you a board: 🎯 the one thing to do now with the exact text to type, 📊 done / in progress / waiting on you / left counts with an overall bar, 🏁 each plan's progress, ✅ what finished lately, ⬜ what is still to do, and 🔔 reminders such as a session waiting on your answer, uncommitted changes, or a plan nobody touched for a week. It changes nothing. If its next step is what you want, answer `go` within half an hour; while other sessions are still at work, it tells you to wait for them. Add `detail` (`lit adhd detail`) for the per-session brief pictured in the README showcase, under the board.
+
+### From a phone, through a gateway
+
+Every route above also works through a Hermes gateway such as Telegram or Discord, so you can start a plan at your desk and check on it from a phone. A gateway loads a new or updated plugin only when it restarts, and `lithermes doctor` tells you when the running one is older than your last install.
+
 ## Commands
 
 | Type | What it does |

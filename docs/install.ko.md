@@ -40,6 +40,30 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 
 </details>
 
+## 코딩 에이전트에게 설치 맡기기
+
+코딩 에이전트에게 설치를 맡길 수도 있습니다. 아래 프롬프트를 주면 환경을 확인하고, 승인을 기다렸다가 공식 패키지를 설치하고, 오프라인 점검 결과를 알려 준 뒤 재시작은 사용자에게 남겨 둡니다.
+
+```text
+이 컴퓨터에 Hermes Agent용 lit 워크플로 플러그인 LitHermes를 설치해줘.
+
+1. 먼저 확인해줘: Hermes Agent가 설치되어 있는지(hermes --version), Node.js가 18 이상인지
+   (node --version), 내 Hermes 홈(~/.hermes, HERMES_HOME이 설정되어 있으면 그 경로)에 쓸 수 있는지.
+2. 무엇이든 바꾸기 전에 계획과 실행할 명령을 그대로 보여 주고 내 승인을 기다려줘.
+   아무것도 바꾸지 않는 미리보기는 먼저 실행해도 돼:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
+3. 공식 npm 패키지 @litfamily/lithermes만 써줘. 저장소를 clone하거나, 플러그인 파일을
+   손으로 복사하거나, 다른 패키지를 설치하지 마. 설치 명령:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
+4. 확인 명령:
+   npx --package @litfamily/lithermes -- lithermes doctor --offline
+   결과를 알려 주고, PASS가 아닌 줄은 빠짐없이 보여줘. 오프라인에서는 "loaded plugin:
+   PARTIAL"이 정상이고, 모델 경로가 unavailable로 나올 수 있어.
+5. Hermes나 gateway를 직접 다시 시작하지는 마. 플러그인이 불러와지도록 Hermes CLI와 실행 중인
+   Hermes gateway(Telegram, Discord 등)를 다시 시작하라고 알려 주고, 그다음 요청 앞에 lit을
+   붙여 작업을 시작하면 된다고 말해줘.
+```
+
 ## 업데이트
 
 LitHermes는 스스로 업데이트하는데, 조심스럽게 합니다. 실제로 무슨 일이 일어나는지 순서대로 설명합니다.
