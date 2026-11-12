@@ -114,6 +114,13 @@ function validManifestFiles(manifest) {
     && new Set(manifest.files.map((entry) => entry.path)).size === manifest.files.length;
 }
 
+// A file in `<dir>/__pycache__` that Python compiled from a source the install wrote.
+function ownedPythonCache(dest, dir, cache, owned) {
+  const name = /^([^.]+)\.[a-zA-Z][a-zA-Z0-9_-]*(?:\.opt-[0-9]+)?\.pyc$/.exec(cache.name);
+  const source = name && path.relative(dest, path.join(dir, `${name[1]}.py`)).split(path.sep).join("/");
+  return Boolean(cache.isFile() && name && owned.has(source));
+}
+
 function installedMatchesManifest(hermesHome, manifest, caches = []) {
   if (!validManifestFiles(manifest)) return false;
   const dest = pluginDest(hermesHome);
@@ -125,11 +132,7 @@ function installedMatchesManifest(hermesHome, manifest, caches = []) {
     if (entry.isDirectory()) {
       if (entry.name === "__pycache__") {
         const entries = fs.readdirSync(file, { withFileTypes: true });
-        if (!entries.length || !entries.every((cache) => {
-          const name = /^([^.]+)\.[a-zA-Z][a-zA-Z0-9_-]*(?:\.opt-[0-9]+)?\.pyc$/.exec(cache.name);
-          const source = name && path.relative(dest, path.join(dir, `${name[1]}.py`)).split(path.sep).join("/");
-          return cache.isFile() && name && owned.has(source);
-        })) return false;
+        if (!entries.length || !entries.every((cache) => ownedPythonCache(dest, dir, cache, owned))) return false;
         const stat = fs.lstatSync(file);
         caches.push({ path: relative, dev: stat.dev, ino: stat.ino, files: entries.map((cache) => ({
           path: cache.name, sha256: sha256(path.join(file, cache.name)),
@@ -146,19 +149,25 @@ function installedMatchesManifest(hermesHome, manifest, caches = []) {
 }
 
 // Which files under the plugin folder differ from the install record: edited, added
-// (anything the installer did not write, a link included) or missing. Host bytecode is
-// left out. Without a record, every file is the user's.
+// (anything the installer did not write, a link or an empty folder included) or missing.
+// It names everything installedMatchesManifest refuses, so a refusal is never silent;
+// only bytecode Python compiled from an installed source is left out. Without a
+// record, every file is the user's.
 function pluginDrift(hermesHome, manifest) {
   const dest = pluginDest(hermesHome);
   const owned = validManifestFiles(manifest) ? new Map(manifest.files.map((entry) => [entry.path, entry.sha256])) : new Map();
   const drift = [];
   const seen = new Set();
   const walk = (dir) => {
+    const cacheDir = path.basename(dir) === "__pycache__";
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name === "__pycache__" || /\.py[co]$/.test(entry.name)) continue;
+      if (cacheDir && ownedPythonCache(dest, path.dirname(dir), entry, owned)) continue;
       const file = path.join(dir, entry.name);
       const relative = path.relative(dest, file).split(path.sep).join("/");
       if (entry.isDirectory()) {
+        if (!fs.readdirSync(file).length && ![...owned.keys()].some((name) => name.startsWith(`${relative}/`))) {
+          drift.push({ path: `${relative}/`, change: "added" });
+        }
         walk(file);
         continue;
       }
@@ -205,6 +214,7 @@ function keepReplacedFiles(hermesHome, drift, checkState) {
     fs.mkdirSync(path.dirname(out), { recursive: true });
     const stat = fs.lstatSync(source);
     if (stat.isSymbolicLink()) fs.symlinkSync(fs.readlinkSync(source), out);
+    else if (stat.isDirectory()) fs.mkdirSync(out, { recursive: true });
     else if (stat.isFile()) fs.copyFileSync(source, out);
   }
   return target;

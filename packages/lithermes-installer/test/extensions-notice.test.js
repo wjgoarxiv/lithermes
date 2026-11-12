@@ -193,3 +193,32 @@ test("the installer's extension ids match the plugin's moved-skill list", () => 
   const ids = [...block.matchAll(/"([a-z-]+)": "/g)].map((match) => match[1]);
   assert.deepEqual(EXTENSION_IDS, ids);
 });
+
+test("an empty folder or a stray cache file in the plugin folder is named too, so no refusal is silent", async () => {
+  const h = home();
+  assert.equal(install(h).status, 0);
+  const plugin = path.join(h, "plugins", "lithermes");
+  fs.mkdirSync(path.join(plugin, "skills", "my-own-skill"));
+  fs.mkdirSync(path.join(plugin, "__pycache__"), { recursive: true });
+  fs.writeFileSync(path.join(plugin, "__pycache__", "my_helper.cpython-311.pyc"), "compiled\n");
+  ageInstall(h);
+  const refused = install(h);
+  assert.equal(refused.status, 5);
+  assert.match(refused.stdout + refused.stderr, /not manifest-owned: __pycache__\/my_helper\.cpython-311\.pyc \(added\), skills\/my-own-skill\/ \(added\)\./);
+
+  fs.rmSync(path.join(h, "lithermes", "notices"), { recursive: true, force: true });
+  const result = await blockedUpdate(h);
+  assert.equal(result.status, "failed");
+  assert.deepEqual(result.blockedBy, [
+    { path: "__pycache__/my_helper.cpython-311.pyc", change: "added" },
+    { path: "skills/my-own-skill/", change: "added" },
+  ]);
+  assert.ok(fs.existsSync(path.join(h, "lithermes", "notices", "update-blocked.json")), "the refused update leaves a notice");
+
+  const forced = install(h, ["--force"]);
+  assert.equal(forced.status, 0, forced.stderr);
+  const kept = /your changed files: copied to (\S+) before the plugin folder was replaced/.exec(forced.stdout);
+  assert.ok(kept, forced.stdout);
+  assert.equal(fs.readFileSync(path.join(kept[1], "__pycache__", "my_helper.cpython-311.pyc"), "utf8"), "compiled\n");
+  assert.ok(fs.statSync(path.join(kept[1], "skills", "my-own-skill")).isDirectory());
+});
