@@ -41,8 +41,8 @@ const NOTICE_LINES = [
   "https://github.com/wjgoarxiv/wjgoarxiv-skills",
   "full LitFamily experience",
   "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
-  'mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"',
-  'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+  ...require("../src/lib/sessionNotices").INSTALL_LINES.slice(1),
+  "extension-backups/",
 ];
 
 test("a fresh install prints the LitFamily extensions notice and leaves it for the first session", () => {
@@ -55,7 +55,8 @@ test("a fresh install prints the LitFamily extensions notice and leaves it for t
     assert.ok(result.stdout.includes(id), id);
   }
   const block = result.stdout.slice(result.stdout.indexOf("LitFamily extensions")).trimEnd().split("\n");
-  assert.ok(block.length <= 10, `the notice stays short (${block.length} lines)`);
+  // Five of these are the install lines (name, check, move aside, copy, receipt) that keep one live copy.
+  assert.ok(block.length <= 14, `the notice stays short (${block.length} lines)`);
   assert.doesNotMatch(result.stdout, /\x1b\[/, "no colour under NO_COLOR");
   assert.doesNotMatch(result.stdout, /old version left these behind/, "a fresh install has nothing left behind");
   const pending = JSON.parse(fs.readFileSync(path.join(h, "lithermes", "notices", "extensions.json"), "utf8"));

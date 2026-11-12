@@ -210,14 +210,23 @@ Drawings, plots, decks, documents, interface design and review, films and README
 | `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
 | `readme-studio` | `variants/lithermes/readme-studio` |
 
-Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the copy line, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over. The copy line puts one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`):
+Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the install lines, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over. The install lines put one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`). Set `ID`, then paste them in bash or zsh: a read-only check for other copies Hermes would load, a move of any old `skills/<id>/` whole into `extension-backups/<date-time>/` of the profile (outside every folder Hermes reads skills from), a copy into the emptied folder and a receipt, `.litfamily-extension.json`:
 
 ```bash
-mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/$ID"
+[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
+if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
+if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-Start a new Hermes session after copying. Each `variants/lithermes/<id>` folder is self-contained and written for Hermes, so one folder is all a skill needs. The copy sits in the profile's `skills/` folder, outside `plugins/lithermes/`, so a LitHermes upgrade or uninstall leaves it alone, and `lithermes doctor` lists it as a moved skill copy rather than a shadow. `hermes lithermes doctor` confirms the nine stubs. The interface probe that litwork runs on every web edit stays in LitHermes, under `skills/frontend-ui-ux/scripts/`.
+Start a new Hermes session after copying. To update, paste the same lines again; to remove a copy, move it into the backups the same way, with no delete:
+
+```bash
+[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"
+```
+
+A second, different copy of the same name elsewhere under `skills/` ties with the new one and Hermes loads neither, so move it out as well; a copy in a trusted project's `.hermes/skills` or `.agents/skills` wins inside that project; one in `external_dirs` loses to the profile copy. Each `variants/lithermes/<id>` folder is self-contained and written for Hermes, so one folder is all a skill needs. The copy sits in the profile's `skills/` folder, outside `plugins/lithermes/`, so a LitHermes upgrade or uninstall leaves it alone, and `lithermes doctor` lists it as a moved skill copy rather than a shadow. `hermes lithermes doctor` confirms the nine stubs. The interface probe that litwork runs on every web edit stays in LitHermes, under `skills/frontend-ui-ux/scripts/`.
 
 ### Rewriting prose
 

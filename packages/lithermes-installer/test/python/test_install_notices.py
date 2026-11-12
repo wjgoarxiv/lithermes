@@ -20,6 +20,12 @@ VERSION = "9.1.2"  # any version; the notice only has to match the install recor
 
 
 class InstallNotices(NaturalRoutingCase):
+    def _contract(self):
+        """The plugin's core_contract submodule, where the install lines live."""
+        import importlib
+
+        return importlib.import_module(f"{self.pkg.__name__}.core_contract")
+
     def setUp(self):
         super().setUp()
         self.home = Path(os.environ["HERMES_HOME"])
@@ -43,9 +49,11 @@ class InstallNotices(NaturalRoutingCase):
             "are now LitFamily extensions, kept on the extension shelf at https://github.com/wjgoarxiv/wjgoarxiv-skills",
             "full LitFamily experience",
             "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
-            'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+            'ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"',
+            *self._contract().EXTENSION_STEP_LINES,
         ):
             self.assertIn(part, first)
+        self.assertNotIn('"${HERMES_HOME:-$HOME/.hermes}/skills/"', first, "no line merges into an old copy")
         self.assertNotIn("left these behind", first, "a fresh install has nothing to clean up")
         self.assertFalse((self.notices / "extensions.json").exists())
         self.assertTrue((self.notices / "extensions.shown.json").exists())
@@ -65,7 +73,8 @@ class InstallNotices(NaturalRoutingCase):
         self.assertIn("LitHermes의 코어는 그 자체로 완성되어 있고", shown)
         self.assertIn("LitFamily를 온전히 쓸 수 있습니다", shown)
         self.assertIn("이 확장을 설치하지 않는다면 지워도 됩니다", shown)
-        self.assertIn("variants/lithermes/<id>", shown)
+        self.assertIn("variants/lithermes/$ID", shown)
+        self.assertIn("extension-backups", shown)
 
     def test_a_helper_or_cron_reply_leaves_the_notice_for_the_user(self):
         self.write("extensions", version=VERSION, upgradedFrom=None, leftovers=[])

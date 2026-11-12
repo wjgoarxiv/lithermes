@@ -19,6 +19,8 @@ MOVED = {
     "readme-studio": "video-covers",
 }
 INSTALL_PLACEHOLDER = "<path to your wjgoarxiv-skills clone>"
+# The old copy line: it merged a new copy into an existing skills/<id>/ folder.
+MERGING_COPY = '"${HERMES_HOME:-$HOME/.hermes}/skills/"'
 # Instructions that only the old bodies carried. A stub route must not keep any of them.
 STALE_BODY_LINES = (
     "thirteen tonalities",
@@ -60,9 +62,18 @@ def _stub(name: str) -> str:
 
 
 class MovedSkillStubs(NaturalRoutingCase):
+    def _contract(self):
+        """The plugin's core_contract submodule, where the install lines live."""
+        import importlib
+
+        return importlib.import_module(f"{self.pkg.__name__}.core_contract")
+
     def _assert_stub_context(self, name: str, context: str) -> None:
         self.assertIn(INSTALL_PLACEHOLDER, context)
         self.assertIn(f"variants/lithermes/{name}", context)
+        self.assertIn(self._contract().extension_install_lines(name)[0], context)
+        self.assertIn(f'install lines under "Install for Hermes" in skill_view("lithermes:{name}")', context)
+        self.assertNotIn(MERGING_COPY, context)
         self.assertNotIn(f"plugins/{MOVED[name]}/", context)
         for stale in STALE_BODY_LINES:
             self.assertNotIn(stale, context)
@@ -74,11 +85,14 @@ class MovedSkillStubs(NaturalRoutingCase):
                 self.assertIn(f"name: {name}\n", text)
                 self.assertIn("wjgoarxiv-skills", text)
                 self.assertIn(f"variants/lithermes/{name}", text)
-                self.assertIn(f'cp -R "{INSTALL_PLACEHOLDER}/variants/lithermes/{name}"', text)
+                for line in self._contract().extension_install_lines(name):
+                    self.assertIn(line, text)
+                self.assertIn(self._contract().EXTENSION_REMOVE_LINE, text)
+                self.assertNotIn(MERGING_COPY, text)
                 self.assertNotIn(f"plugins/{family}", text)
                 self.assertNotIn("Claude", text)
                 self.assertNotIn("Use one form or the other", text)
-                self.assertIn('"${HERMES_HOME:-$HOME/.hermes}/skills/"', text)
+                self.assertIn("extension-backups/", text)
                 self.assertIn(f'skill_view("{name}")', text)
                 self.assertNotIn("/Users/", text)
                 self.assertNotIn("/home/", text)

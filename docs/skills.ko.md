@@ -210,14 +210,23 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 | `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
 | `readme-studio` | `variants/lithermes/readme-studio` |
 
-그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 복사 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다. 복사 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다).
+그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 설치 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다. 설치 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다). `ID`를 정하고 bash나 zsh에 붙여 넣으세요. 먼저 Hermes가 읽을 다른 복사본을 읽기만 해서 보여 주고, 예전 `skills/<id>/`가 있으면 프로필의 `extension-backups/<날짜-시각>/`(Hermes가 스킬을 읽는 어느 폴더에도 속하지 않는 곳)로 통째로 옮긴 뒤, 비워진 자리에 복사하고 영수증 `.litfamily-extension.json`을 남깁니다.
 
 ```bash
-mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/<id>" "${HERMES_HOME:-$HOME/.hermes}/skills/"
+H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/$ID"
+[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
+if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
+if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-복사한 뒤에는 Hermes 세션을 새로 시작하세요. `variants/lithermes/<id>` 폴더는 Hermes에 맞춰 쓴, 그 자체로 완결된 폴더라서 스킬마다 폴더 하나면 됩니다. 복사본은 `plugins/lithermes/` 밖, 프로필의 `skills/` 폴더에 있으므로 LitHermes를 업그레이드하거나 지워도 그대로 남고, `lithermes doctor`는 이를 가림(shadow)이 아니라 옮겨 간 스킬의 복사본으로 보여 줍니다. `hermes lithermes doctor`가 스텁 아홉 개를 확인해 줍니다. litwork가 웹 화면을 고칠 때마다 돌리는 화면 측정 도구는 LitHermes의 `skills/frontend-ui-ux/scripts/`에 그대로 남아 있습니다.
+복사한 뒤에는 Hermes 세션을 새로 시작하세요. 업데이트는 같은 줄을 다시 붙여 넣으면 되고, 복사본을 빼려면 지우지 말고 같은 방식으로 백업에 옮기세요.
+
+```bash
+[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"
+```
+
+이름이 같은 다른 복사본이 `skills/` 안 다른 곳에 있으면 새 복사본과 맞서서 Hermes가 둘 다 불러오지 않으니 그것도 옮기세요. 신뢰한 프로젝트의 `.hermes/skills`나 `.agents/skills`에 있는 복사본은 그 프로젝트 안에서 이기고, `external_dirs`에 있는 복사본은 프로필 복사본에 집니다. `variants/lithermes/<id>` 폴더는 Hermes에 맞춰 쓴, 그 자체로 완결된 폴더라서 스킬마다 폴더 하나면 됩니다. 복사본은 `plugins/lithermes/` 밖, 프로필의 `skills/` 폴더에 있으므로 LitHermes를 업그레이드하거나 지워도 그대로 남고, `lithermes doctor`는 이를 가림(shadow)이 아니라 옮겨 간 스킬의 복사본으로 보여 줍니다. `hermes lithermes doctor`가 스텁 아홉 개를 확인해 줍니다. litwork가 웹 화면을 고칠 때마다 돌리는 화면 측정 도구는 LitHermes의 `skills/frontend-ui-ux/scripts/`에 그대로 남아 있습니다.
 
 ### 글 다듬기
 

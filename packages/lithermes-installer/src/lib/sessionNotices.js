@@ -11,10 +11,28 @@ const EXTENSION_IDS = [
   "frontend-ui-ux", "visual-qa", "lit-typographic-motion", "readme-studio",
 ];
 const SHELF_URL = "https://github.com/wjgoarxiv/wjgoarxiv-skills";
+// One extension goes into the profile in five pasted lines (bash or zsh): name it, check for other
+// copies (read only), move an existing skills/<id>/ whole into extension-backups/<stamp>/ (outside
+// every folder Hermes reads skills from), copy into the emptied folder, write the receipt. A bare
+// `cp -R` into skills/ would merge into an old copy. `${ID:?}` stops a line when ID is empty, so an
+// unedited paste never moves skills/ itself. The plugin's own copy is core_contract.EXTENSION_STEP_LINES;
+// test/extension-install-lines.test.js holds both to the stubs.
+const EXTENSION_STEP_LINES = [
+  '[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\\"\']?${ID}[\\"\']? *\\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E \'^ *(external_dirs|create_dir):\' "$H/config.yaml" 2>/dev/null',
+  'if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi',
+  'if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi',
+  'printf \'{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\\n\' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"',
+];
+const EXTENSION_REMOVE_LINE = '[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"';
+
+function extensionSetupLine(id, source) {
+  return `H="\${HERMES_HOME:-$HOME/.hermes}"; ID=${id}; SRC="${source}"`;
+}
+
 const INSTALL_LINES = [
   `git clone ${SHELF_URL}.git`,
-  'mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"',
-  'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+  extensionSetupLine("lit-pptx", "$PWD/wjgoarxiv-skills/variants/lithermes/$ID"),
+  ...EXTENSION_STEP_LINES,
 ];
 
 // Notices wait here for the plugin to show them once, at the end of the first reply
@@ -86,9 +104,10 @@ function extensionsNoticeLines({ upgradedFrom = null, leftovers = [] } = {}) {
     "  LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents,",
     "  figures, design and video covers) are now LitFamily extensions, kept on the extension shelf at",
     `  ${SHELF_URL}. Install the ones you use alongside LitHermes to get`,
-    "  the full LitFamily experience. One skill at a time, then start a new Hermes session:",
+    "  the full LitFamily experience. One skill at a time (set ID; any old copy moves to extension-backups/),",
+    "  then start a new Hermes session:",
     ...INSTALL_LINES.map((line) => `    ${line}`),
-    `  <id>: ${EXTENSION_IDS.slice(0, 5).join(", ")},`,
+    `  ID: ${EXTENSION_IDS.slice(0, 5).join(", ")},`,
     `  ${EXTENSION_IDS.slice(5, -1).join(", ")} or ${EXTENSION_IDS[EXTENSION_IDS.length - 1]}.`,
   ];
   if (upgradedFrom && leftovers.length) {
@@ -102,8 +121,11 @@ function extensionsNoticeLines({ upgradedFrom = null, leftovers = [] } = {}) {
 
 module.exports = {
   EXTENSION_IDS,
+  EXTENSION_REMOVE_LINE,
+  EXTENSION_STEP_LINES,
   INSTALL_LINES,
   SHELF_URL,
+  extensionSetupLine,
   extensionsNoticeLines,
   leftoverPaths,
   noticePath,

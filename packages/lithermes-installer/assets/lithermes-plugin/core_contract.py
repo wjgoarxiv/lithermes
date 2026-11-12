@@ -56,8 +56,34 @@ MOVED_SKILL_CLONE_PLACEHOLDER = "<path to your wjgoarxiv-skills clone>"
 MOVED_SKILL_EDITION = "variants/lithermes"
 
 
+# The install lines after the naming line, pasted one at a time in bash or zsh: check for other
+# copies (read only), move an existing skills/<id>/ whole into extension-backups/<stamp>/ of the
+# profile (outside every folder Hermes reads skills from, so a backup never loads or ties with the
+# copy), copy into the emptied folder, write the receipt. A bare cp -R into skills/ merges into an old
+# copy. ${ID:?} stops a line when ID is empty. The installer's notice keeps the same lines
+# (src/lib/sessionNotices.js); the tests hold both to the stubs.
+EXTENSION_STEP_LINES = (
+    r'''[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null''',
+    r'''if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi''',
+    r'''if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi''',
+    r'''printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"''',
+)
+EXTENSION_REMOVE_LINE = r'''[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"'''
+
+
+def extension_install_lines(name: str, source: str | None = None) -> tuple[str, ...]:
+    """The five install lines for one moved id; ``source`` defaults to the clone placeholder."""
+    if name not in MOVED_SKILL_FAMILIES:
+        raise KeyError(name)
+    source = source or f"{MOVED_SKILL_CLONE_PLACEHOLDER}/{MOVED_SKILL_EDITION}/{name}"
+    return (f'H="${{HERMES_HOME:-$HOME/.hermes}}"; ID={name}; SRC="{source}"', *EXTENSION_STEP_LINES)
+
+
 def moved_skill_lines(name: str) -> tuple[str, ...]:
-    """What every route to a moved id says: where it went, how to load it, the copy line."""
+    """What every route to a moved id says: where it went, how to load it, where the install lines are.
+
+    The route names the first line and points at the stub for the rest: all five would push a route
+    past the host context cap (MAX_HOST_CONTEXT_BYTES)."""
     if name not in MOVED_SKILL_FAMILIES:
         raise KeyError(name)
     where = f"{MOVED_SKILL_EDITION}/{name}"
@@ -65,9 +91,11 @@ def moved_skill_lines(name: str) -> tuple[str, ...]:
         f"Mode Contract: {name} is a LitFamily extension, kept at {where}/ in the wjgoarxiv-skills repository; "
         "this route loads its same-name stub.",
         f'If {name} (no lithermes: prefix) is in <available_skills>, load skill_view("{name}") and follow it. '
-        "Otherwise build nothing: say it is a LitFamily extension and give the user this install line, which the user runs, "
-        "then a new session:",
-        f'cp -R "{MOVED_SKILL_CLONE_PLACEHOLDER}/{where}" "${{HERMES_HOME:-$HOME/.hermes}}/skills/"',
+        "Otherwise build nothing: say it is a LitFamily extension and give the user, in one code block and unchanged, the five "
+        f'install lines under "Install for Hermes" in skill_view("lithermes:{name}"); the user pastes them in bash or zsh, then '
+        f"opens a new session. They move an old skills/{name}/ aside into extension-backups/ before copying, so never shorten "
+        "them to a bare cp -R. The first line is:",
+        extension_install_lines(name)[0],
     )
 
 READER_FACING_CONTRACT_SCHEMA_VERSION = "litfamily.reader_facing_communication/v1"

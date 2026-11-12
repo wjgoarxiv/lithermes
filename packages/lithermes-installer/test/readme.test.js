@@ -213,8 +213,8 @@ test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
 test("every README presents the nine file-making skills as LitFamily extensions with the Hermes copy lines", () => {
   const copy = [
     "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
-    'mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"',
-    'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+    ...require("../src/lib/sessionNotices").INSTALL_LINES.slice(1),
+    "extension-backups/",
   ];
   const framing = {
     en: ["## Extensions", "LitHermes's core is complete and works on its own", "LitFamily extensions, kept on the extension shelf", "alongside LitHermes to get the full LitFamily experience"],

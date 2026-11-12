@@ -113,15 +113,17 @@ LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.ko.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.ko.light.png" width="960" alt="LitHermes 패키지에는 다섯 묶음(일 굴리기, 검토하기, 생각하고 조사하기, 이어 가기, 문장과 코드 도구)으로 나눈 코어 스킬 31개와 확장 스텁 9개가 들어 있다. 스텁은 wjgoarxiv-skills 선반의 variants/lithermes/&lt;id&gt;를 가리키고, 선반에는 decks, documents, figures, design, video-covers 다섯 패밀리에 아홉 스킬이 있다. 하나를 설치하려면 선반을 받고, Hermes 프로필에 skills/를 만들고, 폴더 하나를 복사하고, 새 Hermes 세션을 연다." /></picture></p>
 
-확장마다 Hermes판이 있고, `variants/lithermes/` 아래 폴더 하나가 스킬 하나입니다. 선반을 한 번 받아 두고, 원하는 스킬의 폴더를 Hermes 프로필에 복사한 다음 새 Hermes 세션을 여세요.
+확장마다 Hermes판이 있고, `variants/lithermes/` 아래 폴더 하나가 스킬 하나입니다. 선반을 한 번 받아 두고(`git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`), `ID`에 원하는 스킬 이름을 넣어 나머지 줄을 bash나 zsh에 붙여 넣은 다음 새 Hermes 세션을 여세요. 이 줄들은 Hermes가 읽을 다른 복사본이 있는지 보여 주고, 같은 이름의 예전 폴더를 프로필의 `extension-backups/`(Hermes가 스킬을 읽는 어느 폴더에도 속하지 않는 곳)로 통째로 옮긴 뒤, 비워진 자리에 스킬을 복사하고 작은 영수증 `.litfamily-extension.json`을 남깁니다.
 
 ```sh
-git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
-mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"
+[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
+if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
+if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-복사본은 프로필의 `skills/` 폴더에 LitHermes와 따로 놓이므로, 업그레이드나 삭제가 건드리지 않습니다. 설치하기 전에도 이름은 그대로 통합니다. `/lit-pptx`라고 하거나 `lit`으로 발표자료를 부탁하면, 확장이라는 것과 위의 줄을 알려 줍니다. 설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. 예전 버전에서 올렸다면 옛 영상, 발표자료, Word 스킬이 남긴 도구 캐시(캐시 폴더 아래 `lithermes/motion/`, `lithermes/office/`)와 그 스킬이 아직 들어 있는 업데이트 백업도 알려 줍니다. 그 확장을 설치하지 않는다면 지워도 됩니다.
+복사본은 프로필의 `skills/` 폴더에 LitHermes와 따로 놓이므로, 업그레이드나 삭제가 복사본과 영수증을 건드리지 않습니다. 업데이트하려면 선반을 pull하고 마지막 다섯 줄을 다시 붙여 넣으세요. 그때마다 바뀌기 전 복사본은 날짜가 붙은 백업에 따로 남습니다. 설치하기 전에도 이름은 그대로 통합니다. `/lit-pptx`라고 하거나 `lit`으로 발표자료를 부탁하면, 확장이라는 것과 위의 줄을 알려 줍니다. 설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. 예전 버전에서 올렸다면 옛 영상, 발표자료, Word 스킬이 남긴 도구 캐시(캐시 폴더 아래 `lithermes/motion/`, `lithermes/office/`)와 그 스킬이 아직 들어 있는 업데이트 백업도 알려 줍니다. 그 확장을 설치하지 않는다면 지워도 됩니다.
 
 ## 빠른 시작
 

@@ -42,7 +42,7 @@ Re-sync only if bundled plugin files changed.
 
 This checklist covers the 1.0.40 release.
 
-- [ ] The nine moved skills (`lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`) ship as same-name stubs that name `variants/lithermes/<id>` in `wjgoarxiv-skills` and give the one-skill `cp -R` line; every command, bare `lit` route, post-edit hand-off and doctor entry still reaches them, and `frontend-ui-ux` keeps the interface probe.
+- [ ] The nine moved skills (`lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`) ship as same-name stubs that name `variants/lithermes/<id>` in `wjgoarxiv-skills` and give the five install lines (check, move any old copy aside into `extension-backups/`, copy into the emptied folder, receipt) that the extension tests run in bash and zsh; every command, bare `lit` route, post-edit hand-off and doctor entry still reaches them, and `frontend-ui-ux` keeps the interface probe.
 - [ ] The Office runtime, `lithermes motion-runtime`, the motion pre-warm and their doctor lines are gone, and no README or linked docs page still promises them.
 - [ ] `lit adhd` opens on the KPI board; bounded work parks out-of-grant calls instead of pausing, `lit approve` / `lit deny` / `lit cancel` work as whole prompts, and secrets and Hermes settings are refused outright under bounded work.
 - [ ] `skills.lock.json` carries the stub budgets and the pack list, and `check:lock` passes.

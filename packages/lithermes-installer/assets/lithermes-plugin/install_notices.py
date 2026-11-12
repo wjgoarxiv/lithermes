@@ -6,7 +6,7 @@ plugin shows it under the first top-level reply that follows, through the same
 
 - ``extensions``: a new LitHermes version was installed or updated. It says the core
   works on its own, that the nine file-making skills are LitFamily extensions on the
-  wjgoarxiv-skills shelf, and gives the Hermes copy line; after an upgrade it also
+  wjgoarxiv-skills shelf, and gives the Hermes install lines; after an upgrade it also
   names the old caches that can go.
 - ``update-blocked``: an automatic update was refused because the user changed files
   in the plugin folder. It names the files, says nothing was touched, and gives the
@@ -30,18 +30,21 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .core_contract import EXTENSION_STEP_LINES
     from .core_runtime import get_hermes_home
     from .session_context import is_delegate_child_platform
 except ImportError:  # standalone import (tests load modules from the payload folder)
+    from core_contract import EXTENSION_STEP_LINES  # type: ignore
     from core_runtime import get_hermes_home  # type: ignore
     from session_context import is_delegate_child_platform  # type: ignore
 
 NOTICE_NAMES = ("update-blocked", "extensions")
 SHELF_URL = "https://github.com/wjgoarxiv/wjgoarxiv-skills"
+# The same lines as the installer's notice: name the skill, check, move any old copy aside, copy, receipt.
 INSTALL_LINES = (
     f"git clone {SHELF_URL}.git",
-    'mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"',
-    'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+    'H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"',
+    *EXTENSION_STEP_LINES,
 )
 _MAX_BYTES = 64 * 1024
 _HANGUL = re.compile(r"[가-힣]")
@@ -106,7 +109,8 @@ def extensions_text(record: dict[str, Any], *, korean: bool = False) -> str:
             "LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. "
             "파일을 만드는 스킬 아홉 개(발표자료, 문서, 그림, 디자인, 영상 커버)는 이제 LitFamily 확장이 되어 "
             f"확장 선반 {SHELF_URL} 에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. "
-            "스킬 하나는 이렇게 넣고, 새 Hermes 세션을 열면 됩니다(`<id>` 자리에 lit-pptx 같은 이름):",
+            "스킬 하나는 이렇게 넣고, 새 Hermes 세션을 열면 됩니다. `ID`에는 lit-pptx 같은 이름을 넣으세요. "
+            "같은 이름의 예전 폴더는 프로필의 extension-backups/ 로 통째로 옮겨 두므로, 새 복사본에 섞이지 않습니다:",
             _code(INSTALL_LINES),
         ]
         if leftovers:
@@ -117,7 +121,8 @@ def extensions_text(record: dict[str, Any], *, korean: bool = False) -> str:
             "LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents, "
             "figures, design and video covers) are now LitFamily extensions, kept on the extension shelf at "
             f"{SHELF_URL}. Install the ones you use alongside LitHermes to get the full LitFamily experience. "
-            "One skill goes in like this, then a new Hermes session picks it up (`<id>` is a name such as lit-pptx):",
+            "One skill goes in like this, then a new Hermes session picks it up. Set `ID` to a name such as lit-pptx; "
+            "an old folder of that name moves whole into extension-backups/ in the profile, so nothing old mixes into the copy:",
             _code(INSTALL_LINES),
         ]
         if leftovers:

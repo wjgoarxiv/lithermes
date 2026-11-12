@@ -38,8 +38,8 @@ test("every moved id is a stub that names its Hermes edition and the copy line",
     assert.match(text, new RegExp(`^---\\nname: ${id}\\n`), id);
     assert.ok(text.includes(`variants/lithermes/${id}`), `${id} names its Hermes edition`);
     assert.ok(
-      text.includes(`cp -R "<path to your wjgoarxiv-skills clone>/variants/lithermes/${id}" "\${HERMES_HOME:-$HOME/.hermes}/skills/"`),
-      `${id} carries the one-skill copy line`,
+      text.includes(`ID=${id}; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/${id}"`),
+      `${id} carries the one-skill install lines`,
     );
     assert.ok(!text.includes(`plugins/${family}`), `${id} no longer points at the generic body or its family folder`);
     assert.doesNotMatch(text, /Claude|reload-plugins|Skill\(|Use one form or the other/, `${id} gives no tool-mapping or family-copy advice`);

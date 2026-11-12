@@ -113,15 +113,17 @@ Inside the package are 31 core skills, from `litwork` and `lit-plan` to `review-
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.en.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.en.light.png" width="960" alt="The LitHermes package holds 31 core skills in five groups (run the work, check it, think and research, carry it on, prose and code tools) and nine extension stubs. The stubs point to variants/lithermes/&lt;id&gt; on the wjgoarxiv-skills shelf, where the nine skills sit in five families: decks, documents, figures, design and video-covers. Installing one takes four steps: clone the shelf, make skills/ in the Hermes profile, copy one folder, start a new Hermes session." /></picture></p>
 
-Each extension has a Hermes edition, one self-contained folder under `variants/lithermes/`. Clone the shelf once, copy the folder of the skill you want into your Hermes profile, then start a new Hermes session:
+Each extension has a Hermes edition, one self-contained folder under `variants/lithermes/`. Clone the shelf once (`git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`), set `ID` to the skill you want and paste the other lines in bash or zsh, then start a new Hermes session. They check for other copies Hermes would load, move an old folder of that name whole into `extension-backups/` of the profile (outside every folder Hermes reads skills from), copy the skill into the emptied folder and write a small receipt, `.litfamily-extension.json`:
 
 ```sh
-git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
-mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
-cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"
+[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
+if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
+if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-The copy sits beside LitHermes in the profile's `skills/` folder, so upgrades and uninstalls leave it alone. Until you add one, its name still answers: `/lit-pptx`, or `lit` with a request for a deck, tells you it is an extension and gives you the lines above. The installer prints this note after an install or an upgrade, and the first Hermes reply after that shows it once more. After an upgrade from an older release, the note also names the tool caches the old film, deck and Word skills left behind (`lithermes/motion/` and `lithermes/office/` in your cache folder) and the update backups that still hold those skills; you can delete them if you do not install those extensions.
+The copy sits beside LitHermes in the profile's `skills/` folder, so upgrades and uninstalls leave it and its receipt alone. To update it, pull the clone and paste the last five lines again; each run keeps the copy it replaces in its own dated backup. Until you add one, its name still answers: `/lit-pptx`, or `lit` with a request for a deck, tells you it is an extension and gives you the lines above. The installer prints this note after an install or an upgrade, and the first Hermes reply after that shows it once more. After an upgrade from an older release, the note also names the tool caches the old film, deck and Word skills left behind (`lithermes/motion/` and `lithermes/office/` in your cache folder) and the update backups that still hold those skills; you can delete them if you do not install those extensions.
 
 ## Quick start
 
