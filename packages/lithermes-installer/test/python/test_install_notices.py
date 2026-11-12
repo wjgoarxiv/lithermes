@@ -80,7 +80,7 @@ class InstallNotices(NaturalRoutingCase):
         self.write("extensions", version=VERSION, upgradedFrom="1.0.39", leftovers=[], extensionsCheck=2)
         shown = self.reply()
         self.assertIn("This profile has 2 things to look at", shown)
-        self.assertIn("npx --package @litfamily/lithermes -- lithermes extensions check", shown)
+        self.assertIn("npx --package @litfamily/lithermes@latest -- lithermes extensions check", shown)
 
     def test_a_malformed_check_count_shows_no_check_line(self):
         self.write("extensions", version=VERSION, upgradedFrom=None, leftovers=[], extensionsCheck="2")

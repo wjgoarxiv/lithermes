@@ -70,6 +70,20 @@ test("every stub gives the extensions command, then the five install lines and t
   }
 });
 
+test("every surface that tells the user to run the extension verbs uses one command form, pinned to @latest", () => {
+  assert.equal(EXTENSION_CLI, "npx --package @litfamily/lithermes@latest -- lithermes");
+  const files = ["README.md", "README_Ko-KR.md", "packages/lithermes-installer/README.md", "packages/lithermes-installer/README_Ko-KR.md",
+    "docs/skills.md", "docs/skills.ko.md", "packages/lithermes-installer/src/lib/sessionNotices.js",
+    "packages/lithermes-installer/src/lib/extensions.js", "packages/lithermes-installer/assets/lithermes-plugin/core_contract.py",
+    "packages/lithermes-installer/assets/lithermes-plugin/install_notices.py",
+    ...EXTENSION_IDS.map((id) => `packages/lithermes-installer/assets/lithermes-plugin/skills/${id}/SKILL.md`)];
+  for (const file of files) {
+    const text = fs.readFileSync(path.join(repo, file), "utf8");
+    assert.doesNotMatch(text, /@litfamily\/lithermes -- lithermes extensions/, `${file} names the package without @latest`);
+    assert.doesNotMatch(text, /[`"] *lithermes extensions (?:list|check|install|update|remove|prune-backups) /, `${file} gives a bare lithermes extensions command`);
+  }
+});
+
 test("the READMEs, the skills pages and the installer notice carry the same lines and no merging copy", () => {
   assert.deepEqual(INSTALL_LINES, [
     "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
@@ -141,6 +155,20 @@ for (const shell of shells()) {
     assert.equal(fs.existsSync(live), false);
     assert.equal(backups(box.home).length, 3);
     assert.ok(fs.existsSync(path.join(backups(box.home)[2], "lit-pptx", ".litfamily-extension.json")));
+    fs.rmSync(box.root, { recursive: true, force: true });
+  });
+
+  test(`${shell}: a source path with a double quote or a backslash still gives a receipt that parses`, () => {
+    const box = fixture();
+    const odd = path.join(box.root, 'my "shelf" \\ copy');
+    fs.renameSync(box.clone, odd);
+    const install = codeBlocks(stub("lit-pptx"), "Install for Hermes")[1];
+    // The user escapes the path for the double-quoted SRC="..." of the first line, as bash and zsh need.
+    const quoted = odd.replace(/[\\"$`]/g, "\\$&");
+    const run = paste(shell, install, { ...box, clone: quoted });
+    assert.equal(run.status, 0, run.stderr);
+    const receipt = JSON.parse(fs.readFileSync(path.join(box.home, "skills", "lit-pptx", ".litfamily-extension.json"), "utf8"));
+    assert.equal(receipt.source, path.join(odd, "variants", "lithermes", "lit-pptx"));
     fs.rmSync(box.root, { recursive: true, force: true });
   });
 

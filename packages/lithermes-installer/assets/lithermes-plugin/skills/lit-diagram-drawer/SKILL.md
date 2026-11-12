@@ -62,7 +62,7 @@ mid-sentence mentions stay inert, as before.
 One command does it. It runs the steps of the lines further down in code and writes only to the profile's `skills/lit-diagram-drawer/`, its `extension-backups/` and a cached clone of the shelf:
 
 ```sh
-npx --package @litfamily/lithermes -- lithermes extensions install lit-diagram-drawer --yes
+npx --package @litfamily/lithermes@latest -- lithermes extensions install lit-diagram-drawer --yes
 ```
 
 Without `--yes` it only prints its plan. It stops and names the path when another skill called lit-diagram-drawer sits where Hermes reads skills (`--allow-shadow` goes ahead when that copy is outside `skills/`), and `--from <clone>` uses a clone you have. `update lit-diagram-drawer --yes` refreshes it, `remove lit-diagram-drawer --yes` moves it into the backups, and `check` names second copies and folders without a receipt.
@@ -74,7 +74,7 @@ H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-diagram-drawer; SRC="<path to your wjg
 [ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
 if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
 if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
-printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$(printf %s "$SRC" | sed 's/[\\"]/\\&/g')" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
 The check line only reads. It says whether `skills/lit-diagram-drawer/` is taken, lists every `SKILL.md` named lit-diagram-drawer under the profile's `skills/` and the current project's `.hermes/skills` and `.agents/skills` (paste from the project's top folder), and shows any `external_dirs` or `create_dir` setting. A second, different copy elsewhere under `skills/` ties with the new one and Hermes then loads neither, so move it out too; a copy in a trusted project wins inside that project; a copy in `external_dirs` loses to the profile copy. The move-aside line acts only when the folder exists and moves it whole into `extension-backups/<date-time>/` of the profile, outside every folder Hermes reads skills from, so your own files stay there and are never loaded. The copy then lands in an empty `skills/lit-diagram-drawer/`, and the last line writes `.litfamily-extension.json` (id, source, variant, install time) inside it; Hermes does not list that file as a skill or a skill file.

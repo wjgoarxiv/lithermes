@@ -154,7 +154,7 @@ test("doctor reports a moved skill's copy as installed, keeps the shadow check P
   assert.match(result.stdout, /skill shadow check: PASS/);
   assert.doesNotMatch(result.stdout, /WARNING: skill "lit-pptx"/);
   assert.ok(result.stdout.includes(`moved skill copy: lit-pptx at ${skill} (local skills; no receipt: user-managed); the lithermes:lit-pptx stub hands over to it`), result.stdout);
-  assert.match(result.stdout, /extensions: 0 of 9 installed; 1 thing needs action \(run lithermes extensions check --hermes-home /);
+  assert.match(result.stdout, /extensions: 0 of 9 installed; 1 thing needs action \(run npx --package @litfamily\/lithermes@latest -- lithermes extensions check --hermes-home /);
 });
 
 test("an upgrade and an uninstall leave the installed copy of a moved skill byte for byte", (t) => {

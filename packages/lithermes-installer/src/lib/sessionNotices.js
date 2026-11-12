@@ -21,7 +21,7 @@ const EXTENSION_STEP_LINES = [
   '[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\\"\']?${ID}[\\"\']? *\\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E \'^ *(external_dirs|create_dir):\' "$H/config.yaml" 2>/dev/null',
   'if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi',
   'if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi',
-  'printf \'{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\\n\' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"',
+  'printf \'{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\\n\' "${ID:?}" "$(printf %s "$SRC" | sed \'s/[\\\\"]/\\\\&/g\')" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"',
 ];
 const EXTENSION_REMOVE_LINE = '[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"';
 
@@ -37,7 +37,7 @@ const INSTALL_LINES = [
 
 // `lithermes extensions` does the same steps in code; the notices give it, and the stubs keep the
 // shell lines above as the manual route. The plugin's notice holds the same line (install_notices.py).
-const EXTENSION_CLI = "npx --package @litfamily/lithermes -- lithermes";
+const EXTENSION_CLI = "npx --package @litfamily/lithermes@latest -- lithermes";
 const EXTENSION_COMMAND_LINE = `${EXTENSION_CLI} extensions install lit-pptx --yes`;
 
 // Notices wait here for the plugin to show them once, at the end of the first reply

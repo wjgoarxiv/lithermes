@@ -66,7 +66,7 @@ EXTENSION_STEP_LINES = (
     r'''[ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null''',
     r'''if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi''',
     r'''if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi''',
-    r'''printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"''',
+    r'''printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$(printf %s "$SRC" | sed 's/[\\"]/\\&/g')" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"''',
 )
 EXTENSION_REMOVE_LINE = r'''[ -e "$H/skills/${ID:?}" ] && mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"'''
 
@@ -79,10 +79,10 @@ def extension_install_lines(name: str, source: str | None = None) -> tuple[str, 
     return (f'H="${{HERMES_HOME:-$HOME/.hermes}}"; ID={name}; SRC="{source}"', *EXTENSION_STEP_LINES)
 
 
-# The installer does the same steps in code (`lithermes extensions install <id> --yes`, src/lib/extensions.js):
+# The installer does the same steps in code (its `extensions install <id> --yes` verb, src/lib/extensions.js):
 # check, move an old copy aside, copy, receipt. Routes and the in-session notice give this line; the stubs
 # keep the five shell lines above as the manual route.
-EXTENSION_CLI = "npx --package @litfamily/lithermes -- lithermes"
+EXTENSION_CLI = "npx --package @litfamily/lithermes@latest -- lithermes"
 
 
 def extension_command_line(name: str) -> str:

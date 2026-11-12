@@ -6,7 +6,7 @@ plugin shows it under the first top-level reply that follows, through the same
 
 - ``extensions``: a new LitHermes version was installed or updated. It says the core
   works on its own, that the nine file-making skills are LitFamily extensions on the
-  wjgoarxiv-skills shelf, and gives the ``lithermes extensions install`` command; when the
+  wjgoarxiv-skills shelf, and gives the ``extensions install`` command; when the
   installer's ``extensions check`` found something in the profile it adds the check line,
   and after an upgrade it also names the old caches that can go.
 - ``update-blocked``: an automatic update was refused because the user changed files
@@ -43,7 +43,7 @@ NOTICE_NAMES = ("update-blocked", "extensions")
 SHELF_URL = "https://github.com/wjgoarxiv/wjgoarxiv-skills"
 # The same command as the installer's notice: it checks, moves any old copy aside, copies and writes the receipt.
 INSTALL_LINES = (extension_command_line("lit-pptx"),)
-CHECK_LINE = "npx --package @litfamily/lithermes -- lithermes extensions check"
+CHECK_LINE = "npx --package @litfamily/lithermes@latest -- lithermes extensions check"
 _MAX_BYTES = 64 * 1024
 _HANGUL = re.compile(r"[가-힣]")
 

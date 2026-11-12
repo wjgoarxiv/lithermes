@@ -13,9 +13,10 @@ const os = require("node:os");
 const path = require("node:path");
 const { parseDocument } = require("yaml");
 const { readConfig, readExternalSkillDirsConfig } = require("./config");
+const { writeFileAtomic } = require("./files");
 const { describeSpawnFailure, spawnTool } = require("./hostExec");
 const { LitHermesError, ensureHermesHome, expandHome } = require("./hermesDiscovery");
-const { EXTENSION_IDS, SHELF_URL, leftoverPaths } = require("./sessionNotices");
+const { EXTENSION_CLI, EXTENSION_IDS, SHELF_URL, leftoverPaths } = require("./sessionNotices");
 
 // The same families as core_contract.MOVED_SKILL_FAMILIES (a test keeps them in step).
 const EXTENSION_FAMILIES = {
@@ -72,7 +73,7 @@ function backupsRoot(home) {
 // A fix line the user can paste as it is: it names the profile when the command was given one.
 function cliLine(flags, rest) {
   const home = flags["hermes-home"];
-  return `lithermes extensions ${rest}${typeof home === "string" && home ? ` --hermes-home ${path.resolve(home)}` : ""}`;
+  return `${EXTENSION_CLI} extensions ${rest}${typeof home === "string" && home ? ` --hermes-home ${path.resolve(home)}` : ""}`;
 }
 
 function frontmatterName(skillFile) {
@@ -330,7 +331,7 @@ function checkExtensions(flags = {}, runtime = {}) {
         path: copy.path,
         message: `${id}: another skill named ${id} is at ${copy.path} (${copy.where}); it ${copy.effect}.`,
         fix: copy.sameFolder
-          ? `mkdir -p "${backupsRoot(ctx.home)}" && mv "${copy.path}" "${backupsRoot(ctx.home)}/"`
+          ? `mkdir -p "${backupsRoot(ctx.home)}" && B=$(mktemp -d "${backupsRoot(ctx.home)}/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "${copy.path}" "$B/"`
           : `move ${copy.path} out of ${copy.where === "project" ? "the project's skills folder" : copy.where}, or keep it on purpose`,
       });
     }
@@ -448,7 +449,7 @@ function resolveSource(flags, ctx, { refresh = false, write = false } = {}) {
   if (stat && !present) throw fail(`LitHermes extensions: ${root} is not a clone this command made; move it away, or pass --from <path>.`, 5);
   if (!write) {
     if (!present) return { kind: "cache", root, variants: path.join(root, "variants", VARIANT), pending: true, label: `would fetch ${SHELF_GIT} (variants/${VARIANT}/ only) into ${root}` };
-    return { kind: "cache", root, variants: variantsOf(root), label: `${variantsOf(root)}${refresh ? " (would refresh with git first)" : " (cached clone)"}` };
+    return { kind: "cache", root, variants: variantsOf(root), label: `${variantsOf(root)} (cached clone)` };
   }
   if (!present) {
     fs.mkdirSync(path.dirname(root), { recursive: true });
@@ -656,6 +657,14 @@ function installOrUpdate(verb, flags, positionals, runtime) {
   if (!work.length) return { ok: true, message: lines.join("\n") };
   const source = resolveSource(flags, ctx, { refresh: verb === "update", write });
   lines.push(`source: ${source.label}`);
+  // A dry run never fetches, so an update can only compare with the copy already in the cache.
+  if (verb === "update" && !write && source.kind === "cache") {
+    if (source.pending) {
+      lines.push(`no cached copy yet; --yes fetches it first and compares ${work.map((record) => record.id).join(", ")} after the fetch.`);
+      return { ok: true, message: lines.join("\n") };
+    }
+    lines.push("compared with the cached copy; --yes fetches first, so the result may differ.");
+  }
   const plans = [];
   let skipped = 0;
   for (const record of work) {
@@ -671,7 +680,13 @@ function installOrUpdate(verb, flags, positionals, runtime) {
       }
       assertPlainTree(sourceDir);
       if (verb === "update" && hashTree(sourceDir) === (record.receipt.hash || hashTree(record.dest))) {
-        lines.push(`${record.id}: current`);
+        // Same files from another place: only the receipt's source changes.
+        if (record.receipt.source === sourceDir) lines.push(`${record.id}: current`);
+        else if (!write) lines.push(`${record.id}: current (would record ${sourceDir} as its source)`);
+        else {
+          writeFileAtomic(path.join(record.dest, RECEIPT), `${JSON.stringify({ ...record.receipt, source: sourceDir })}\n`);
+          lines.push(`${record.id}: current (source now ${sourceDir})`);
+        }
         continue;
       }
     }

@@ -103,7 +103,7 @@ test("install over a user folder moves it whole into extension-backups/ and leav
   const check = run(b, ["check"]);
   assert.equal(check.status, 1, check.text);
   assert.ok(check.text.includes(`lit-pptx: ${live} has no LitHermes receipt`), check.text);
-  assert.match(check.text, /fix: lithermes extensions install lit-pptx --yes --hermes-home /);
+  assert.match(check.text, /fix: npx --package @litfamily\/lithermes@latest -- lithermes extensions install lit-pptx --yes --hermes-home /);
   assert.match(run(b, ["list"]).text, /lit-pptx \(decks\): user-managed \(no receipt\)/);
 
   const done = run(b, ["install", "lit-pptx", "--from", b.clone, "--yes"]);
@@ -155,6 +155,23 @@ test("a second copy inside skills/ (a backup or a category folder) stops even wi
     ["visual-qa", path.join(b.home, "skills", "creative", "visual-qa")],
   ]);
   assert.match(run(b, ["check"]).text, /ties with skills\/lit-pptx\/, and Hermes then loads neither/);
+  // The fix line moves each copy into its own dated folder, so two copies of one name never nest and prune reads the date.
+  const fix = JSON.parse(check.stdout).issues.find((issue) => issue.id === "lit-pptx" && issue.kind === "ambiguous").fix;
+  assert.match(fix, /mktemp -d ".*extension-backups\/\$\(date \+%Y%m%d-%H%M%S\)-XXXX"/);
+  fs.mkdirSync(path.join(b.root, "spare", "lit-pptx.bak-20261112"), { recursive: true });
+  const sh = (line) => spawnSync("bash", ["-c", line], { encoding: "utf8" });
+  assert.equal(sh(fix).status, 0);
+  fs.renameSync(path.join(b.root, "spare", "lit-pptx.bak-20261112"), path.join(b.home, "skills", "lit-pptx.bak-20261112"));
+  spawnSync("sleep", ["1"]);
+  assert.equal(sh(fix).status, 0);
+  const moved = backups(b);
+  assert.equal(moved.length, 2, "each run makes its own folder");
+  for (const folder of moved) {
+    assert.match(path.basename(folder), /^\d{8}-\d{6}-\w{4}$/);
+    assert.deepEqual(fs.readdirSync(folder), ["lit-pptx.bak-20261112"], "the copy sits directly in its dated folder");
+  }
+  fs.mkdirSync(path.join(b.home, "skills", "lit-pptx.bak-20261112"));
+  fs.writeFileSync(path.join(b.home, "skills", "lit-pptx.bak-20261112", "SKILL.md"), "---\nname: lit-pptx\n---\nold\n");
   const stopped = run(b, ["install", "lit-pptx", "visual-qa", "--from", b.clone, "--yes", "--allow-shadow"]);
   assert.equal(stopped.status, 1, stopped.text);
   assert.match(stopped.text, /Move it out of skills\/ first/);
@@ -211,6 +228,43 @@ test("update reinstalls only a changed source, reports current otherwise, and le
   assert.equal(partial.status, 1, partial.text);
   assert.match(partial.text, /lit-pptx: updated: /);
   assert.match(partial.text, /visual-qa: kept as it is: .* is missing or holds no SKILL\.md/);
+});
+
+test("update dry run with no cached copy fetches nothing and says the comparison waits for the fetch", () => {
+  const b = box();
+  assert.equal(run(b, ["install", "lit-pptx", "--from", b.clone, "--yes"]).status, 0);
+  const dry = run(b, ["update"], { env: { PATH: "/nonexistent" } });
+  assert.equal(dry.status, 0, dry.text);
+  assert.match(dry.text, /no cached copy yet; --yes fetches it first and compares lit-pptx after the fetch/);
+  assert.doesNotMatch(dry.text, /would move|would copy/, "it does not claim every id would update");
+  assert.equal(fs.existsSync(b.cache), false, "a dry run writes no cache");
+});
+
+test("update with the same files from another path reports current and rewrites only the receipt's source", () => {
+  const b = box();
+  assert.equal(run(b, ["install", "lit-pptx", "--from", b.clone, "--yes"]).status, 0);
+  const live = path.join(b.home, "skills", "lit-pptx");
+  const before = JSON.parse(fs.readFileSync(path.join(live, RECEIPT), "utf8"));
+  const moved = path.join(b.root, "clone2");
+  fs.renameSync(b.clone, moved);
+  const check = run(b, ["check"]);
+  assert.equal(check.status, 1, check.text);
+  assert.match(check.text, /receipt names .* which no longer exists/);
+
+  const dry = run(b, ["update", "lit-pptx", "--from", moved]);
+  assert.equal(dry.status, 0, dry.text);
+  assert.match(dry.text, /lit-pptx: current \(would record .*clone2.* as its source\)/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(live, RECEIPT), "utf8")), before, "a dry run leaves the receipt");
+
+  const done = run(b, ["update", "lit-pptx", "--from", moved, "--yes"]);
+  assert.equal(done.status, 0, done.text);
+  assert.match(done.text, /lit-pptx: current \(source now /);
+  const after = JSON.parse(fs.readFileSync(path.join(live, RECEIPT), "utf8"));
+  assert.deepEqual(after, { ...before, source: path.join(moved, "variants", "lithermes", "lit-pptx") }, "only the source field changes");
+  assert.deepEqual(backups(b), [], "nothing moved aside");
+  assert.deepEqual(fs.readdirSync(live).sort(), [RECEIPT, "SKILL.md", "references"], "no temp file left behind");
+  const clean = run(b, ["check"]);
+  assert.equal(clean.status, 0, clean.text);
 });
 
 test("remove moves an installed folder into the backups and refuses a user folder with its path", () => {
@@ -316,6 +370,12 @@ test("without --from the source is a sparse clone in the cache folder, and updat
 
   writeVariant(b.clone, "lit-docx", "v2");
   assert.equal(git("-c", "user.email=t@example.invalid", "-c", "user.name=t", "commit", "-qam", "v2").status, 0);
+  const cachedHead = spawnSync("git", ["-C", src, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout;
+  const dryUpdate = run(b, ["update"], { env });
+  assert.equal(dryUpdate.status, 0, dryUpdate.text);
+  assert.match(dryUpdate.text, /compared with the cached copy; --yes fetches first, so the result may differ/);
+  assert.match(dryUpdate.text, /lit-docx: current/, "the stale cache still holds v1");
+  assert.equal(spawnSync("git", ["-C", src, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout, cachedHead, "a dry run fetches nothing");
   const updated = run(b, ["update", "--yes"], { env });
   assert.equal(updated.status, 0, updated.text);
   assert.match(updated.text, /refreshed from/);
@@ -386,7 +446,7 @@ test("an upgrade's notice points at extensions check when the profile needs a ha
   fs.writeFileSync(manifest, JSON.stringify({ ...JSON.parse(fs.readFileSync(manifest, "utf8")), version: "1.0.39" }));
   const upgraded = install();
   assert.equal(upgraded.status, 0, upgraded.stderr);
-  assert.match(upgraded.stdout, /This profile has one thing to look at \(a second copy or a folder without a receipt\): npx --package @litfamily\/lithermes -- lithermes extensions check/);
+  assert.match(upgraded.stdout, /This profile has one thing to look at \(a second copy or a folder without a receipt\): npx --package @litfamily\/lithermes@latest -- lithermes extensions check/);
   assert.equal(JSON.parse(fs.readFileSync(path.join(b.home, "lithermes", "notices", "extensions.json"), "utf8")).extensionsCheck, 1);
   assert.ok(fs.existsSync(path.join(old, "SKILL.md")), "nothing changes on its own");
 });

@@ -215,7 +215,7 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 설치 프로그램의 `lithermes extensions`가 이 일을 대신 맡습니다. 무언가를 쓰는 동사는 `--yes`를 붙이기 전까지 계획만 보여 주고, 쓰는 곳도 프로필의 `skills/<id>/`, 그 `extension-backups/`, 캐시 폴더(`$XDG_CACHE_HOME` 또는 `~/.cache`) 아래 `lithermes/extensions-src/`에 받아 두는 선반의 얕은 사본뿐입니다. 받아 둔 사본이 있으면 `--from <경로>`로 그것을 씁니다. git이 없거나 네트워크가 끊겨 있으면 아무것도 바꾸기 전에 멈추고 `--from`을 쓰라고 알려 줍니다.
 
 ```sh
-npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+npx --package @litfamily/lithermes@latest -- lithermes extensions install lit-pptx --yes
 ```
 
 | 동사 | 하는 일 |
@@ -234,7 +234,7 @@ H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-ski
 [ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
 if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
 if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
-printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$(printf %s "$SRC" | sed 's/[\\"]/\\&/g')" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
 복사한 뒤에는 Hermes 세션을 새로 시작하세요. 업데이트는 같은 줄을 다시 붙여 넣으면 되고, 복사본을 빼려면 지우지 말고 같은 방식으로 백업에 옮기세요.

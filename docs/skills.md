@@ -215,7 +215,7 @@ Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a b
 The installer manages them for you with `lithermes extensions`. A verb that writes only prints its plan until you add `--yes`, and it writes nowhere else than the profile's `skills/<id>/`, its `extension-backups/` and its own shallow clone of the shelf in `lithermes/extensions-src/` of your cache folder (`$XDG_CACHE_HOME` or `~/.cache`). `--from <path>` uses a clone you already have. When git is missing or the network is down, it stops before it changes anything and says to use `--from`.
 
 ```sh
-npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+npx --package @litfamily/lithermes@latest -- lithermes extensions install lit-pptx --yes
 ```
 
 | Verb | What it does |
@@ -234,7 +234,7 @@ H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-ski
 [ -e "$H/skills/${ID:?}" ] && echo "taken: $H/skills/$ID" || echo "free: $H/skills/$ID"; grep -rlE --include=SKILL.md "^name: *[\"']?${ID}[\"']? *\$" "$H/skills" .hermes/skills .agents/skills 2>/dev/null; grep -A3 -E '^ *(external_dirs|create_dir):' "$H/config.yaml" 2>/dev/null
 if [ -e "$H/skills/${ID:?}" ]; then mkdir -p "$H/extension-backups" && B=$(mktemp -d "$H/extension-backups/$(date +%Y%m%d-%H%M%S)-XXXX") && mv "$H/skills/$ID" "$B/" && echo "moved aside: $B/$ID"; fi
 if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"; else mkdir -p "$H/skills" && cp -R "$SRC" "$H/skills/$ID" && echo "copied: $H/skills/$ID"; fi
-printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
+printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$(printf %s "$SRC" | sed 's/[\\"]/\\&/g')" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
 Start a new Hermes session after copying. To update, paste the same lines again; to remove a copy, move it into the backups the same way, with no delete:
