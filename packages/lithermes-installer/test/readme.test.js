@@ -150,12 +150,12 @@ test("the collapsible banner guard rejects lost copyability, changed rows and an
 });
 
 const GITHUB_SECTIONS = {
-  en: ["What you can make", "Why LitHermes", "Install", "Quick start", "The workflow map", "Automatic handoff", "What you get", "How it works", "Requirements, updates and removal", "Learn more", "LitFamily"],
-  ko: ["만들 수 있는 것", "왜 LitHermes인가요", "설치", "빠른 시작", "워크플로 지도", "자동 핸드오프", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "LitFamily"],
+  en: ["What you can make", "Why LitHermes", "Install", "Extensions", "Quick start", "The workflow map", "Automatic handoff", "What you get", "How it works", "Requirements, updates and removal", "Learn more", "LitFamily"],
+  ko: ["만들 수 있는 것", "왜 LitHermes인가요", "설치", "확장", "빠른 시작", "워크플로 지도", "자동 핸드오프", "할 수 있는 일", "작동 방식", "요구 사항, 업데이트, 삭제", "더 알아보기", "LitFamily"],
 };
 const NPM_SECTIONS = {
-  en: ["Install", "Your first task", "What you get", "Check, update, remove", "Learn more"],
-  ko: ["설치", "첫 작업", "할 수 있는 일", "확인, 업데이트, 삭제", "더 알아보기"],
+  en: ["Install", "Your first task", "What you get", "Extensions", "Check, update, remove", "Learn more"],
+  ko: ["설치", "첫 작업", "할 수 있는 일", "확장", "확인, 업데이트, 삭제", "더 알아보기"],
 };
 // Material that left the landing pages, by language: each page must exist and be linked from its README.
 const DOCS_PAGES = {
@@ -207,6 +207,28 @@ test("GitHub and npm READMEs keep their own bilingual skeletons", () => {
     assert.match(text, /<picture>[\s\S]*cover-motion-still\.webp[\s\S]*cover-motion\.webp[\s\S]*<\/picture>/);
     assert.equal((text.match(/<img src="[^"]*cover\.webp"/g) || []).length, 0, `${file} must show only the motion cover, not the static robot cover`);
     assert.doesNotMatch(text, /(?:docs|readme-assets)\/ab\//, `${file} must not link retired A\/B assets`);
+  }
+});
+
+test("every README presents the nine file-making skills as LitFamily extensions with the Hermes copy lines", () => {
+  const copy = [
+    "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
+    'mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"',
+    'cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"',
+  ];
+  const framing = {
+    en: ["## Extensions", "LitHermes's core is complete and works on its own", "LitFamily extensions, kept on the extension shelf", "alongside LitHermes to get the full LitFamily experience"],
+    ko: ["## 확장", "LitHermes의 코어는 그 자체로 완성되어 있고", "LitFamily 확장이 되어 확장 선반", "LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다"],
+  };
+  for (const [file, lang] of [
+    [path.join(repoRoot, "README.md"), "en"], [path.join(packageRoot, "README.md"), "en"],
+    [path.join(repoRoot, "README_Ko-KR.md"), "ko"], [path.join(packageRoot, "README_Ko-KR.md"), "ko"],
+  ]) {
+    const text = fs.readFileSync(file, "utf8");
+    const start = text.indexOf(lang === "en" ? "\n## Extensions\n" : "\n## 확장\n");
+    const section = text.slice(start, text.indexOf("\n## ", start + 1));
+    for (const phrase of [...framing[lang], ...copy]) assert.ok(section.includes(phrase), `${file} Extensions: ${phrase}`);
+    assert.doesNotMatch(text, /Moved to `wjgoarxiv-skills`|`wjgoarxiv-skills`로 옮겨 감/, `${file} calls them extensions`);
   }
 });
 

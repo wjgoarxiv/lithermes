@@ -58,7 +58,7 @@ def _agent_message(raw_args: str, *, reader_contract: str = "", inline_stub: boo
 def command_lit_scientific_visualization(raw_args: str) -> dict[str, str]:
     reader_args = parse_reader_facing_command_args(raw_args)
     return {
-        "display": f"{acknowledgement('lit-scientific-visualization', color=True)}\nlit-scientific-visualization moved to wjgoarxiv-skills; its stub explains how to install it.",
+        "display": f"{acknowledgement('lit-scientific-visualization', color=True)}\nlit-scientific-visualization is a LitFamily extension on the wjgoarxiv-skills shelf; its stub explains how to install it.",
         "agent_message": _agent_message(
             reader_args.command_args,
             reader_contract=reader_facing_contract_block(

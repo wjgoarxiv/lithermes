@@ -1,14 +1,12 @@
 ---
 name: lit-schematic
-description: "Moved out of LitHermes: lit-schematic now lives in the wjgoarxiv-skills repository, Hermes edition at variants/lithermes/lit-schematic. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
+description: "A LitFamily extension: lit-schematic lives on the wjgoarxiv-skills extension shelf, Hermes edition at variants/lithermes/lit-schematic. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
 ---
 
-# lit-schematic (moved)
+# lit-schematic (LitFamily extension)
 
-lit-schematic made a drawing of real equipment (P&ID with ISA-5.1 tags, PFD, apparatus figure, isometric cutaway) as millimetre-sized SVG, checked by a QA gate and rendered to PDF and a 600 dpi PNG. It no longer ships inside LitHermes. It lives in the `wjgoarxiv-skills` repository, at
+lit-schematic made a drawing of real equipment (P&ID with ISA-5.1 tags, PFD, apparatus figure, isometric cutaway) as millimetre-sized SVG, checked by a QA gate and rendered to PDF and a 600 dpi PNG. It is now a LitFamily extension: LitHermes's core works without it, and installing it alongside LitHermes gives the full LitFamily experience. It lives on the extension shelf, the `wjgoarxiv-skills` repository (https://github.com/wjgoarxiv/wjgoarxiv-skills), at
 `variants/lithermes/lit-schematic`, the Hermes edition: a self-contained folder written for Hermes tools that a profile picks up once it is copied into the profile's skills directory.
-
-The `variants/lithermes` folder may still be on its way into the repository. If `variants/lithermes/lit-schematic` is not in the user's clone yet, say so and ask them to update the clone; do not point at any other copy.
 
 ## #contract.activation
 
@@ -46,7 +44,7 @@ mid-sentence mentions stay inert, as before.
 | Mode | Trigger | Contract |
 | --- | --- | --- |
 | installed | `lit-schematic` (no prefix) is in `<available_skills>` | Load `skill_view("lit-schematic")` and follow it for the whole request |
-| not installed | it is not listed | Tell the user what moved and give the copy line; build nothing |
+| not installed | it is not listed | Tell the user it is a LitFamily extension and give the copy line; build nothing |
 
 ## #contract.procedure
 
@@ -55,13 +53,13 @@ mid-sentence mentions stay inert, as before.
    Hermes edition, so its commands and tool names apply as written.
 2. If it is not listed, answer in the user's language with three things and stop:
    - one sentence on what lit-schematic makes;
-   - that it moved out of LitHermes into `variants/lithermes/lit-schematic` of `wjgoarxiv-skills`;
+   - that it is a LitFamily extension, kept in `variants/lithermes/lit-schematic` of `wjgoarxiv-skills`, which LitHermes's core works without;
    - the install line below, in a code block, and that a new Hermes session (or a restart) picks it up, after which
      the user asks again.
 
 ## Install for Hermes
 
-One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`):
+One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`). A user without a clone gets one first with `git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`:
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"

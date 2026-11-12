@@ -29,6 +29,7 @@ const {
   unavailableTuiRouteVisibility,
 } = require("./modelRoutePolicy");
 const { installSkins } = require("./skins");
+const { extensionsNoticeLines, leftoverPaths, removeNotice, writeNotice } = require("./sessionNotices");
 
 const packageRoot = path.resolve(__dirname, "..", "..");
 const assetRoot = path.join(packageRoot, "assets", "lithermes-plugin");
@@ -142,6 +143,71 @@ function installedMatchesManifest(hermesHome, manifest, caches = []) {
     return true;
   });
   return fs.lstatSync(dest).isDirectory() && matches(dest) && matched === owned.size;
+}
+
+// Which files under the plugin folder differ from the install record: edited, added
+// (anything the installer did not write, a link included) or missing. Host bytecode is
+// left out. Without a record, every file is the user's.
+function pluginDrift(hermesHome, manifest) {
+  const dest = pluginDest(hermesHome);
+  const owned = validManifestFiles(manifest) ? new Map(manifest.files.map((entry) => [entry.path, entry.sha256])) : new Map();
+  const drift = [];
+  const seen = new Set();
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "__pycache__" || /\.py[co]$/.test(entry.name)) continue;
+      const file = path.join(dir, entry.name);
+      const relative = path.relative(dest, file).split(path.sep).join("/");
+      if (entry.isDirectory()) {
+        walk(file);
+        continue;
+      }
+      seen.add(relative);
+      if (!entry.isFile() || !owned.has(relative)) drift.push({ path: relative, change: "added" });
+      else if (sha256(file) !== owned.get(relative)) drift.push({ path: relative, change: "changed" });
+    }
+  };
+  const destStat = fs.lstatSync(dest, { throwIfNoEntry: false });
+  if (destStat?.isDirectory()) walk(dest);
+  else if (destStat) drift.push({ path: ".", change: "added" });
+  for (const owner of owned.keys()) if (!seen.has(owner)) drift.push({ path: owner, change: "missing" });
+  return drift.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function describeDrift(drift, limit = 5) {
+  const shown = drift.slice(0, limit).map((entry) => `${entry.path} (${entry.change})`);
+  if (drift.length > limit) shown.push(`${drift.length - limit} more`);
+  return shown.join(", ");
+}
+
+function replacedFilesRoot(hermesHome) {
+  return path.join(hermesHome, "lithermes", "replaced-files");
+}
+
+// Before --force replaces a plugin folder the user changed, copy the changed and added
+// files out of it, keeping their paths, so the replacement deletes nothing for good.
+function keepReplacedFiles(hermesHome, drift, checkState) {
+  const kept = drift.filter((entry) => entry.change !== "missing");
+  if (!kept.length) return null;
+  const dest = pluginDest(hermesHome);
+  const parent = replacedFilesRoot(hermesHome);
+  checkState();
+  const parentStat = fs.lstatSync(parent, { throwIfNoEntry: false });
+  if (parentStat && (!parentStat.isDirectory() || parentStat.isSymbolicLink())) {
+    throw new LitHermesError(`Unsafe replaced-files directory at ${parent}; refusing to replace the plugin.`, 5);
+  }
+  if (!parentStat) fs.mkdirSync(parent, { mode: 0o700 });
+  const target = fs.mkdtempSync(path.join(parent, `${new Date().toISOString().replace(/[:.]/g, "-")}-`));
+  for (const entry of kept) {
+    const source = entry.path === "." ? dest : path.join(dest, entry.path);
+    const out = path.join(target, entry.path === "." ? "lithermes" : entry.path);
+    checkState();
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    const stat = fs.lstatSync(source);
+    if (stat.isSymbolicLink()) fs.symlinkSync(fs.readlinkSync(source), out);
+    else if (stat.isFile()) fs.copyFileSync(source, out);
+  }
+  return target;
 }
 
 // A pre-canonical installation may be replaced only when both numbered vendor
@@ -627,6 +693,7 @@ function installLitHermes(flags = {}) {
   onProgress("Preparing Hermes config");
   let retainedPythonCache = null;
   let retainedLegacySkill = null;
+  let keptFiles = null;
   try {
   return withLock(hermesHome, (checkState) => {
     assertPluginParent(hermesHome);
@@ -642,7 +709,12 @@ function installLitHermes(flags = {}) {
       : null;
     const pristinePayload = destinationExists && installedMatchesManifest(hermesHome, existingManifest, caches);
     if (destinationExists && !pristinePayload && !flags.force && !(legacyMigration?.valid && legacyMigration.modified)) {
-      throw new LitHermesError(`Existing LitHermes plugin at ${dest} is not manifest-owned. Use --force after backing it up.`, 5);
+      const drift = pluginDrift(hermesHome, existingManifest);
+      throw new LitHermesError([
+        `Existing LitHermes plugin at ${dest} is not manifest-owned: ${drift.length ? describeDrift(drift) : "it holds files the installer did not write"}.`,
+        `Nothing was changed. To replace it anyway, run the same install with --force; it first keeps a copy of those files under ${replacedFilesRoot(hermesHome)}.`,
+        `Skills of your own belong in ${path.join(hermesHome, "skills")}, which upgrades leave alone.`,
+      ].join("\n"), 5);
     }
     if (destinationExists && existingManifest && !flags.force) validateLegacyVendorMigration(hermesHome, existingManifest);
     if (!pristinePayload && legacyMigration?.valid && legacyMigration.modified) {
@@ -669,6 +741,9 @@ function installLitHermes(flags = {}) {
           throw new LitHermesError("Installed payload changed before replacement; refusing to remove files.", 5);
         }
       }
+    }
+    if (flags.force && destinationExists && !pristinePayload) {
+      keptFiles = keepReplacedFiles(hermesHome, pluginDrift(hermesHome, existingManifest), checkState);
     }
     // Replacing the manifest-owned tree also migrates renamed skills: old
     // directories disappear and the new inventory becomes the install receipt.
@@ -751,6 +826,18 @@ function installLitHermes(flags = {}) {
     };
     fs.mkdirSync(path.dirname(manifestPath(hermesHome)), { recursive: true });
     writeFileAtomic(manifestPath(hermesHome), JSON.stringify(manifest, null, 2), "utf8");
+    // The plugin shows the extensions notice once, in the first reply after a new
+    // version lands; a blocked-update notice is moot once an install went through.
+    const upgradedFrom = installedVersion && installedVersion !== packageVersion ? installedVersion : null;
+    const leftovers = upgradedFrom ? leftoverPaths(hermesHome) : [];
+    removeNotice(hermesHome, "update-blocked");
+    if (installedVersion !== packageVersion) {
+      try {
+        writeNotice(hermesHome, "extensions", { version: packageVersion, upgradedFrom, leftovers, writtenAt: new Date().toISOString() });
+      } catch {
+        // A notice is a courtesy; it never fails the install.
+      }
+    }
     let patchResult = null;
     let patchWarning = null;
     const shouldPatch = Boolean(flags["patch-installed-hermes"] || (!flags["no-patch-installed-hermes"] && hermesRepo));
@@ -769,6 +856,7 @@ function installLitHermes(flags = {}) {
       `plugin: ${dest}`,
       ...(retainedPythonCache ? [`Retained Python cache backup: ${retainedPythonCache}`] : []),
       ...(retainedLegacySkill ? [`warning: modified legacy lit-korean skill retained at ${retainedLegacySkill}`] : []),
+      ...(keptFiles ? [`your changed files: copied to ${keptFiles} before the plugin folder was replaced`] : []),
       `model config: ${effectiveModelAction === "write" ? "updated" : effectiveModelAction === "preserve" ? "preserved" : effectiveModelAction}`,
       ...(modelReceipt.backupPath ? [`model backup: ${modelReceipt.backupPath}`] : []),
       ...(modelReceipt.drifted ? [`model write: aborted (${modelReceipt.reason})`] : []),
@@ -795,11 +883,15 @@ function installLitHermes(flags = {}) {
     if (credentialWarning) lines.push(`warning: ${credentialWarning}`);
     if (skinFiles.length) lines.push(`HUD skins: ${skinFiles.length} accents installed — pick one with \`npx --package @litfamily/lithermes -- lithermes hud <accent>\``);
     lines.push("Restart any running Hermes gateway to load new plugins.");
-    return { message: lines.join("\n") };
+    return {
+      message: lines.join("\n"),
+      notice: installedVersion !== packageVersion ? extensionsNoticeLines({ upgradedFrom, leftovers }).join("\n") : null,
+    };
   }, state);
   } catch (error) {
     if (retainedPythonCache) error.message += `\nRetained Python cache backup: ${retainedPythonCache}`;
     if (retainedLegacySkill) error.message += `\nRetained modified legacy skill: ${retainedLegacySkill}`;
+    if (keptFiles) error.message += `\nYour changed files were copied to ${keptFiles}`;
     throw error;
   }
 }
@@ -877,6 +969,9 @@ module.exports = {
   loadManifest,
   manifestPath,
   pluginDest,
+  pluginDrift,
+  describeDrift,
+  replacedFilesRoot,
   previewModelRoute,
   previewUninstall,
   uninstallLitHermes,

@@ -16,6 +16,7 @@ from . import gate_toasts
 from . import handoff
 from . import handoff_card
 from . import hud_card
+from . import install_notices
 from .workspace import is_hermes_home
 from . import knowledge
 from . import knowledge_tools
@@ -99,23 +100,23 @@ PORTED_SKILLS = [
     ),
     (
         "frontend-ui-ux",
-        "Moved to wjgoarxiv-skills for interface building and design; the stub gives the Hermes install line.",
+        "LitFamily extension for interface building and design (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-diagram-drawer",
-        "Moved to wjgoarxiv-skills for diagrams; the stub gives the Hermes install line.",
+        "LitFamily extension for diagrams (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-schematic",
-        "Moved to wjgoarxiv-skills for P&IDs, PFDs and equipment schematics; the stub gives the Hermes install line.",
+        "LitFamily extension for P&IDs, PFDs and equipment schematics (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-pptx",
-        "Moved to wjgoarxiv-skills for PowerPoint decks; the stub gives the Hermes install line.",
+        "LitFamily extension for PowerPoint decks (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-docx",
-        "Moved to wjgoarxiv-skills for Word documents; the stub gives the Hermes install line.",
+        "LitFamily extension for Word documents (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-hijack",
@@ -127,11 +128,11 @@ PORTED_SKILLS = [
     ),
     (
         "lit-typographic-motion",
-        "Moved to wjgoarxiv-skills for films and README cover loops; the stub gives the Hermes install line.",
+        "LitFamily extension for films and README cover loops (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "readme-studio",
-        "Moved to wjgoarxiv-skills for READMEs and covers; the stub gives the Hermes install line.",
+        "LitFamily extension for READMEs and covers (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "lit-commit",
@@ -191,7 +192,7 @@ PORTED_SKILLS = [
     ),
     (
         "visual-qa",
-        "Moved to wjgoarxiv-skills for visual verification of a built interface; the stub gives the Hermes install line.",
+        "LitFamily extension for visual verification of a built interface (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "wikify",
@@ -215,7 +216,7 @@ PORTED_SKILLS = [
     ),
     (
         "lit-scientific-visualization",
-        "Moved to wjgoarxiv-skills for publication plots of measured data; the stub gives the Hermes install line.",
+        "LitFamily extension for publication plots of measured data (wjgoarxiv-skills); the stub gives the Hermes install line.",
     ),
     (
         "structural-search",
@@ -752,7 +753,7 @@ def _pre_verify(**kwargs: Any) -> dict[str, str] | None:
 
 
 def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
-    """Append the one-line cross-session goal row after whatever mark the reply already gets.
+    """Append the cross-session goal row, the parked row and any installer notice after the reply's mark.
 
     A `lit cancel|approve|deny` receipt is the whole reply: it is returned alone,
     before any other transform can add its mark or row to it.
@@ -764,6 +765,7 @@ def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
     for row in (
         core._lit_reentry.take_visible(_goal_resume_session(kwargs)),
         _parked_row(kwargs),
+        install_notices.take_visible(platform=kwargs.get("platform"), response_text=kwargs.get("response_text")),
     ):
         if row:
             base = named if named is not None else str(kwargs.get("response_text") or "")
@@ -978,26 +980,26 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-scientific-visualization",
         _command_handler(ctx, scientific_visualization.command_lit_scientific_visualization),
-        description="Moved to wjgoarxiv-skills: show how to install the scientific visualization skill",
+        description="LitFamily extension (wjgoarxiv-skills): show how to install the scientific visualization skill",
         args_hint="[figure request or dataset paths]",
     )
     ctx.register_command(
         "lit-diagram-drawer",
         _command_handler(ctx, core.command_lit_diagram_drawer, "lit-diagram-drawer"),
-        description="Moved to wjgoarxiv-skills: show how to install the diagram skill",
+        description="LitFamily extension (wjgoarxiv-skills): show how to install the diagram skill",
         args_hint="<diagram brief>",
     )
     ctx.register_command(
         "lit-schematic",
         _command_handler(ctx, core.command_lit_schematic, "lit-schematic"),
-        description="Moved to wjgoarxiv-skills: show how to install the schematic skill",
+        description="LitFamily extension (wjgoarxiv-skills): show how to install the schematic skill",
         args_hint="<schematic brief>",
     )
     for name in ("lit-pptx", "lit-docx"):
         ctx.register_command(
             name,
             _command_handler(ctx, lambda raw, skill=name: core.command_office_skill(raw, skill), name),
-            description=f"Moved to wjgoarxiv-skills: show how to install {name}",
+            description=f"LitFamily extension (wjgoarxiv-skills): show how to install {name}",
             args_hint="<document brief>",
         )
     ctx.register_command(
@@ -1021,7 +1023,7 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-typographic-motion",
         _command_handler(ctx, core.command_motion_skill, "lit-typographic-motion"),
-        description="Moved to wjgoarxiv-skills: show how to install the film skill",
+        description="LitFamily extension (wjgoarxiv-skills): show how to install the film skill",
         args_hint="<film request>",
     )
     for name in core.KOREAN_PROSE_COMMANDS:

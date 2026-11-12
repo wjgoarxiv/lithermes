@@ -50,15 +50,27 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `lit brainstorm <요청>` | `lit-brainstorm` | 열린 요청에 대한 여러 선택지와, 고를 수 있는 짧은 목록 |
 | `lit research <질문>` | `litresearch` | 출처 메모가 있는 조사 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
-| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
-| `/lit-schematic <brief>` | `lit-schematic` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-schematic <brief>` | `lit-schematic` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-hijack <brief>` | `lit-hijack` | 라이선스 게이트와 parity 검증을 거친 공개 노하우의 클린룸 포팅 |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
-| `/lit-pptx <brief>` | `lit-pptx` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
-| `/lit-docx <brief>` | `lit-docx` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
-| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | `wjgoarxiv-skills`로 옮겨 감: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-pptx <brief>` | `lit-pptx` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-docx <brief>` | `lit-docx` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
+| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:review-work`, `lithermes:lit-humanizer`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에 있습니다. 그 가운데 아홉 개는 `wjgoarxiv-skills`로 옮겨 간 스킬의 스텁입니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:review-work`, `lithermes:lit-humanizer`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에 있습니다. 그 가운데 아홉 개는 `wjgoarxiv-skills`에 있는 LitFamily 확장의 스텁입니다.
+
+## 확장
+
+LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. 파일을 만드는 스킬 아홉 개(발표자료, 문서, 그림, 디자인, 영상 커버)는 LitFamily 확장이 되어 확장 선반 [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills)에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. 확장마다 Hermes판 폴더가 하나씩 있으니, 그 폴더를 프로필에 복사하고 새 Hermes 세션을 여세요.
+
+```sh
+git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
+
+설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. [확장 아홉 개와 각각 만드는 것](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)
 
 ## 확인, 업데이트, 삭제
 

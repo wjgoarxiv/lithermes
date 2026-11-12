@@ -20,6 +20,8 @@ Automatic handoff is off by default and makes no network call. When you switch i
 | Hermes home `config.yaml` | Plugin enablement and managed model/display settings alongside existing host settings |
 | Hermes home `lithermes/` | Install manifest, event log, update cache, transaction receipts and backups; your automatic-handoff switch in `auto-handoff.json`; `litgoal.key`, the random key that seals your goal files |
 | Hermes home `lithermes/retained-python-cache-*/` | Relocated Python cache bytes and a `retention.json` inventory |
+| Hermes home `lithermes/notices/` | The LitFamily extensions note and a blocked-update note waiting for the next reply (version numbers, file names inside the plugin folder, folder paths); renamed to `*.shown.json` once shown |
+| Hermes home `lithermes/replaced-files/<time>/` | Copies of plugin files you changed or added, made by `install --force` before it replaces the plugin folder |
 | Workspace `.hermes/lithermes/` | Run state, ledgers, goal/evidence records, signed run notes (`runs.jsonl`: a command hash, a redacted preview of at most 100 characters, the exit code), the saved gate verdict (`gate.json`), the test baseline (`testguard.json`), handoff cards (`handoff/`) and knowledge claims |
 | Workspace `plans/` and task-selected output paths | Plans and artifacts created by the requested workflow |
 

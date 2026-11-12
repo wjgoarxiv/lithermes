@@ -17,6 +17,7 @@ const {
   setOutputStyleConfig,
   writeConfig,
 } = require("./lib/config");
+const { extensionsNoticeLines, leftoverPaths } = require("./lib/sessionNotices");
 const {
   runAutomaticUpdate,
   scheduleUpdateCheck,
@@ -459,6 +460,10 @@ async function main(argv, runtime = {}) {
   // if they explicitly need its local flags.
   if (command === "install" && lifecycle.status === "updated") {
     console.log(`LitHermes automatic update committed (${lifecycle.targetVersion}). Restart Hermes to load it.`);
+    if (!flags.json) {
+      const hermesHome = resolveHome(flags);
+      console.log(extensionsNoticeLines({ upgradedFrom: lifecycle.currentVersion, leftovers: leftoverPaths(hermesHome) }).join("\n"));
+    }
     return;
   }
   if (command === "install") {
@@ -479,6 +484,7 @@ async function main(argv, runtime = {}) {
       });
       if (spinner) spinner.succeed("Installing LitHermes complete");
       console.log(spinner ? renderInstallReceipt(result.message) : result.message);
+      if (result.notice && !flags.json) console.log(result.notice);
     } catch (error) {
       if (spinner) spinner.fail(error instanceof Error ? error.message : "Unexpected install error.");
       throw error;

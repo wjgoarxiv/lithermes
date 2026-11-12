@@ -55,6 +55,22 @@ test("every moved id is a stub that names its Hermes edition and the copy line",
   assert.ok(stub("lit-scientific-visualization").includes("variants/lithermes/lit-scientific-visualization/vendor/scientific-visualization"));
 });
 
+test("every stub and every moved notice calls the skill a LitFamily extension", () => {
+  for (const id of Object.keys(MOVED)) {
+    const text = stub(id);
+    assert.match(text, new RegExp(`^description: "A LitFamily extension: ${id} lives on the wjgoarxiv-skills extension shelf`, "m"), id);
+    assert.ok(text.includes(`# ${id} (LitFamily extension)`), `${id} heading`);
+    assert.ok(text.includes("LitHermes's core works without it, and installing it alongside LitHermes gives the full LitFamily experience"), id);
+    assert.ok(text.includes("git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git"), `${id} gives the clone line`);
+    assert.doesNotMatch(text, /on its way|Moved out of LitHermes|\(moved\)/, `${id} drops the moved-out wording`);
+  }
+  const plugin = (name) => fs.readFileSync(path.join(pkg, "assets", "lithermes-plugin", name), "utf8");
+  assert.doesNotMatch(plugin("__init__.py"), /Moved to wjgoarxiv-skills/);
+  assert.match(plugin("core_contract.py"), /is a LitFamily extension, kept at \{where\}\/ in the wjgoarxiv-skills repository/);
+  assert.match(plugin("core_commands.py"), /a LitFamily extension on the wjgoarxiv-skills shelf/);
+  assert.match(plugin("diagnostics.py"), /LitFamily extensions answer through same-name stubs/);
+});
+
 test("no moved body ships: the pack holds the stubs, the kept probe and nothing else of the five families", () => {
   const { pack } = readLock();
   for (const [id] of Object.entries(MOVED)) {

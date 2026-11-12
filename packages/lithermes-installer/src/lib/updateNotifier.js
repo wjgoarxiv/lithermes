@@ -7,6 +7,7 @@ const { spawn, spawnSync } = require("node:child_process");
 const { writeFileAtomic } = require("./files");
 const { describeSpawnFailure, prepareSpawn } = require("./hostExec");
 const { defaultHermesHome } = require("./hermesDiscovery");
+const { readNotice, writeNotice } = require("./sessionNotices");
 
 const PACKAGE_NAME = "@litfamily/lithermes";
 const REGISTRY_URL = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/latest`;
@@ -851,6 +852,37 @@ function safeNpmFailure(result) {
   return reason === `npm installer exited ${result.status}` ? `npm installer exited with status ${result.status}` : reason.replace("exited ", "exited with status ");
 }
 
+// The install child refuses (exit 5) a plugin folder the user changed. Hooks never print
+// to chat, so the plugin shows this once at the end of the next reply instead; the same
+// files blocking the same version are not shown twice. Returns the files, or null.
+function noteBlockedUpdate({ hermesHome, currentVersion, latestVersion, packageName, now }) {
+  try {
+    const { describeDrift, loadManifest, pluginDrift, replacedFilesRoot } = require("./install");
+    const drift = pluginDrift(hermesHome, loadManifest(hermesHome));
+    if (!drift.length) return null;
+    const files = drift.slice(0, 20);
+    const shown = readNotice(hermesHome, "update-blocked", true);
+    const same = shown?.targetVersion === latestVersion && JSON.stringify(shown.files) === JSON.stringify(files);
+    if (!same) {
+      writeNotice(hermesHome, "update-blocked", {
+        currentVersion,
+        targetVersion: latestVersion,
+        files,
+        more: Math.max(0, drift.length - files.length),
+        summary: describeDrift(drift),
+        pluginPath: path.join(hermesHome, "plugins", "lithermes"),
+        replacedFilesPath: replacedFilesRoot(hermesHome),
+        userSkillsPath: path.join(hermesHome, "skills"),
+        remedy: `npx --yes --package ${packageName}@${latestVersion} -- lithermes install --yes --force`,
+        writtenAt: autoUpdateTimestamp(now),
+      });
+    }
+    return files;
+  } catch {
+    return null;
+  }
+}
+
 function runAutomaticUpdate({
   currentVersion,
   latestVersion = null,
@@ -1074,7 +1106,8 @@ function performAutomaticUpdateTransaction({
       const rollback = restoreSnapshot(snapshot, hermesHome, checkState);
       const outcome = rollbackFailure(reason, rollback);
       writeJournal("rolled-back", { reason: outcome.reason, rollback, ...(outcome.extra.state ? { state: outcome.extra.state } : {}) });
-      return finish("failed", outcome.reason, rollback, outcome.extra);
+      const blockedBy = rollback.status === "restored" && result?.status === 5 ? noteBlockedUpdate({ hermesHome, currentVersion, latestVersion, packageName, now }) : null;
+      return finish("failed", outcome.reason, rollback, { ...outcome.extra, ...(blockedBy ? { blockedBy } : {}) });
     }
     writeJournal("installed");
     writeJournal("doctor");

@@ -289,7 +289,7 @@ def moved_skill_command(name: str, raw_args: str) -> dict[str, str]:
         else "No brief was supplied; the stub's answer does not need one."
     )
     return {
-        "display": f"LitHermes {name}: this skill moved to wjgoarxiv-skills; its stub explains how to install it.",
+        "display": f"LitHermes {name}: a LitFamily extension on the wjgoarxiv-skills shelf; its stub explains how to install it.",
         "agent_message": "\n".join(
             [
                 f'<lithermes-skill-command mode="{name}">',

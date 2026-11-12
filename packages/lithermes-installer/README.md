@@ -50,15 +50,27 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `lit brainstorm <ask>` | `lit-brainstorm` | Many options for an open ask, then a short list to pick from |
 | `lit research <question>` | `litresearch` | Research with source notes |
 | `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose, meaning kept |
-| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
-| `/lit-schematic <brief>` | `lit-schematic` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
-| `/lit-pptx <brief>` | `lit-pptx` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
-| `/lit-docx <brief>` | `lit-docx` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-schematic <brief>` | `lit-schematic` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-pptx <brief>` | `lit-pptx` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-docx <brief>` | `lit-docx` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
 | `/lit-hijack <brief>` | `lit-hijack` | A clean-room port of published know-how, licence-gated with parity proof |
 | `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | A cross-session KPI board: do this now, done and left counts, milestones and reminders; `--detail` adds the per-session brief. Read-only |
-| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | Moved to `wjgoarxiv-skills`: names the folder and the copy line |
+| `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
 
-On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:review-work` or `lithermes:lit-humanizer`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) lists all 40; nine are stubs for skills that moved to `wjgoarxiv-skills`.
+On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:review-work` or `lithermes:lit-humanizer`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) lists all 40; nine are stubs for the LitFamily extensions on `wjgoarxiv-skills`.
+
+## Extensions
+
+LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents, figures, design and video covers) are LitFamily extensions, kept on the extension shelf [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills). Install the ones you use alongside LitHermes to get the full LitFamily experience. Each one has a Hermes edition, a single folder you copy into your profile before starting a new Hermes session:
+
+```sh
+git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
+
+The installer prints this after an install or an upgrade, and the first Hermes reply after it shows it once. [The nine extensions and what each one makes](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md#moved-to-wjgoarxiv-skills).
 
 ## Check, update, remove
 

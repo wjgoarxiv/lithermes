@@ -74,6 +74,13 @@ function receiptLines(receipt, installed) {
   if (receipt.state === "unknown" || receipt.rollback?.status === "failed") {
     return [`update: the automatic update to ${target} could not restore the old files`, "update: remedy: keep the backup under lithermes/auto-update/ and get doctor --offline to pass before you start Hermes"];
   }
+  if (Array.isArray(receipt.blockedBy) && receipt.blockedBy.length) {
+    const files = receipt.blockedBy.slice(0, 5).map((entry) => `${entry?.path} (${entry?.change})`).join(", ");
+    return [
+      `update: ${target} did not install because files in the plugin folder were changed: ${files}; you are still on ${installed} and those files are untouched (${when(receipt.completedAt)})`,
+      `update: remedy: npx --yes --package ${PACKAGE_NAME}@${target} -- lithermes install --yes --force (it first copies those files to lithermes/replaced-files/ in your Hermes home); keep skills of your own in the skills/ folder of your Hermes home`,
+    ];
+  }
   const cause = receipt.doctor === "failed"
     ? "failed its check after install"
     : /timed out|interrupted/.test(String(receipt.reason)) ? "took longer than 30 seconds to install" : "did not install";

@@ -1,14 +1,12 @@
 ---
 name: lit-typographic-motion
-description: "Moved out of LitHermes: lit-typographic-motion now lives in the wjgoarxiv-skills repository, Hermes edition at variants/lithermes/lit-typographic-motion. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
+description: "A LitFamily extension: lit-typographic-motion lives on the wjgoarxiv-skills extension shelf, Hermes edition at variants/lithermes/lit-typographic-motion. This stub loads it when installed, or gives the user the one-skill copy line for Hermes."
 ---
 
-# lit-typographic-motion (moved)
+# lit-typographic-motion (LitFamily extension)
 
-lit-typographic-motion made a short film from a one-line request (a treatment first, then a stage page captured frame by frame or the WebGL2 type engine) or a silent, seamless README cover loop, with a render gate. It no longer ships inside LitHermes. It lives in the `wjgoarxiv-skills` repository, at
+lit-typographic-motion made a short film from a one-line request (a treatment first, then a stage page captured frame by frame or the WebGL2 type engine) or a silent, seamless README cover loop, with a render gate. It is now a LitFamily extension: LitHermes's core works without it, and installing it alongside LitHermes gives the full LitFamily experience. It lives on the extension shelf, the `wjgoarxiv-skills` repository (https://github.com/wjgoarxiv/wjgoarxiv-skills), at
 `variants/lithermes/lit-typographic-motion`, the Hermes edition: a self-contained folder written for Hermes tools that a profile picks up once it is copied into the profile's skills directory.
-
-The `variants/lithermes` folder may still be on its way into the repository. If `variants/lithermes/lit-typographic-motion` is not in the user's clone yet, say so and ask them to update the clone; do not point at any other copy.
 
 ## #contract.activation
 
@@ -46,7 +44,7 @@ mid-sentence mentions stay inert, as before.
 | Mode | Trigger | Contract |
 | --- | --- | --- |
 | installed | `lit-typographic-motion` (no prefix) is in `<available_skills>` | Load `skill_view("lit-typographic-motion")` and follow it for the whole request |
-| not installed | it is not listed | Tell the user what moved and give the copy line; build nothing |
+| not installed | it is not listed | Tell the user it is a LitFamily extension and give the copy line; build nothing |
 
 ## #contract.procedure
 
@@ -55,13 +53,13 @@ mid-sentence mentions stay inert, as before.
    Hermes edition, so its commands and tool names apply as written.
 2. If it is not listed, answer in the user's language with three things and stop:
    - one sentence on what lit-typographic-motion makes;
-   - that it moved out of LitHermes into `variants/lithermes/lit-typographic-motion` of `wjgoarxiv-skills`;
+   - that it is a LitFamily extension, kept in `variants/lithermes/lit-typographic-motion` of `wjgoarxiv-skills`, which LitHermes's core works without;
    - the install line below, in a code block, and that a new Hermes session (or a restart) picks it up, after which
      the user asks again.
 
 ## Install for Hermes
 
-One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`):
+One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`). A user without a clone gets one first with `git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`:
 
 ```bash
 mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"

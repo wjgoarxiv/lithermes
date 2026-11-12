@@ -47,7 +47,7 @@ lit 실패하는 로그인 테스트를 고쳐줘
 
 ### 도면, 발표자료, 문서, 화면, 영상
 
-이런 것을 만드는 스킬 아홉 개는 이제 `wjgoarxiv-skills` 저장소에 있습니다. LitHermes는 가볍게 두고, 쓰는 스킬만 골라 설치하도록 옮겼습니다. `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`입니다. 이름은 Hermes에서 그대로 통합니다. 하나를 부르거나 `lit`으로 발표자료를 부탁하면, LitHermes가 스킬이 어디로 갔는지 알려 주고 그 스킬 하나를 Hermes 프로필로 복사하는 줄을 건넵니다. 목록은 [스킬과 명령](./docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)에 있습니다.
+이런 것을 만드는 스킬 아홉 개는 이제 LitFamily 확장이 되어 `wjgoarxiv-skills` 선반에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 됩니다([확장](#확장) 참고). `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`입니다. 이름은 Hermes에서 그대로 통합니다. 하나를 부르거나 `lit`으로 발표자료를 부탁하면, LitHermes가 확장이라는 것을 알려 주고 그 스킬 하나를 Hermes 프로필로 복사하는 줄을 건넵니다. 목록은 [스킬과 명령](./docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)에 있습니다.
 
 ## 왜 LitHermes인가요
 
@@ -104,6 +104,20 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
    Hermes gateway(Telegram, Discord 등)를 다시 시작하라고 알려 주고, 그다음 요청 앞에 lit을
    붙여 작업을 시작하면 된다고 말해줘.
 ```
+
+## 확장
+
+LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. 계획, 루프, 목표, 검토, 조사, 핸드오프, 문장 다듬기가 모두 이 패키지에 들어 있습니다. 파일을 만드는 스킬 아홉 개는 LitFamily 확장이 되어 확장 선반 [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills)에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. 발표자료는 `lit-pptx`, 문서는 `lit-docx`, 그림은 `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, 디자인은 `frontend-ui-ux`, `visual-qa`, 영상 커버는 `lit-typographic-motion`, `readme-studio`가 맡습니다.
+
+확장마다 Hermes판이 있고, `variants/lithermes/` 아래 폴더 하나가 스킬 하나입니다. 선반을 한 번 받아 두고, 원하는 스킬의 폴더를 Hermes 프로필에 복사한 다음 새 Hermes 세션을 여세요.
+
+```sh
+git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
+
+복사본은 프로필의 `skills/` 폴더에 LitHermes와 따로 놓이므로, 업그레이드나 삭제가 건드리지 않습니다. 설치하기 전에도 이름은 그대로 통합니다. `/lit-pptx`라고 하거나 `lit`으로 발표자료를 부탁하면, 확장이라는 것과 위의 줄을 알려 줍니다. 설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. 예전 버전에서 올렸다면 옛 영상, 발표자료, Word 스킬이 남긴 도구 캐시(캐시 폴더 아래 `lithermes/motion/`, `lithermes/office/`)와 그 스킬이 아직 들어 있는 업데이트 백업도 알려 줍니다. 그 확장을 설치하지 않는다면 지워도 됩니다.
 
 ## 빠른 시작
 

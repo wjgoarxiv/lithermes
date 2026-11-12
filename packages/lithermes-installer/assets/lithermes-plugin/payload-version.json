@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-11T09:40:12.724Z",
+  "syncedAt": "2026-11-12T03:09:48.757Z",
   "source": "bundled-payload",
-  "sourceHash": "e92794e4577df6eb0d712ade455748c868d6d4c7be1e1a26e618e6064db13752",
+  "sourceHash": "0a4b9f71402a349ee698b05ecf302997c4b99365bb22fe8af25e0ecf1598b61e",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "51eb887e6517ac40a822afe2fe2c5586ebef72f1782436f83b47736854bbc364"
+      "sha256": "7cbb82809ec35d2667f6de667c1f1d8a753d12bf2adda5f4faf99bf7be8916c5"
     },
     {
       "path": "adhd_stack.py",
@@ -41,7 +41,7 @@
     },
     {
       "path": "core_commands.py",
-      "sha256": "9a7465dc8ae749f490eda533d9cc36b65c53e8aec52364556974409153beed42"
+      "sha256": "d5e87cf941fbdab9e2ee9be3a5d02b4826e4beea8fea4a5114bddd006c05d2d5"
     },
     {
       "path": "core_contexts.py",
@@ -49,7 +49,7 @@
     },
     {
       "path": "core_contract.py",
-      "sha256": "60ff89c0d3f58b7ae553754a2073a3d0178f1e69c6e6d659f5a20fa766eb7a86"
+      "sha256": "87584387a1856d64c771cc5cdda0ee7f0ba0d2946be672dba94c4a853c7f6e17"
     },
     {
       "path": "core_plans.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "0f3c51d466e95e219387cecada1a33a0657317c759f39e025b995b7c047b4703"
+      "sha256": "d8c90eb37ac4fede1b1257ef65a814f45b22b994b0151ac59dcd10882fdaa5c4"
     },
     {
       "path": "gate_toasts.py",
@@ -138,6 +138,10 @@
     {
       "path": "humanizer_office.py",
       "sha256": "97ea96c5eb688e298d57ba7991bbd4bd8d92f969a2ad608add877aefa5de7128"
+    },
+    {
+      "path": "install_notices.py",
+      "sha256": "0c52fbc0ad1b5687f2f1fade8ad9481982df456c72dd34a13384c1b4470918e9"
     },
     {
       "path": "knowledge.py",
@@ -281,7 +285,7 @@
     },
     {
       "path": "scientific_visualization.py",
-      "sha256": "d6d88f1ae89bf54be75ea6eea5836534025f6af83756a86fd8977a5bdaf0e3e1"
+      "sha256": "6b9be2419f90a72676044caa2d01eae101910197b0bdc3152edeff307246ef5e"
     },
     {
       "path": "session_context.py",
@@ -625,7 +629,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/SKILL.md",
-      "sha256": "62e38b49899684d07cbc364f9f14cf1e0e1af5480e0d52de662e7aab62af41ca"
+      "sha256": "206c0ba220c289de8456d4bec7038af86dc85c978062eeb928f37b55bfdae677"
     },
     {
       "path": "skills/frontend-ui-ux/references/craft-floor.md",
@@ -1033,11 +1037,11 @@
     },
     {
       "path": "skills/lit-diagram-drawer/SKILL.md",
-      "sha256": "03349c01d8c69cd75116599deddad87a1d27c60b5f98956346e4f0e16846664e"
+      "sha256": "d036643c184f202cf9fb26344936c36baabd6276d1b91a7fd75b38c05d753386"
     },
     {
       "path": "skills/lit-docx/SKILL.md",
-      "sha256": "6a215c5b5fb0b93064a950bb43ac9bd4c32c322dcfd16e9bde82b7db9e15bd74"
+      "sha256": "2334520207cbae794a497b7472c65fedaf64841642bbc4ccc747e1537c23aa91"
     },
     {
       "path": "skills/lit-handoff/ORIGIN.json",
@@ -1345,7 +1349,7 @@
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
-      "sha256": "2c43af9b1357c0c98e2e0c3a51f61af0485ccc05a474d8685bf415a111fc1780"
+      "sha256": "21c83df8b796e91e8eb93446cd19d29fee1ab3ad5542da8f16e570747bb30472"
     },
     {
       "path": "skills/lit-recap/SKILL.md",
@@ -1353,15 +1357,15 @@
     },
     {
       "path": "skills/lit-schematic/SKILL.md",
-      "sha256": "63661f70b6bac419b82cdc3aedd44c72c46d8dca6e5eb8b0a422d854286aadff"
+      "sha256": "4772e2456e9c2dcf8f86b22890b9c776c05086c51d5893666ae9a05816e0ba8d"
     },
     {
       "path": "skills/lit-scientific-visualization/SKILL.md",
-      "sha256": "3d86c9de1fabeb2b80db049190eb8ab7af961acceba2758e7f9181cd5b7b1853"
+      "sha256": "ec625a53cfd2842d6b4ace86f80970cfd3c1c4728eb168476b45feef85b23455"
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
-      "sha256": "4992c769f3300edce52f212637e44078a1a0f9f048fb60a9c6bcc77878f6620b"
+      "sha256": "03f8914bceb67e4bba8dabd2cff01205811ee188c24c5b50c29c663462ca8e9b"
     },
     {
       "path": "skills/litgoal/.gitkeep",
@@ -1489,7 +1493,7 @@
     },
     {
       "path": "skills/readme-studio/SKILL.md",
-      "sha256": "da9dbf6daa31c0ff2fd4a1ab585110cff9ea68b22d6a87d545f97a15e5050fa6"
+      "sha256": "2ff324f0a8bdbdce2895488356fc0b7db758a0e656885c1a97d38b391b564c1d"
     },
     {
       "path": "skills/refactor/SKILL.md",
@@ -1513,7 +1517,7 @@
     },
     {
       "path": "skills/visual-qa/SKILL.md",
-      "sha256": "040842649ea76a2dce9f1a3f996f4391cbf475849a376e96c47fd8e9d1a27716"
+      "sha256": "f9704856d35bd0b5dd1615b4719d0a21e1ab45acf7197a66187f82ce56915ffc"
     },
     {
       "path": "skills/wikify/LICENSE",

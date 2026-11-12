@@ -62,10 +62,10 @@ def moved_skill_lines(name: str) -> tuple[str, ...]:
         raise KeyError(name)
     where = f"{MOVED_SKILL_EDITION}/{name}"
     return (
-        f"Mode Contract: {name} moved out of LitHermes to {where}/ in the wjgoarxiv-skills repository; "
+        f"Mode Contract: {name} is a LitFamily extension, kept at {where}/ in the wjgoarxiv-skills repository; "
         "this route loads its same-name stub.",
         f'If {name} (no lithermes: prefix) is in <available_skills>, load skill_view("{name}") and follow it. '
-        "Otherwise build nothing: say what moved and give the user this install line, which the user runs, "
+        "Otherwise build nothing: say it is a LitFamily extension and give the user this install line, which the user runs, "
         "then a new session:",
         f'cp -R "{MOVED_SKILL_CLONE_PLACEHOLDER}/{where}" "${{HERMES_HOME:-$HOME/.hermes}}/skills/"',
     )

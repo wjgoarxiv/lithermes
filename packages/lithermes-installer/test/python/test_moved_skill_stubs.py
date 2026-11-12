@@ -99,7 +99,7 @@ class MovedSkillStubs(NaturalRoutingCase):
                 self.assertIn(name, ctx.commands)
                 message = ctx.command_handlers[name](brief)
                 self._assert_stub_context(name, message["agent_message"])
-                self.assertIn("moved", message["display"].lower())
+                self.assertIn("LitFamily extension", message["display"])
 
     def test_natural_routes_still_route_to_the_stub_without_old_body_lines(self):
         for name, prompt in BARE.items():
@@ -117,12 +117,12 @@ class MovedSkillStubs(NaturalRoutingCase):
                 )["context"]
                 self._assert_stub_context("lit-scientific-visualization", context)
 
-    def test_skill_index_keeps_every_moved_id_and_says_it_moved(self):
+    def test_skill_index_keeps_every_moved_id_and_calls_it_an_extension(self):
         section = self.pkg.skill_index_section()
         for name in MOVED:
             with self.subTest(skill=name):
                 line = next(row for row in section.splitlines() if row.startswith(f"- {name}:"))
-                self.assertIn("moved", line.lower())
+                self.assertIn("LitFamily extension", line)
         self.assertLessEqual(len(section), self.pkg.SKILL_INDEX_MAX_CHARS)
 
     def test_runtimes_only_the_moved_skills_used_are_gone(self):

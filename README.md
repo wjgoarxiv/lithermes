@@ -47,7 +47,7 @@ The picture below is a real run of LitHermes. The skills that make things aim fo
 
 ### Drawings, decks, documents, interfaces and films
 
-Nine skills that make those things now live in the `wjgoarxiv-skills` repository, so LitHermes stays small and you install only the ones you use: `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion` and `readme-studio`. Their names still answer in Hermes. Ask for one, or for a deck with `lit`, and LitHermes says where the skill went and gives you the line that copies that one skill into your Hermes profile. [Skills and commands](./docs/skills.md#moved-to-wjgoarxiv-skills) has the list.
+Nine skills that make those things are LitFamily extensions now, kept on the `wjgoarxiv-skills` shelf, so you add the ones you use beside LitHermes (see [Extensions](#extensions)): `lit-schematic`, `lit-diagram-drawer`, `lit-scientific-visualization`, `lit-pptx`, `lit-docx`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion` and `readme-studio`. Their names still answer in Hermes. Ask for one, or for a deck with `lit`, and LitHermes says it is an extension and gives you the line that copies that one skill into your Hermes profile. [Skills and commands](./docs/skills.md#moved-to-wjgoarxiv-skills) has the list.
 
 ## Why LitHermes
 
@@ -104,6 +104,20 @@ Install LitHermes, the lit workflow plugin for Hermes Agent, on this machine.
    and any running Hermes gateway (Telegram, Discord and so on) so the plugin loads,
    and then to start a task with lit in front.
 ```
+
+## Extensions
+
+LitHermes's core is complete and works on its own: planning, loops, goals, reviews, research, handoffs and prose cleanup all ship in this package. Nine skills that make files are LitFamily extensions, kept on the extension shelf [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills). Install the ones you use alongside LitHermes to get the full LitFamily experience: `lit-pptx` for decks, `lit-docx` for documents, `lit-diagram-drawer`, `lit-schematic` and `lit-scientific-visualization` for figures, `frontend-ui-ux` and `visual-qa` for design, and `lit-typographic-motion` and `readme-studio` for video covers.
+
+Each extension has a Hermes edition, one self-contained folder under `variants/lithermes/`. Clone the shelf once, copy the folder of the skill you want into your Hermes profile, then start a new Hermes session:
+
+```sh
+git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
+mkdir -p "${HERMES_HOME:-$HOME/.hermes}/skills"
+cp -R wjgoarxiv-skills/variants/lithermes/<id> "${HERMES_HOME:-$HOME/.hermes}/skills/"
+```
+
+The copy sits beside LitHermes in the profile's `skills/` folder, so upgrades and uninstalls leave it alone. Until you add one, its name still answers: `/lit-pptx`, or `lit` with a request for a deck, tells you it is an extension and gives you the lines above. The installer prints this note after an install or an upgrade, and the first Hermes reply after that shows it once more. After an upgrade from an older release, the note also names the tool caches the old film, deck and Word skills left behind (`lithermes/motion/` and `lithermes/office/` in your cache folder) and the update backups that still hold those skills; you can delete them if you do not install those extensions.
 
 ## Quick start
 

@@ -487,7 +487,7 @@ def status_report(host_version: str | None = None) -> str:
         _provider_metrics.capability_line(),
         _auto_handoff.status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
-        f"moved to wjgoarxiv-skills ({len(MOVED_SKILL_FAMILIES)} same-name stubs): {', '.join(MOVED_SKILL_FAMILIES)}",
+        f"LitFamily extensions on the wjgoarxiv-skills shelf ({len(MOVED_SKILL_FAMILIES)} same-name stubs): {', '.join(MOVED_SKILL_FAMILIES)}",
         *_capability_status_lines(version),
     ]
     host_note = _beyond_verified_host_note(version)
@@ -540,7 +540,7 @@ def doctor_report(host_version: str | None = None) -> tuple[list[str], int]:
         lines.append(f"[WARN] moved-skill stubs missing their wjgoarxiv-skills path: {', '.join(unmarked)}")
         healthy = False
     else:
-        lines.append(f"[OK] {len(MOVED_SKILL_FAMILIES)} moved skills answer through same-name stubs (wjgoarxiv-skills)")
+        lines.append(f"[OK] {len(MOVED_SKILL_FAMILIES)} LitFamily extensions answer through same-name stubs (wjgoarxiv-skills)")
     try:
         from .litgoal import runtime as _runtime  # noqa: F401
         lines.append("[OK] litgoal durable runtime importable")
