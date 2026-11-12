@@ -30,6 +30,7 @@ const {
 } = require("./modelRoutePolicy");
 const { installSkins } = require("./skins");
 const { extensionsNoticeLines, leftoverPaths, removeNotice, writeNotice } = require("./sessionNotices");
+const { extensionsSummary } = require("./extensions");
 
 const packageRoot = path.resolve(__dirname, "..", "..");
 const assetRoot = path.join(packageRoot, "assets", "lithermes-plugin");
@@ -840,10 +841,11 @@ function installLitHermes(flags = {}) {
     // version lands; a blocked-update notice is moot once an install went through.
     const upgradedFrom = installedVersion && installedVersion !== packageVersion ? installedVersion : null;
     const leftovers = upgradedFrom ? leftoverPaths(hermesHome) : [];
+    const needsAction = installedVersion !== packageVersion ? extensionsSummary({ "hermes-home": hermesHome }).count : 0;
     removeNotice(hermesHome, "update-blocked");
     if (installedVersion !== packageVersion) {
       try {
-        writeNotice(hermesHome, "extensions", { version: packageVersion, upgradedFrom, leftovers, writtenAt: new Date().toISOString() });
+        writeNotice(hermesHome, "extensions", { version: packageVersion, upgradedFrom, leftovers, extensionsCheck: needsAction, writtenAt: new Date().toISOString() });
       } catch {
         // A notice is a courtesy; it never fails the install.
       }
@@ -895,7 +897,7 @@ function installLitHermes(flags = {}) {
     lines.push("Restart any running Hermes gateway to load new plugins.");
     return {
       message: lines.join("\n"),
-      notice: installedVersion !== packageVersion ? extensionsNoticeLines({ upgradedFrom, leftovers }).join("\n") : null,
+      notice: installedVersion !== packageVersion ? extensionsNoticeLines({ upgradedFrom, leftovers, needsAction }).join("\n") : null,
     };
   }, state);
   } catch (error) {

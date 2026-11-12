@@ -210,7 +210,24 @@ Drawings, plots, decks, documents, interface design and review, films and README
 | `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
 | `readme-studio` | `variants/lithermes/readme-studio` |
 
-Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the install lines, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over. The install lines put one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`). Set `ID`, then paste them in bash or zsh: a read-only check for other copies Hermes would load, a move of any old `skills/<id>/` whole into `extension-backups/<date-time>/` of the profile (outside every folder Hermes reads skills from), a copy into the emptied folder and a receipt, `.litfamily-extension.json`:
+Every route that opened one of them still works. `lit-pptx`, `/lit-pptx` and a bare `lit` with slide wording all reach a short stub of the same name. When the real skill is not installed, the stub tells you which folder it moved to and gives you the install lines, and builds nothing. When it is installed, the stub loads it with `skill_view` and hands over.
+
+The installer manages them for you with `lithermes extensions`. A verb that writes only prints its plan until you add `--yes`, and it writes nowhere else than the profile's `skills/<id>/`, its `extension-backups/` and its own shallow clone of the shelf in `lithermes/extensions-src/` of your cache folder (`$XDG_CACHE_HOME` or `~/.cache`). `--from <path>` uses a clone you already have. When git is missing or the network is down, it stops before it changes anything and says to use `--from`.
+
+```sh
+npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+```
+
+| Verb | What it does |
+| --- | --- |
+| `list [--json]` | Each of the nine: not installed, installed (its receipt says when and from where), user-managed (a folder without a receipt), and any other skill of that name Hermes reads, with its path |
+| `check [--json]` | Reads only. Names second copies of a name (a backup or a category folder inside `skills/` makes Hermes refuse both), folders without a receipt, receipts whose source is gone, old full skill bodies left in the plugin folder, and the backups with their total size, each with the line that fixes it. Exits 1 when something needs a hand |
+| `install <id>...`, `--family <name>`, `--all` | Looks through every folder Hermes reads and stops, naming the path, when another skill of that name is there; `--allow-shadow` goes ahead with a warning when that copy is outside `skills/`. Moves an old `skills/<id>/` whole into `extension-backups/<date-time>-XXXXXX/`, copies the Hermes edition into the empty folder and writes the receipt, which also holds a hash of the files |
+| `update [<id>...]` | Refreshes the clone, then reinstalls each installed extension whose files differ from the source; the rest say `current`. A folder without a receipt, or one whose files changed since the install, is left alone |
+| `remove <id>...` | Moves the folder into the backups and deletes nothing; a folder without this receipt is refused with its path |
+| `prune-backups [--older-than <days>]` | Lists the backups with their sizes and deletes them only with `--yes`, only inside `extension-backups/` |
+
+`lithermes doctor` prints the check's one-line summary, and after an upgrade the installer's note adds the check line when it finds something. The same steps work by hand. The install lines put one skill into the active Hermes profile (`HERMES_HOME` picks the profile; the default is `~/.hermes`). Set `ID`, then paste them in bash or zsh: a read-only check for other copies Hermes would load, a move of any old `skills/<id>/` whole into `extension-backups/<date-time>/` of the profile (outside every folder Hermes reads skills from), a copy into the emptied folder and a receipt, `.litfamily-extension.json`:
 
 ```bash
 H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/$ID"

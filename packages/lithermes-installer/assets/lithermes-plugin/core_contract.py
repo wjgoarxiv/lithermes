@@ -79,11 +79,24 @@ def extension_install_lines(name: str, source: str | None = None) -> tuple[str, 
     return (f'H="${{HERMES_HOME:-$HOME/.hermes}}"; ID={name}; SRC="{source}"', *EXTENSION_STEP_LINES)
 
 
-def moved_skill_lines(name: str) -> tuple[str, ...]:
-    """What every route to a moved id says: where it went, how to load it, where the install lines are.
+# The installer does the same steps in code (`lithermes extensions install <id> --yes`, src/lib/extensions.js):
+# check, move an old copy aside, copy, receipt. Routes and the in-session notice give this line; the stubs
+# keep the five shell lines above as the manual route.
+EXTENSION_CLI = "npx --package @litfamily/lithermes -- lithermes"
 
-    The route names the first line and points at the stub for the rest: all five would push a route
-    past the host context cap (MAX_HOST_CONTEXT_BYTES)."""
+
+def extension_command_line(name: str) -> str:
+    """The one command that installs a moved id into the active profile."""
+    if name not in MOVED_SKILL_FAMILIES:
+        raise KeyError(name)
+    return f"{EXTENSION_CLI} extensions install {name} --yes"
+
+
+def moved_skill_lines(name: str) -> tuple[str, ...]:
+    """What every route to a moved id says: where it went, how to load it, how to install it.
+
+    The route carries the one install command and points at the stub for the five shell lines: all five
+    would push a route past the host context cap (MAX_HOST_CONTEXT_BYTES)."""
     if name not in MOVED_SKILL_FAMILIES:
         raise KeyError(name)
     where = f"{MOVED_SKILL_EDITION}/{name}"
@@ -91,11 +104,11 @@ def moved_skill_lines(name: str) -> tuple[str, ...]:
         f"Mode Contract: {name} is a LitFamily extension, kept at {where}/ in the wjgoarxiv-skills repository; "
         "this route loads its same-name stub.",
         f'If {name} (no lithermes: prefix) is in <available_skills>, load skill_view("{name}") and follow it. '
-        "Otherwise build nothing: say it is a LitFamily extension and give the user, in one code block and unchanged, the five "
-        f'install lines under "Install for Hermes" in skill_view("lithermes:{name}"); the user pastes them in bash or zsh, then '
-        f"opens a new session. They move an old skills/{name}/ aside into extension-backups/ before copying, so never shorten "
-        "them to a bare cp -R. The first line is:",
-        extension_install_lines(name)[0],
+        "Otherwise build nothing: say it is a LitFamily extension and give the user, in one code block and unchanged, the "
+        "command below; the user runs it in a terminal, then opens a new session. It moves an old "
+        f"skills/{name}/ aside into extension-backups/ before copying, so never shorten it to a bare cp -R. A user who "
+        f'wants shell lines instead gets the five under "Install for Hermes" in skill_view("lithermes:{name}"). The command is:',
+        extension_command_line(name),
     )
 
 READER_FACING_CONTRACT_SCHEMA_VERSION = "litfamily.reader_facing_communication/v1"

@@ -527,10 +527,10 @@ print(json.dumps(rows))
   assert.equal(result.status, 0, result.stderr);
   const rows = JSON.parse(result.stdout);
   assert.deepEqual(rows.map((row) => row.mode), ["readme-studio", "readme-studio", "frontend-ui-ux", "frontend-ui-ux", null, null, null]);
-  // Both skills moved to wjgoarxiv-skills: each route now reaches the same-name stub and its copy line.
+  // Both skills moved to wjgoarxiv-skills: each route now reaches the same-name stub and its install command.
   for (const row of rows.slice(0, 4)) {
     assert.ok(row.context.includes(`variants/lithermes/${row.mode}`), row.context);
-    assert.ok(row.context.includes("<path to your wjgoarxiv-skills clone>"), row.context);
+    assert.ok(row.context.includes(`lithermes extensions install ${row.mode} --yes`), row.context);
     assert.doesNotMatch(row.context, /author against a frozen|BEFORE any token|IMAGE_GENERATION_UNAVAILABLE/);
   }
 });

@@ -18,6 +18,7 @@ const {
   writeConfig,
 } = require("./lib/config");
 const { extensionsNoticeLines, leftoverPaths } = require("./lib/sessionNotices");
+const { VERBS, extensionsSummary, runExtensions } = require("./lib/extensions");
 const {
   runAutomaticUpdate,
   scheduleUpdateCheck,
@@ -27,7 +28,7 @@ const {
 // Every option the CLI understands. A flag is a boolean switch unless it is listed in VALUE_FLAGS.
 const VALUE_FLAGS = new Set([
   "hermes-home", "hermes-repo", "provider", "model", "effort", "child-provider", "child-model", "child-effort",
-  "hud", "style", "installed-version",
+  "hud", "style", "installed-version", "from", "family", "older-than",
 ]);
 
 // What each command accepts, and how help shows it. A command refuses anything not listed here.
@@ -63,6 +64,15 @@ const COMMAND_SPECS = {
     positionals: [0, 1],
     flags: { list: "", "dry-run": "", ...HOME },
     note: "(Hermes HUD skin accents)",
+  },
+  extensions: {
+    usage: "extensions list|check|install|update|remove|prune-backups [<id>...]",
+    positionals: [1, Infinity],
+    actions: VERBS,
+    flags: {
+      json: "", from: "PATH", family: "NAME", all: "", yes: "", "dry-run": "", "allow-shadow": "", "older-than": "DAYS", ...HOME,
+    },
+    note: "(LitFamily extensions in the profile's skills/; writes only with --yes)",
   },
   version: { usage: "version", positionals: [0, 0], flags: {} },
   help: { usage: "help", positionals: [0, 1], flags: {}, hidden: true },
@@ -449,6 +459,12 @@ async function main(argv, runtime = {}) {
     }
     return;
   }
+  if (command === "extensions") {
+    const result = runExtensions(positionals[1], positionals.slice(2), flags, runtime);
+    console.log(result.message);
+    if (!result.ok) process.exitCode = 1;
+    return;
+  }
   const lifecycle = await runLifecycleUpdateSafely(command, flags, runtime);
   if (lifecycle.status === "failed" && (lifecycle.state === "unknown" || lifecycle.rollback?.status === "failed")) {
     console.error("LitHermes automatic update left the Hermes home in an unknown state; run `lithermes doctor --offline --hermes-home PATH` before continuing.");
@@ -462,7 +478,8 @@ async function main(argv, runtime = {}) {
     console.log(`LitHermes automatic update committed (${lifecycle.targetVersion}). Restart Hermes to load it.`);
     if (!flags.json) {
       const hermesHome = resolveHome(flags);
-      console.log(extensionsNoticeLines({ upgradedFrom: lifecycle.currentVersion, leftovers: leftoverPaths(hermesHome) }).join("\n"));
+      const needsAction = extensionsSummary({ "hermes-home": hermesHome }).count;
+      console.log(extensionsNoticeLines({ upgradedFrom: lifecycle.currentVersion, leftovers: leftoverPaths(hermesHome), needsAction }).join("\n"));
     }
     return;
   }

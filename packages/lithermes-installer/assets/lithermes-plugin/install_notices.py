@@ -6,8 +6,9 @@ plugin shows it under the first top-level reply that follows, through the same
 
 - ``extensions``: a new LitHermes version was installed or updated. It says the core
   works on its own, that the nine file-making skills are LitFamily extensions on the
-  wjgoarxiv-skills shelf, and gives the Hermes install lines; after an upgrade it also
-  names the old caches that can go.
+  wjgoarxiv-skills shelf, and gives the ``lithermes extensions install`` command; when the
+  installer's ``extensions check`` found something in the profile it adds the check line,
+  and after an upgrade it also names the old caches that can go.
 - ``update-blocked``: an automatic update was refused because the user changed files
   in the plugin folder. It names the files, says nothing was touched, and gives the
   ``--force`` line, which copies those files out first.
@@ -30,22 +31,19 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from .core_contract import EXTENSION_STEP_LINES
+    from .core_contract import extension_command_line
     from .core_runtime import get_hermes_home
     from .session_context import is_delegate_child_platform
 except ImportError:  # standalone import (tests load modules from the payload folder)
-    from core_contract import EXTENSION_STEP_LINES  # type: ignore
+    from core_contract import extension_command_line  # type: ignore
     from core_runtime import get_hermes_home  # type: ignore
     from session_context import is_delegate_child_platform  # type: ignore
 
 NOTICE_NAMES = ("update-blocked", "extensions")
 SHELF_URL = "https://github.com/wjgoarxiv/wjgoarxiv-skills"
-# The same lines as the installer's notice: name the skill, check, move any old copy aside, copy, receipt.
-INSTALL_LINES = (
-    f"git clone {SHELF_URL}.git",
-    'H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"',
-    *EXTENSION_STEP_LINES,
-)
+# The same command as the installer's notice: it checks, moves any old copy aside, copies and writes the receipt.
+INSTALL_LINES = (extension_command_line("lit-pptx"),)
+CHECK_LINE = "npx --package @litfamily/lithermes -- lithermes extensions check"
 _MAX_BYTES = 64 * 1024
 _HANGUL = re.compile(r"[가-힣]")
 
@@ -101,18 +99,27 @@ def _paths(values: Any) -> list[str]:
     return [str(value) for value in values or [] if isinstance(value, str) and value][:8]
 
 
+def _needs_action(record: dict[str, Any]) -> int:
+    value = record.get("extensionsCheck")
+    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else 0
+
+
 def extensions_text(record: dict[str, Any], *, korean: bool = False) -> str:
     leftovers = _paths(record.get("leftovers")) if record.get("upgradedFrom") else []
+    needs = _needs_action(record)
     if korean:
         lines = [
             "LIT · LitFamily 확장",
             "LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. "
             "파일을 만드는 스킬 아홉 개(발표자료, 문서, 그림, 디자인, 영상 커버)는 이제 LitFamily 확장이 되어 "
             f"확장 선반 {SHELF_URL} 에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. "
-            "스킬 하나는 이렇게 넣고, 새 Hermes 세션을 열면 됩니다. `ID`에는 lit-pptx 같은 이름을 넣으세요. "
-            "같은 이름의 예전 폴더는 프로필의 extension-backups/ 로 통째로 옮겨 두므로, 새 복사본에 섞이지 않습니다:",
+            "아래 명령 한 줄이 스킬 하나를 넣고, 새 Hermes 세션을 열면 잡힙니다. lit-pptx 자리에 다른 이름을 넣어도 되고, "
+            "같은 이름의 예전 폴더는 프로필의 extension-backups/ 로 통째로 옮겨 두므로 새 복사본에 섞이지 않습니다. "
+            "`extensions list`는 설치 상태를, `update`는 새 판을, `remove`는 치우기를 맡고, 셸로 하고 싶다면 각 스텁에 같은 단계가 줄로 있습니다:",
             _code(INSTALL_LINES),
         ]
+        if needs:
+            lines += [f"이 프로필에 살펴볼 것이 {needs}개 있습니다(같은 이름의 다른 복사본이나 영수증 없는 폴더). 아래 명령이 하나씩 짚어 주고 고치는 줄도 알려 줍니다:", _code([CHECK_LINE])]
         if leftovers:
             lines += ["이전 버전이 남긴 파일입니다. 이 확장을 설치하지 않는다면 지워도 됩니다:", _code(leftovers)]
     else:
@@ -121,10 +128,14 @@ def extensions_text(record: dict[str, Any], *, korean: bool = False) -> str:
             "LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents, "
             "figures, design and video covers) are now LitFamily extensions, kept on the extension shelf at "
             f"{SHELF_URL}. Install the ones you use alongside LitHermes to get the full LitFamily experience. "
-            "One skill goes in like this, then a new Hermes session picks it up. Set `ID` to a name such as lit-pptx; "
-            "an old folder of that name moves whole into extension-backups/ in the profile, so nothing old mixes into the copy:",
+            "The command below installs one, and a new Hermes session picks it up; put another name in place of lit-pptx. "
+            "An old folder of that name moves whole into extension-backups/ in the profile, so nothing old mixes into the copy. "
+            "`extensions list` shows what is installed, `update` refreshes and `remove` moves one aside; each stub keeps the same steps as shell lines:",
             _code(INSTALL_LINES),
         ]
+        if needs:
+            noun = "one thing" if needs == 1 else f"{needs} things"
+            lines += [f"This profile has {noun} to look at (a second copy of a name, or a folder without a receipt). This command names each one and the line that fixes it:", _code([CHECK_LINE])]
         if leftovers:
             lines += ["The old version left these behind. If you do not install those extensions, you can delete them:", _code(leftovers)]
     return "\n".join(lines)

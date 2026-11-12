@@ -40,9 +40,9 @@ const NOTICE_LINES = [
   "are now LitFamily extensions, kept on the extension shelf at",
   "https://github.com/wjgoarxiv/wjgoarxiv-skills",
   "full LitFamily experience",
-  "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
-  ...require("../src/lib/sessionNotices").INSTALL_LINES.slice(1),
+  `    ${require("../src/lib/sessionNotices").EXTENSION_COMMAND_LINE}`,
   "extension-backups/",
+  "`extensions list` shows what is installed, `update` refreshes, `remove` moves one aside.",
 ];
 
 test("a fresh install prints the LitFamily extensions notice and leaves it for the first session", () => {
@@ -55,7 +55,7 @@ test("a fresh install prints the LitFamily extensions notice and leaves it for t
     assert.ok(result.stdout.includes(id), id);
   }
   const block = result.stdout.slice(result.stdout.indexOf("LitFamily extensions")).trimEnd().split("\n");
-  // Five of these are the install lines (name, check, move aside, copy, receipt) that keep one live copy.
+  assert.doesNotMatch(result.stdout, /things? to look at/, "a fresh profile has nothing for extensions check");
   assert.ok(block.length <= 14, `the notice stays short (${block.length} lines)`);
   assert.doesNotMatch(result.stdout, /\x1b\[/, "no colour under NO_COLOR");
   assert.doesNotMatch(result.stdout, /old version left these behind/, "a fresh install has nothing left behind");

@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-12T12:21:07.356Z",
+  "syncedAt": "2026-11-12T12:57:33.811Z",
   "source": "bundled-payload",
-  "sourceHash": "ad9b60f33876e22df284cb0f6d5c92b3b0ca682be85aa1b8d5c4929363adbff0",
+  "sourceHash": "c8200cf3c5a12e6f5f824a26cab0f354f2c88859a6aebdaa1df2b4dc2550d43c",
   "files": [
     {
       "path": "NOTICE.md",
@@ -49,7 +49,7 @@
     },
     {
       "path": "core_contract.py",
-      "sha256": "b5dd0f14478e020c6042f72fb905b1613df506f819c8f53f7949bf4c08de042d"
+      "sha256": "1d64385c0af6fddab13c6987258edee212884f478a1b067946906f88e9698625"
     },
     {
       "path": "core_plans.py",
@@ -141,7 +141,7 @@
     },
     {
       "path": "install_notices.py",
-      "sha256": "84d952ec3f44a528d1d758f9b70837288410aec69b47407e918430120707980e"
+      "sha256": "949e2415d5fd8868f9e774a12d6256d1a147fd0c55ee65d752d7eebc41b160c5"
     },
     {
       "path": "knowledge.py",
@@ -629,7 +629,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/SKILL.md",
-      "sha256": "fc0af87d360c1e19b3592701fa2d352265f7c443b10b6d5936eab6b74f8e5be4"
+      "sha256": "45e5f31fb86f4347546adbb08bce8e71908f7cdcbe84922b3d09a01cb915cc53"
     },
     {
       "path": "skills/frontend-ui-ux/references/craft-floor.md",
@@ -1037,11 +1037,11 @@
     },
     {
       "path": "skills/lit-diagram-drawer/SKILL.md",
-      "sha256": "a019e409f255ff14b87ed7c6cf5b3eca564e13b5006c15091afa1d23987d7c1d"
+      "sha256": "20877ccb12cc0284c62d2bbaf520c2458d696b11c170cd79ac987f412a6ed228"
     },
     {
       "path": "skills/lit-docx/SKILL.md",
-      "sha256": "2f52bc51a9afa9aac4c02e44a2a8f5a1c09ef68a139786ba9d570f947d6d5e70"
+      "sha256": "ac4dde44ffc92503e3e91b0078a2f0d370bff5593538906a2200bbc5ebfa605b"
     },
     {
       "path": "skills/lit-handoff/ORIGIN.json",
@@ -1349,7 +1349,7 @@
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
-      "sha256": "c4fa0e68a704e475e535c62d06acf17c9b275ab7d0b1ebd657eb89e684f60058"
+      "sha256": "d3fafa7883bf3bc58dcc6cc45fa87ded24e8523d71b9fcebd8aa4b63a34eff12"
     },
     {
       "path": "skills/lit-recap/SKILL.md",
@@ -1357,15 +1357,15 @@
     },
     {
       "path": "skills/lit-schematic/SKILL.md",
-      "sha256": "27c7e8566edeceac56ac19685280cfa3dd5479aa30950904ff9e2992d873a2b7"
+      "sha256": "e3e6428e0583302b45b1dcfa303dfc59d2c0efbcfbcdcaaeed6b33beb9367dca"
     },
     {
       "path": "skills/lit-scientific-visualization/SKILL.md",
-      "sha256": "1b0fa620d2ed0bcdf7e52a618d45b70738ad715f0420f7f24f7e15147eeaa164"
+      "sha256": "42a85414abea99d65be8d72674d26bdc23cc9af7fe72953243d81826d7171c95"
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
-      "sha256": "050556e207fab54a25cd7da208182b1f35cdffd6603d83a0f4dd55ce073784d6"
+      "sha256": "b75815c8d9a59d01be21e72eddcf9c377f969a442bc48646bc59ecea3952c369"
     },
     {
       "path": "skills/litgoal/.gitkeep",
@@ -1493,7 +1493,7 @@
     },
     {
       "path": "skills/readme-studio/SKILL.md",
-      "sha256": "226ca7a71bb7f03988394b8417b55466e572a8ccf9ea444a1d94524decf4752e"
+      "sha256": "9a3263578cd41a5fec57560470d5e621899e90e09930b731d700d7fdcfa5018f"
     },
     {
       "path": "skills/refactor/SKILL.md",
@@ -1517,7 +1517,7 @@
     },
     {
       "path": "skills/visual-qa/SKILL.md",
-      "sha256": "068d4b94d1ee6fc750850072685985b9139b81c240c6dfeba1647b4d1ebd5ace"
+      "sha256": "7ca59db23f7f6f2b4daecbeb3b9eb7b96fdc160fafde80c3c584f7eb0f6ba10b"
     },
     {
       "path": "skills/wikify/LICENSE",

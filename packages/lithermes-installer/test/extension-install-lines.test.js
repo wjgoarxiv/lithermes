@@ -5,7 +5,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { test } = require("node:test");
 const {
-  EXTENSION_IDS, EXTENSION_REMOVE_LINE, EXTENSION_STEP_LINES, INSTALL_LINES, extensionSetupLine,
+  EXTENSION_CLI, EXTENSION_IDS, EXTENSION_REMOVE_LINE, EXTENSION_STEP_LINES, INSTALL_LINES, extensionSetupLine,
 } = require("../src/lib/sessionNotices");
 
 // The Hermes install lines for one LitFamily extension: name it, check, move any old copy aside, copy, receipt.
@@ -56,10 +56,12 @@ const backups = (home) => {
   return fs.existsSync(root) ? fs.readdirSync(root).sort().map((stamp) => path.join(root, stamp)) : [];
 };
 
-test("every stub gives the five install lines and the remove line, and no line that merges into skills/", () => {
+test("every stub gives the extensions command, then the five install lines and the remove line, and no line that merges into skills/", () => {
   for (const id of EXTENSION_IDS) {
     const text = stub(id);
-    const [install, remove] = codeBlocks(text, "Install for Hermes");
+    const [command, install, remove] = codeBlocks(text, "Install for Hermes");
+    assert.deepEqual(command, [`${EXTENSION_CLI} extensions install ${id} --yes`], `${id} command`);
+    for (const verb of ["update", "remove", "check", "--allow-shadow", "--from"]) assert.ok(text.includes(verb), `${id} names ${verb}`);
     assert.deepEqual(install, [extensionSetupLine(id, `${PLACEHOLDER}/variants/lithermes/${id}`), ...EXTENSION_STEP_LINES], id);
     assert.deepEqual(remove, [EXTENSION_REMOVE_LINE], `${id} remove line`);
     assert.doesNotMatch(text, MERGING, `${id} drops the merging copy line`);
@@ -87,7 +89,7 @@ test("the READMEs, the skills pages and the installer notice carry the same line
 for (const shell of shells()) {
   test(`${shell}: fresh install, install over an old folder, update and remove keep exactly one live copy`, () => {
     const box = fixture();
-    const install = codeBlocks(stub("lit-pptx"), "Install for Hermes")[0];
+    const install = codeBlocks(stub("lit-pptx"), "Install for Hermes")[1];
     const live = path.join(box.home, "skills", "lit-pptx");
 
     // 1. Fresh: an empty profile gets the folder itself, not a nested copy, and a receipt.

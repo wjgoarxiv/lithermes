@@ -210,7 +210,24 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체
 | `lit-typographic-motion` | `variants/lithermes/lit-typographic-motion` |
 | `readme-studio` | `variants/lithermes/readme-studio` |
 
-그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 설치 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다. 설치 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다). `ID`를 정하고 bash나 zsh에 붙여 넣으세요. 먼저 Hermes가 읽을 다른 복사본을 읽기만 해서 보여 주고, 예전 `skills/<id>/`가 있으면 프로필의 `extension-backups/<날짜-시각>/`(Hermes가 스킬을 읽는 어느 폴더에도 속하지 않는 곳)로 통째로 옮긴 뒤, 비워진 자리에 복사하고 영수증 `.litfamily-extension.json`을 남깁니다.
+그 스킬을 열던 경로는 모두 그대로 동작합니다. `lit-pptx`, `/lit-pptx`, 슬라이드를 말하는 맨 `lit` 요청은 모두 같은 이름의 짧은 스텁에 닿습니다. 진짜 스킬이 설치되어 있지 않으면 스텁은 옮겨 간 폴더와 설치 줄을 알려 주고 아무것도 만들지 않습니다. 설치되어 있으면 `skill_view`로 불러 넘겨줍니다.
+
+설치 프로그램의 `lithermes extensions`가 이 일을 대신 맡습니다. 무언가를 쓰는 동사는 `--yes`를 붙이기 전까지 계획만 보여 주고, 쓰는 곳도 프로필의 `skills/<id>/`, 그 `extension-backups/`, 캐시 폴더(`$XDG_CACHE_HOME` 또는 `~/.cache`) 아래 `lithermes/extensions-src/`에 받아 두는 선반의 얕은 사본뿐입니다. 받아 둔 사본이 있으면 `--from <경로>`로 그것을 씁니다. git이 없거나 네트워크가 끊겨 있으면 아무것도 바꾸기 전에 멈추고 `--from`을 쓰라고 알려 줍니다.
+
+```sh
+npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+```
+
+| 동사 | 하는 일 |
+| --- | --- |
+| `list [--json]` | 아홉 개 각각이 설치 안 됨인지, 설치됨(영수증에 언제 어디서 왔는지 있음)인지, 사용자 관리(영수증 없는 폴더)인지 보여 주고, Hermes가 읽는 같은 이름의 다른 스킬이 있으면 그 경로도 보여 줍니다 |
+| `check [--json]` | 읽기만 합니다. 같은 이름의 두 번째 복사본(`skills/` 안의 백업이나 분류 폴더에 있으면 Hermes가 둘 다 거부합니다), 영수증 없는 폴더, 원본이 사라진 영수증, 플러그인 폴더에 남은 옛 스킬 본문, 백업과 그 전체 크기를 고치는 줄과 함께 짚어 줍니다. 손볼 것이 있으면 1로 끝납니다 |
+| `install <id>...`, `--family <이름>`, `--all` | Hermes가 읽는 폴더를 모두 살피고, 같은 이름의 다른 스킬이 있으면 경로를 알려 주며 멈춥니다. 그 복사본이 `skills/` 밖에 있으면 `--allow-shadow`로 경고와 함께 진행합니다. 예전 `skills/<id>/`를 `extension-backups/<날짜-시각>-XXXXXX/`로 통째로 옮기고, 비워진 자리에 Hermes판을 복사하고, 파일 해시까지 담은 영수증을 남깁니다 |
+| `update [<id>...]` | 사본을 새로 받은 다음, 설치된 확장 가운데 원본과 파일이 다른 것만 다시 설치합니다. 나머지는 `current`라고 알려 줍니다. 영수증이 없는 폴더나 설치 뒤 파일이 바뀐 폴더는 건드리지 않습니다 |
+| `remove <id>...` | 폴더를 백업으로 옮기고 아무것도 지우지 않습니다. 이 영수증이 없는 폴더는 경로를 알려 주며 거부합니다 |
+| `prune-backups [--older-than <일수>]` | 백업과 크기를 보여 주고, `--yes`가 있을 때만, 그것도 `extension-backups/` 안에서만 지웁니다 |
+
+`lithermes doctor`도 check 요약을 한 줄로 보여 주고, 업그레이드 뒤 설치 프로그램의 안내는 손볼 것이 있으면 check 줄을 덧붙입니다. 손으로 해도 단계는 같습니다. 설치 줄은 스킬 하나를 지금 쓰는 Hermes 프로필에 넣습니다(`HERMES_HOME`이 프로필을 고르고, 기본값은 `~/.hermes`입니다). `ID`를 정하고 bash나 zsh에 붙여 넣으세요. 먼저 Hermes가 읽을 다른 복사본을 읽기만 해서 보여 주고, 예전 `skills/<id>/`가 있으면 프로필의 `extension-backups/<날짜-시각>/`(Hermes가 스킬을 읽는 어느 폴더에도 속하지 않는 곳)로 통째로 옮긴 뒤, 비워진 자리에 복사하고 영수증 `.litfamily-extension.json`을 남깁니다.
 
 ```bash
 H="${HERMES_HOME:-$HOME/.hermes}"; ID=lit-pptx; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/$ID"

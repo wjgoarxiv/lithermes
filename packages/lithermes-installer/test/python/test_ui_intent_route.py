@@ -71,7 +71,7 @@ class UiIntentRoute(unittest.TestCase):
         self.assertIsNotNone(route)
         context = self.core.build_natural_mode_context(route)
         self.assertIn("variants/lithermes/frontend-ui-ux", context)
-        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+        self.assertIn("lithermes extensions install frontend-ui-ux --yes", context)
         self.assertNotIn("design-lock", context)
         self.assertNotIn("design_contract_validation", context)
 

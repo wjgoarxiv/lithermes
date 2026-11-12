@@ -7,6 +7,7 @@ const { formatManagedRoute } = require("./modelRoutePolicy");
 const { inspectPythonCache } = require("./files");
 const { assetRoot, pluginDest } = require("./install");
 const { autoUpdateDoctorLines } = require("./updateDoctor");
+const { extensionsSummary, readReceipt } = require("./extensions");
 const {
   formatSkillPayload,
   inspectSkillPayload,
@@ -204,8 +205,13 @@ function formatSkillShadowWarning(shadow) {
     + `use lithermes:${shadow.id} to load LitHermes's copy, or remove/rename the other copy.`;
 }
 
+// The receipt says whether `lithermes extensions` (or the stub's lines) put the copy there.
 function formatMovedSkillCopy(copy) {
-  return `moved skill copy: ${copy.id} at ${copy.path} (${copy.source}); the lithermes:${copy.id} stub hands over to it`;
+  const { receipt } = readReceipt(path.dirname(copy.path));
+  const origin = receipt
+    ? `receipt: installed ${receipt.installed_at || "(no time)"} from ${receipt.source || "(no source)"}`
+    : "no receipt: user-managed";
+  return `moved skill copy: ${copy.id} at ${copy.path} (${copy.source}; ${origin}); the lithermes:${copy.id} stub hands over to it`;
 }
 
 function checkLitHermes(flags = {}) {
@@ -310,6 +316,7 @@ function doctorLitHermes(flags = {}) {
     `skill shadow check: ${skillShadows.length ? "WARNING" : "PASS"}`,
     ...skillShadows.map(formatSkillShadowWarning),
     ...movedCopies.map(formatMovedSkillCopy),
+    extensionsSummary(flags).line,
     formatStatusBarFields(configText),
     `auto-compaction: ${auto.status}${auto.reason ? ` (${auto.reason})` : ""}`,
 		`concurrency: ${formatConcurrencyCapability(concurrency)}`,

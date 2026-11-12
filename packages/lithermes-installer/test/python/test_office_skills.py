@@ -25,7 +25,7 @@ class OfficeSkillRoutes(NaturalRoutingCase):
                 self.assertIn('mode: litwork' if expected == 'litwork' else f'mode="{expected}"', context)
                 if expected in {"lit-pptx", "lit-docx"}:
                     self.assertIn(f"skills/{expected}/SKILL.md", context)
-                    self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+                    self.assertIn(f"lithermes extensions install {expected} --yes", context)
 
     def test_a_dot_inside_a_file_name_version_or_url_does_not_end_the_first_sentence(self):
         examples = {

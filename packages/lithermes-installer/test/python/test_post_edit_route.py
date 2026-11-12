@@ -304,7 +304,7 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertIn("lithermes:frontend-ui-ux", context)
         self.assertIn("lithermes:visual-qa", context)
         self.assertIn("variants/lithermes/visual-qa", context)
-        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+        self.assertIn("lithermes extensions install visual-qa --yes", context)
         self.assertLess(
             context.index("<lithermes-post-edit-route"),
             context.index("<lithermes-natural-route"),
@@ -333,7 +333,7 @@ class PostToolCallDelivery(unittest.TestCase):
         self.assertIn("sha256=", context)
         self.assertNotIn("a" * 1000, context)
         self.assertIn("variants/lithermes/visual-qa", context)
-        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+        self.assertIn("lithermes extensions install visual-qa --yes", context)
 
     def test_docs_only_mutation_delivers_nothing(self):
         """The path is observed; the condition table is what refuses to emit."""
@@ -529,7 +529,7 @@ class DesignSkillChatRoute(unittest.TestCase):
                 context = self.core.build_natural_mode_context(route)
                 self.assertIn(f"lithermes:{skill}", context)
                 self.assertIn(f"variants/lithermes/{skill}", context)
-                self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+                self.assertIn(f"lithermes extensions install {skill} --yes", context)
 
     def test_the_route_reaches_the_model_through_pre_llm_call(self):
         """post_tool_call and on_session_start have their returns discarded."""

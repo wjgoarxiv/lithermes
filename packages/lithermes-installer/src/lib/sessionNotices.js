@@ -35,6 +35,11 @@ const INSTALL_LINES = [
   ...EXTENSION_STEP_LINES,
 ];
 
+// `lithermes extensions` does the same steps in code; the notices give it, and the stubs keep the
+// shell lines above as the manual route. The plugin's notice holds the same line (install_notices.py).
+const EXTENSION_CLI = "npx --package @litfamily/lithermes -- lithermes";
+const EXTENSION_COMMAND_LINE = `${EXTENSION_CLI} extensions install lit-pptx --yes`;
+
 // Notices wait here for the plugin to show them once, at the end of the first reply
 // after they were written (install_notices.py). The plugin renames a notice to
 // `<name>.shown.json` when it shows it, so two sessions never both show it.
@@ -96,20 +101,25 @@ function leftoverPaths(hermesHome, env = process.env) {
 }
 
 // What install and update print once, after the receipt. Plain text, no colour, and
-// never part of a --json run.
-function extensionsNoticeLines({ upgradedFrom = null, leftovers = [] } = {}) {
+// never part of a --json run. `needsAction` is what `extensions check` found in this profile.
+function extensionsNoticeLines({ upgradedFrom = null, leftovers = [], needsAction = 0 } = {}) {
   const lines = [
     "",
     "LitFamily extensions",
     "  LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents,",
     "  figures, design and video covers) are now LitFamily extensions, kept on the extension shelf at",
     `  ${SHELF_URL}. Install the ones you use alongside LitHermes to get`,
-    "  the full LitFamily experience. One skill at a time (set ID; any old copy moves to extension-backups/),",
-    "  then start a new Hermes session:",
-    ...INSTALL_LINES.map((line) => `    ${line}`),
-    `  ID: ${EXTENSION_IDS.slice(0, 5).join(", ")},`,
-    `  ${EXTENSION_IDS.slice(5, -1).join(", ")} or ${EXTENSION_IDS[EXTENSION_IDS.length - 1]}.`,
+    "  the full LitFamily experience. This line installs one (an old folder of that name moves into",
+    "  extension-backups/ first), then a new Hermes session picks it up:",
+    `    ${EXTENSION_COMMAND_LINE}`,
+    `  IDs: ${EXTENSION_IDS.slice(0, 5).join(", ")},`,
+    `  ${EXTENSION_IDS.slice(5, -1).join(", ")} or ${EXTENSION_IDS[EXTENSION_IDS.length - 1]}; --family or --all take several.`,
+    "  `extensions list` shows what is installed, `update` refreshes, `remove` moves one aside. Each stub keeps",
+    "  the same steps as shell lines.",
   ];
+  if (needsAction > 0) {
+    lines.push(`  This profile has ${needsAction === 1 ? "one thing" : `${needsAction} things`} to look at (a second copy or a folder without a receipt): ${EXTENSION_CLI} extensions check`);
+  }
   if (upgradedFrom && leftovers.length) {
     lines.push(
       "  The old version left these behind. If you do not install those extensions, you can delete them:",
@@ -120,6 +130,8 @@ function extensionsNoticeLines({ upgradedFrom = null, leftovers = [] } = {}) {
 }
 
 module.exports = {
+  EXTENSION_CLI,
+  EXTENSION_COMMAND_LINE,
   EXTENSION_IDS,
   EXTENSION_REMOVE_LINE,
   EXTENSION_STEP_LINES,

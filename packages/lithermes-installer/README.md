@@ -62,7 +62,13 @@ On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads b
 
 ## Extensions
 
-LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents, figures, design and video covers) are LitFamily extensions, kept on the extension shelf [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills). Install the ones you use alongside LitHermes to get the full LitFamily experience. Each one has a Hermes edition, a single folder you copy into your profile before starting a new Hermes session. Set `ID` and paste these lines in bash or zsh; an old folder of that name moves whole into `extension-backups/` of the profile, so nothing old mixes into the copy, and a receipt lands beside it:
+LitHermes's core is complete and works on its own. Nine skills that make files (decks, documents, figures, design and video covers) are LitFamily extensions, kept on the extension shelf [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills). Install the ones you use alongside LitHermes to get the full LitFamily experience. Each one has a Hermes edition, a single folder that goes into your profile before you start a new Hermes session. One command does it:
+
+```sh
+npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+```
+
+It fetches a shallow copy of the shelf into its own cache folder (or uses your clone with `--from <path>`), stops and names the path when another skill of that name sits where Hermes reads skills, moves an old folder of that name whole into `extension-backups/` of the profile, so nothing old mixes into the copy, and writes a receipt beside it. Without `--yes` it only prints that plan. `extensions list`, `check`, `update`, `remove` and `prune-backups` do the rest. By hand, set `ID` and paste these lines in bash or zsh:
 
 ```sh
 git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
@@ -73,7 +79,7 @@ if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"
 printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-Paste the last five lines again to update. The installer prints this after an install or an upgrade, and the first Hermes reply after it shows it once. [The nine extensions and what each one makes](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md#moved-to-wjgoarxiv-skills).
+Run `extensions update --yes`, or paste the last five lines again, to update. The installer prints this after an install or an upgrade, and the first Hermes reply after it shows it once. [The nine extensions and what each one makes](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md#moved-to-wjgoarxiv-skills).
 
 ## Check, update, remove
 

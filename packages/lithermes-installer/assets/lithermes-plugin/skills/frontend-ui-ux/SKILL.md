@@ -44,7 +44,7 @@ mid-sentence mentions stay inert, as before.
 | Mode | Trigger | Contract |
 | --- | --- | --- |
 | installed | `frontend-ui-ux` (no prefix) is in `<available_skills>` | Load `skill_view("frontend-ui-ux")` and follow it for the whole request |
-| not installed | it is not listed | Tell the user it is a LitFamily extension and give the copy line; build nothing |
+| not installed | it is not listed | Tell the user it is a LitFamily extension and give the install command; build nothing |
 | inside lit-loop, litwork or a UI hand-off | a web interface was edited and `frontend-ui-ux` is not installed | Run the probe this stub still ships (below), fix its HIGH findings, and name the missing skill once in the reply |
 
 ## #contract.procedure
@@ -55,12 +55,20 @@ mid-sentence mentions stay inert, as before.
 2. If it is not listed, answer in the user's language with three things and stop:
    - one sentence on what frontend-ui-ux makes;
    - that it is a LitFamily extension, kept in `variants/lithermes/frontend-ui-ux` of `wjgoarxiv-skills`, which LitHermes's core works without;
-   - the install lines below, in one code block, and that a new Hermes session (or a restart) picks it up, after which
+   - the install command below in one code block (the shell lines after it when the user asks for them), and that a new Hermes session (or a restart) picks it up, after which
      the user asks again.
 
 ## Install for Hermes
 
-One skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`). A user without a clone gets one first with `git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`. Paste these lines in bash or zsh, in order: name the skill, check, move any old copy aside, copy, write the receipt.
+One command does it. It runs the steps of the lines further down in code and writes only to the profile's `skills/frontend-ui-ux/`, its `extension-backups/` and a cached clone of the shelf:
+
+```sh
+npx --package @litfamily/lithermes -- lithermes extensions install frontend-ui-ux --yes
+```
+
+Without `--yes` it only prints its plan. It stops and names the path when another skill called frontend-ui-ux sits where Hermes reads skills (`--allow-shadow` goes ahead when that copy is outside `skills/`), and `--from <clone>` uses a clone you have. `update frontend-ui-ux --yes` refreshes it, `remove frontend-ui-ux --yes` moves it into the backups, and `check` names second copies and folders without a receipt.
+
+By hand: one skill, copied into the active profile (`HERMES_HOME` selects a profile; the default is `~/.hermes`). A user without a clone gets one first with `git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git`. Paste these lines in bash or zsh, in order: name the skill, check, move any old copy aside, copy, write the receipt.
 
 ```bash
 H="${HERMES_HOME:-$HOME/.hermes}"; ID=frontend-ui-ux; SRC="<path to your wjgoarxiv-skills clone>/variants/lithermes/frontend-ui-ux"
@@ -90,7 +98,7 @@ pass. The probe measures; the design method, the house styles, the kit and the c
 
 ## #contract.outputs
 
-Installed: the moved skill's own outputs. Not installed: one short reply with the copy line and no file.
+Installed: the moved skill's own outputs. Not installed: one short reply with the install command and no file.
 
 ## #contract.output_channels
 

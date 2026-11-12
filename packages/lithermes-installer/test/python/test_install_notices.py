@@ -48,11 +48,11 @@ class InstallNotices(NaturalRoutingCase):
             "LitHermes's core is complete and works on its own.",
             "are now LitFamily extensions, kept on the extension shelf at https://github.com/wjgoarxiv/wjgoarxiv-skills",
             "full LitFamily experience",
-            "git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git",
-            'ID=lit-pptx; SRC="$PWD/wjgoarxiv-skills/variants/lithermes/$ID"',
-            *self._contract().EXTENSION_STEP_LINES,
+            self._contract().extension_command_line("lit-pptx"),
+            "`extensions list` shows what is installed",
         ):
             self.assertIn(part, first)
+        self.assertNotIn("extensions check", first, "nothing to look at in a fresh profile")
         self.assertNotIn('"${HERMES_HOME:-$HOME/.hermes}/skills/"', first, "no line merges into an old copy")
         self.assertNotIn("left these behind", first, "a fresh install has nothing to clean up")
         self.assertFalse((self.notices / "extensions.json").exists())
@@ -73,8 +73,18 @@ class InstallNotices(NaturalRoutingCase):
         self.assertIn("LitHermes의 코어는 그 자체로 완성되어 있고", shown)
         self.assertIn("LitFamily를 온전히 쓸 수 있습니다", shown)
         self.assertIn("이 확장을 설치하지 않는다면 지워도 됩니다", shown)
-        self.assertIn("variants/lithermes/$ID", shown)
+        self.assertIn("lithermes extensions install lit-pptx --yes", shown)
         self.assertIn("extension-backups", shown)
+
+    def test_a_profile_that_needs_a_hand_gets_the_check_line(self):
+        self.write("extensions", version=VERSION, upgradedFrom="1.0.39", leftovers=[], extensionsCheck=2)
+        shown = self.reply()
+        self.assertIn("This profile has 2 things to look at", shown)
+        self.assertIn("npx --package @litfamily/lithermes -- lithermes extensions check", shown)
+
+    def test_a_malformed_check_count_shows_no_check_line(self):
+        self.write("extensions", version=VERSION, upgradedFrom=None, leftovers=[], extensionsCheck="2")
+        self.assertNotIn("extensions check", self.reply())
 
     def test_a_helper_or_cron_reply_leaves_the_notice_for_the_user(self):
         self.write("extensions", version=VERSION, upgradedFrom=None, leftovers=[])

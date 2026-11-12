@@ -121,7 +121,7 @@ class MotionContextTests(NaturalRoutingCase):
         context = result["context"]
         self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
         self.assertIn("variants/lithermes/lit-typographic-motion", context)
-        self.assertIn("<path to your wjgoarxiv-skills clone>", context)
+        self.assertIn("lithermes extensions install lit-typographic-motion --yes", context)
         self.assertIn("</lithermes-natural-route>", context)
         self.assertNotIn("bounded-composition", context)
 

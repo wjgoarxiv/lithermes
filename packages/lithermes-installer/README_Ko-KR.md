@@ -62,7 +62,13 @@ Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬
 
 ## 확장
 
-LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. 파일을 만드는 스킬 아홉 개(발표자료, 문서, 그림, 디자인, 영상 커버)는 LitFamily 확장이 되어 확장 선반 [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills)에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. 확장마다 Hermes판 폴더가 하나씩 있으니, 그 폴더를 프로필에 복사하고 새 Hermes 세션을 여세요. `ID`를 정하고 아래 줄을 bash나 zsh에 붙여 넣으면, 같은 이름의 예전 폴더는 프로필의 `extension-backups/`로 통째로 옮겨 가서 새 복사본에 섞이지 않고, 복사본 옆에 영수증이 남습니다.
+LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. 파일을 만드는 스킬 아홉 개(발표자료, 문서, 그림, 디자인, 영상 커버)는 LitFamily 확장이 되어 확장 선반 [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills)에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. 확장마다 Hermes판 폴더가 하나씩 있고, 그 폴더를 프로필에 넣은 다음 새 Hermes 세션을 열면 됩니다. 넣는 일은 명령 한 줄이 맡습니다.
+
+```sh
+npx --package @litfamily/lithermes -- lithermes extensions install lit-pptx --yes
+```
+
+이 명령은 선반의 얕은 사본을 자기 캐시 폴더에 받아 두고(받아 둔 사본이 있으면 `--from <경로>`), Hermes가 스킬을 읽는 곳에 같은 이름의 다른 스킬이 있으면 멈추고 그 경로를 알려 주며, 같은 이름의 예전 폴더를 프로필의 `extension-backups/`로 통째로 옮긴 뒤 복사하고 영수증을 남깁니다. `--yes`가 없으면 계획만 보여 줍니다. 나머지는 `extensions list`, `check`, `update`, `remove`, `prune-backups`가 맡습니다. 손으로 하려면 `ID`를 정하고 아래 줄을 bash나 zsh에 붙여 넣으세요. 그러면 같은 이름의 예전 폴더는 프로필의 `extension-backups/`로 통째로 옮겨 가서 새 복사본에 섞이지 않고, 복사본 옆에 영수증이 남습니다.
 
 ```sh
 git clone https://github.com/wjgoarxiv/wjgoarxiv-skills.git
@@ -73,7 +79,7 @@ if [ -e "$H/skills/${ID:?}" ]; then echo "stopped: $H/skills/$ID is still there"
 printf '{"id":"%s","source":"%s","variant":"lithermes","installed_at":"%s"}\n' "${ID:?}" "$SRC" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$H/skills/$ID/.litfamily-extension.json"
 ```
 
-업데이트할 때는 마지막 다섯 줄을 다시 붙여 넣으면 됩니다. 설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. [확장 아홉 개와 각각 만드는 것](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)
+업데이트할 때는 `extensions update --yes`를 돌리거나 마지막 다섯 줄을 다시 붙여 넣으면 됩니다. 설치 프로그램은 설치나 업그레이드가 끝나면 이 안내를 보여 주고, 그 뒤 첫 Hermes 응답 끝에 한 번 더 보여 줍니다. [확장 아홉 개와 각각 만드는 것](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md#wjgoarxiv-skills로-옮겨-간-스킬)
 
 ## 확인, 업데이트, 삭제
 

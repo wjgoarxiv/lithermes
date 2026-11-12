@@ -18,7 +18,6 @@ MOVED = {
     "lit-typographic-motion": "video-covers",
     "readme-studio": "video-covers",
 }
-INSTALL_PLACEHOLDER = "<path to your wjgoarxiv-skills clone>"
 # The old copy line: it merged a new copy into an existing skills/<id>/ folder.
 MERGING_COPY = '"${HERMES_HOME:-$HOME/.hermes}/skills/"'
 # Instructions that only the old bodies carried. A stub route must not keep any of them.
@@ -69,10 +68,9 @@ class MovedSkillStubs(NaturalRoutingCase):
         return importlib.import_module(f"{self.pkg.__name__}.core_contract")
 
     def _assert_stub_context(self, name: str, context: str) -> None:
-        self.assertIn(INSTALL_PLACEHOLDER, context)
         self.assertIn(f"variants/lithermes/{name}", context)
-        self.assertIn(self._contract().extension_install_lines(name)[0], context)
-        self.assertIn(f'install lines under "Install for Hermes" in skill_view("lithermes:{name}")', context)
+        self.assertIn(self._contract().extension_command_line(name), context)
+        self.assertIn(f'the five under "Install for Hermes" in skill_view("lithermes:{name}")', context)
         self.assertNotIn(MERGING_COPY, context)
         self.assertNotIn(f"plugins/{MOVED[name]}/", context)
         for stale in STALE_BODY_LINES:
@@ -85,6 +83,7 @@ class MovedSkillStubs(NaturalRoutingCase):
                 self.assertIn(f"name: {name}\n", text)
                 self.assertIn("wjgoarxiv-skills", text)
                 self.assertIn(f"variants/lithermes/{name}", text)
+                self.assertIn(self._contract().extension_command_line(name), text)
                 for line in self._contract().extension_install_lines(name):
                     self.assertIn(line, text)
                 self.assertIn(self._contract().EXTENSION_REMOVE_LINE, text)
