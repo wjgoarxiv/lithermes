@@ -109,6 +109,10 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 
 LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로 돌아갑니다. 계획, 루프, 목표, 검토, 조사, 핸드오프, 문장 다듬기가 모두 이 패키지에 들어 있습니다. 파일을 만드는 스킬 아홉 개는 LitFamily 확장이 되어 확장 선반 [`wjgoarxiv-skills`](https://github.com/wjgoarxiv/wjgoarxiv-skills)에 있습니다. 쓰는 것만 골라 LitHermes 옆에 설치하면 LitFamily를 온전히 쓸 수 있습니다. 발표자료는 `lit-pptx`, 문서는 `lit-docx`, 그림은 `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, 디자인은 `frontend-ui-ux`, `visual-qa`, 영상 커버는 `lit-typographic-motion`, `readme-studio`가 맡습니다.
 
+패키지 안에는 `litwork`, `lit-plan`부터 `review-work`, `lit-handoff`, `lit-humanizer`까지 코어 스킬 31개가 들어 있고, `lit`으로 여는 모든 경로가 이 스킬들 위에서 돕니다. 확장 아홉 개는 패키지에 같은 이름의 스텁만 남겼습니다. 아래 그림에는 이 두 부분과 선반의 다섯 패밀리, 그리고 확장 하나를 프로필에 들이는 네 단계가 함께 있습니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.ko.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.ko.light.png" width="960" alt="LitHermes 패키지에는 다섯 묶음(일 굴리기, 검토하기, 생각하고 조사하기, 이어 가기, 문장과 코드 도구)으로 나눈 코어 스킬 31개와 확장 스텁 9개가 들어 있다. 스텁은 wjgoarxiv-skills 선반의 variants/lithermes/&lt;id&gt;를 가리키고, 선반에는 decks, documents, figures, design, video-covers 다섯 패밀리에 아홉 스킬이 있다. 하나를 설치하려면 선반을 받고, Hermes 프로필에 skills/를 만들고, 폴더 하나를 복사하고, 새 Hermes 세션을 연다." /></picture></p>
+
 확장마다 Hermes판이 있고, `variants/lithermes/` 아래 폴더 하나가 스킬 하나입니다. 선반을 한 번 받아 두고, 원하는 스킬의 폴더를 Hermes 프로필에 복사한 다음 새 Hermes 세션을 여세요.
 
 ```sh
@@ -240,21 +244,25 @@ lit hijack https://example.com/post 내 lit-humanizer 스킬에
 
 LitHermes는 Python 플러그인입니다. Hermes가 플러그인을 불러오면 `register(ctx)`가 훅, 명령, 스킬, 작업 도구를 등록합니다. 훅은 모델이나 도구를 호출하기 직전과 직후에 끼어듭니다. `goal_*` 도구는 목표와 그 목표를 위해 모은 확인 결과를 프로젝트 안의 로컬 기록에 적습니다.
 
-```mermaid
-flowchart TD
-    H["Hermes Agent"] --> P["Python plugin · register(ctx)"]
-    P --> K["훅 · 모델·도구 호출 전후"]
-    P --> S["명령과 스킬 · SKILL.md"]
-    P --> T["goal_* 작업 도구"]
-    T <--> R["프로젝트 기록 · .hermes/lithermes/litgoal/"]
-    R --> K
-```
+그림은 요청 하나를 입력한 순간부터 따라갑니다. `lit`으로 시작하는 프롬프트도, `/lit-plan` 같은 슬래시 명령도 같은 곳에 도착하고, 거기서 `pre_llm_call` 훅이나 등록된 명령이 경로를 고릅니다. 그냥 `lit`이면 `litwork`, 계획이면 `lit-plan` 하는 식입니다. 그다음 스킬은 `goal_*` 도구로 목표를 다루고, 스킬이 실행한 터미널 명령은 하나하나 `post_tool_call` 훅이 기록하고 서명합니다. 작업 검토에서는 `delegate_task` 검토자 다섯이 변경을 각자 따로 읽습니다. 답변이 나가기 직전에는 `pre_verify`와 `transform_llm_output`이 게이트를 확인합니다. 게이트가 열려 있으면 "다 됐다"가 그대로 남고, 닫혀 있으면 답변 끝에 `⛔ LIT: not done`과 그 이유가 붙습니다. 그림 오른쪽은 모두 프로젝트 안의 파일이고, 점선은 새 턴이 일의 진행 상황을 아는 이유를 보여 줍니다. 모델을 부를 때마다 목표 기록을 다시 읽기 때문입니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/lit-route.ko.dark.png" /><img src="./docs/assets/readme/diagrams/lit-route.ko.light.png" width="960" alt="lit 프롬프트나 /lit 명령은 경로를 고르는 단계(pre_llm_call과 등록된 명령)에 닿고, 여기서 litwork, lit-plan, lit-loop, start-work, review-work, litresearch 중 하나로 간다. 스킬은 goal_set, goal_add_criterion, goal_evidence로 목표 기록을 쓰고, post_tool_call은 터미널 명령마다 runs.jsonl에 서명된 실행 기록을 남기며, review-work는 delegate_task 검토자 다섯을 보낸다. pre_verify와 transform_llm_output이 게이트를 확인해 gate.json에 저장한다. 열려 있으면 완료가 남고, 닫혀 있으면 답변 끝에 LIT: not done과 이유가 붙는다. Hermes가 세션을 닫으면 on_session_finalize가 핸드오프 카드를 쓴다. 목표 기록은 모델을 부를 때마다 다시 읽힌다." /></picture></p>
+
+### 같은 경로를 공정 플랜트로 그리면
+
+같은 경로를 작은 공정 플랜트로 그려 보면, 위의 상자 그림에서는 잘 보이지 않던 것이 드러납니다. 일은 한 바퀴 돌고 다시 돕니다. 요청은 왼쪽으로 들어옵니다. 그냥 `lit`은 곧장 작업 유닛으로 가고, `lit plan`은 계획 유닛에 먼저 들릅니다. 끝난 작업은 단이 다섯 개인 검토 칼럼을 지나는데, 이 다섯 단이 검토자 다섯입니다. 그 뒤에는 삼방 밸브에 달린 분석계처럼 게이트가 서 있습니다. 통과한 답변은 완료로 나가고, 통과하지 못한 답변은 `LIT: not done`이 되어 작업 유닛으로 돌아갑니다. 게이트가 열릴 때까지 이 순환이 이어집니다. 실행 기록과 검토 영수증은 기록 탱크, 곧 프로젝트의 `.hermes/lithermes/`로 모입니다. 탱크는 턴마다 목표 요약을 라우터로 돌려보내고, 핸드오프 카드는 다음 세션으로 넘깁니다. 번호 붙은 줄이 무엇을 싣고 어느 훅이나 도구를 거치는지는 아래 스트림 표에 있습니다.
+
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="./docs/assets/readme/schematic/lit-plant.ko.dark.png" /><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/readme/schematic/lit-plant.ko.light.png" /><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/schematic/lit-plant-loop.ko.dark.webp" /><img src="./docs/assets/readme/schematic/lit-plant-loop.ko.light.webp" width="960" alt="Hermes Agent의 lit 워크플로를 그린 공정 흐름도로, 줄마다 흐름이 움직인다. lit 요청이 왼쪽으로 들어오면 pre_llm_call 라우터가 그냥 lit은 작업 유닛으로, lit plan은 계획 유닛으로 먼저 보낸다. 작업은 단이 다섯 개인 검토 칼럼과 삼방 밸브에 달린 게이트 분석계(pre_verify)를 지난다. 통과한 답변은 완료로 나가고, 통과하지 못한 답변은 LIT: not done이 되어 작업으로 돌아간다. post_tool_call의 실행 기록과 검토자 영수증은 기록 탱크 .hermes/lithermes/로 모이고, 탱크는 목표 요약을 라우터로 돌려보내며 핸드오프 카드를 다음 세션으로 보낸다. 스트림 표에는 일곱 줄이 각각 무엇을 싣는지 적혀 있다." /></picture></p>
 
 다음 모델 호출 전에는 context 훅이 이 기록을 읽어, 지금 목표가 무엇이고 어디까지 왔는지 모델에게 건넵니다. `lit`으로 시작하는 평범한 프롬프트는 플러그인이 경로를 정하고, 슬래시 명령은 바로 해당 스킬로 갑니다. 붙여 넣은 코드나 복사한 명령은 자료로만 읽고 지시로 따르지 않습니다. 모델은 여전히 Hermes Agent가 돌리고, 권한 확인, 로그인, 모델 접근, 실제 화면이 필요한 검사도 모두 Hermes 쪽에서 처리합니다.
 
 ## 요구 사항, 업데이트, 삭제
 
 Hermes Agent 0.21.3 이상과 Node.js 18 이상, 그리고 Hermes 홈에 쓸 권한이 필요합니다. 영상, 발표자료, Word 파일을 만드는 스킬과 거기에 필요한 도구는 `wjgoarxiv-skills`로 옮겨 갔으니, LitHermes 자체에는 더 필요한 것이 없습니다.
+
+LitHermes가 내 컴퓨터에 자리 잡는 곳은 두 군데이고, 채워지는 때가 서로 다릅니다. 설치 프로그램은 Hermes 홈에만 씁니다. 플러그인 폴더를 복사하고, `config.yaml`을 백업한 다음 플러그인을 켜고, 스킨과 설치 기록을 남기는 것까지가 설치입니다. 프로젝트는 그 안에서 일을 시작하기 전까지 그대로이고, 일을 시작하면 플러그인이 `.hermes/lithermes/` 아래에 목표와 실행 기록, 핸드오프 카드를 남깁니다. `skills/`에 복사해 둔 확장은 플러그인 옆에 따로 놓여서 업그레이드나 삭제가 건드리지 않습니다. 자동 업데이트는 그림 아래쪽 줄을 따라갑니다. 무엇이든 설치하기 전에 늘 백업부터 뜨고, 새 버전이 오프라인 점검을 통과하지 못하면 그 백업을 되돌립니다.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/install-map.ko.dark.png" /><img src="./docs/assets/readme/diagrams/install-map.ko.light.png" width="960" alt="lithermes install --yes --no-style은 Hermes 홈(~/.hermes 또는 $HERMES_HOME)에 plugins/lithermes/를 복사하고, config.yaml에서 플러그인을 켜고, skins/lithermes-*.yaml을 더하고, lithermes/에 설치 기록을 남긴다. skills/&lt;id&gt;에 복사한 확장은 건드리지 않는다. 플러그인은 일하면서 프로젝트에 .hermes/lithermes/를 쓰고, lit-plan은 plans/를, /lit-handoff는 HANDOFF.md를 쓴다. 자동 업데이트는 npm에 묻고, auto-update/&lt;id&gt;/backup/에 백업을 뜨고, install --yes --no-hud를 실행한 뒤 doctor --offline으로 점검한다. 통과하면 Hermes를 다시 시작하고, 실패하면 백업을 되돌린다." /></picture></p>
 
 LitHermes는 스스로 최신 상태를 유지합니다. 터미널에서 `install`, `check`, `doctor`를 실행하거나 대화형 Hermes CLI 세션에서 첫 메시지를 보낼 때 더 새로운 안정 버전을 찾고, 있으면 플러그인과 설정을 백업한 뒤 설치하고 `doctor --offline`을 실행합니다. 무엇이든 실패하면 백업을 되돌립니다. gateway와 전체 화면 TUI는 이 방식으로 업데이트되지 않습니다. 업데이트를 직접 설치하고 싶다면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요. 단계와 끄는 방법은 [업데이트](./docs/install.ko.md#업데이트)에 모두 적어 두었습니다.
 
