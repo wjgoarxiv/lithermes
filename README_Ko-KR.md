@@ -232,7 +232,7 @@ LitHermes는 Python 플러그인입니다. Hermes가 플러그인을 불러오�
 
 ## 요구 사항, 업데이트, 삭제
 
-Hermes Agent 0.21.3 이상과 Node.js 18 이상, 그리고 Hermes 홈에 쓸 권한이 필요합니다. 영상, 발표자료, Word 파일을 만드는 스킬과 거기에 필요한 도구는 `wjgoarxiv-skills`로 옮겨 갔으니, LitHermes 자체에는 더 필요한 것이 없습니다. LitHermes가 내 컴퓨터에 자리 잡는 곳은 두 군데이고, 채워지는 때가 서로 다릅니다.
+Hermes Agent 0.21.3 이상과 Node.js 18 이상, 그리고 Hermes 홈에 쓸 권한이 필요합니다. 영상, 발표자료, Word 파일을 만드는 스킬과 거기에 필요한 도구는 `wjgoarxiv-skills`로 옮겨 갔으니, LitHermes 자체에는 더 필요한 것이 없습니다. LitHermes가 내 컴퓨터에 자리 잡는 곳은 세 군데이고, 채워지는 때가 서로 다릅니다.
 
 | 위치 | 들어 있는 것 | 언제 |
 | --- | --- | --- |

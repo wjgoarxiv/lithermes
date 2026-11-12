@@ -232,7 +232,7 @@ The plugin decides where a request goes while Hermes Agent still runs the model.
 
 ## Requirements, updates and removal
 
-LitHermes needs Hermes Agent 0.21.3 or later, Node.js 18 or later, and write access to your Hermes home. The skills that make films, decks and Word files moved to `wjgoarxiv-skills` with the tools they need, so LitHermes itself needs nothing more. Two places on your machine hold LitHermes, and they fill up at different times:
+LitHermes needs Hermes Agent 0.21.3 or later, Node.js 18 or later, and write access to your Hermes home. The skills that make films, decks and Word files moved to `wjgoarxiv-skills` with the tools they need, so LitHermes itself needs nothing more. Three places on your machine hold LitHermes, and they fill up at different times:
 
 | Place | What it holds | When |
 | --- | --- | --- |
