@@ -86,7 +86,10 @@ class RouteContextBudget(NaturalRoutingCase):
             self.assertTrue((Path(_ASSET_DIR) / relative).is_file(), f"pointer names a missing file: {relative}")
 
     def _assert_visible_route(self, context: str, budget: int):
-        self.assertLessEqual(_size(context), budget)
+        # A temp root longer than the pinned path makes the workspace longer too;
+        # measure as if it were exactly WORKSPACE_PATH_CHARS long.
+        measured = context.replace(str(self.workspace), "w" * WORKSPACE_PATH_CHARS)
+        self.assertLessEqual(_size(measured), budget)
         self.assertLess(len(context), HOST_SPILL_CHARS)
         self.assertNotIn("<lithermes-skill-body", context)
         self.assertLessEqual(context.count("<lithermes-llm-contract>"), 1)
