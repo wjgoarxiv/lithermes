@@ -183,6 +183,8 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 
 고른 값은 Hermes 홈의 `~/.hermes/lithermes/auto-handoff.json`에 저장되어, 어느 프로젝트에서 작업하든 같은 설정을 씁니다.
 
+이와 별도로, 짧은 저장은 따로 설정할 필요 없이 동작합니다. 턴이 끝날 때 컨텍스트가 40% 이상이면 LitHermes가 `.hermes/lithermes/handoff/auto-<session>.md`에 열린 계획과 지금 행, 목표 카드, 마지막 요청과 답을 직접 쓰고, Hermes가 압축한 뒤 다음 턴에 그 요약을 한 번 붙여 줍니다. 이 저장은 `/lit-handoff auto save off`(또는 `LITHERMES_HANDOFF_SAVE=0`)로 끕니다.
+
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-switch-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-switch-light.webp" width="960" alt="demo — hermes라는 제목의 터미널 카드. &quot;/lit-handoff auto on 60&quot;에 &quot;Automatic handoff is ON at 60%. Once a model call passes 60% of the context window, your next message carries a request to write a handoff, and you then run /compact. It starts with your next message.&quot; 그리고 &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;라고 답합니다. &quot;/lit-handoff auto status&quot;를 입력하면 &quot;Automatic handoff: ON at 60% (percent from your saved setting)&quot;, &quot;Last reading in this session: 41% (164,000 of 400,000 tokens)&quot; 그리고 &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;가 나옵니다. 마지막으로 &quot;/lit-handoff auto off&quot;에는 &quot;Automatic handoff is off. Your last percent, 60%, is remembered for the next time you turn it on.&quot;라고 답합니다." /></picture></p>
 
 모델 호출이 정한 퍼센트를 넘기면 다음 메시지에 핸드오프를 쓰라는 짧은 요청이 붙고, 모델은 `HANDOFF.md`를 저장하고 `Handoff saved. Run /compact now.` 한 줄로 알린 뒤 하던 일을 이어 갑니다. Hermes 플러그인은 압축을 시작할 수 없어서 `/compact`는 사용자가 실행합니다. 압축한 뒤에는 다음 메시지와 함께 그 핸드오프의 요약이 모델에게 다시 들어가고, 작업은 멈춘 곳에서 이어집니다.
@@ -194,6 +196,13 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-shell-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-shell-light.webp" width="960" alt="demo — zsh라는 제목의 터미널 카드. &quot;export LITHERMES_AUTO_HANDOFF=1 LITHERMES_AUTO_HANDOFF_PERCENT=60&quot; 다음에 &quot;hermes lithermes status | grep 'Automatic handoff'&quot;는 &quot;Automatic handoff: on at 60%&quot;를, &quot;hermes lithermes doctor | grep 'Automatic handoff'&quot;는 &quot;[OK] Automatic handoff: on at 60% (Hermes compacts at about 64% of the window)&quot;를 출력합니다." /></picture></p>
 
 단계마다 누가 무엇을 하는지는 [자동 핸드오프](./docs/automatic-handoff.ko.md)에 정리해 두었습니다.
+
+### 자리를 비울 때
+
+긴 작업이 나를 기다릴 때 알려 주는 기능이 두 가지 있습니다. 둘 다 직접 켜야 동작합니다.
+
+- **단계가 멈추면 메시지.** `/lit-loop ping on`을 입력하거나 `LITHERMES_PARK_PING=1`을 설정하세요. bounded run이 단계를 세워 두면 Hermes가 한 줄을 보냅니다. 어떤 실행의 어떤 단계인지, `lit approve`로 허용하고 `lit deny`로 거절한다는 내용입니다. 메시징 게이트웨이에서는 채팅으로, TUI나 Desktop에서는 알림으로 옵니다. 승인은 언제나 내가 직접 합니다. 끄려면 `/lit-loop ping off`를 입력하세요.
+- **나중에 다시 보고.** `hermes lithermes followup --every "every 2h"`는 Hermes cron 작업을 출력만 합니다. 화면에 나온 `hermes cron create` 줄로 직접 추가하세요. 작업이 돌 때마다 LitHermes가 계획 행, bounded run, 멈춘 단계를 읽고, 바뀐 것이 있을 때만 보고를 한 번 보냅니다. 이 cron 세션은 읽기만 할 수 있습니다.
 
 ## 할 수 있는 일
 

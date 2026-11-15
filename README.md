@@ -183,6 +183,8 @@ A long session fills the model's context window, and when Hermes compacts it, ol
 
 The choice is saved in your Hermes home at `~/.hermes/lithermes/auto-handoff.json`, so it follows you from project to project.
 
+Separately, a shorter save already runs with nothing to set: when a turn ends with the context at 40% or more, LitHermes writes `.hermes/lithermes/handoff/auto-<session>.md` itself (the open plan and its current row, the goal card, the last request and reply), and after Hermes compacts, the next turn carries a digest of it once. `/lit-handoff auto save off` (or `LITHERMES_HANDOFF_SAVE=0`) turns that save off.
+
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-switch-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-switch-light.webp" width="960" alt="Terminal card titled demo — hermes. &quot;/lit-handoff auto on 60&quot; answers &quot;Automatic handoff is ON at 60%. Once a model call passes 60% of the context window, your next message carries a request to write a handoff, and you then run /compact. It starts with your next message.&quot; and &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;. &quot;/lit-handoff auto status&quot; answers &quot;Automatic handoff: ON at 60% (percent from your saved setting)&quot;, &quot;Last reading in this session: 41% (164,000 of 400,000 tokens)&quot; and &quot;Hermes' own compaction point is about 64% of the window, above yours.&quot;. Then &quot;/lit-handoff auto off&quot; answers &quot;Automatic handoff is off. Your last percent, 60%, is remembered for the next time you turn it on.&quot;." /></picture></p>
 
 Once a model call passes your percent, your next message carries a short request to write a handoff; the model saves `HANDOFF.md`, tells you `Handoff saved. Run /compact now.` and carries on. A Hermes plugin cannot start a compaction, so `/compact` stays with you. Afterwards, your next message brings a short digest of that handoff back to the model, and the work picks up where it stopped.
@@ -194,6 +196,13 @@ To have it on in every session, set `LITHERMES_AUTO_HANDOFF=1` and `LITHERMES_AU
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/handoff/auto-handoff-shell-dark.webp" /><img src="./docs/assets/handoff/auto-handoff-shell-light.webp" width="960" alt="Terminal card titled demo — zsh. &quot;export LITHERMES_AUTO_HANDOFF=1 LITHERMES_AUTO_HANDOFF_PERCENT=60&quot;, then &quot;hermes lithermes status | grep 'Automatic handoff'&quot; prints &quot;Automatic handoff: on at 60%&quot;, and &quot;hermes lithermes doctor | grep 'Automatic handoff'&quot; prints &quot;[OK] Automatic handoff: on at 60% (Hermes compacts at about 64% of the window)&quot;." /></picture></p>
 
 [Automatic handoff](./docs/automatic-handoff.md) goes through each step and says who does it.
+
+### While you are away
+
+Two helpers tell you when a long run needs you. Both stay off until you turn them on.
+
+- **A message when a step parks.** Type `/lit-loop ping on` (or set `LITHERMES_PARK_PING=1`). When a bounded run parks a step, Hermes posts one line: the run, the step, and that `lit approve` allows it and `lit deny` refuses it. On a messaging gateway it lands in the chat; in the TUI or Desktop it is a notification. Approving stays with you. `/lit-loop ping off` turns it off.
+- **A follow-up report.** `hermes lithermes followup --every "every 2h"` prints a job for Hermes' cron scheduler and creates nothing itself; add it with the `hermes cron create` line it shows. Each time the job fires, LitHermes reads the plan rows, bounded runs and parked steps, and sends one report only when something changed. That cron session can only read.
 
 ## What you get
 
