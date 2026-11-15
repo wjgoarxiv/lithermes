@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-15T10:55:22.824Z",
+  "syncedAt": "2026-11-15T15:34:52.113Z",
   "source": "bundled-payload",
-  "sourceHash": "6efeb3f343c257c5c24ec76cdb3146d0167fb999fb4009ad5bc6995a0b1d0c3d",
+  "sourceHash": "e2d7350c45074f1b160ee1b25493a6e46920b94cca8b9830f1bfb63d6ff37e9b",
   "files": [
     {
       "path": "NOTICE.md",
@@ -241,7 +241,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "10927de575e527b6f0a52d5a8d73c07c788a4ed9181f05de6e00f0ab2f32a2aa"
+      "sha256": "36b2c5cd42f8b1b1227920e6975e528c123643d0847c3910b6df8031f97ec25c"
     },
     {
       "path": "provider_metrics.py",
