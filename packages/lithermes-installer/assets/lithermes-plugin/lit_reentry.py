@@ -21,16 +21,19 @@ from typing import Any, NamedTuple
 try:
     from . import handoff_card
     from . import lit_mark
+    from . import shown_record
     from .core_plans import unchecked_items
     from .core_runtime import lithermes_dir
 except (ImportError, ModuleNotFoundError):
     import handoff_card
     import lit_mark
+    import shown_record
     from core_plans import unchecked_items
     from core_runtime import lithermes_dir
 
 MAX_TRACKED_SESSIONS = 64
 RESUME_ENV = "LITHERMES_GOAL_RESUME"
+OFFER_NOTICE = "goal-offer"
 MAX_STATE_BYTES = 2_000_000
 MAX_NOTE_BYTES = 600
 # Disciplines that have a short continue note. Every other lit route still
@@ -114,6 +117,11 @@ def _handoff_saved(workspace: Path, session_id: str) -> str:
     return handoff_card.saved_time(card.get("written_at")) if card else ""
 
 
+def _offer_row(offer: dict[str, Any]) -> str:
+    saved = str(offer.get("handoff") or "")
+    return lit_mark.goal_resume_row(offer["title"], offer["open"]) + (f" — handoff saved {saved}" if saved else "")
+
+
 def note_first_turn(session_id: object, workspace: Path) -> None:
     """On a session's first turn, look for an unfinished goal from an earlier session.
 
@@ -133,6 +141,11 @@ def note_first_turn(session_id: object, workspace: Path) -> None:
                 offer = store.latest_unfinished(workspace, key) or {}
                 if offer:
                     offer["handoff"] = _handoff_saved(workspace, offer["session_id"])
+                    offer["workspace"] = str(workspace)
+                    # The same offer text an earlier session already showed is not said again; the offer
+                    # itself stays, so a bare `lit` still adopts the goal.
+                    if shown_record.was_shown(lithermes_dir(workspace), OFFER_NOTICE, _offer_row(offer)):
+                        offer["announced"] = True
         except (OSError, ValueError, ImportError):
             offer = {}
     _GOAL_OFFERS[key] = offer
@@ -147,9 +160,7 @@ def take_context(session_id: object) -> str:
     if offer.get("adopted"):
         return ""
     saved = str(offer.get("handoff") or "")
-    offer["visible"] = lit_mark.goal_resume_row(offer["title"], offer["open"]) + (
-        f" — handoff saved {saved}" if saved else ""
-    )
+    offer["visible"] = _offer_row(offer)
     card_line = (
         [f"A handoff card saved {saved} is at .hermes/lithermes/handoff/{offer['session_id']}.json."]
         if saved else []
@@ -166,9 +177,17 @@ def take_context(session_id: object) -> str:
 
 
 def take_visible(session_id: object) -> str:
-    """The one visible mark row for this session's offer or adoption, once."""
+    """The one visible mark row for this session's offer or adoption, once.
+
+    An offer row is recorded as shown, so a later session in the same workspace does not repeat it.
+    """
     offer = _GOAL_OFFERS.get(str(session_id or ""))
-    return str(offer.pop("visible", "")) if offer else ""
+    if not offer:
+        return ""
+    visible = str(offer.pop("visible", ""))
+    if visible and not offer.get("adopted") and offer.get("workspace"):
+        shown_record.mark_shown(lithermes_dir(Path(offer["workspace"])), OFFER_NOTICE, visible)
+    return visible
 
 
 def adopt_pending(session_id: object, workspace: Path) -> dict[str, Any] | None:

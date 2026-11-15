@@ -25,10 +25,14 @@ from typing import Any, Iterator
 try:
     from .core_runtime import parse_args, utc_now, workspace_from_option
     from .workspace import locate as locate_workspace
+    from . import park_ping
+    from . import shown_record
     from . import workspace as _workspace
 except (ImportError, ModuleNotFoundError):
     from core_runtime import parse_args, utc_now, workspace_from_option
     from workspace import locate as locate_workspace
+    import park_ping
+    import shown_record
     import workspace as _workspace
 
 
@@ -664,6 +668,32 @@ def record_bounded_progress(
     boundary: dict[str, Any] | None = None,
     grant_id: str = "",
 ) -> dict[str, Any]:
+    newly_parked: list[dict[str, Any]] = []
+    result = _record_bounded_progress(
+        worktree, work_id, expected_revision=expected_revision, replay_id=replay_id, session_id=session_id,
+        progress=progress, boundary=boundary, grant_id=grant_id, newly_parked=newly_parked,
+    )
+    for entry in newly_parked:
+        # After the run's lock is released; a boundary already parked is never announced again.
+        park_ping.announce(
+            _work_dir(_canonical_worktree(worktree), work_id).parent.parent,
+            work_id, entry["id"], entry["action"], entry["root"],
+        )
+    return result
+
+
+def _record_bounded_progress(
+    worktree: Path | str | None,
+    work_id: str,
+    *,
+    expected_revision: int,
+    replay_id: str,
+    session_id: str,
+    progress: Any,
+    boundary: dict[str, Any] | None,
+    grant_id: str,
+    newly_parked: list[dict[str, Any]],
+) -> dict[str, Any]:
     root = _canonical_worktree(worktree)
     run_dir = _work_dir(root, work_id)
     normalized_progress = _normalize_progress(progress)
@@ -805,6 +835,7 @@ def record_bounded_progress(
                             "hits": 1,
                         }
                     )
+                    newly_parked.append(entries[-1])
                 parked_data["work_id"] = work_id
                 _write_parked(run_dir, parked_data)
             fields["parked"] = len(_read_parked(run_dir)[0]["entries"])
@@ -872,6 +903,11 @@ def resume_bounded_work(
         return {"state": committed, "grant": grant_record, "activation_token": token}
 
 
+def _note_end(run_dir: Path, work_id: str, outcome: str, **fields: Any) -> None:
+    """Record how a run ended (shown.jsonl in the workspace's lithermes state folder); never raises."""
+    shown_record.record_outcome(run_dir.parent.parent, work_id, outcome, **fields)
+
+
 def _cancel_locked(
     run_dir: Path,
     state: dict[str, Any],
@@ -896,6 +932,7 @@ def _cancel_locked(
         }
     committed = _commit(run_dir, next_state, expected_revision, "work_cancelled", source=source)
     _remove_parked(run_dir)
+    _note_end(run_dir, str(state.get("work_id") or run_dir.name), "nothing", status="cancelled")
     return committed
 
 
@@ -930,6 +967,7 @@ def complete_bounded_work(worktree: Path | str | None, work_id: str, expected_re
         committed = _commit(run_dir, next_state, expected_revision, "work_completed")
         # Steps parked but never needed end with the run.
         _remove_parked(run_dir)
+        _note_end(run_dir, str(state.get("work_id") or run_dir.name), "sent", status="completed")
         return committed
 
 
@@ -1430,6 +1468,7 @@ def _park_step(state: dict[str, Any], action: str, target: Path, tool_name: str)
                     "`BLOCKED: <reason>` on each row that waits on a parked step, then end the turn. The user "
                     "settles the queue with `lit approve` or `lit deny`, or ends the run with `lit cancel`."
                 )
+            parked_now = entry is None
             if entry is None:
                 entry = {
                     "id": _parked_id(work_id, action, root),
@@ -1450,6 +1489,9 @@ def _park_step(state: dict[str, Any], action: str, target: Path, tool_name: str)
             revision = current["revision"]
     except (OSError, ValueError, KeyError):
         return _lacking_block(action)
+    if parked_now:
+        # Outside the lock: the post may wait on the gateway. A retry of this call never gets here.
+        park_ping.announce(run_dir.parent.parent, work_id, entry["id"], action, root)
     message = (
         f"LitHermes bounded work {work_id} queued {action} {_CONTROL_RE.sub('', root)}: no grant covers it, so the "
         f"tool did not run. Bounded work is still active and lithermes_work_progress still accepts revision "
@@ -1574,6 +1616,10 @@ def release_bounded_session(session_id: str) -> None:
                     state["boundary"] = boundary
                     state["boundary_history"] = [*(state.get("boundary_history") or []), boundary][-MAX_HISTORY:]
                     _commit(run_dir, state, state["revision"], "session_released")
+                    _note_end(
+                        run_dir, str(state.get("work_id") or run_dir.name), "waiting",
+                        status="paused", parked=len(_peek_parked(run_dir)),
+                    )
             except (OSError, ValueError):
                 continue
     _SESSION_WORKTREES.pop(session_id, None)

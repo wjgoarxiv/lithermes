@@ -31,3 +31,11 @@ These switches set it up:
 Choose a percent below the point where Hermes compacts on its own. On current Hermes that is about half of the window by default, raised to 75% for windows under 512K tokens, and lowered to a fixed token count when your Hermes config sets a cap. If your percent is at or above that point, Hermes compacts first and no handoff is written. `hermes lithermes doctor` and `/lit-handoff auto status` compare the two and warn you.
 
 The request goes out once each time usage crosses your percent, never inside a tool call and never to helper agents. LitHermes saves only your switch and last percent, in the `lithermes` folder of your Hermes home. The handoff itself is the usual `HANDOFF.md` (or `.handoff/HANDOFF.md`) in your project.
+
+## The quiet save before compaction
+
+Separately from the request above, LitHermes keeps a small save of its own, and this one is on unless you turn it off. A plugin cannot act inside Hermes' compaction, so it saves a little earlier: when a turn ends with the context at 40% of the window or more, LitHermes writes `.hermes/lithermes/handoff/auto-<session>.md` in your project from what it already holds (the open start-work plan with its current row, the litgoal card, and your last request and the last reply). No model call is involved, and the file is redacted and bounded. After Hermes compacts, the first message carries a short digest of that file once, so the model knows where the work stood.
+
+- `/lit-handoff auto save off` turns it off, and `/lit-handoff auto save on` turns it back on. `/lit-handoff auto status` shows which.
+- `LITHERMES_HANDOFF_SAVE=0` (or `1`) sets the same from the environment and wins over the command.
+- Helper agents and cron runs never save. A compaction before any turn reached 40% has nothing to load.

@@ -18,6 +18,8 @@ hooks:
   - pre_verify
   - on_session_finalize
   - on_session_reset
+  - post_llm_call
+  - post_compaction
 provides_tools:
   - goal_status
   - goal_set
@@ -43,3 +45,5 @@ provides_hooks:
   - pre_verify
   - on_session_finalize
   - on_session_reset
+  - post_llm_call
+  - post_compaction

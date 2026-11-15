@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-13T22:45:00.470Z",
+  "syncedAt": "2026-11-15T10:55:22.824Z",
   "source": "bundled-payload",
-  "sourceHash": "58d7c50cd47c8c7058623203b4cbede55beae6045d7c29be8280da33899613dc",
+  "sourceHash": "6efeb3f343c257c5c24ec76cdb3146d0167fb999fb4009ad5bc6995a0b1d0c3d",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "7cbb82809ec35d2667f6de667c1f1d8a753d12bf2adda5f4faf99bf7be8916c5"
+      "sha256": "59e8bfdcef50489b19eb702b40cdc2e02ba5ec8f485cf5ad2bdf604012f3f9bf"
     },
     {
       "path": "adhd_stack.py",
@@ -21,11 +21,11 @@
     },
     {
       "path": "auto_handoff.py",
-      "sha256": "119c2a5ac4e2c2d02dc9650f2b2d0d8ad4ab5c9793f69ae0a6ca3467fb7becdb"
+      "sha256": "526349fbccd7e674d9a6e30dee7839458f3585afd1718288cdef0ea82f762a22"
     },
     {
       "path": "bounded_work.py",
-      "sha256": "579124311f24ad16f8ca48426453ce398b271e5aa2131d3022d3c678fa6f765a"
+      "sha256": "d3a8244e7b17f8ab4dcfbf25338ae87a58722aba387ab178d5f1b91bcd5ad514"
     },
     {
       "path": "bounded_work_tools.py",
@@ -41,7 +41,7 @@
     },
     {
       "path": "core_commands.py",
-      "sha256": "d5e87cf941fbdab9e2ee9be3a5d02b4826e4beea8fea4a5114bddd006c05d2d5"
+      "sha256": "99015870931e33f17dc4f959ba5e6d3576bd21d577260a384dc6a7147ec8d8ee"
     },
     {
       "path": "core_contexts.py",
@@ -105,7 +105,11 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "d8c90eb37ac4fede1b1257ef65a814f45b22b994b0151ac59dcd10882fdaa5c4"
+      "sha256": "b42497e7ca01fbc10a2aea11279f06fdc07b64a57e19fcf0fcb7b4044b41f4f0"
+    },
+    {
+      "path": "followup.py",
+      "sha256": "807e8fe8a7025124aec6569fc2ead3b0c4ede799a3e48303a34af97d5076132d"
     },
     {
       "path": "gate_toasts.py",
@@ -141,7 +145,7 @@
     },
     {
       "path": "install_notices.py",
-      "sha256": "b9cccb16d5974089d9f6ab2d126536ad8f4b0297d8fabe7acd48e2abbf3b17ef"
+      "sha256": "69242075f18e22acec391c354c9d5e9f519a1bbacde91302aaa0865da333c942"
     },
     {
       "path": "knowledge.py",
@@ -161,7 +165,7 @@
     },
     {
       "path": "lit_reentry.py",
-      "sha256": "340a7f1d36ef780c52fb60c683379ffaef7dac75594fe4aae0a32904c4369b93"
+      "sha256": "0a30f941d5de1cb9a2cac94efa2f929a875e58753c9e0c4095e91999c932d970"
     },
     {
       "path": "litgoal/__init__.py",
@@ -232,8 +236,12 @@
       "sha256": "be2c575ba29b33a25d38452779d6e0b6d52fcd5010592fb5b9355ea7ff689e05"
     },
     {
+      "path": "park_ping.py",
+      "sha256": "8280ba5c5117ba861c33d2ede5a4b204cbb81d82cd34755c0f02ba764bc17cd1"
+    },
+    {
       "path": "plugin.yaml",
-      "sha256": "645cfd83014809d7ac40b715722f5cfbfeebb4f8771984b1a3e34b86903e4218"
+      "sha256": "10927de575e527b6f0a52d5a8d73c07c788a4ed9181f05de6e00f0ab2f32a2aa"
     },
     {
       "path": "provider_metrics.py",
@@ -290,6 +298,10 @@
     {
       "path": "session_context.py",
       "sha256": "fc9bc089661ae6cf63f4cad1386fc422a8cc971e06b31ec0dd5fb6547fa3378a"
+    },
+    {
+      "path": "shown_record.py",
+      "sha256": "e520c1f26441dbfab6604f269feb15660b82045da63fc27cbab7dca42e1cae75"
     },
     {
       "path": "skills/autoconference/LICENSE",

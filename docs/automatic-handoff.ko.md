@@ -31,3 +31,11 @@ Hermes에서 플러그인이 할 수 있는 일은 지켜보고 요청하는 것
 퍼센트는 Hermes가 스스로 압축하는 시점보다 낮게 고르세요. 최신 Hermes에서는 기본값이 창의 절반쯤이고, 512K 토큰보다 작은 창에서는 75%로 올라가며, Hermes 설정에 상한이 있으면 고정 토큰 수로 내려갑니다. 고른 퍼센트가 그 시점과 같거나 높으면 Hermes가 먼저 압축해서 핸드오프가 쓰이지 않습니다. `hermes lithermes doctor`와 `/lit-handoff auto status`가 둘을 비교해서 경고합니다.
 
 요청은 퍼센트를 넘을 때마다 한 번만 나가고, 도구를 실행하는 중이나 도우미 에이전트에게는 가지 않습니다. LitHermes가 저장하는 것은 스위치와 마지막 퍼센트뿐이며, Hermes 홈의 `lithermes` 폴더에 들어갑니다. 핸드오프 자체는 프로젝트의 평소 `HANDOFF.md`(또는 `.handoff/HANDOFF.md`)입니다.
+
+## 압축 전에 조용히 남기는 저장
+
+위의 요청과 별개로 LitHermes는 작은 저장을 스스로 남기며, 이것은 끄지 않는 한 켜져 있습니다. 플러그인은 Hermes의 압축 도중에 끼어들 수 없어서 조금 일찍 저장합니다. 컨텍스트가 창의 40% 이상인 채로 턴이 끝나면, LitHermes가 이미 알고 있는 내용(열려 있는 start-work 계획과 지금 할 행, litgoal 카드, 마지막 요청과 답)으로 프로젝트의 `.hermes/lithermes/handoff/auto-<session>.md`를 씁니다. 모델 호출은 없고, 파일은 민감한 값을 가리고 크기를 제한합니다. Hermes가 압축한 뒤 첫 메시지에 이 파일의 짧은 요약이 한 번 실려서, 모델이 작업이 어디까지 왔는지 알 수 있습니다.
+
+- `/lit-handoff auto save off`로 끄고 `/lit-handoff auto save on`으로 다시 켭니다. `/lit-handoff auto status`가 지금 상태를 보여 줍니다.
+- `LITHERMES_HANDOFF_SAVE=0`(또는 `1`)으로 환경에서도 같은 설정을 할 수 있고, 명령보다 우선합니다.
+- 도우미 에이전트와 cron 실행은 저장하지 않습니다. 어느 턴도 40%에 닿기 전에 압축되면 불러올 것이 없습니다.

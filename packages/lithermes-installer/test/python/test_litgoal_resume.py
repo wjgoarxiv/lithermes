@@ -286,12 +286,17 @@ class ResumeHooks(NaturalRoutingCase):
         shown = self.reply()
         self.assertEqual(shown.count("\n"), 2, "one blank line then one row")
 
-    def test_a_new_host_session_with_the_same_id_is_offered_again(self):
+    def test_a_new_host_session_with_the_same_id_looks_for_an_offer_again(self):
         self.seed("old")
         self.turn("hello")
         self.reply()
         self.pkg._on_session_start(session_id="new", platform="cli")
-        self.assertIn("lithermes-goal-resume-offer", self.turn("hello again"))
+        self.assertNotIn(
+            "lithermes-goal-resume-offer", self.turn("hello again"), "the same offer text is not said twice"
+        )
+        self.seed("newer", "a different goal")
+        self.pkg._on_session_start(session_id="new", platform="cli")
+        self.assertIn("lithermes-goal-resume-offer", self.turn("hello once more"))
 
 
 if __name__ == "__main__":

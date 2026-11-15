@@ -49,7 +49,7 @@ class RegisterWiring(unittest.TestCase):
             "post_llm_call", "pre_api_request", "post_api_request",
             "on_session_start", "on_session_end", "on_session_finalize",
             "on_session_reset", "subagent_stop", "pre_gateway_dispatch",
-            "pre_approval_request", "post_approval_response", "pre_verify",
+            "pre_approval_request", "post_approval_response", "pre_verify", "post_compaction",
         }
         expected = [
             "on_session_start",
@@ -64,6 +64,8 @@ class RegisterWiring(unittest.TestCase):
             "pre_verify",
             "on_session_finalize",
             "on_session_reset",
+            "post_llm_call",
+            "post_compaction",
         ]
         self.assertEqual(declared, expected, "plugin.yaml hooks must match the exact public hook surface")
         self.assertEqual(
@@ -361,6 +363,8 @@ class CliSurface(unittest.TestCase):
             "pre_verify",
             "on_session_finalize",
             "on_session_reset",
+            "post_llm_call",
+            "post_compaction",
         ):
             self.assertIn(h, r)
         self.assertIn("skills (40)", r)  # schematic, hijack and adhd skills are enrolled

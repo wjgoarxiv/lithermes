@@ -12,6 +12,7 @@ from . import core
 from . import bounded_work
 from . import bounded_work_tools
 from . import deliverable_hedge_guard
+from . import followup
 from . import gate_toasts
 from . import handoff
 from . import handoff_card
@@ -21,6 +22,7 @@ from .workspace import is_hermes_home
 from . import knowledge
 from . import knowledge_tools
 from . import lit_mark
+from . import park_ping
 from . import scientific_visualization
 from .litgoal import cli as litgoal_cli
 from .litgoal import hook as litgoal_hook
@@ -406,9 +408,27 @@ def _auto_handoff_block(kwargs: dict[str, Any]) -> str:
             conversation_history=kwargs.get("conversation_history"),
             platform=kwargs.get("platform"),
             parent_session_id=kwargs.get("parent_session_id"),
-        )
+        ) or auto_handoff.take_save_reload(session_id=kwargs.get("session_id"), platform=kwargs.get("platform"))
     except Exception:  # noqa: BLE001 - advisory only
         return ""
+
+
+def _post_llm_call(**kwargs: Any) -> None:
+    """A turn ended: past the save threshold, write this session's handoff file. Never costs the turn."""
+    try:
+        auto_handoff.post_llm_call(**kwargs)
+    except Exception:  # noqa: BLE001 - advisory only
+        return None
+    return None
+
+
+def _post_compaction(**kwargs: Any) -> None:
+    """Hermes committed a compaction: queue the pre-compaction save for the next turn."""
+    try:
+        auto_handoff.post_compaction(**kwargs)
+    except Exception:  # noqa: BLE001 - advisory only
+        return None
+    return None
 
 
 def _goal_resume_session(kwargs: dict[str, Any]) -> str:
@@ -439,6 +459,13 @@ def _prompt_token(kwargs: dict[str, Any]) -> str | None:
     return bounded_work.parse_prompt_token(str(kwargs.get("user_message") or ""))
 
 
+def _followup_context(kwargs: dict[str, Any]) -> dict[str, str] | None:
+    try:
+        return followup.pre_llm_call(**kwargs)
+    except Exception:  # noqa: BLE001 - a follow-up that cannot read state stays out of the way
+        return None
+
+
 def _prepend_context(result: dict[str, str] | None, note: str | None) -> dict[str, str] | None:
     if not note:
         return result
@@ -457,6 +484,10 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     session_id = str(kwargs.get("session_id") or "")
     # A receipt left by a vetoed turn must not replace the next reply.
     bounded_work.take_token_reply(session_id)
+    # A report-only follow-up cron run gets its report (or [SILENT]) and nothing else.
+    followup_context = _followup_context(kwargs)
+    if followup_context:
+        return followup_context
     if core.is_delegate_child_platform(str(kwargs.get("platform") or "")):
         core.release_browser_drive_state(kwargs.get("session_id"))
         return None
@@ -568,9 +599,11 @@ def _setup_lithermes_cli(parser) -> None:
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
         "hooks: on_session_start, pre_llm_call, pre_tool_call, pre_command, post_tool_call, "
-        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset\n"
+        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset, "
+        "post_llm_call, post_compaction\n"
         "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress; "
-        "whole-prompt lit cancel|approve|deny\n"
+        "whole-prompt lit cancel|approve|deny; /lit-loop ping on|off sends one message per parked step (off by default)\n"
+        "follow-up: hermes lithermes followup prints a report-only cron job for you to create\n"
         "wikify knowledge: hermes lithermes knowledge status|query|capture|save|review\n"
         "run `hermes lithermes status` for versions + full surface, or `doctor` for health checks"
     )
@@ -583,6 +616,10 @@ def _setup_lithermes_cli(parser) -> None:
     litgoal_cli.setup(goal_parser)
     knowledge_parser = sub.add_parser("knowledge", help="product-local Wikify knowledge runtime")
     knowledge.setup_cli(knowledge_parser)
+    followup_parser = sub.add_parser(
+        "followup", help="print a report-only Hermes cron job for this project (creates nothing)"
+    )
+    followup.setup_cli(followup_parser)
 
 
 def _handle_lithermes_cli(args) -> int:
@@ -598,6 +635,8 @@ def _handle_lithermes_cli(args) -> int:
         return litgoal_cli.handle(args)
     if cmd == "knowledge":
         return knowledge.handle_cli(args)
+    if cmd == "followup":
+        return followup.handle_cli(args)
     # status, or bare `hermes lithermes` → the most useful "who am I" answer
     print(core.status_report())
     return 0
@@ -781,6 +820,10 @@ def _parked_row(kwargs: dict[str, Any]) -> str | None:
 
 
 def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
+    # A report-only follow-up run may read and nothing else; no other guard can widen that.
+    followup_denial = followup.pre_tool_call(kwargs.get("tool_name"), kwargs.get("args"), kwargs.get("session_id"))
+    if followup_denial is not None:
+        return followup_denial
     # Refusing a page-retrieval substitution outranks the other guards: it is the
     # one decision this turn's measured capability verdict already settled.
     browser_denial = core.browser_drive_tool_guard(**kwargs)
@@ -841,6 +884,7 @@ def _release_bounded_session(**kwargs: Any) -> None:
     core.release_rules_session(session_id)
     core._lit_reentry.forget_offers(session_id)
     gate_toasts.forget_session(raw_session_id)
+    followup.release_session(raw_session_id)
     return None
 
 
@@ -854,6 +898,7 @@ def _finalize_session(**kwargs: Any) -> None:
 def register(ctx) -> None:
     core.configure_welcome_skin()
     gate_toasts.bind(ctx)
+    park_ping.bind(ctx)
     base = Path(__file__).resolve().parent
 
     # Session-scoped rule state. Hermes ignores this hook's return value, so it
@@ -891,6 +936,10 @@ def register(ctx) -> None:
     # A finalized/reset session cannot retain live mutation authority.
     ctx.register_hook("on_session_finalize", _finalize_session)
     ctx.register_hook("on_session_reset", _release_bounded_session)
+    # Save before compaction: a plain plugin cannot act inside Hermes' compression, so a turn that ends
+    # near the context limit writes the handoff file and the first turn after post_compaction reloads it.
+    ctx.register_hook("post_llm_call", _post_llm_call)
+    ctx.register_hook("post_compaction", _post_compaction)
 
     # Model-facing litgoal tools (durable criteria/evidence/checkpoint/steering/gate).
     litgoal_tools.register_tools(ctx)

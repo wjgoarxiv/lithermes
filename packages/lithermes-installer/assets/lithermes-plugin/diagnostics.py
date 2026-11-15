@@ -47,6 +47,8 @@ HOOKS = (
     "pre_verify",
     "on_session_finalize",
     "on_session_reset",
+    "post_llm_call",
+    "post_compaction",
 )
 SLASH_COMMANDS = (
     "lit", "lit-loop", "lit-plan", "litgoal", "review-work", "start-work",
@@ -486,6 +488,7 @@ def status_report(host_version: str | None = None) -> str:
         _knowledge.status_line(_locate_workspace() or Path.cwd()),
         _provider_metrics.capability_line(),
         _auto_handoff.status_line(),
+        _auto_handoff.save_status_line(),
         f"litgoal evidence kinds: {', '.join(_evidence_kinds())}",
         f"LitFamily extensions on the wjgoarxiv-skills shelf ({len(MOVED_SKILL_FAMILIES)} same-name stubs): {', '.join(MOVED_SKILL_FAMILIES)}",
         *_capability_status_lines(version),

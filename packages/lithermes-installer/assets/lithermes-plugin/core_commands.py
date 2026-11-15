@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 try:
+    from . import park_ping
     from .bounded_work import command_lifecycle
     from .core_contract import (
         _skill_body_block, contract_route_block, reader_facing_contract_block, moved_skill_lines,
@@ -16,6 +17,7 @@ try:
     from .core_runs import build_dispatch_result, write_run_state
     from .core_runtime import slugify, _clamp_task, parse_args, workspace_from_option
 except (ImportError, ModuleNotFoundError):
+    import park_ping  # type: ignore
     from bounded_work import command_lifecycle
     from core_contract import (
         _skill_body_block, contract_route_block, reader_facing_contract_block, moved_skill_lines,
@@ -156,8 +158,12 @@ def _command_lit_dispatch(raw_args: str, *, command: str) -> dict[str, str]:
     )
 
 
-def command_lit_loop(raw_args: str) -> dict[str, str]:
-    lifecycle = command_lifecycle(parse_reader_facing_command_args(raw_args).command_args)
+def command_lit_loop(raw_args: str) -> dict[str, str] | str:
+    command_args = parse_reader_facing_command_args(raw_args).command_args
+    ping = park_ping.run_command(command_args)
+    if ping is not None:
+        return ping
+    lifecycle = command_lifecycle(command_args)
     if lifecycle is not None:
         return lifecycle
     return _command_lit_dispatch(raw_args, command="lit-loop")

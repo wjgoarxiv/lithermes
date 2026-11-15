@@ -14,7 +14,9 @@ plugin shows it under the first top-level reply that follows, through the same
   ``--force`` line, which copies those files out first.
 
 Showing a notice renames it to ``<name>.shown.json``. The rename is the claim: when
-two sessions answer at once, only the one whose rename succeeds shows it. A delegate
+two sessions answer at once, only the one whose rename succeeds shows it. A notice
+whose content is already in ``lithermes/shown.jsonl`` (``shown_record.py``) is claimed
+but not shown again, so installing the same version twice does not repeat it. A delegate
 child or a cron run never shows one. An ``extensions`` notice written for a version that is not
 the installed one (an update that was rolled back) is dropped unseen. The reply text
 itself is never rewritten, and nothing here reaches the model. Any error shows
@@ -31,10 +33,12 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from . import shown_record
     from .core_contract import extension_command_line
     from .core_runtime import get_hermes_home
     from .session_context import is_delegate_child_platform
 except ImportError:  # standalone import (tests load modules from the payload folder)
+    import shown_record  # type: ignore
     from core_contract import extension_command_line  # type: ignore
     from core_runtime import get_hermes_home  # type: ignore
     from session_context import is_delegate_child_platform  # type: ignore
@@ -83,6 +87,11 @@ def _claim(name: str) -> dict[str, Any] | None:
     except OSError:
         return None
     return record
+
+
+def _content_key(record: dict[str, Any]) -> str:
+    """What makes a notice the same notice: its content without the write time, whatever the reply's language."""
+    return json.dumps({key: value for key, value in record.items() if key != "writtenAt"}, sort_keys=True, ensure_ascii=False, default=str)
 
 
 def _installed_version() -> str | None:
@@ -177,12 +186,13 @@ def take_visible(*, platform: Any = "", response_text: Any = "") -> str:
             record = _claim(name)
             if record is None:
                 continue
-            if name == "extensions":
-                if record.get("version") != _installed_version():
-                    continue
-                shown.append(extensions_text(record, korean=korean))
-            else:
-                shown.append(blocked_text(record, korean=korean))
+            if name == "extensions" and record.get("version") != _installed_version():
+                continue
+            key = _content_key(record)
+            if shown_record.was_shown(_state_dir(), name, key):
+                continue
+            shown.append(extensions_text(record, korean=korean) if name == "extensions" else blocked_text(record, korean=korean))
+            shown_record.mark_shown(_state_dir(), name, key)
     except Exception:  # noqa: BLE001 - a notice never costs the reply
         return ""
     return "\n\n".join(shown)
