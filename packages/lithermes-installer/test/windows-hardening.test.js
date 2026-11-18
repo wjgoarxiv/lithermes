@@ -157,3 +157,57 @@ test("the update environment keeps the Windows variables npx cannot start withou
   assert.equal(seen.PATHEXT, ".EXE;.CMD");
   assert.equal(seen.NPM_TOKEN, undefined);
 });
+
+// A driver that starts a background daemon hands the daemon its inherited stdout and stderr. On
+// Windows spawnSync then waits for those pipes to close and every first call ends in ETIMEDOUT, so
+// browser calls there write to owned temporary files that are read back once the direct child exits.
+test("spawnBrowserTool on Windows sends output to owned files, not pipes a daemon could hold open", async () => {
+  const { spawnBrowserTool } = await loadMjs(copies[0]);
+  const ctx = (write) => ({
+    platform: "win32", env: winEnv(), exists: files("C:\\bin\\agent-browser.exe"),
+    spawnSync: (command, args, options) => {
+      write(options);
+      return { status: 0, pid: 7, command, args, options };
+    },
+  });
+  let seen;
+  const result = spawnBrowserTool("agent-browser", ["--session", "s", "open", "http://x.test/"], { encoding: "utf8", maxBuffer: 64 }, ctx((options) => {
+    seen = options;
+    fs.writeSync(options.stdio[1], "opened\r\n");
+    fs.writeSync(options.stdio[2], "warn\r\n");
+  }));
+  assert.equal(seen.stdio[0], "ignore");
+  assert.equal(typeof seen.stdio[1], "number");
+  assert.equal(typeof seen.stdio[2], "number");
+  assert.equal(result.command, "C:\\bin\\agent-browser.exe");
+  assert.equal(result.stdout, "opened\r\n");
+  assert.equal(result.stderr, "warn\r\n");
+  assert.equal(result.error, undefined);
+
+  const piped = spawnBrowserTool("agent-browser", ["eval", "--stdin"], { encoding: "utf8", input: "1 + 1" }, ctx((options) => { seen = options; }));
+  assert.equal(seen.stdio[0], "pipe");
+  assert.equal(seen.input, "1 + 1");
+  assert.equal(piped.stdout, "");
+
+  const flood = spawnBrowserTool("agent-browser", ["snapshot"], { encoding: "utf8", maxBuffer: 8 }, ctx((options) => {
+    fs.writeSync(options.stdio[1], "x".repeat(64));
+  }));
+  assert.equal(flood.error?.code, "ENOBUFS");
+  assert.ok(flood.stdout.length <= 9);
+});
+
+test("spawnBrowserTool on POSIX is spawnTool unchanged", async () => {
+  const { spawnBrowserTool } = await loadMjs(copies[0]);
+  const seen = [];
+  spawnBrowserTool("agent-browser", ["--version"], { encoding: "utf8" }, {
+    platform: "linux", spawnSync: (...call) => { seen.push(call); return { status: 0 }; },
+  });
+  assert.deepEqual(seen, [["agent-browser", ["--version"], { encoding: "utf8" }]]);
+});
+
+test("the interface probe drives the browser through spawnBrowserTool and sends every page script on stdin", () => {
+  const source = fs.readFileSync(path.join(skills, "frontend-ui-ux", "scripts", "probe.mjs"), "utf8");
+  assert.doesNotMatch(source, /\bspawnTool\(/u, "every agent-browser call uses the Windows-safe runner");
+  // cmd.exe refuses a double quote in an argument, and a script can outgrow one argument.
+  assert.doesNotMatch(source, /run\('eval',/u);
+});

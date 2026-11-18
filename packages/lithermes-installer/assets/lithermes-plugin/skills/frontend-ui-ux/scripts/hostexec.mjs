@@ -3,8 +3,9 @@
 // PATHEXT. Platform, env and fs probes are arguments so tests can simulate win32 without
 // touching globals. Every skill that spawns tools carries a byte-identical copy of this file.
 import { spawnSync as nodeSpawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { posix, win32 } from 'node:path';
+import { closeSync, existsSync, mkdtempSync, openSync, readSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, posix, win32 } from 'node:path';
 
 const SHELL_SCRIPT = /\.(?:cmd|bat)$/i;
 const SAFE_ARG = /^[\w@+=:,./\\-]+$/;
@@ -63,6 +64,56 @@ export function spawnTool(command, args, options, ctx = {}) {
   const run = ctx.spawnSync || nodeSpawnSync;
   const prepared = prepareSpawn(command, args, options, ctx);
   return run(prepared.command, prepared.args, prepared.options);
+}
+
+function readHead(file, limit) {
+  const buffer = Buffer.alloc(limit);
+  const fd = openSync(file, 'r');
+  try {
+    let length = 0;
+    while (length < limit) {
+      const read = readSync(fd, buffer, length, limit - length, length);
+      if (read === 0) break;
+      length += read;
+    }
+    return buffer.subarray(0, length);
+  } finally {
+    closeSync(fd);
+  }
+}
+
+// A browser driver that starts its daemon on the first call hands the daemon its inherited stdout and
+// stderr. spawnSync waits until every pipe closes, so on Windows that call runs into its timeout
+// (ETIMEDOUT) although the command itself has exited. Owned temporary files do not hold the call
+// open; they are read back within maxBuffer once the direct child exits. POSIX keeps spawnTool.
+export function spawnBrowserTool(command, args, options = {}, ctx = {}) {
+  if ((ctx.platform || process.platform) !== 'win32') return spawnTool(command, args, options, ctx);
+  const limit = Number.isSafeInteger(options.maxBuffer) && options.maxBuffer > 0 ? options.maxBuffer : 1024 * 1024;
+  const directory = mkdtempSync(join(tmpdir(), 'lithermes-browser-'));
+  try {
+    const files = [join(directory, 'stdout'), join(directory, 'stderr')];
+    const fds = [];
+    let result;
+    try {
+      for (const file of files) fds.push(openSync(file, 'w'));
+      result = spawnTool(command, args, { ...options, stdio: [options.input === undefined ? 'ignore' : 'pipe', fds[0], fds[1]] }, ctx);
+    } finally {
+      for (const fd of fds) closeSync(fd);
+    }
+    const [stdout, stderr] = files.map((file) => readHead(file, limit + 1));
+    const overflow = stdout.byteLength > limit || stderr.byteLength > limit;
+    const decode = (buffer) => (typeof options.encoding === 'string' && options.encoding !== 'buffer' ? buffer.toString(options.encoding) : buffer);
+    return {
+      ...result,
+      stdout: decode(stdout),
+      stderr: decode(stderr),
+      output: [null, decode(stdout), decode(stderr)],
+      error: result?.error ?? (overflow ? Object.assign(new Error('browser output exceeded maxBuffer'), { code: 'ENOBUFS' }) : undefined),
+    };
+  } finally {
+    // The daemon can still hold the files open; their content was already read.
+    try { rmSync(directory, { recursive: true, force: true }); } catch { /* left for the OS temp cleaner */ }
+  }
 }
 
 // One line naming the real cause: the spawn error, the exit status and the last stderr line.

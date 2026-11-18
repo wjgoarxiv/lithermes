@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { spawnTool } from './hostexec.mjs';
+import { spawnBrowserTool } from './hostexec.mjs';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -210,7 +210,7 @@ const cases = [
   { name: '1440-zoom200', width: thresholds.zoomWidthPx, height: thresholds.zoomHeightPx, zoom: 200 },
 ];
 const run = (...args) => {
-  const result = spawnTool(capability.command, ['--session', session, ...args], {
+  const result = spawnBrowserTool(capability.command, ['--session', session, ...args], {
     encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024,
     env: browserEnv,
   });
@@ -230,7 +230,7 @@ try {
     run('set', 'media', item.dark ? 'dark' : 'light', ...(item.reduced ? ['reduced-motion'] : []));
     run('open', url);
     run('wait', '1200');
-    const raw = spawnTool(capability.command, ['--session', session, 'eval', '--stdin'], {
+    const raw = spawnBrowserTool(capability.command, ['--session', session, 'eval', '--stdin'], {
       input: script.replace('__UIUX_THRESHOLDS__', JSON.stringify(thresholds)).replace('__UIUX_VIEWPORT__', JSON.stringify(item.name)),
       encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: browserEnv,
     });
@@ -240,7 +240,7 @@ try {
     if (!Array.isArray(value.findings)) throw new Error(`eval ${item.name}: invalid findings`);
     if (value.readyState !== 'complete') {
       run('wait', '1200');
-      const retry = spawnTool(capability.command, ['--session', session, 'eval', '--stdin'], {
+      const retry = spawnBrowserTool(capability.command, ['--session', session, 'eval', '--stdin'], {
         input: script.replace('__UIUX_THRESHOLDS__', JSON.stringify(thresholds)).replace('__UIUX_VIEWPORT__', JSON.stringify(item.name)),
         encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: browserEnv,
       });
@@ -256,8 +256,13 @@ try {
     ...(value.not_verified || []));
     if (value.hover_target) {
       run('hover', value.hover_target);
-      const hover = run('eval', `(() => { const element = document.querySelector(${JSON.stringify(value.hover_target)}); return JSON.stringify({ active: element?.matches(':hover'), duration: getComputedStyle(element).transitionDuration }); })()`);
-      const state = JSON.parse(JSON.parse(hover));
+      // On stdin: cmd.exe, which runs the npm .cmd shim on Windows, refuses an argument holding a double quote.
+      const hoverRun = spawnBrowserTool(capability.command, ['--session', session, 'eval', '--stdin'], {
+        input: `(() => { const element = document.querySelector(${JSON.stringify(value.hover_target)}); return JSON.stringify({ active: element?.matches(':hover'), duration: getComputedStyle(element).transitionDuration }); })()`,
+        encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: browserEnv,
+      });
+      if (hoverRun.status !== 0 || hoverRun.error) throw new Error(`eval ${item.name} hover: ${hoverRun.error?.message || hoverRun.stderr?.slice(-500) || hoverRun.status}`);
+      const state = JSON.parse(JSON.parse(hoverRun.stdout.trim()));
       if (state.active) {
         const duration = Math.max(0, ...state.duration.split(',').map((part) => {
           const value = part.trim(); return Number.parseFloat(value) * (value.endsWith('ms') ? 1 : 1000);
