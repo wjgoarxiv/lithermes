@@ -10,7 +10,7 @@ Produce a single self-contained HTML explainer artifact so the reader can
 The artifact lives outside the repository at
 `~/.lithermes/lit-comprehend/YYYY-MM-DD-<slug>.html` and is never git-added.
 
-This skill is distinct from `lit-recap`: recap answers "what happened" (status,
+This skill is distinct from the lit-adhd recap view (formerly `lit-recap`): recap answers "what happened" (status,
 chronology); lit-comprehend builds the document a person needs to propose the
 next change. The bottleneck after a long session is understanding, not
 correctness.

@@ -113,6 +113,31 @@ class WorkspaceFollowsSession(NaturalRoutingCase):
         self.set_goal()
         self.assertTrue((self.state_in(self.gateway_cwd) / "litgoal").is_dir())
 
+    def _store_session(self, session: str, cwd: str) -> None:
+        import sqlite3
+
+        db = Path(os.environ["HERMES_HOME"]) / "state.db"
+        with sqlite3.connect(db) as conn:
+            conn.execute("create table if not exists sessions (id text primary key, cwd text)")
+            conn.execute("insert or replace into sessions (id, cwd) values (?, ?)", (session, cwd))
+
+    def test_a_first_turn_with_no_scope_uses_the_session_folder_the_host_recorded(self):
+        # Live: a new TUI session's first turn had no scoped cwd, so the gateway's own folder
+        # (inside the Hermes home) stood in and every workspace feature went quiet.
+        self._store_session("s1", str(self.session_cwd))
+        self.set_goal()
+        self.assertTrue((self.state_in(self.session_cwd) / "litgoal").is_dir())
+        self.assertFalse(self.state_in(self.gateway_cwd).exists())
+
+    def test_the_recorded_session_folder_ranks_below_the_turn_scope(self):
+        elsewhere = self.base / "elsewhere"
+        elsewhere.mkdir()
+        self._store_session("s1", str(elsewhere))
+        with self.in_turn():
+            self.set_goal()
+        self.assertTrue((self.state_in(self.session_cwd) / "litgoal").is_dir())
+        self.assertFalse(self.state_in(elsewhere).exists())
+
     def test_a_relative_or_missing_carrier_is_ignored(self):
         self.host.records["s1"] = "relative/dir"
         self.host.terminal_cwd = str(self.base / "does-not-exist")
@@ -185,6 +210,18 @@ class HermesHomeIsNeverAWorkspace(NaturalRoutingCase):
         self.assertIn("workspace", result["error"].lower())
         self.assertTrue(any("hermes home" in line.lower() for line in logged.output), logged.output)
         self.assertFalse((self.home / ".hermes").exists())
+
+    def test_a_recorded_session_folder_inside_the_hermes_home_is_refused(self):
+        import sqlite3
+
+        inside = self.home / "hermes-agent"
+        inside.mkdir(exist_ok=True)
+        with sqlite3.connect(self.home / "state.db") as conn:
+            conn.execute("create table if not exists sessions (id text primary key, cwd text)")
+            conn.execute("insert or replace into sessions (id, cwd) values (?, ?)", ("s1", str(inside)))
+        result = json.loads(self.tools.tool_goal_status(session_id="s1", task_id="s1"))
+        self.assertIn("error", result)
+        self.assertFalse((inside / ".hermes").exists())
 
     def test_a_session_cwd_equal_to_the_hermes_home_is_refused_too(self):
         self.host.scoped = str(self.home)

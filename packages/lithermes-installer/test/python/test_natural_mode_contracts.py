@@ -257,7 +257,6 @@ class NaturalModeContracts(NaturalRoutingCase):
             ("lit lit-init --max-depth=2", "lit-init", "lithermes:lit-init"),
             ("start-work approved-plan", "start-work", "start-work"),
             ("lit start work approved-plan", "start-work", "start-work"),
-            ("lit-recap --brief", "lit-recap", "lit-recap"),
             ("lit-comprehend HEAD~3..HEAD", "lit-comprehend", "lithermes:lit-comprehend"),
             ("comprehend HEAD~3..HEAD", "lit-comprehend", "lithermes:lit-comprehend"),
             ("lit comprehend src/lib/", "lit-comprehend", "lithermes:lit-comprehend"),
@@ -347,7 +346,6 @@ class NaturalModeContracts(NaturalRoutingCase):
         cases = [
             ("lit workflow ship the release", "durable-workflow"),
             ("lit kanban ship the release", "durable-workflow"),
-            ("lit team mode ship the release", "no literal native team mode"),
         ]
         for message, expected in cases:
             with self.subTest(message=message), tempfile.TemporaryDirectory() as tmp:
@@ -368,6 +366,32 @@ class NaturalModeContracts(NaturalRoutingCase):
                 self.assertIn("kanban_create", context)
                 self.assertNotIn("delegate_task", context)
                 self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
+
+    def test_lit_team_is_led_by_this_session(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prev = os.getcwd()
+            os.chdir(tmp)
+            try:
+                out = self._hook("lit team mode ship the release", session="wf-team", isolated=False)
+            finally:
+                os.chdir(prev)
+            context = out["context"]
+            self._assert_contract_terms(context)
+            for required in (
+                "no literal native team mode",
+                "this session is the lead",
+                "delegate_task call with a tasks:",
+                "HERDR_ENV=1 and `command -v herdr`",
+                "git worktree add",
+                "Hermes Kanban",
+                "do not fake a workflow start",
+                "no commit, push, stash or reset",
+                "own scratch folder",
+                "re-run every slice check",
+                "One report to the user",
+            ):
+                self.assertIn(required, context)
+            self.assertFalse((Path(tmp) / ".hermes" / "lithermes" / "runs").exists())
 
     def test_natural_start_work_blocks_safely(self):
         with tempfile.TemporaryDirectory() as tmp:

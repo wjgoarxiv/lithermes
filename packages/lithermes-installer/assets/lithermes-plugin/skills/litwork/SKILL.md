@@ -134,14 +134,12 @@ limitations_channel: inline
 
 # LitHermes Litwork
 
-> **Hermes-native overrides (authoritative — read first).** Hermes has **no
-> model-facing goal tools**: do **not** call `create_goal`, `get_goal`, or
-> `update_goal` (they do not exist). Native `/goal` is user-managed and unobserved;
+> **Hermes-native overrides (authoritative — read first).** Native `/goal` is user-managed and unobserved;
 > users may manage it themselves, and LitHermes performs no automatic update,
 > clear, or resume. Track authoritative success criteria + evidence with the durable
 > LitHermes goal tools (`goal_set`, `goal_add_criterion`, `goal_evidence`,
 > `goal_criterion_status`, `goal_complete`) and inspect with `hermes lithermes goal
-> status`. Wherever the prose below says "Call `create_goal`" or "open a `# Goal`
+> status`. Wherever the prose below says "open a `# Goal`
 > block", use `goal_set` for the durable criteria layer instead. To run a
 > reviewer/worker lane use the native **`delegate_task`**
 > tool (single child, or a `tasks:[{goal, context}]` batch) — inline the reviewer's
@@ -300,7 +298,7 @@ respond", and "looks correct" never count.
 
 ## 1. Declare the durable goal with binding success criteria
 Native `/goal` is optional user-managed state that LitHermes does not observe or
-mutate (do NOT call `create_goal` — it does not exist in Hermes). Declare the
+mutate. Declare the
 authoritative durable objective and success criteria with `goal_set` (objective +
 3+ criteria). Goals are unlimited; never invent a numeric budget or limit.
 The criteria MUST list, upfront:

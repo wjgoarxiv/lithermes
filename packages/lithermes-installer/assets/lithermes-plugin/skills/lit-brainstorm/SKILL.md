@@ -1,6 +1,7 @@
 ---
 name: lit-brainstorm
 description: "lit-brainstorm: Open-ended idea work for asks like what could we do, what should we call it, or give me ideas. Diverge into many genuinely different options, converge to a short list with trade-offs, let the user pick or combine, then hand off to deep-interview or lit-plan. It never implements."
+goal: never
 ---
 
 ## #contract.activation

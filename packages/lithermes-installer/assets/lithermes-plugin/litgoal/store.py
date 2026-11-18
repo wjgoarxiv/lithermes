@@ -432,13 +432,17 @@ def latest_unfinished(workspace: Path, exclude_session: Any = "") -> dict[str, A
             goal = load_or_create(workspace, name).active_goal()
         except (ValueError, OSError):
             continue
-        if goal is not None and goal.status != "complete":
-            return {
-                "session_id": name,
-                "goal_id": goal.id,
-                "title": goal.title or goal.objective,
-                "open": sum(1 for criterion in goal.criteria if criterion.status != "pass"),
-            }
+        if goal is None or goal.status == "complete":
+            continue
+        open_count = sum(1 for criterion in goal.criteria if criterion.status != "pass")
+        if goal.criteria and not open_count:
+            continue  # every criterion passed: the goal is met, only not closed yet
+        return {
+            "session_id": name,
+            "goal_id": goal.id,
+            "title": goal.title or goal.objective,
+            "open": open_count,
+        }
     return None
 
 

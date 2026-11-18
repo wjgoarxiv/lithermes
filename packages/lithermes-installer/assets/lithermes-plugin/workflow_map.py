@@ -31,7 +31,7 @@ EMOJI = {"plan": "📝", "work": "🔨", "review": "🔍", "done": "🏁"}
 # research reply would show an unrelated workflow.
 WORKFLOW_ROUTES = frozenset({
     "litwork", "lit-loop", "lit-plan", "start-work", "litgoal", "review-work",
-    "deep-interview", "lit-team", "lit-recap",
+    "deep-interview", "lit-team", "lit-adhd recap",
 })
 
 

@@ -5,7 +5,8 @@
 // is not there reads `unknown`; nothing is inferred. It writes one file only: this session's
 // next-step record for `go`.
 import { execFileSync } from 'node:child_process';
-import { closeSync, constants, fstatSync, lstatSync, openSync, readSync, readdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { closeSync, constants, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, renameSync, writeFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 
@@ -13,6 +14,7 @@ import { parsePlanTaskRows } from './plan-task-rows.mjs';
 import { aggregateProgress, clipToWidth, displayWidth, progressOf } from './gauge.mjs';
 import { chooseNextStep, suggestNext, waitText, writeNextStep } from './next-step.mjs';
 import { renderBoard } from './board.mjs';
+import { nextCursor, renderVerdict } from './verdict.mjs';
 import { makeRedactor } from './redact.mjs';
 import { findHermesSessions, hermesSessionRecord, hermesStorePath, makeBudget, normalizeRoot, readHermesMessages } from './hermes-sessions.mjs';
 
@@ -275,6 +277,13 @@ const stacksOf = (root, budget, redact) => {
 // release still pauses a run (a `continue-session` boundary). A pause at any other boundary was
 // written before parking existed and reads as active with that step parked, the way the next
 // locked read in Python migrates it.
+const anyOpenPlan = (root, budget) => (entries(join(root, 'plans')) ?? [])
+  .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+  .some((entry) => {
+    const text = readSmallFile(join(root, 'plans', entry.name), budget);
+    return text !== null && parsePlanTaskRows(text).some((row) => !row.checked);
+  });
+
 const startWorkOf = (root, budget, redact) => {
   const items = [];
   const runs = entries(join(root, '.hermes', 'lithermes', 'runs')) ?? [];
@@ -290,11 +299,14 @@ const startWorkOf = (root, budget, redact) => {
     const planText = plan ? readSmallFile(plan, budget) : null;
     const rows = planText === null ? [] : parsePlanTaskRows(planText);
     const open = rows.filter((row) => !row.checked);
+    // The run's own plan decides. A record from before the plan path was kept is guessed done
+    // only when no plan in the folder has an open row.
+    const finished = plan ? rows.length > 0 && !open.length : !anyOpenPlan(root, budget);
     items.push({
       worktree: redact(root),
       workId: `run-${String(newestRun.run_id ?? 'unknown').slice(0, 16)}`,
       plan: plan ? redact(plan) : 'unknown',
-      status: rows.length && !open.length ? 'done' : 'active',
+      status: finished ? 'done' : 'active',
       atMs: Date.parse(String(newestRun.created_at ?? '')),
       // A start-work run records no session, so it is never assumed to be this session's.
       sessionId: null,
@@ -331,6 +343,7 @@ const startWorkOf = (root, budget, redact) => {
       atMs: Date.parse(String(state.updated_at ?? state.created_at ?? '')),
       sessionId: owner,
       id8: owner ? owner.slice(0, 8) : 'unknown',
+      ...(Number.isInteger(state.revision) ? { revision: state.revision } : {}),
       ...(boundary ? { pendingBoundary: { boundary: clipToWidth(redact(String(boundary.id ?? 'unknown')), NAME_MAX) } } : {}),
       progress: steps.length
         ? progressOf(passed, steps.length)
@@ -346,7 +359,7 @@ const insideAny = (dir, roots) =>
   typeof dir === 'string' && dir !== '' && roots.some((root) => dir === root || dir.startsWith(`${root}/`));
 
 // `herdr agent list` prints one JSON document. An agent is a lane when it is working or blocked
-// in this herdr workspace or inside one of this repo's worktrees; this pane is never a lane.
+// with its cwd inside one of this repo's worktrees; this pane is never a lane.
 // Anything unreadable leaves herdr `unknown` with no lanes.
 const herdrOf = (env, exec, redact, roots) => {
   if (env.HERDR_ENV !== '1') return { status: 'unknown', agents: [] };
@@ -357,8 +370,8 @@ const herdrOf = (env, exec, redact, roots) => {
     const agents = listed.slice(0, 40).filter((agent) => agent && typeof agent === 'object').map((agent) => {
       const status = typeof agent.agent_status === 'string' ? agent.agent_status : 'unknown';
       const pane = typeof agent.pane_id === 'string' ? agent.pane_id : 'unknown';
-      const here = (env.HERDR_WORKSPACE_ID && agent.workspace_id === env.HERDR_WORKSPACE_ID)
-        || insideAny(agent.cwd, roots) || insideAny(agent.foreground_cwd, roots);
+      // Only where the agent works counts: a herdr workspace spans repos, so sharing it is no proof.
+      const here = insideAny(agent.cwd, roots) || insideAny(agent.foreground_cwd, roots);
       const session = typeof agent.agent_session?.value === 'string' ? agent.agent_session.value : null;
       return {
         agent: clipToWidth(redact(String(agent.agent ?? 'unknown')), 40),
@@ -441,9 +454,24 @@ export const collectAdhd = ({
 
   const found = findHermesSessions(hermesStorePath(env), roots, { exec });
   const sessions = [];
+  // What the verdict card's coverage line reports: sessions in the store this run did not read.
+  const notRead = { budget: 0, limit: 0, unreadable: 0 };
   for (const entry of found.sessions) {
-    if (sessions.length >= limit || budget.exhausted) break;
+    // The store lists sessions newest first: one quiet longer than the window ends the walk, and
+    // none after it counts as unread.
+    const activity = Number(entry.row?.last_activity_at ?? entry.row?.started_at);
+    const activityMs = Number.isFinite(activity) && activity > 0 ? (activity > 1e12 ? activity : activity * 1000) : null;
+    if (activityMs !== null && now - activityMs > sinceMs) break;
+    if (sessions.length >= limit) {
+      notRead.limit += 1;
+      continue;
+    }
+    if (budget.exhausted) {
+      notRead.budget += 1;
+      continue;
+    }
     const messages = readHermesMessages(hermesStorePath(env), entry.sessionId, budget, { exec });
+    if (!messages) notRead[budget.exhausted ? 'budget' : 'unreadable'] += 1;
     const session = messages ? hermesSessionRecord(entry, messages, { redact, now }) : null;
     if (!session || (session.lastMs !== null && now - session.lastMs > sinceMs)) continue;
     if (here && session.cwd && resolve(session.cwd) !== start) continue;
@@ -498,6 +526,7 @@ export const collectAdhd = ({
       herdr: herdr.status,
     },
     budget: { bytesRead: budget.used, limit: budget.limit, exhausted: budget.exhausted },
+    coverage: { notRead },
     summary: {
       sessions: sessions.length,
       waitingOnUser: sessions.filter((session) => session.status === 'waiting-on-user').length,
@@ -732,12 +761,41 @@ export const renderAdhd = (data, width = 100, sessionId = null) => {
 
 export { renderBoard };
 
-/** `adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko] [--detail] [--width N]`. */
+// The verdict card's "since your last look" cursor: one small file per repository in the Hermes
+// profile (HERMES_HOME, else ~/.hermes), outside every worktree. It moves only after a card was printed.
+export const adhdCursorPath = (env, cwd) => {
+  const home = env.HERMES_HOME || join(env.HOME || homedir(), '.hermes');
+  const key = createHash('sha256').update(nearestRoot(normalizeRoot(resolve(cwd)))).digest('hex').slice(0, 16);
+  return join(home, 'lithermes', 'adhd', `cursor-${key}.json`);
+};
+
+const readCursor = (path) => {
+  try {
+    const cursor = JSON.parse(readFileSync(path, 'utf8'));
+    return cursor && typeof cursor === 'object' && typeof cursor.at === 'string' ? cursor : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeCursor = (path, cursor) => {
+  try {
+    mkdirSync(dirname(path), { recursive: true });
+    const staging = `${path}.${process.pid}.tmp`;
+    writeFileSync(staging, `${JSON.stringify(cursor)}\n`);
+    renameSync(staging, path);
+  } catch {
+    // A cursor that cannot be written only means the next card shows the same baseline.
+  }
+};
+
+/** `adhd [--verdict | --json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko | --en] [--detail] [--width N]`. */
 export const runAdhdCli = (args, cwd = process.cwd(), { env = process.env, stdout = process.stdout, stderr = process.stderr } = {}) => {
-  const options = { cwd, env, here: false, since: DEFAULT_SINCE, max: DEFAULT_MAX, sessionId: null, lang: 'en', detail: false };
+  const options = { cwd, env, here: false, since: DEFAULT_SINCE, max: DEFAULT_MAX, sessionId: null, lang: null, detail: false };
   let json = false;
+  let verdict = false;
   let width = Number(stdout.columns) || 100;
-  const usage = 'Usage: adhd [--json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko] [--detail] [--width N]';
+  const usage = 'Usage: adhd [--verdict | --json] [--here] [--since 7d] [--max 12] [--session <id>] [--lang en|ko | --en] [--detail] [--width N]';
   if (args.some((arg) => arg === '--help' || arg === '-h')) {
     stdout.write(`${usage}\n`);
     return 0;
@@ -751,12 +809,24 @@ export const runAdhdCli = (args, cwd = process.cwd(), { env = process.env, stdou
     else if (arg === '--session' && /^[A-Za-z0-9._:-]{1,160}$/u.test(args[index + 1] ?? '')) options.sessionId = args[++index];
     else if (arg === '--width' && /^\d{2,3}$/u.test(args[index + 1] ?? '')) width = Number(args[++index]);
     else if (arg === '--lang' && ['en', 'ko'].includes(args[index + 1])) options.lang = args[++index];
+    else if (arg === '--en') options.lang = 'en';
+    else if (arg === '--verdict') verdict = true;
     else if (arg === '--detail') options.detail = true;
     else {
       stderr.write(`adhd: unknown argument ${JSON.stringify(basename(String(arg)))}. ${usage}\n`);
       return 64;
     }
   }
+  if (verdict) {
+    // The card is Korean unless English was asked for; the board views keep their English default.
+    const data = collectAdhd({ ...options, lang: options.lang ?? 'ko', width });
+    const cursorPath = adhdCursorPath(env, cwd);
+    const card = renderVerdict(data, { lang: options.lang ?? 'ko', cursor: readCursor(cursorPath) });
+    stdout.write(json ? `${JSON.stringify({ text: card.text, verdict: card.verdict }, null, 2)}\n` : card.text);
+    writeCursor(cursorPath, nextCursor(card.verdict, Date.parse(data.generatedAt)));
+    return 0;
+  }
+  options.lang ??= 'en';
   const data = collectAdhd({ ...options, width });
   // Text mode prints the board; `--detail` adds the per-session brief under it.
   const text = `${data.board.text}\n${options.detail ? `\n${data.board.detailText}` : ''}`;

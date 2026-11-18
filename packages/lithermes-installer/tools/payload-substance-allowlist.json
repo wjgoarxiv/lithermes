@@ -9,7 +9,6 @@
     "lit-crucible": "Native parallel discovery, cross-review, defense, synthesis, and handoff rules form a complete bounded planning procedure.",
     "lit-init": "Discovery, scoring, instruction placement, conflict analysis, generation, and verification are fully specified as a workflow.",
     "lit-plan": "Objective-achievable planning, exploration, authority, adaptive checklists, review, and handoff are complete without a corpus.",
-    "lit-recap": "Read-only state and evidence reconstruction, stale-state precedence, output shape, and limitations are complete in one file.",
     "litresearch": "The body defines a bounded research workflow and the only extra file is attribution metadata; no unshipped corpus is claimed.",
     "litwork": "The body names the native progress hooks and fully specifies bounded delivery, evidence, cleanup, and failure handling.",
     "lsp": "The document defines the host LSP tool and configuration workflow, capability checks, and evidence without bundling a server.",

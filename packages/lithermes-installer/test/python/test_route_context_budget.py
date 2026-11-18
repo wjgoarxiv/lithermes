@@ -123,7 +123,7 @@ class RouteContextBudget(NaturalRoutingCase):
             "Use the request language for user-facing artifact text",
             "goal_set",
             "goal_complete is REFUSED",
-            "get_goal",
+            "/goal is user-managed",
             "PIN -> RED -> GREEN",
             "Reviewer gate",
             "2 identical failures: ask the user",

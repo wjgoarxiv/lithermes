@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-15T15:34:52.113Z",
+  "syncedAt": "2026-11-18T14:30:57.721Z",
   "source": "bundled-payload",
-  "sourceHash": "e2d7350c45074f1b160ee1b25493a6e46920b94cca8b9830f1bfb63d6ff37e9b",
+  "sourceHash": "79da99e81765df1a91a71a463152ab9d75da719fd50a85365ec046d4594a5847",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,15 +9,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "c0ff9410887f92c8da242e879b599d039bea46a258a93d805ff6ebd2b01c260b"
+      "sha256": "d0f96255ee73a8734639af09428b88f63b715e5f5bcad2a53a876772438eddce"
     },
     {
       "path": "__init__.py",
-      "sha256": "59e8bfdcef50489b19eb702b40cdc2e02ba5ec8f485cf5ad2bdf604012f3f9bf"
+      "sha256": "3aa6eeae83313ca77c15e44391611efffb1e962f65e4ab4ead888d0e84c39083"
     },
     {
       "path": "adhd_stack.py",
-      "sha256": "74de2ae2a9feb0729b0ea6742a2996cf9f0795351290b7461e8a23035d60160e"
+      "sha256": "c2cc4687b64e78be48c6fdef7f0ed095f19e82ee36fa3e97d7e9b0c00801ee8f"
     },
     {
       "path": "auto_handoff.py",
@@ -37,23 +37,23 @@
     },
     {
       "path": "core.py",
-      "sha256": "f568acf211ce10d55e67deea8c1d3a0d26b558650d113fd7ef97d074e4d71fd3"
+      "sha256": "e02d487fa73e718662efabe1edba79190c4c180db704c45ef5d69383eda30ee1"
     },
     {
       "path": "core_commands.py",
-      "sha256": "99015870931e33f17dc4f959ba5e6d3576bd21d577260a384dc6a7147ec8d8ee"
+      "sha256": "97e22e75ca8351b4d3599addbeff61a3828b71407d3ed5455da588d83beb3162"
     },
     {
       "path": "core_contexts.py",
-      "sha256": "8f5485a09e27bce038229eced99c7659b46e72951e3c1a618b6aafab27f656a0"
+      "sha256": "b335b6161054445b04e25ed7631c416113c8a1bcf5bde731024f5e60ee35ec86"
     },
     {
       "path": "core_contract.py",
-      "sha256": "286bd0ce97e300d31f2cf2f0d556c147a871ea0e70ba8409dd7e086cab14a368"
+      "sha256": "8cb72433e9a74d24d561296d617b7687bcc8a6e5b9738f357537991cd9b11dfc"
     },
     {
       "path": "core_plans.py",
-      "sha256": "3664f8c711916cf41485576937d8eca472c1b9d3b5433ae3c4ec2062ef99a93a"
+      "sha256": "48adc5c46de280600107bdb998e6ebd79bece71911af56157d6d9b551dbe6f47"
     },
     {
       "path": "core_reader_args.py",
@@ -61,11 +61,11 @@
     },
     {
       "path": "core_recap_command.py",
-      "sha256": "5d9fcca125c40bda20be326948923d79c9b8b6ffe58b0b136fc273f34e31c840"
+      "sha256": "41b0c23d0ff82586ba7a688c978a3e82774ec7497d1fd7a32384e7745625d1e2"
     },
     {
       "path": "core_recap_state.py",
-      "sha256": "e98efeaf38f244b65f1ca0ca490e70295c6fb56a09f67642d74bc83ffe1d0b7a"
+      "sha256": "c57b63126f99b2cbbe042932cd9ab4ded478025059e8e4fcdb76af9645cd7b48"
     },
     {
       "path": "core_review.py",
@@ -73,7 +73,7 @@
     },
     {
       "path": "core_routing.py",
-      "sha256": "235451ed9cbd344536a81972a877a69c2b7305c4c2d83df98bcc4590a9286ad2"
+      "sha256": "09e7a3232c2cd407fd51b777f8e2896f4b2330ce638d80ba8157b2da4fe3740d"
     },
     {
       "path": "core_runs.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "b42497e7ca01fbc10a2aea11279f06fdc07b64a57e19fcf0fcb7b4044b41f4f0"
+      "sha256": "77f1d370358832b7bc8db7a5f07deec814375297dc88acb1c37684a3c265667e"
     },
     {
       "path": "followup.py",
@@ -114,6 +114,10 @@
     {
       "path": "gate_toasts.py",
       "sha256": "d5db548b043e47fcf37d7de7b29679b53c3cfee8b24757d77dd5b71d9d10863b"
+    },
+    {
+      "path": "goal_pipeline.py",
+      "sha256": "e08c2e804de77f3d5ff618129f5dd1e78a1658f05cade9e144c1375ae8e9dd0f"
     },
     {
       "path": "goal_stages.py",
@@ -165,7 +169,7 @@
     },
     {
       "path": "lit_reentry.py",
-      "sha256": "0a30f941d5de1cb9a2cac94efa2f929a875e58753c9e0c4095e91999c932d970"
+      "sha256": "14c43a62435c7385e344593d19c1f8f952756f0c5fdf8c99c0373a9886cdaac4"
     },
     {
       "path": "litgoal/__init__.py",
@@ -173,7 +177,7 @@
     },
     {
       "path": "litgoal/cli.py",
-      "sha256": "9c2af198468947db350d845c1d18afe79b0177f2c5c153ab5c75cbcd6c9e9059"
+      "sha256": "03c247630fd57e7697c6742f85b47aa647a8fa704ee2b6598ef092de65d7496c"
     },
     {
       "path": "litgoal/fingerprint.py",
@@ -205,7 +209,7 @@
     },
     {
       "path": "litgoal/store.py",
-      "sha256": "7fd4aec35d1ee1f45bfc1179a37d36adfee42db4efbb6788331ac47187d9cefc"
+      "sha256": "1703a29832439a9c174528380a64c824c86e940d4eea2cd8ae09c7d49b4b603d"
     },
     {
       "path": "litgoal/testguard.py",
@@ -302,6 +306,10 @@
     {
       "path": "shown_record.py",
       "sha256": "e520c1f26441dbfab6604f269feb15660b82045da63fc27cbab7dca42e1cae75"
+    },
+    {
+      "path": "skill_plan.py",
+      "sha256": "a4325a8e7363d7bd9e106128cb42b1f7d19ca5377793f081f0ec8be7bddd0cfc"
     },
     {
       "path": "skills/autoconference/LICENSE",
@@ -653,7 +661,7 @@
     },
     {
       "path": "skills/frontend-ui-ux/scripts/hostexec.mjs",
-      "sha256": "95451a260bf47cfb7e26df81c16a33898c56480b31d7aad86de6b9a5d8f87224"
+      "sha256": "3e0877d04acc4223a55402737a70fd05831ec62365ee43c9d25095502042d48e"
     },
     {
       "path": "skills/frontend-ui-ux/scripts/probe-page.js",
@@ -665,11 +673,11 @@
     },
     {
       "path": "skills/frontend-ui-ux/scripts/probe.mjs",
-      "sha256": "34635a409c89b7705e3a145c9dff2932e05fedbf1e79b7f65171947afd396c7d"
+      "sha256": "aaaf971ea719b630f156d3913269309cd151f1c887348173175aad0acaa6b13a"
     },
     {
       "path": "skills/lit-adhd/SKILL.md",
-      "sha256": "f8685f61b49ef75c3adfce8fa52b738a147129910829d1508a2cd14baadcf1c0"
+      "sha256": "5fbd0f75c582a42c236dbbb4f5d08826e54d6381d78fa9ea3f160179e563865f"
     },
     {
       "path": "skills/lit-adhd/references/brief-contract.md",
@@ -678,6 +686,10 @@
     {
       "path": "skills/lit-adhd/references/card-examples.md",
       "sha256": "7873e958263887c9c47b264098c99b286b8b3cf72238129508438674cee70e4a"
+    },
+    {
+      "path": "skills/lit-adhd/references/recap.md",
+      "sha256": "860b8a7a8a24a1a424acd2e7163f7af97dd283cd2208d1983b52aa980bbcee8c"
     },
     {
       "path": "skills/lit-adhd/references/status-taxonomy.md",
@@ -693,7 +705,7 @@
     },
     {
       "path": "skills/lit-adhd/scripts/lib/collect.mjs",
-      "sha256": "8a84f6d62018008f4b651620ceaa5d831a26eef135c19150e091c6c04f00367d"
+      "sha256": "23c3f7f15dffb497796fc599d6234f9ce0873390c797054dd01b5d1809b1394a"
     },
     {
       "path": "skills/lit-adhd/scripts/lib/gauge.mjs",
@@ -720,8 +732,12 @@
       "sha256": "7dc58f1caa6d5fc9dc43797a703911e1ec26689a082bb6972f6ed71722a01d57"
     },
     {
+      "path": "skills/lit-adhd/scripts/lib/verdict.mjs",
+      "sha256": "7c60a03e7497597830fde5e0609794f52922f46b0fe8f4da467965357c66566f"
+    },
+    {
       "path": "skills/lit-brainstorm/SKILL.md",
-      "sha256": "528b2f27c0cf7feb2ae34f3ce56427063b291e59ca0995a7f00da22176030e3f"
+      "sha256": "020c3e837a7024ad338a06893654a0307b6feeb1149cafd9c85724a9d54926a3"
     },
     {
       "path": "skills/lit-burnoff/SKILL.md",
@@ -1025,7 +1041,7 @@
     },
     {
       "path": "skills/lit-comprehend/SKILL.md",
-      "sha256": "f73e8b35e9828e1b4b4b888d1bc5dc2cdc58cfb210b7678dda82a2bbc1ab4f39"
+      "sha256": "1b0b26e707835484a7d03071e3aeaec9f3324a852e4469354896a4f44ac302b1"
     },
     {
       "path": "skills/lit-comprehend/assets/explainer-scaffold.html",
@@ -1045,7 +1061,7 @@
     },
     {
       "path": "skills/lit-crucible/SKILL.md",
-      "sha256": "1ab62d5c0ce185018fb86e518a0b93a94414d4f95d508ad3ad64fbe318a803a5"
+      "sha256": "c813712bc91ca2de44323155838e59f4c0e1b3448ab11273d5d95331b053e934"
     },
     {
       "path": "skills/lit-diagram-drawer/SKILL.md",
@@ -1357,15 +1373,11 @@
     },
     {
       "path": "skills/lit-plan/SKILL.md",
-      "sha256": "8325532a4394f033feeb5a55d64938967458a87324dd688b4783050858195014"
+      "sha256": "6461993203e00806022785d71e81b7631ad553afadcbdaaed5884b2bfd618d47"
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
       "sha256": "4c7025be7abbbda15594480bf5c996c2ac5dd818fa1a54e8a06d8eaf79cb041d"
-    },
-    {
-      "path": "skills/lit-recap/SKILL.md",
-      "sha256": "27a64e29268fa86100bb61192666b20429529e57b6cd596a17920abdccb4ebab"
     },
     {
       "path": "skills/lit-schematic/SKILL.md",
@@ -1374,6 +1386,14 @@
     {
       "path": "skills/lit-scientific-visualization/SKILL.md",
       "sha256": "da6575187dc824d46adfc77aecf0e43cea2fb2909fdce1c78dcdab624e5166cd"
+    },
+    {
+      "path": "skills/lit-team/SKILL.md",
+      "sha256": "def40662df13a6e252470b94d9639ebf7b311adbd4675240eaa6f277f4c210ad"
+    },
+    {
+      "path": "skills/lit-team/references/briefs.md",
+      "sha256": "fb45b1e16e8ad0606b6bba2a586ffaa226339dea3b33d529cf4099ace4832597"
     },
     {
       "path": "skills/lit-typographic-motion/SKILL.md",
@@ -1393,11 +1413,11 @@
     },
     {
       "path": "skills/litresearch/SKILL.md",
-      "sha256": "7dfee663b69b5724e0f282330177024c16d91ac3496ef491bd169ab6a743b051"
+      "sha256": "83c4257ffe81f7484c0106990e141577cece63db7991db719c32e9791086843f"
     },
     {
       "path": "skills/litwork/SKILL.md",
-      "sha256": "22366854b5b5bf317fad25bd2db631048d032b171f6d46c190bb780a2a3d71d6"
+      "sha256": "ad8092fce7080bc6e876524e9dfdba93514423befb1691ba8dca3454f1f89afc"
     },
     {
       "path": "skills/lsp/SKILL.md",
@@ -1513,7 +1533,7 @@
     },
     {
       "path": "skills/review-work/SKILL.md",
-      "sha256": "9ac87d23b5de07803c4da79f290858b292faa6f5fce3fe8bfc04ee27d38f3b8a"
+      "sha256": "c8a8564f25eb4bbda6d74577db8e842630129aefe4ce8d90dbf157ecbc8e17e4"
     },
     {
       "path": "skills/rules/SKILL.md",
@@ -1521,11 +1541,31 @@
     },
     {
       "path": "skills/start-work/SKILL.md",
-      "sha256": "3ed33f04678104313e545b83bea5e5cdcdcb1e1742bbec484460af8135f27ca5"
+      "sha256": "da7507ca67453225a657dddef3ef41f1da5664e076a563c823e4ba408ba8aac2"
     },
     {
       "path": "skills/structural-search/SKILL.md",
       "sha256": "1e8aebdc21709e2945e2ebd3e96f1c94a4601a202f298288a97965134e0c1494"
+    },
+    {
+      "path": "skills/ultra-brainstorm/SKILL.md",
+      "sha256": "909de2c1aa7a7ea01b56ddc9ddde0bee91ffbd78282a5a6d201de3364e3818d9"
+    },
+    {
+      "path": "skills/ultra-brainstorm/references/fan-out.md",
+      "sha256": "b33a68b41385ec95c7ebbf238dcdc9096e7ad9cd0c7219e913b6b76fb5bb7877"
+    },
+    {
+      "path": "skills/ultra-brainstorm/references/lenses.md",
+      "sha256": "614098a76820ea68835a596df7660ae892c65ff544df2f020cbc688aa124de8e"
+    },
+    {
+      "path": "skills/ultra-brainstorm/scripts/estimate.mjs",
+      "sha256": "80aeac2cf8ec50e2012a48cab477c1cd809e9b672ff5ee5cedfefc0e66a512ec"
+    },
+    {
+      "path": "skills/ultra-brainstorm/scripts/launch-answer.mjs",
+      "sha256": "6cdb02df676311ed5f877c0684e399e030867574246a05e11ef4e7c09200affc"
     },
     {
       "path": "skills/visual-qa/SKILL.md",
@@ -1617,11 +1657,11 @@
     },
     {
       "path": "workflow_map.py",
-      "sha256": "8da12ac65ee0f9c9d8d07611df41dda8b07fd75eca821bf0e8b5c3dc376cd930"
+      "sha256": "265f5dd99fea93ddfa329ef90003d2ec54fdc59dea064ab2d47d14350dfec882"
     },
     {
       "path": "workspace.py",
-      "sha256": "00ff18b4709580bb9235c26f7c36d646577a0f8e53e3d465e4f2423c04bb0dd0"
+      "sha256": "197cc6c3cd7166f22f98a7700971b584e1a4f0a86ace4802c93a40e7b112c349"
     }
   ]
 }

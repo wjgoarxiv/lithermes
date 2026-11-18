@@ -1,6 +1,7 @@
 ---
 name: review-work
 description: Hermes-native plan review (after lit-plan, before start-work) and work review (after lit-loop or start-work), auto-picked from what exists or forced with lit review plan|work: an objective-achievability audit for plans, or five delegate_task lanes with DoneClaim skepticism for work.
+goal: never
 ---
 
 ## #contract.activation

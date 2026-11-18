@@ -54,6 +54,8 @@ _NATIVE_COMMANDS = frozenset(
         "lit-docx",
         "lit-hijack",
         "lit-adhd",
+        "ultra-brainstorm",
+        "lit-team",
         "lit-typographic-motion",
         *core.KOREAN_PROSE_COMMANDS,
         *core.KOREAN_PROSE_ALIASES,
@@ -126,7 +128,7 @@ PORTED_SKILLS = [
     ),
     (
         "lit-adhd",
-        "Cross-session brief with gauges and one next step.",
+        "Where things stand across sessions: a six-line verdict card with one next step; detail keeps the board; recap view.",
     ),
     (
         "lit-typographic-motion",
@@ -143,6 +145,14 @@ PORTED_SKILLS = [
     (
         "lit-brainstorm",
         "Many options for an open ask, then a short list",
+    ),
+    (
+        "ultra-brainstorm",
+        "Hundreds of idea children through delegate_task, judged to a sorted top list; asks the count first",
+    ),
+    (
+        "lit-team",
+        "This session leads a team: owned slices out through delegate_task, watched, merged, re-verified, one report",
     ),
     (
         "lit-crucible",
@@ -207,10 +217,6 @@ PORTED_SKILLS = [
     (
         "litresearch",
         "Use when a question needs broad cited research into prior work or how others solve it; disputed claims checked at the source.",
-    ),
-    (
-        "lit-recap",
-        "Produce a read-only Korean-default LitHermes work recap from durable state and session context.",
     ),
     (
         "lit-handoff",
@@ -418,6 +424,10 @@ def _post_llm_call(**kwargs: Any) -> None:
     try:
         auto_handoff.post_llm_call(**kwargs)
     except Exception:  # noqa: BLE001 - advisory only
+        pass
+    try:
+        core.goal_turn_end(**kwargs)
+    except Exception:  # noqa: BLE001 - advisory only
         return None
     return None
 
@@ -593,8 +603,8 @@ def _setup_lithermes_cli(parser) -> None:
     parser.epilog = (
         "slash commands: /lit /lit-loop /lit-plan /litgoal /review-work /start-work /deep-interview "
         "/lit-humanizer (legacy aliases: /lit-korean /text-naturalization /text-neutralization "
-        "/korean-ai-slop-remover) /lit-recap "
-        "/lit-handoff /lit-accept-tests /lit-scientific-visualization /lit-diagram-drawer /lit-schematic /lit-pptx /lit-docx /lit-hijack /lit-adhd /lit-typographic-motion\n"
+        "/korean-ai-slop-remover) /lit-recap (alias of /lit-adhd recap) "
+        "/lit-handoff /lit-accept-tests /lit-scientific-visualization /lit-diagram-drawer /lit-schematic /lit-pptx /lit-docx /lit-hijack /lit-adhd /ultra-brainstorm /lit-team /lit-typographic-motion\n"
         f"skills: {len(PORTED_SKILLS)} lithermes:* skills — `hermes lithermes status` lists them\n"
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
@@ -1016,8 +1026,8 @@ def register(ctx) -> None:
     )
     ctx.register_command(
         "lit-recap",
-        _command_handler(ctx, core.command_lit_recap, "lit-recap"),
-        description="Read-only Korean recap of finalized work (side-effect-free)",
+        _command_handler(ctx, lambda raw: core.command_lit_recap(raw, moved=True), "lit-adhd"),
+        description="Alias: lit-recap moved into lit-adhd; opens the read-only recap view (/lit-adhd recap)",
         args_hint="[--brief] [--en] [--worktree PATH]",
     )
     ctx.register_command(
@@ -1060,14 +1070,26 @@ def register(ctx) -> None:
     ctx.register_command(
         "lit-adhd",
         _command_handler(ctx, core.command_lit_adhd, "lit-adhd"),
-        description="Cross-session brief with gauges and one next step",
-        args_hint="[--here] [--since 7d] [--max 12]",
+        description="Six-line verdict card across sessions; --detail for the board, recap for the recap view",
+        args_hint="[recap [session]] [--here] [--since 7d] [--max 12] [--detail] [--en]",
     )
     ctx.register_command(
         "lit-rewind",
         _command_handler(ctx, lambda raw: core.command_lit_adhd(raw, route="/lit-rewind"), "lit-adhd"),
         description="Cross-session brief with gauges and one next step (alias of lit-adhd)",
         args_hint="[--here] [--since 7d] [--max 12]",
+    )
+    ctx.register_command(
+        "ultra-brainstorm",
+        _command_handler(ctx, core.command_ultra_brainstorm, "ultra-brainstorm"),
+        description="Wide brainstorm: idea children through delegate_task, judged to a top list (asks the count first)",
+        args_hint="<topic>",
+    )
+    ctx.register_command(
+        "lit-team",
+        _command_handler(ctx, core.command_lit_team, "lit-team"),
+        description="Team mode led by this session: slices through delegate_task, merged and re-verified, one report",
+        args_hint="<objective>",
     )
     ctx.register_command(
         "lit-typographic-motion",

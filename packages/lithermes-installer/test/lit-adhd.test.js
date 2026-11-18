@@ -169,7 +169,7 @@ test("ended sessions fold to a table and a missing step becomes a suggestion", {
   }
 });
 
-test("the skill body carries its contracts and cross-links lit-recap both ways", () => {
+test("the skill body carries its contracts and the recap view that replaced lit-recap", () => {
   const text = fs.readFileSync(path.join(SKILL, "SKILL.md"), "utf8");
   assert.ok(text.split(/\s+/u).length >= 1000, "dense body");
   for (const heading of ["## When this applies", "## Inputs and state", "## Procedure", "## Hermes tools and approvals", "## Evidence", "## Stop and report", "## Pitfalls"]) {
@@ -182,14 +182,15 @@ test("the skill body carries its contracts and cross-links lit-recap both ways",
     assert.ok(text.includes(ref), ref);
     assert.ok(fs.existsSync(path.join(SKILL, ref)), ref);
   }
-  for (const lib of ["scripts/adhd.mjs", "scripts/lib/collect.mjs", "scripts/lib/gauge.mjs", "scripts/lib/redact.mjs", "scripts/lib/secret-shapes.mjs", "scripts/lib/plan-task-rows.mjs", "scripts/lib/next-step.mjs", "scripts/lib/hermes-sessions.mjs", "scripts/lib/board.mjs"]) {
+  for (const lib of ["scripts/adhd.mjs", "scripts/lib/collect.mjs", "scripts/lib/gauge.mjs", "scripts/lib/redact.mjs", "scripts/lib/secret-shapes.mjs", "scripts/lib/plan-task-rows.mjs", "scripts/lib/next-step.mjs", "scripts/lib/hermes-sessions.mjs", "scripts/lib/board.mjs", "scripts/lib/verdict.mjs"]) {
     assert.ok(fs.existsSync(path.join(SKILL, lib)), `${lib} ships`);
   }
   const description = /^description: "(.*)"$/mu.exec(text)[1];
   assert.ok(Buffer.byteLength(description) <= 110, `catalog description ${Buffer.byteLength(description)} B fits the budget`);
-  assert.match(text, /lit recap/u, "cross-links lit-recap");
-  const recap = fs.readFileSync(path.join(SKILL, "..", "lit-recap", "SKILL.md"), "utf8");
-  assert.match(recap, /lit adhd/u, "lit-recap cross-links lit-adhd");
+  assert.match(text, /lit adhd recap \[session\]/u, "names the recap view");
+  const recap = fs.readFileSync(path.join(SKILL, "references", "recap.md"), "utf8");
+  assert.match(recap, /lit-recap moved into lit-adhd/u, "the recap view keeps the moved note for the old words");
+  assert.equal(fs.existsSync(path.join(SKILL, "..", "lit-recap")), false, "the lit-recap skill is folded in");
 });
 
 test("redaction masks quoted-JSON secrets and short secret-like env values", async () => {
@@ -462,7 +463,8 @@ test("herdr lanes at work turn a start-plan step into a wait with no go", async 
   const ws = roundThreeWs();
   try {
     const agents = [
-      { agent: "claude", agent_status: "working", pane_id: "w1:p1", workspace_id: "w1", cwd: "/elsewhere" },
+      { agent: "claude", agent_status: "working", pane_id: "w1:p1", workspace_id: "w1", cwd: ws },
+      { agent: "hermes", agent_status: "working", pane_id: "w1:p6", workspace_id: "w1", cwd: path.join(ws, "plans") },
       { agent: "claude", agent_status: "working", pane_id: "w1:p2", workspace_id: "w1", cwd: "/elsewhere" },
       { agent: "hermes", agent_status: "blocked", pane_id: "w2:p3", workspace_id: "w2", cwd: "/x", foreground_cwd: path.join(ws, "sub") },
       { agent: "claude", agent_status: "idle", pane_id: "w1:p4", workspace_id: "w1", cwd: ws },
@@ -687,5 +689,52 @@ test("live lanes and open plan items outrank the HANDOFF Next item", async () =>
     assert.match(nextBox(planned.text), /^Next in plans\/(one|two)\.md/u);
   } finally {
     fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("an old start-work record without a plan reads finished only when no plan in the folder is open", async () => {
+  const ws = roundThreeWs({ openPlan: false });
+  try {
+    fs.rmSync(path.join(ws, "plans", "stale.md"));
+    const state = path.join(ws, ".hermes", "lithermes", "runs", "run-1", "state.json");
+    fs.writeFileSync(state, JSON.stringify({ run_id: "run-1", command: "start-work", created_at: new Date().toISOString() }));
+    let { data } = await collectQuiet(ws);
+    assert.equal(data.startWork[0].status, "done");
+    assert.notEqual(data.next.kind, "continue-work");
+    fs.writeFileSync(path.join(ws, "plans", "open.md"), "# Open\n\n## Todos\n- [ ] 1. Second step\n");
+    ({ data } = await collectQuiet(ws));
+    assert.equal(data.startWork[0].status, "active");
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("plan A all ticked while plan B is open: A reads finished and is never offered to continue", async () => {
+  const ws = roundThreeWs();
+  try {
+    const { data, text } = await collectQuiet(ws);
+    assert.equal(data.startWork[0].plan.endsWith("done.md"), true);
+    assert.equal(data.startWork[0].status, "done");
+    assert.notEqual(data.next.kind, "continue-work");
+    assert.doesNotMatch(text, /continue[^\n]*done\.md/iu);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+  }
+});
+
+test("a herdr agent in this herdr workspace but working in another repo is never a lane here", async () => {
+  const ws = roundThreeWs();
+  const foreign = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-foreign-")));
+  try {
+    const herdr = herdrJson([
+      { agent: "hermes", agent_status: "working", pane_id: "w1:p7", workspace_id: "w1", cwd: foreign, foreground_cwd: foreign },
+      { agent: "claude", agent_status: "working", pane_id: "w1:p8", workspace_id: "w1", cwd: path.join(ws, "plans") },
+    ]);
+    const { data } = await collectWith(ws, { herdr });
+    assert.deepEqual(data.lanes.agents, ["w1:p8"]);
+    assert.equal(data.lanes.count, 1);
+  } finally {
+    fs.rmSync(ws, { recursive: true, force: true });
+    fs.rmSync(foreign, { recursive: true, force: true });
   }
 });

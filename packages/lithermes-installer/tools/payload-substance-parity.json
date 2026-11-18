@@ -68,8 +68,8 @@
         "lit-init",
         "lit-plan",
         "lit-pptx",
-        "lit-recap",
         "lit-scientific-visualization",
+        "lit-team",
         "lit-typographic-motion",
         "litgoal",
         "litresearch",
@@ -86,8 +86,8 @@
         "wikify"
       ],
       "inventory": {
-        "count": 40,
-        "sha256": "9d09285caf052cf017c4e247c2d94d29f9a1e3889015bd8f3f75f1bae6226e94"
+        "count": 41,
+        "sha256": "5dcf9d2c1782cda941cd77ae378fb437ee92f7c3a37e027343284a8817230854"
       }
     },
     "p31": {
@@ -421,7 +421,6 @@
       "median": 1,
       "closures": {
         "p27": 1,
-        "p28": 1,
         "p31": 2,
         "p32": 1,
         "p33": 1
@@ -441,6 +440,7 @@
       "median": 4,
       "closures": {
         "p27": 2,
+        "p28": 2,
         "p31": 6,
         "p33": 4
       }

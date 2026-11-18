@@ -1,4 +1,4 @@
-"""lit-recap read-only recap surface (C1-C7).
+"""Read-only recap view of lit-adhd, formerly the lit-recap skill (C1-C7, S5).
 
 Covers registration, side-effect-freedom, the five locked Korean headers,
 brief/english rendering, injection hardening (fence breakout + bind-goal
@@ -21,7 +21,7 @@ _ASSET_DIR = os.path.normpath(os.path.join(_HERE, "..", "..", "assets", "litherm
 if _ASSET_DIR not in sys.path:
     sys.path.insert(0, _ASSET_DIR)
 
-RECAP_TITLE = "# 작업 리캡 (lit-recap)"
+RECAP_TITLE = "# 작업 리캡 (lit adhd recap)"
 FULL_HEADERS = (
     "## ✅ 완료된 작업",
     "## 🔄 진행 중",
@@ -30,7 +30,7 @@ FULL_HEADERS = (
     "## ➡️ 다음 단계",
 )
 BRIEF_HEADER = "## ⚡ 요약"
-RECAP_MARKER = 'mode="lit-recap"'
+RECAP_MARKER = 'mode="lit-adhd" view="recap"'
 ROUTE_CLOSE = "</lithermes-natural-route>"
 
 
@@ -77,8 +77,8 @@ def _section(msg: str, header: str, next_header: str | None) -> str:
     return msg[start:end]
 
 
-def _without_skill_body(msg: str, name: str = "lit-recap") -> str:
-    start = f'<lithermes-skill-body name="{name}">'
+def _without_skill_body(msg: str, name: str = "lit-adhd") -> str:
+    start = f'<lithermes-skill-body name="{name}" view="recap">'
     before, marker, rest = msg.partition(start)
     if not marker:
         return msg
@@ -340,6 +340,64 @@ class RecapRouting(unittest.TestCase):
                 self.assertIsInstance(out, dict)
                 self.assertIn(marker, out["context"])
                 self.assertNotIn(RECAP_MARKER, out["context"])
+
+
+class RecapMovedIntoLitAdhd(RecapRouting):
+    """S5: lit-recap is a view of lit-adhd now; the old words stay aliases with one moved line."""
+
+    MOVED = "lit-recap moved into lit-adhd: next time type `lit adhd recap`."
+
+    def test_new_forms_open_the_view_without_the_moved_line(self):
+        for message in ("lit adhd recap", "lit-adhd recap --brief", "lit rewind recap", "lit adhd 리캡 --en"):
+            with self.subTest(message=message):
+                out, runs_created = self._hook(message, f"new-{abs(hash(message))}")
+                self.assertIn(RECAP_MARKER, out["context"])
+                self.assertNotIn(self.MOVED, out["context"])
+                self.assertFalse(runs_created)
+
+    def test_old_words_still_work_and_say_it_moved(self):
+        for message in ("recap", "lit recap", "litrecap", "리캡", "lit-recap --brief"):
+            with self.subTest(message=message):
+                out, _ = self._hook(message, f"old-{abs(hash(message))}")
+                self.assertIn(RECAP_MARKER, out["context"])
+                self.assertIn(self.MOVED, out["context"])
+                self.assertIn(f"before any recap content, is exactly: {self.MOVED}", out["context"])
+
+    def test_moved_note_is_the_first_display_line(self):
+        from core_recap_command import command_lit_recap
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out = command_lit_recap(f"--worktree {tmp}", moved=True)
+        self.assertEqual(out["display"].splitlines()[0], self.MOVED)
+        context = out["agent_message"]
+        self.assertLess(context.index(self.MOVED), context.index("Read-only recap of durable"))
+
+    def test_a_session_id_names_the_session_to_recap(self):
+        out, _ = self._hook("lit adhd recap 20261118_0900_ab12cd", "sid")
+        self.assertIn("Session asked for: 20261118_0900_ab12cd", out["context"])
+        self.assertIn("session_search", out["context"])
+        out, _ = self._hook("lit recap 20261118_0900_ab12cd", "sid-old")
+        self.assertNotIn(RECAP_MARKER, str((out or {}).get("context") or ""))
+
+    def test_slash_surfaces_and_the_removed_skill(self):
+        pkg = _load_plugin_package()
+        ctx = _FakeCtx()
+        pkg.register(ctx)
+        with tempfile.TemporaryDirectory() as tmp:
+            prev = os.getcwd()
+            os.chdir(tmp)
+            try:
+                alias = ctx.command_handlers["lit-recap"]("")
+                view = ctx.command_handlers["lit-adhd"]("recap --brief")
+            finally:
+                os.chdir(prev)
+        self.assertIn(self.MOVED, alias["display"])
+        self.assertIn(RECAP_MARKER, alias["agent_message"])
+        self.assertIn(RECAP_MARKER, view["agent_message"])
+        self.assertIn(BRIEF_HEADER, view["agent_message"])
+        self.assertFalse((Path(_ASSET_DIR) / "skills" / "lit-recap").exists())
+        self.assertTrue((Path(_ASSET_DIR) / "skills" / "lit-adhd" / "references" / "recap.md").is_file())
+        self.assertNotIn("lit-recap", [name for name, _ in pkg.PORTED_SKILLS])
 
 
 if __name__ == "__main__":

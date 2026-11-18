@@ -230,7 +230,9 @@ def contract_route_block(mode: str, *, surface: str, compact: bool = False) -> s
     )
     kanban_route = mode in {"durable-workflow", "kanban-team"}
     mode_matrix = (
-        "#contract.mode_matrix: natural durable-workflow routes map to Hermes Kanban/profile lanes, not short child-worker batches."
+        "#contract.mode_matrix: lit team is led by this session; delegate_task batches, herdr panes, worktrees or Kanban are only how slices are handed out."
+        if mode == "kanban-team"
+        else "#contract.mode_matrix: natural durable-workflow routes map to Hermes Kanban/profile lanes, not short child-worker batches."
         if kanban_route
         else "#contract.mode_matrix: direct skill, route injection, and delegate_task worker lanes are separate modes."
     )
@@ -604,7 +606,7 @@ LITWORK_DIRECTIVE = (
     "- Keep unrelated user changes, no destructive git. Web UI: lithermes:frontend-ui-ux and its seven-state probe.",
 )
 LITWORK_DISCIPLINE = (
-    "Goals: no get_goal/create_goal/update_goal; /goal is user-managed. goal_set 3+ criteria, log goal_evidence; goal_complete is REFUSED until each has green + scenario evidence.",
+    "Goals: /goal is user-managed. goal_set 3+ criteria, log goal_evidence; goal_complete is REFUSED until each has green + scenario evidence.",
     "Loop per criterion PIN -> RED -> GREEN -> VERIFY -> SURFACE -> CLEAN -> RECORD; tests alone never prove done: one real QA run (curl -i, tmux, browser) plus a cleanup receipt.",
     "Reviewer gate on 3+ files, 20+ turns or risky work: strict delegate_task reviewer, unconditional approval. 2 identical failures: ask the user; 2 empty exploration waves: act.",
     'skill_view("lithermes:litwork") holds the full loop and delegation; load skill_view("lithermes:lit-code") before editing .py .pyi .rs .ts .tsx .mts .cts .go files.',

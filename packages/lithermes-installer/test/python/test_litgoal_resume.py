@@ -76,6 +76,13 @@ class LatestUnfinished(_Workspace):
         self.seed("mine", "my own")
         self.assertIsNone(store.latest_unfinished(self.ws, "mine"))
 
+    def test_a_goal_whose_every_criterion_passed_is_not_offered(self):
+        # Live: a met goal not yet closed read `unfinished goal "greet" (0 criteria open)`.
+        self.seed("met", "greet", criteria=2, passed=2)
+        self.assertIsNone(store.latest_unfinished(self.ws, "current"))
+        self.seed("open", "still going", criteria=2, passed=1)
+        self.assertEqual(store.latest_unfinished(self.ws, "current")["session_id"], "open")
+
     def test_malformed_sessions_are_skipped_not_fatal(self):
         self.seed("good")
         bad = store.goals_path(self.ws, "bad")

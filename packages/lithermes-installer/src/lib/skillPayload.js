@@ -16,7 +16,7 @@ const requiredSkills = [
   "lit-burnoff-file", "autoconference", "autoresearch", "browser-drive", "comment-checker", "debugging",
   "deep-interview",
   "frontend-ui-ux", "readme-studio", "lit-commit", "lit-brainstorm", "lit-crucible", "lit-init",
-  "lit-humanizer", "lit-comprehend", "lit-handoff", "lit-plan", "lit-recap",
+  "lit-humanizer", "lit-comprehend", "lit-handoff", "lit-plan", "ultra-brainstorm", "lit-team",
   "lit-scientific-visualization", "lit-diagram-drawer", "lit-schematic", "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "lit-typographic-motion", "litgoal", "litresearch", "litwork", "lsp",
   "lsp-setup", "lit-code", "refactor", "lit-burnoff", "review-work",
   "rules", "start-work", "structural-search", "visual-qa", "wikify",

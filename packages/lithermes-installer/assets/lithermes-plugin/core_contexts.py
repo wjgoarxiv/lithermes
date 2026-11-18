@@ -5,13 +5,13 @@ from html import escape
 
 try:
     from .child_env import scrubbed_env
-    from .core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
+    from .core_commands import adhd_language, build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
     from .core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, moved_skill_lines, MOVED_SKILL_FAMILIES, route_look_block
     from .core_review import review_mode_line, review_target
     from .core_routing import NaturalLitRoute, detect_ui_mode
 except (ImportError, ModuleNotFoundError):
     from child_env import scrubbed_env
-    from core_commands import build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
+    from core_commands import adhd_language, build_korean_prose_cleanup_agent_message, build_lit_humanizer_agent_message
     from core_contract import LIT_CONTEXT, LITGOAL_MEANING, _skill_body_block, contract_route_block, skill_view_reference, installed_web_probe_command, moved_skill_lines, MOVED_SKILL_FAMILIES, route_look_block
     from core_review import review_mode_line, review_target
     from core_routing import NaturalLitRoute, detect_ui_mode
@@ -122,9 +122,9 @@ _SKILL_ROUTE_CONTRACTS = {
     ),
     "lit-adhd": (
         "Brief task",
-        "Mode Contract: read-only. Run the installed collector once and show its KPI board (board.text) verbatim: do this now with one next step to type, at a glance, milestones, done, left, reminders. The five-part brief is the detail view, shown under the board only on request.",
-        "Read the installed lit-adhd skill first. Run node scripts/adhd.mjs --json --lang ko|en from the installed skill root (--detail for 자세히/detail; --here/--since/--max only when asked). Never count, draw or re-rank anything; an unknown total stays in words, never ?, never a guess. Hermes has no typed go; the board says when `go` applies.",
-        "Single-session recaps stay with lit-recap; execution stays with start-work.",
+        "Mode Contract: read-only. Default: run node scripts/adhd.mjs --verdict --session <id> once from the installed skill root and show its six-line verdict card verbatim (what changed since the last look, one action, the exact input, why and the cost of not doing it, what waits next, coverage).",
+        "Detail (자세히/detail/--detail): run node scripts/adhd.mjs --json --detail --session <id> instead and show board.text, then board.detailText. --here/--since/--max only when asked. Never count, draw, re-rank or add an action; Hermes has no typed go, so the card says when `go` applies.",
+        "Single-session recap is the recap view: lit adhd recap [session]. Execution stays with start-work.",
     ),
     "readme-studio": ("README target", *moved_skill_lines("readme-studio")),
     "visual-qa": ("Verification target", *moved_skill_lines("visual-qa")),
@@ -311,8 +311,16 @@ def _build_skill_route_context(
     # gets `--detail` exactly when the prompt asked for the per-session brief.
     collector_session = (
         [f"Collector: `--session {session_id}` records the next step for `go`."
-         + (" Asked for detail: add `--detail`." if _ADHD_DETAIL.search(route.objective or "") else "")]
+         + (
+             " Asked for detail: run `--json --detail`, not `--verdict`."
+             if _ADHD_DETAIL.search(route.objective or "")
+             else " Run `--verdict` (the card)."
+         )]
         if route.mode == "lit-adhd" and session_id
+        else []
+    ) + (
+        [f"Add exactly `--lang {adhd_language(route.objective or '')}` (en: --en/영어로)."]
+        if route.mode == "lit-adhd"
         else []
     )
     def render(escaped_objective: str) -> str:
@@ -380,12 +388,31 @@ def _build_natural_mode_context(
         return build_lit_humanizer_agent_message(route.objective, reader_contract=reader_contract)
     if route.mode == "korean-prose-cleanup":
         return build_korean_prose_cleanup_agent_message(route.objective, reader_contract=reader_contract)
-    if route.mode in {"durable-workflow", "kanban-team"}:
-        team_note = (
-            "Hermes has no literal native team mode; team-like work maps to Hermes Kanban profile lanes and worker lanes."
-            if route.mode == "kanban-team"
-            else "Hermes durable-workflow route: use Hermes Kanban for broad/background work."
+    if route.mode == "kanban-team":
+        return "\n".join(
+            [
+                "<lithermes-natural-route mode=\"kanban-team\">",
+                contract_route_block(route.mode, surface="natural-route"),
+                "Natural routing: lit team -> this session orchestrates the team.",
+                "Hermes has no literal native team mode, so this session is the lead: it splits, hands out, watches, merges, re-verifies and reports. Members never talk to the user.",
+                f"Objective: {objective}",
+                "1. Split the objective into slices that each own a set of files and one check. Write the split to .hermes/lithermes/team/<slug>/team.md (slice, owner, files, check, state) before handing anything out.",
+                "2. Pick the distribution per slice, first match wins:",
+                "- 2-6 independent slices: one delegate_task call with a tasks:[{goal, context, output_schema}] batch (at most delegation.max_concurrent_children per call; results re-enter one by one).",
+                "- many small items of one kind: delegate_task batches of that size, one after another; Hermes has no workflow runner.",
+                "- herdr panes only when HERDR_ENV=1 and `command -v herdr` succeeds: one pane per slice, the brief pasted as its prompt.",
+                "- two slices that must edit the same file: give each its own `git worktree add` folder and merge them yourself.",
+                "- the user asked for a board, or the work outlives this session: Hermes Kanban (`hermes kanban --help` first; if setup is missing, do not fake a workflow start, print `hermes kanban init`).",
+                "3. Each member brief names its files, its check, its own scratch folder .hermes/lithermes/team/<slug>/<member>/, and these rules: no commit, push, stash or reset; touch only your files; return changed files, the check's exit status and open risks.",
+                "4. Monitor: tick team.md as each result re-enters; a member that returns nothing or breaks its rules is re-briefed once, then the slice comes back to you.",
+                "5. Merge in this session, re-run every slice check plus the project's own tests on the merged tree, and fix conflicts yourself.",
+                "6. One report to the user: what landed, what failed, what waits on them. Filter member reports: conclusions and risks only, no logs or chronology. Commits wait for the user.",
+                skill_view_reference("lit-team", "for the packet, member brief, monitoring (delegate_task list/steer/stop) and merge rules"),
+                "</lithermes-natural-route>",
+            ]
         )
+    if route.mode == "durable-workflow":
+        team_note = "Hermes durable-workflow route: use Hermes Kanban for broad/background work."
         return "\n".join(
             [
                 f"<lithermes-natural-route mode=\"{route.mode}\">",
@@ -445,6 +472,20 @@ def _build_natural_mode_context(
                 "Handoff: a still-vague pick goes to deep-interview, a concrete pick goes to lit-plan; end with READY FOR deep-interview, READY FOR lit-plan, or NOT READY.",
                 "Notes, only when the session spans turns: .hermes/lithermes/brainstorm/<slug>/notes.md. Ask in plain text, at most one blocking question.",
                 skill_view_reference("lit-brainstorm", "for the lenses, scoring matrix, and handoff rules"),
+                "</lithermes-natural-route>",
+            ]
+        )
+    if route.mode == "ultra-brainstorm":
+        return "\n".join(
+            [
+                "<lithermes-natural-route mode=\"ultra-brainstorm\">",
+                contract_route_block("ultra-brainstorm", surface="natural-route", compact=True),
+                "Natural routing: ultra-brainstorm or lit ultra-brainstorm -> lithermes:ultra-brainstorm.",
+                f"Topic: {escape(objective, quote=True)}",
+                "Mode Contract: brainstorm-only, at scale. First ask ONE question: how many idea children (100 recommended minimum, 300, or a number), with the cost line from `node <skill-root>/scripts/estimate.mjs 100` quoted unchanged. Read the reply only through `scripts/launch-answer.mjs` on stdin from the quoted heredoc `<<'LIT_REPLY_END_9Q7'` in the skill (a reply line equal to that delimiter means ask again, without running it); launch only on its `launch`, end at once on `stop` (a plain no), and launch nothing on silence.",
+                "Fan-out: delegate_task batches of at most delegation.max_concurrent_children; children run on the profile's delegation.model, use no tools and return at most five ideas as JSON. Reducer children cluster; this session judges with visible arithmetic. Never change the Hermes config yourself.",
+                "No delegate_task in the tool list: say BLOCKED and offer `lit brainstorm <topic>`. Save only under .hermes/lithermes/brainstorm/<slug>/ (ultra-result.json, ultra-notes.md); show the top list and ask the user to pick, combine or widen.",
+                skill_view_reference("ultra-brainstorm", "for the child brief, lenses, batch rules and judge arithmetic"),
                 "</lithermes-natural-route>",
             ]
         )

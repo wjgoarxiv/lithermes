@@ -367,7 +367,7 @@ class CliSurface(unittest.TestCase):
             "post_compaction",
         ):
             self.assertIn(h, r)
-        self.assertIn("skills (40)", r)  # schematic, hijack and adhd skills are enrolled
+        self.assertIn("skills (41)", r)  # schematic, hijack and adhd skills are enrolled
         for k in ("red", "green", "scenario", "cleanup", "note"):
             self.assertIn(k, r)  # evidence-kind discovery (#6)
 

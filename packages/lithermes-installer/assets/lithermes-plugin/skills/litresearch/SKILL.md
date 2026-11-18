@@ -1,6 +1,7 @@
 ---
 name: litresearch
 description: "Maximum-saturation LitHermes research orchestrator: decompose a research demand into atomic sub-questions, fan out parallel retrieval swarms via the native delegate_task batch, recursively chase every lead to convergence, verify contested claims by running code or adversarial review, and synthesize an evidence-grounded answer with useful source links. Activate ONLY on an explicit research demand — investigate, survey, find all, map prior art, compare approaches across, exhaustive/ultra-precise investigation, 'deep research', 'litresearch', or any-language equivalent. NEVER self-activate for ordinary Q&A, single reads, single searches, debugging, or single-file edits."
+goal: never
 ---
 
 ## #contract.activation

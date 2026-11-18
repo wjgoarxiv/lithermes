@@ -13,7 +13,10 @@ folder reaches a plugin only through the host's cwd carriers, read here in this 
 5. ``tools.terminal_tool.get_session_cwd(task_id)``, the folder the session's last terminal command
    finished in (it follows a ``cd``, so it ranks below the frozen folders above);
 6. ``agent.runtime_cwd.scope_terminal_cwd()``, the configured ``TERMINAL_CWD`` of the active profile;
-7. ``$TERMINAL_CWD`` itself, on hosts that predate ``agent.runtime_cwd``.
+7. ``$TERMINAL_CWD`` itself, on hosts that predate ``agent.runtime_cwd``;
+8. the folder the host recorded for the session when it was created (``sessions.cwd`` in the
+   Hermes home's ``state.db``, read-only). A new TUI session's first turn reaches the gateway
+   before any of the carriers above is set, and this row already holds the session's folder.
 
 Only when none of them names an existing absolute folder does the process cwd stand in. Neither the
 Hermes home, anything inside it (or inside ``~/.hermes``), the user's own home folder, nor a folder whose
@@ -28,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sqlite3
 import sys
 import threading
 from collections import OrderedDict
@@ -103,11 +107,35 @@ def _find(explicit: Any, keys: tuple[str, ...]) -> Path | None:
         ),
         lambda: _host_call("agent.runtime_cwd", "scope_terminal_cwd"),
         lambda: None if "agent.runtime_cwd" in sys.modules else os.environ.get("TERMINAL_CWD"),
+        lambda: _stored_session_cwd(keys),
     ]
     for stage in stages:
         found = _existing_dir(stage())
         if found is not None:
             return found
+    return None
+
+
+def _stored_session_cwd(keys: tuple[str, ...]) -> str | None:
+    """The cwd the host stored for this session id, read-only from the Hermes home's state.db."""
+    if not keys:
+        return None
+    getter = getattr(sys.modules.get("hermes_constants"), "get_hermes_home", None)
+    home = getter() if callable(getter) else (os.environ.get("HERMES_HOME") or "")
+    db = Path(str(home)).expanduser() / "state.db" if home else None
+    if db is None or not db.is_file():
+        return None
+    try:
+        conn = sqlite3.connect(f"{db.as_uri()}?mode=ro", uri=True, timeout=0.5)
+        try:
+            for key in keys:
+                row = conn.execute("SELECT cwd FROM sessions WHERE id = ?", (key,)).fetchone()
+                if row and row[0]:
+                    return str(row[0])
+        finally:
+            conn.close()
+    except (sqlite3.Error, OSError, ValueError):
+        return None
     return None
 
 

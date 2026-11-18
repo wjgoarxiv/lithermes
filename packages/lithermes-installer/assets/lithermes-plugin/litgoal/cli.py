@@ -92,6 +92,12 @@ def setup(parser) -> None:
 
     sub.add_parser("complete", help="attempt to complete the goal (gated)")
 
+    p_prop = sub.add_parser(
+        "propose",
+        help="build, lint and dry-run the goal condition of an approved plan; print the consent line",
+    )
+    p_prop.add_argument("plan", help="plans/<slug>.md inside the workspace")
+
 
 def handle(args) -> int:
     ws = _ws(args)
@@ -161,6 +167,13 @@ def handle(args) -> int:
     if cmd == "resolve-blocker":
         runtime.resolve_review_blocker(ws, args.blocker_id, session_id=sid, force=force)
         return _print_status(ws, sid)
+    if cmd == "propose":
+        try:
+            from .. import goal_pipeline
+        except ImportError:  # standalone test import via PYTHONPATH
+            import goal_pipeline  # type: ignore
+        print(goal_pipeline.propose(ws, args.plan)["line"])
+        return 0
     if cmd == "complete":
         result = runtime.complete_goal(ws, session_id=sid, force=force)
         print(json.dumps(result, ensure_ascii=False, indent=2))

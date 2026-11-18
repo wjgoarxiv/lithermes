@@ -87,6 +87,7 @@ _BARE_SKILL_PREFIXES = (
     ("wikify", "wikify"),
     ("litresearch", "litresearch"),
     ("lit-comprehend", "lit-comprehend"),
+    ("ultra-brainstorm", "ultra-brainstorm"),
     ("lit-brainstorm", "lit-brainstorm"),
     ("humanizer", "lit-humanizer"),
     ("lit-humanizer", "lit-humanizer"),
@@ -143,6 +144,7 @@ _LIT_SKILL_SUFFIXES = (
     ("comprehend", "lit-comprehend"),
     # Open-ask words. Safe HERE: the user already typed `lit`. They are not bare
     # routes, because "idea" and "brainstorming" open ordinary sentences.
+    ("ultra-brainstorm", "ultra-brainstorm"),
     ("lit-brainstorm", "lit-brainstorm"),
     ("brainstorm", "lit-brainstorm"),
     ("brainstorming", "lit-brainstorm"),
@@ -709,6 +711,60 @@ def _normalized_exact_phrase(text: str) -> str:
 def _first_sentence(text: str) -> str:
     # A stop ends a sentence only before whitespace or the end, so notes.md, v1.2 and example.com stay whole.
     return re.split(r"\n|[.!?](?=\s|$)", text, maxsplit=1)[0]
+
+
+def _sentences(prose: str, limit: int = 8) -> list[str]:
+    parts = [part.strip() for part in re.split(r"\n|[.!?](?=\s|$)", prose)]
+    return [part for part in parts if part][:limit]
+
+
+def bare_lit_modes(objective: str) -> list[str]:
+    """Every content route a `lit <prompt>` matches, in the cascade's own priority order.
+
+    The cascade below keeps first-match-wins for the one primary route; this list is what the
+    skill plan offers as companions. Each sentence is read on its own, so "make a deck. Then draw
+    the architecture diagram" names both, and the first sentence's match still comes first.
+    """
+    prose = re.sub(r"(?m)^\s*#{1,6}\s+.*$", "", objective).strip()
+    found: list[str] = []
+    for sentence in _sentences(prose):
+        for mode in _content_modes(sentence):
+            if mode not in found:
+                found.append(mode)
+    return found
+
+
+def _content_modes(first: str) -> list[str]:
+    found: list[str] = []
+    slide = re.search(r"발표자료|발표|슬라이드|피피티|(?:^|[^A-Za-z])(?:slides?|deck|presentation|pptx?)(?![A-Za-z])", first, re.IGNORECASE)
+    document = re.search(r"보고서|리포트|기획서|제안서|문서|워드|(?:^|[^A-Za-z])(?:report|docx?|word)(?![A-Za-z])", first, re.IGNORECASE)
+    authoring = re.search(r"만들|작성|써\s*줘|써줘|제작|생성|정리|(?:^|[^A-Za-z])(?:make|create|write|draft|prepare|build|produce|generate)(?![A-Za-z])", first, re.IGNORECASE)
+    if detect_schematic_intent(first):
+        found.append(SCHEMATIC_MODE)
+    motion = motion_route(first)
+    if motion is not None:
+        found.append(motion)
+    if _SLIDE_COUNT.search(first) or (authoring and slide):
+        found.append("lit-pptx")
+    if authoring and document:
+        found.append("lit-docx")
+    english = re.match(
+        r"^(?:(?:please|can you|could you|then|and|also)\s+)?(?:draw|create|make|design|render|generate)\s+"
+        r"(?P<lead>.{0,120}?)\b(?:diagram|flowchart|flow chart)\b(?P<tail>.*)",
+        first, re.IGNORECASE,
+    )
+    if english and not re.search(
+        r"\b(?:app|page|dashboard|widget|editor|parser|component|tool|api|test)s?\b",
+        english.group("lead") + " " + english.group("tail"), re.IGNORECASE,
+    ):
+        found.append("lit-diagram-drawer")
+    elif re.search(r"(?:다이어그램|흐름도|구성도).{0,60}(?:그려|그리|만들|생성|작성)", first) and not re.search(
+        r"편집기|파서|위젯|대시보드|테스트", first
+    ):
+        found.append("lit-diagram-drawer")
+    if detect_ui_mode(first) is not None:
+        found.append("frontend-ui-ux")
+    return list(dict.fromkeys(found))
 
 
 def _bare_lit_mode(objective: str) -> str:

@@ -58,7 +58,7 @@ SLASH_COMMANDS = (
     "lit-scientific-visualization",
     "lit-diagram-drawer",
     "lit-schematic",
-    "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "lit-typographic-motion",
+    "lit-pptx", "lit-docx", "lit-hijack", "lit-adhd", "ultra-brainstorm", "lit-team", "lit-typographic-motion",
 )
 GOAL_TOOLS = (
     "goal_set", "goal_status", "goal_add_criterion", "goal_evidence",

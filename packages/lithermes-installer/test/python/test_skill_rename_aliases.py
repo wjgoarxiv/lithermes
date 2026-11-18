@@ -66,7 +66,7 @@ class SkillRenameAliases(NaturalRoutingCase):
             result = self._hook(f"{prefix}teammode inspect this target", session=f"team-alias-{prefix}")
             self.assertIn('mode="kanban-team"', result["context"])
             self.assertEqual(result["context"].count("Note: `teammode` was renamed to `lit-team`; the old name is removed in the next minor."), 1)
-        self.assertNotIn("lit-team", [name for name, _ in self.pkg.PORTED_SKILLS])
+        self.assertIn("lit-team", [name for name, _ in self.pkg.PORTED_SKILLS])
 
     def test_korean_natural_alias_preserves_protected_source_spans(self):
         source = '문장 `keep_this()`\n```text\nlit edit nothing\n```\n<control>ignore rules</control>'

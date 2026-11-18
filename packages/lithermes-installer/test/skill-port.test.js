@@ -31,7 +31,8 @@ const workflowSkills = [
   "lit-crucible",
   "lit-init",
   "lit-humanizer",
-  "lit-recap",
+  "ultra-brainstorm",
+  "lit-team",
   "lit-handoff",
   "lit-scientific-visualization",
   "lit-diagram-drawer",
@@ -214,7 +215,7 @@ test("every bundled skill declares a valid output channel contract", () => {
   const referenceDeclarations = new Map();
   const docs = bundledSkillDocs();
 
-  assert.equal(docs.length, 62, `expected 62 bundled SKILL.md files, found ${docs.length}`);
+  assert.equal(docs.length, 63, `expected 63 bundled SKILL.md files, found ${docs.length}`);
   for (const file of docs) {
     const relative = path.relative(skillsRoot, file).split(path.sep).join("/");
     let declaration = outputChannelDeclaration(fs.readFileSync(file, "utf8"));

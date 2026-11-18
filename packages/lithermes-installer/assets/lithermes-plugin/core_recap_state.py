@@ -6,18 +6,21 @@ from dataclasses import dataclass
 from pathlib import Path
 
 try:
-    from .core_runtime import _clamp_task, lithermes_dir
+    from .core_plans import unchecked_items
+    from .core_runtime import _clamp_task, lithermes_dir, plan_dir
 except (ImportError, ModuleNotFoundError):
-    from core_runtime import _clamp_task, lithermes_dir
+    from core_plans import unchecked_items
+    from core_runtime import _clamp_task, lithermes_dir, plan_dir
 
 # ---------------------------------------------------------------------------
-# /lit-recap — read-only recap of durable LitHermes state. Mirrors the
+# `lit adhd recap` — read-only recap of durable LitHermes state (it was the
+# lit-recap skill; `recap`, `litrecap`, `lit recap` and `/lit-recap` stay as aliases). Mirrors the
 # korean-prose-cleanup contract: {display, agent_message} only, no run state,
 # no goal binding, and every ledger/goal byte enters the message escaped.
 # ---------------------------------------------------------------------------
 
-RECAP_TITLE_KO = "# 작업 리캡 (lit-recap)"
-RECAP_TITLE_EN = "# Work Recap (lit-recap)"
+RECAP_TITLE_KO = "# 작업 리캡 (lit adhd recap)"
+RECAP_TITLE_EN = "# Work Recap (lit adhd recap)"
 RECAP_HEADERS_KO = (
     "## ✅ 완료된 작업",
     "## 🔄 진행 중",
@@ -40,12 +43,21 @@ _RECAP_OPTION_TOKENS = frozenset({"--brief", "--en", "--english"}) | RECAP_BRIEF
 _RECAP_UNSAFE_VALUE_CHARS = frozenset("\"'\\")
 _RECAP_MAX_ITEMS = 8
 _RECAP_MAX_LEDGER_LINES = 200
-# Standalone-only recognizer: `recap`/`litrecap`/`lit-recap`/`리캡` (optionally after a bare
-# `lit`) at message start, followed by nothing but known recap option tokens.
+# Standalone-only recognizers at message start, followed by nothing but known recap option tokens:
+# the lit-adhd recap view (`lit adhd recap`, `lit-adhd recap`, optionally one session id), and the
+# old lit-recap words (`recap`/`litrecap`/`lit-recap`/`리캡`, optionally after a bare `lit`), which
+# open the same view with a one-line moved note.
+_ADHD_RECAP_LEAD_RE = re.compile(
+    r"^\s*(?:lit\s+(?:lit-adhd|lit-rewind|adhd|rewind)|lit-adhd|lit-rewind)\s+(?:recap|리캡)(?![\w/-])(?P<rest>.*)$",
+    re.IGNORECASE | re.DOTALL,
+)
 _LIT_RECAP_LEAD_RE = re.compile(
     r"^\s*(?:lit\s+)?(?:lit-recap|litrecap|recap|리캡)(?![\w/-])(?P<rest>.*)$",
     re.IGNORECASE | re.DOTALL,
 )
+# A session id the recap view may be asked about: no option word, at least one digit.
+_RECAP_SESSION_RE = re.compile(r"^(?=[^-]*\d)[A-Za-z0-9][A-Za-z0-9._:-]{5,159}$")
+RECAP_MOVED_NOTE = "lit-recap moved into lit-adhd: next time type `lit adhd recap`."
 _RECAP_TECH_KINDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("[test]", ("test_", ".test.", "/test/", "scenario")),
     ("[Python]", (".py", "python", "pytest", "unittest")),
@@ -94,6 +106,28 @@ def _recap_run_completions(ledger: Path) -> list[str]:
             tag = _recap_tech_kind(" ".join(str(v) for v in event.values()))
             out.append(_recap_item(f"{event.get('criterion_id') or '?'} {tag} criterion_complete"))
     return out
+
+
+def _open_rows(path: Path) -> list[str] | None:
+    try:
+        return unchecked_items(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def _start_work_finished(workspace: Path, state: dict) -> bool:
+    """A start-work run is finished when the plan it recorded has no open row.
+
+    Records written before the plan path was kept fall back to a guess: finished
+    when no plan in the plans folder has an open row.
+    """
+    recorded = str(state.get("plan") or "")
+    if recorded:
+        open_rows = _open_rows(Path(recorded).expanduser())
+        return open_rows is not None and not open_rows
+    folder = plan_dir(workspace)
+    plans = sorted(folder.glob("*.md")) if folder.is_dir() else []
+    return not any(_open_rows(plan) for plan in plans)
 
 
 def read_recap_digest(workspace: Path) -> RecapDigest:
@@ -157,7 +191,11 @@ def read_recap_digest(workspace: Path) -> RecapDigest:
             state = None
         if isinstance(state, dict):
             rid = state.get("run_id") or latest.parent.name
-            in_progress.append(_recap_item(f"{rid} [{state.get('command') or '?'}] {state.get('task') or ''}"))
+            line = f"{rid} [{state.get('command') or '?'}] {state.get('task') or ''}"
+            if state.get("command") == "start-work" and _start_work_finished(workspace, state):
+                completed.append(_recap_item(f"{line} (finished: every plan row is ticked)"))
+            else:
+                in_progress.append(_recap_item(line))
             if state.get("evidence_dir"):
                 evidence.append(_recap_item(str(state.get("evidence_dir"))))
             completed.extend(_recap_run_completions(latest.parent / "ledger.jsonl"))

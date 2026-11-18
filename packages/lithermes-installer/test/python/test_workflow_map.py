@@ -103,7 +103,8 @@ class WorkflowMap(unittest.TestCase):
         self.write_run(self.write_plan("p.md", _plan(3, 7)))
         for route in ("lit-humanizer", "lit-docx", "litresearch", "lit-typographic-motion"):
             self.assertIsNone(self.row(route), route)
-        for route in ("litwork", "lit-plan", "start-work", "lit-recap"):
+        self.assertIsNone(self.row("lit-adhd"), "the verdict card stays six lines")
+        for route in ("litwork", "lit-plan", "start-work", "lit-adhd recap"):
             self.assertIsNotNone(self.row(route), route)
 
     def test_stage_without_a_durable_signal_is_omitted(self):

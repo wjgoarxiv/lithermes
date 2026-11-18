@@ -123,8 +123,7 @@ limitations_channel: inline
 > context, toolsets?, role?}])` tool — children run in parallel, top-level
 > dispatch returns immediately, and each child result re-enters separately. The
 > parent tracks and merges per-child re-entry receipts until all lanes are accounted for; there is no combined wait. There is **no** `spawn_agent`, no named-agent registry, no
-> per-child model selection, and no `agents/*.toml`. Hermes has **no**
-> model-facing goal tools natively; LitHermes adds durable tools
+> per-child model selection, and no `agents/*.toml`. LitHermes adds durable tools
 > `goal_set` / `goal_add_criterion` / `goal_evidence` / `goal_criterion_status`
 > / `goal_steer` / `goal_checkpoint` / `goal_complete`. Their durable state is
 > authoritative. Native `/goal` is user-managed and unobserved; users may manage
@@ -504,6 +503,24 @@ followed by the minimum required artifacts, commands, decision verdict, and
 cleanup receipt that must all exist before execution can claim completion. The
 DoneClaim is a falsifiable contract, not a progress summary.
 
+### Done when
+
+Under the DoneClaim, write the one machine check that decides the plan is done:
+
+```markdown
+## Done when
+
+- Every row above is ticked.
+- check: `npm test`
+```
+
+The `check:` line names one test command that exits 0 only when the work is done: a test
+runner (`npm test`, `npm run <script>`, `node --test …`, `pytest …`, `cargo test`, `go test …`,
+`make test|check|verify`) or one shell script the plan itself adds, run with `bash`. It may not be
+a judgment ("works", "looks good", "깔끔", "제대로") and may not be a push, publish, tag or release:
+those are actions, not checks. A plan with nothing machine-checkable (research, a read-only review)
+writes `goal: never` on a line of its own instead, and no goal is proposed for it.
+
 ---
 
 ## Phase 5 — Pre-Finalize Review
@@ -572,6 +589,47 @@ approval gate above still holds. Save the plan only after the gate clears.
 
 Do **not** reproduce the full plan in the chat output — it is already written to
 disk. If the user wants to read it, they can open `plans/<slug>.md`.
+
+### The approval question
+
+After the plan is saved, run `hermes lithermes goal propose plans/<slug>.md` once from the
+workspace and put its output, unchanged, at the end of the handoff. That command reads
+the `## Done when` block, builds the condition
+`Every row in plans/<slug>.md is ticked and \`<check>\` exits 0 [lit:<id>]` (at most 500
+characters), lints it, and runs the check once, time-boxed, to prove the condition is false right
+now. When everything holds it prints the question
+
+```
+Approve plan, start work and set goal: /goal <condition>? (yes / edit / no)
+```
+
+When the condition was refused, it asks to start the work alone and names why there is no goal:
+
+```
+Approve plan and start work? (yes / no)
+No goal set: <reason>.
+```
+
+Show the output as it is and do not argue with the reason.
+
+Only a reply that is exactly `yes`, typed in this same session, to the plan that was asked about,
+accepts. The hook ties the question to this session when the turn that asked it ends; a `yes` typed
+in any other session starts nothing and gets the line
+`Approval not recorded for this session. Run: /start-work <plan>`. Never read or write the approval
+or goal records (`consent.json`, `intent.json`, `result.json` under `$HERMES_HOME/lithermes/goal/`);
+only the hook handles approval.
+The hook answers it, not you: it starts the plan through the same code path as typing
+`/start-work plans/<slug>.md` (same run record, same grants), and only after that start succeeded does
+it accept the goal. You then get a fixed status line to say verbatim, followed by the start-work run
+context, and you begin with the first open row. If the start was refused, the line says
+`Plan not started and no goal set: <reason>.` and nothing else happens. Hermes' native `/goal` stays
+user-managed, so LitHermes never sets it: an accepted goal comes back as the two lines to paste,
+`/goal <condition>` and `/goal gate add <check>`, and Hermes' own gate runs the check from then on.
+`edit` sends you back to the plan or its `## Done when` block; `no` or any other reply starts nothing
+and leaves no goal. Never start the plan, set, clear or replace a `/goal` yourself on a `yes`, and
+never claim a goal is set. When every row is ticked, the
+turn-end hook runs the check once as an advisory and the next turn opens with `Goal condition met`
+or `Goal condition not met yet`; a goal LitHermes did not propose is never touched.
 
 ---
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import shlex
 import sys
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -113,10 +114,19 @@ try:
 except (ImportError, ModuleNotFoundError):
     import adhd_stack as _adhd_stack
 
+try:
+    from . import goal_pipeline as _goal_pipeline
+    from . import skill_plan as _skill_plan
+except (ImportError, ModuleNotFoundError):
+    import goal_pipeline as _goal_pipeline  # type: ignore
+    import skill_plan as _skill_plan
+
 # Current-turn state stays in the compatibility facade because tests and the
 # plugin register surface intentionally inspect it directly.
 _PENDING_IGNITE: set[str] = set()
 _PENDING_DISCIPLINE: dict[str, str] = {}
+# Sessions whose pending lit-adhd reply is the recap view, which keeps the workflow map row.
+_PENDING_RECAP_VIEW: set[str] = set()
 _PENDING_BLOCK: dict[str, str] = {}
 # Mutated paths observed by post_tool_call, keyed by session, drained by the next
 # pre_llm_call. Bounded so an abandoned or delegate-child session cannot grow it.
@@ -748,6 +758,7 @@ def _evict_pending_browser_state() -> None:
         stale = next(iter(_PENDING_IGNITE))
         _PENDING_IGNITE.discard(stale)
         _PENDING_DISCIPLINE.pop(stale, None)
+        _PENDING_RECAP_VIEW.discard(stale)
     while len(_PENDING_BLOCK) > _MAX_BROWSER_DRIVE_SESSIONS:
         _PENDING_BLOCK.pop(next(iter(_PENDING_BLOCK)), None)
 
@@ -1728,6 +1739,153 @@ def _npm_channel_pre_llm(kwargs: dict[str, Any]) -> None:
 
 
 def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
+    """Route this turn, then add the skill plan when a `lit` prompt matched more than one skill.
+
+    `lit +viz +ui <task>` is read first and cut out of the prompt, so the route below sees
+    `lit <task>` and the hatch only names the plan.
+    """
+    message = str(kwargs.get("user_message") or "")
+    if is_delegate_child_platform(str(kwargs.get("platform") or "")):
+        return _route_pre_llm_call(**kwargs)
+    _note_turn_start(str(kwargs.get("session_id") or ""))
+    if is_host_notice(message):
+        return None
+    consent_note, goal_note = goal_status_lines(**kwargs)
+    if consent_note:
+        return {"context": consent_note}
+    visible = strip_markdown_code(message, preserve_offsets=True)
+    hatch = _skill_plan.parse_skill_hatch(visible, message)
+    if hatch is not None:
+        kwargs = {**kwargs, "user_message": hatch.rest}
+    result = _route_pre_llm_call(**kwargs)
+    if goal_note:
+        result = {**(result or {}), "context": f"{goal_note}\n\n{(result or {}).get('context') or ''}".rstrip()}
+    if not isinstance(result, dict) or not result.get("context"):
+        return result
+    message = str(kwargs.get("user_message") or "")
+    for compact in range(6):
+        block = skill_plan_block(message, hatch, compact=compact)
+        if not block:
+            return result
+        combined = f"{result['context'].rstrip()}\n\n{block}"
+        if len(combined.encode("utf-8")) <= _HOST_CONTEXT_CAP:
+            return {**result, "context": combined}
+    return result
+
+
+# Text Hermes itself injects as a user-role message: async delegate_task results, background
+# notices, system rows. None of it is the user's prompt, so it never picks a route, a skill
+# plan or a consent answer; the turn keeps the route the user's own prompt chose.
+_HOST_NOTICE = re.compile(r"^\[(?:ASYNC DELEGATION\b|IMPORTANT: Background|OUT-OF-BAND|System:)")
+
+
+def is_host_notice(message: str) -> bool:
+    return bool(_HOST_NOTICE.match(str(message or "").lstrip()))
+
+
+def _goal_block(line: str) -> str:
+    return (
+        '<lithermes-goal-status>\nSay this status line to the user once, verbatim, then go on with the turn:\n'
+        f"{line}\n</lithermes-goal-status>"
+    )
+
+
+def goal_status_lines(**kwargs: Any) -> tuple[str, str]:
+    """(answer to a live consent question, last turn-end check result) as context blocks; "" when absent.
+
+    A consent answer is the whole turn; the check result rides on top of whatever the turn routes to.
+    """
+    try:
+        workspace = resolve_workspace(session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"))
+        if workspace is None:
+            return "", ""
+        answer = _goal_pipeline.answer_consent(
+            workspace, str(kwargs.get("user_message") or ""),
+            session_id=str(kwargs.get("session_id") or ""), start=_start_plan_from_consent,
+        )
+        result = "" if answer else _goal_pipeline.take_result_line(workspace)
+    except Exception:  # noqa: BLE001 - the goal note is advisory; never cost the turn
+        return "", ""
+    block = lambda line: _goal_block(_escape_goal_line(line)) if line else ""  # noqa: E731
+    consent = block(answer.get("line", ""))
+    if answer.get("context"):
+        session_id = str(kwargs.get("session_id") or "")
+        if session_id:
+            _PENDING_IGNITE.add(session_id)
+            _PENDING_DISCIPLINE[session_id] = "start-work"
+            _evict_pending_browser_state()
+        consent = f"{consent}\n\n{answer['context']}"
+    return consent, block(result)
+
+
+def _start_plan_from_consent(workspace: Path, plan: str) -> tuple[bool, str]:
+    """An exact `yes` to the plan question starts the plan exactly as `/start-work <plan>` would."""
+    target = (Path(workspace) / plan).resolve()
+    try:
+        started = command_start_work(f"{shlex.quote(str(target))} --worktree {shlex.quote(str(workspace))}")
+    except ValueError as exc:
+        return False, str(exc)
+    if isinstance(started, dict):
+        return True, str(started.get("agent_message") or "")
+    return False, str(started)
+
+
+def _escape_goal_line(line: str) -> str:
+    return line.replace("<", "&lt;").replace(">", "&gt;")
+
+
+def goal_turn_end(**kwargs: Any) -> None:
+    """Hosts without a lit-armed goal: once the accepted plan is fully ticked, run its check (advisory)."""
+    if is_delegate_child_platform(str(kwargs.get("platform") or "")):
+        return None
+    workspace = resolve_workspace(session_id=kwargs.get("session_id"), task_id=kwargs.get("task_id"))
+    if workspace is not None:
+        session_id = str(kwargs.get("session_id") or "")
+        try:
+            # The approval question this turn asked belongs to this session only.
+            _goal_pipeline.bind_consent(workspace, session_id, since=_TURN_STARTED.get(session_id))
+        except (OSError, ValueError):
+            pass
+        _goal_pipeline.turn_end_check(workspace)
+    return None
+
+
+# When each session's current turn began, so the turn-end hook binds only a question asked in it.
+_TURN_STARTED: dict[str, float] = {}
+
+
+def _note_turn_start(session_id: str) -> None:
+    if not session_id:
+        return
+    _TURN_STARTED.pop(session_id, None)
+    _TURN_STARTED[session_id] = time.time()
+    while len(_TURN_STARTED) > 256:
+        _TURN_STARTED.pop(next(iter(_TURN_STARTED)))
+
+
+# Same cap as MAX_HOST_CONTEXT_BYTES in __init__.py: the skill plan never pushes a turn past it.
+_HOST_CONTEXT_CAP = 4096
+
+
+def skill_plan_block(message: str, hatch: Any = None, *, compact: int = 0) -> str:
+    """The `<lithermes-skill-plan>` block for one prompt, or "" when the plan is the primary alone."""
+    visible = strip_markdown_code(message, preserve_offsets=True)
+    if not LIT_PATTERN.search(visible) or detect_recap(message) is not None:
+        return ""
+    route = detect_lit_mode(message)
+    if route is None or route.blocked:
+        return ""
+    plan = _skill_plan.build_skill_plan(
+        route.mode,
+        bare_lit_modes(route.objective),
+        text=route.objective,
+        forced=hatch,
+        installed=_skill_plan.installed_extensions(),
+    )
+    return _skill_plan.skill_plan_context(plan, compact=compact) if plan else ""
+
+
+def _route_pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     # Hermes identifies delegate_task children with platform="subagent".
     # Child goals may quote words such as "lit" or "lit-crucible" as inert task
     # context; re-running top-level activation here would contaminate the lane.
@@ -1800,21 +1958,23 @@ def pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     # exists, so skip re-injecting context without touching native /goal state.
     if "<lithermes-run-context>" in user_message:
         return None
-    # Read-only recap route runs FIRST so `lit recap` never falls through to
-    # the run-writing litwork path. It never binds a goal or writes run state.
+    # The read-only recap view of lit-adhd runs FIRST so `lit adhd recap` (and the old
+    # `lit recap` words) never fall through to the run-writing litwork path. It never
+    # binds a goal or writes run state.
     recap_args = detect_recap(user_message)
     if recap_args is not None:
         record_event(
             "litwork_trigger",
             session_id=session_id,
             platform=str(kwargs.get("platform") or ""),
-            mode="lit-recap",
+            mode="lit-adhd",
         )
         if session_id:
             _PENDING_IGNITE.add(session_id)
-            _PENDING_DISCIPLINE[session_id] = "lit-recap"
+            _PENDING_DISCIPLINE[session_id] = "lit-adhd"
+            _PENDING_RECAP_VIEW.add(session_id)
             _evict_pending_browser_state()
-        return {"context": command_lit_recap(recap_args)["agent_message"]}
+        return {"context": command_lit_recap(recap_args, moved=recap_alias_used(user_message))["agent_message"]}
     route = detect_lit_mode(user_message)
     if route is None:
         return None
@@ -1947,6 +2107,8 @@ def transform_llm_output(**kwargs: Any) -> str | None:
     session_id = str(kwargs.get("session_id") or "")
     block = _PENDING_BLOCK.pop(session_id, "")
     route = _PENDING_DISCIPLINE.pop(session_id, "litwork")
+    map_route = "lit-adhd recap" if session_id in _PENDING_RECAP_VIEW else route
+    _PENDING_RECAP_VIEW.discard(session_id)
     pending = session_id in _PENDING_IGNITE
     _PENDING_IGNITE.discard(session_id)
     if not pending and not block:
@@ -1957,7 +2119,7 @@ def transform_llm_output(**kwargs: Any) -> str | None:
     return acknowledge_reply(
         route,
         response,
-        workflow=workflow_row(route, locate_workspace(session_id=session_id, task_id=kwargs.get("task_id")), session_id),
+        workflow=workflow_row(map_route, locate_workspace(session_id=session_id, task_id=kwargs.get("task_id")), session_id),
     )
 
 

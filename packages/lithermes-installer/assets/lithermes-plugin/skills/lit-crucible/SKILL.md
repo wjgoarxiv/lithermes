@@ -1,6 +1,7 @@
 ---
 name: lit-crucible
 description: "lit-crucible: Adversarial Hermes-native planning before implementation: parallel delegate_task findings, cross-review, defense/refinement, surviving insight bundle, then /lit-plan handoff."
+goal: never
 ---
 
 ## #contract.activation

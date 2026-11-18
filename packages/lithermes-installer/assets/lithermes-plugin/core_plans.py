@@ -28,8 +28,6 @@ def build_goal_instruction(
             plan_line,
             "",
             "Native /goal capability:",
-            "- Hermes has NO model-facing goal tools. Do not invoke get_goal, create_goal, or",
-            "  update_goal — they do not exist in Hermes and the request will fail.",
             "- Native /goal is user-managed and its state is unobserved by LitHermes.",
             f"- The user may manage it directly if desired: /goal {objective}",
             "- LitHermes performs no automatic native-goal update, clear, or resume.",
@@ -142,6 +140,10 @@ def create_plan(brief: str, workspace: Path | None = None) -> Path:
             "",
             "## Final DoneClaim",
             "<One falsifiable sentence naming the objective, required artifacts, commands, verdicts, and cleanup receipts>",
+            "",
+            "## Done when",
+            "- Every row above is ticked.",
+            "- check: `<one test command that exits 0 only when the work is done>`",
             "",
         ]
     )

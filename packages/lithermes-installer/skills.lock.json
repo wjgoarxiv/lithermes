@@ -176,13 +176,6 @@
       "maxFiles": 1,
       "maxBytes": 9000
     },
-    "lit-recap": {
-      "minSkillBytes": 7300,
-      "maxSkillBytes": 12000,
-      "minFiles": 1,
-      "maxFiles": 2,
-      "maxBytes": 12000
-    },
     "lit-schematic": {
       "minSkillBytes": 4700,
       "maxSkillBytes": 9000,
@@ -196,6 +189,13 @@
       "minFiles": 1,
       "maxFiles": 1,
       "maxBytes": 9000
+    },
+    "lit-team": {
+      "minSkillBytes": 14300,
+      "maxSkillBytes": 22000,
+      "minFiles": 1,
+      "maxFiles": 2,
+      "maxBytes": 22000
     },
     "lit-typographic-motion": {
       "minSkillBytes": 3500,
@@ -219,7 +219,7 @@
       "maxBytes": 72000
     },
     "litwork": {
-      "minSkillBytes": 26200,
+      "minSkillBytes": 26000,
       "maxSkillBytes": 40000,
       "minFiles": 1,
       "maxFiles": 2,
@@ -268,7 +268,7 @@
       "maxBytes": 15000
     },
     "start-work": {
-      "minSkillBytes": 28100,
+      "minSkillBytes": 27900,
       "maxSkillBytes": 43000,
       "minFiles": 1,
       "maxFiles": 2,
@@ -280,6 +280,13 @@
       "minFiles": 1,
       "maxFiles": 2,
       "maxBytes": 22000
+    },
+    "ultra-brainstorm": {
+      "minSkillBytes": 11700,
+      "maxSkillBytes": 18000,
+      "minFiles": 4,
+      "maxFiles": 6,
+      "maxBytes": 34000
     },
     "visual-qa": {
       "minSkillBytes": 2000,
@@ -357,26 +364,26 @@
         "sha256": "d2f09288463221c9d64cd7a136dca4abdd085e0b8a5522bedc290d8f154c3e61"
       },
       "files": 7,
-      "bytes": 95470,
-      "sha256": "d21fe46cbed0e057e08e787efeaf90f4a7bc6e78a703bed1e05ece6237d8c88b"
+      "bytes": 98400,
+      "sha256": "dd869542884593f413eef2163a1b91f30fa7c258a12948d6ee52855a405a8d02"
     },
     "lit-adhd": {
       "skillMd": {
-        "bytes": 29617,
-        "sha256": "f8685f61b49ef75c3adfce8fa52b738a147129910829d1508a2cd14baadcf1c0"
+        "bytes": 33789,
+        "sha256": "5fbd0f75c582a42c236dbbb4f5d08826e54d6381d78fa9ea3f160179e563865f"
       },
-      "files": 13,
-      "bytes": 148963,
-      "sha256": "6dc8ea71e5f5ffeeb50de1aa89b240701c253cb2b6b45b57fe8846bf6f8fa85b"
+      "files": 15,
+      "bytes": 175312,
+      "sha256": "54aa130bc16a78e72db24abe8c86982aa8ff725b89d041e28c8a0f4d3f39a5ef"
     },
     "lit-brainstorm": {
       "skillMd": {
-        "bytes": 19443,
-        "sha256": "528b2f27c0cf7feb2ae34f3ce56427063b291e59ca0995a7f00da22176030e3f"
+        "bytes": 19455,
+        "sha256": "020c3e837a7024ad338a06893654a0307b6feeb1149cafd9c85724a9d54926a3"
       },
       "files": 1,
-      "bytes": 19443,
-      "sha256": "a2d506f101cb3e3c18f8dfbbb6ab60b6e510ad7ab521c744bc4dc5bd56328d84"
+      "bytes": 19455,
+      "sha256": "f584be7652e13921c0dbb82599084765b3b1e26db94ed0e0f72c426660c601bb"
     },
     "lit-burnoff": {
       "skillMd": {
@@ -416,21 +423,21 @@
     },
     "lit-comprehend": {
       "skillMd": {
-        "bytes": 11671,
-        "sha256": "f73e8b35e9828e1b4b4b888d1bc5dc2cdc58cfb210b7678dda82a2bbc1ab4f39"
+        "bytes": 11706,
+        "sha256": "1b0b26e707835484a7d03071e3aeaec9f3324a852e4469354896a4f44ac302b1"
       },
       "files": 5,
-      "bytes": 40212,
-      "sha256": "1a53bc3f65eefaab99c7893fd69cc8c27a2d405f60bd3c824c1858f5bca8b0ae"
+      "bytes": 40247,
+      "sha256": "1c16b1b246509635d16ef692d79a9d69eddbfdb8960b74339d8568ae7ff1e426"
     },
     "lit-crucible": {
       "skillMd": {
-        "bytes": 13067,
-        "sha256": "1ab62d5c0ce185018fb86e518a0b93a94414d4f95d508ad3ad64fbe318a803a5"
+        "bytes": 13079,
+        "sha256": "c813712bc91ca2de44323155838e59f4c0e1b3448ab11273d5d95331b053e934"
       },
       "files": 1,
-      "bytes": 13067,
-      "sha256": "259c71b5fbc8c2c09a62161ed1be617253f5a6a16f3261da14ac401d0b6053e2"
+      "bytes": 13079,
+      "sha256": "9079542ed9da65e6b2b8cfb7f266c34e9409004af33ec107745d550dac4451ac"
     },
     "lit-diagram-drawer": {
       "skillMd": {
@@ -488,12 +495,12 @@
     },
     "lit-plan": {
       "skillMd": {
-        "bytes": 30091,
-        "sha256": "8325532a4394f033feeb5a55d64938967458a87324dd688b4783050858195014"
+        "bytes": 33200,
+        "sha256": "6461993203e00806022785d71e81b7631ad553afadcbdaaed5884b2bfd618d47"
       },
       "files": 1,
-      "bytes": 30091,
-      "sha256": "416fa4ca56175760cf49522c2c27438486a1e30ce80d58aad6dbc8b5215fb052"
+      "bytes": 33200,
+      "sha256": "96a683cf0fc6bb4667e42bdc70a8c858bab7ef62a929e719bd1fe81036d22ea8"
     },
     "lit-pptx": {
       "skillMd": {
@@ -503,15 +510,6 @@
       "files": 1,
       "bytes": 7789,
       "sha256": "da7fcce38f1a3dd148e943fa8198c2947c0e01e1ef626caf3bae2deec35addad"
-    },
-    "lit-recap": {
-      "skillMd": {
-        "bytes": 7385,
-        "sha256": "27a64e29268fa86100bb61192666b20429529e57b6cd596a17920abdccb4ebab"
-      },
-      "files": 1,
-      "bytes": 7385,
-      "sha256": "27225ffbda13e444eae816b2a98c46292aa1257f0ce54ee71bf8b734c855a154"
     },
     "lit-schematic": {
       "skillMd": {
@@ -530,6 +528,15 @@
       "files": 1,
       "bytes": 8699,
       "sha256": "849c905f2066aa05222c22db8a42b03360f63cf2a7a6b1ccaf383a6a9894c2e4"
+    },
+    "lit-team": {
+      "skillMd": {
+        "bytes": 14517,
+        "sha256": "def40662df13a6e252470b94d9639ebf7b311adbd4675240eaa6f277f4c210ad"
+      },
+      "files": 2,
+      "bytes": 17686,
+      "sha256": "e009266f9abde8d13b9910b0f2534e606f8aba21e1e504fd41c2ff714f366413"
     },
     "lit-typographic-motion": {
       "skillMd": {
@@ -551,21 +558,21 @@
     },
     "litresearch": {
       "skillMd": {
-        "bytes": 45395,
-        "sha256": "7dfee663b69b5724e0f282330177024c16d91ac3496ef491bd169ab6a743b051"
+        "bytes": 45407,
+        "sha256": "83c4257ffe81f7484c0106990e141577cece63db7991db719c32e9791086843f"
       },
       "files": 2,
-      "bytes": 47878,
-      "sha256": "33801b4072a4200ad621ccee681042bbea29470fefc9e23467460e8ed5d09be2"
+      "bytes": 47890,
+      "sha256": "878bcfb1517a7345dc7b9034d5ebe4cd6ebd61e0cf811e706866b752858c4e3a"
     },
     "litwork": {
       "skillMd": {
-        "bytes": 26285,
-        "sha256": "22366854b5b5bf317fad25bd2db631048d032b171f6d46c190bb780a2a3d71d6"
+        "bytes": 26073,
+        "sha256": "ad8092fce7080bc6e876524e9dfdba93514423befb1691ba8dca3454f1f89afc"
       },
       "files": 1,
-      "bytes": 26285,
-      "sha256": "95f70f7a519c04983a1aa7c26d8b9e8eababb7cfec6244c5d5211cffbcb44c78"
+      "bytes": 26073,
+      "sha256": "b3aed15512a3f5c4a8502a082624ae0f689a5d0ead5d0ac6dc3de0af31a4be83"
     },
     "lsp": {
       "skillMd": {
@@ -605,12 +612,12 @@
     },
     "review-work": {
       "skillMd": {
-        "bytes": 22377,
-        "sha256": "9ac87d23b5de07803c4da79f290858b292faa6f5fce3fe8bfc04ee27d38f3b8a"
+        "bytes": 22389,
+        "sha256": "c8a8564f25eb4bbda6d74577db8e842630129aefe4ce8d90dbf157ecbc8e17e4"
       },
       "files": 1,
-      "bytes": 22377,
-      "sha256": "a3dc6f6073c223d29729ed46627bfc849108e7a2308154e1cb687a1a78057b50"
+      "bytes": 22389,
+      "sha256": "259ad27f741ba61b06f3c1ce76dc176b5813b286027fe5beff36e787520bb52d"
     },
     "rules": {
       "skillMd": {
@@ -623,12 +630,12 @@
     },
     "start-work": {
       "skillMd": {
-        "bytes": 28124,
-        "sha256": "3ed33f04678104313e545b83bea5e5cdcdcb1e1742bbec484460af8135f27ca5"
+        "bytes": 28260,
+        "sha256": "da7507ca67453225a657dddef3ef41f1da5664e076a563c823e4ba408ba8aac2"
       },
       "files": 1,
-      "bytes": 28124,
-      "sha256": "ddd6904a448afa5972964913b811f04e2712fdd2480a3f01cb6070baa4f56746"
+      "bytes": 28260,
+      "sha256": "f8e3fc79a95afdc10e6dc1950500561fae9f5c5eb1d7c5f91c7eb524fc73ffa2"
     },
     "structural-search": {
       "skillMd": {
@@ -638,6 +645,15 @@
       "files": 1,
       "bytes": 14004,
       "sha256": "93c91233b6e2f90a295f9b16c592f349d23b76b6067b3e7809bde444e3a5da94"
+    },
+    "ultra-brainstorm": {
+      "skillMd": {
+        "bytes": 13670,
+        "sha256": "909de2c1aa7a7ea01b56ddc9ddde0bee91ffbd78282a5a6d201de3364e3818d9"
+      },
+      "files": 5,
+      "bytes": 28115,
+      "sha256": "f3616f2f3a430a088aa1b604df543d5b8081c3589b701bced35b852bbb4980fa"
     },
     "visual-qa": {
       "skillMd": {
@@ -690,6 +706,7 @@
     "assets/lithermes-plugin/diagnostics.py",
     "assets/lithermes-plugin/followup.py",
     "assets/lithermes-plugin/gate_toasts.py",
+    "assets/lithermes-plugin/goal_pipeline.py",
     "assets/lithermes-plugin/goal_stages.py",
     "assets/lithermes-plugin/handoff.py",
     "assets/lithermes-plugin/handoff_card.py",
@@ -738,6 +755,7 @@
     "assets/lithermes-plugin/scientific_visualization.py",
     "assets/lithermes-plugin/session_context.py",
     "assets/lithermes-plugin/shown_record.py",
+    "assets/lithermes-plugin/skill_plan.py",
     "assets/lithermes-plugin/skills/autoconference/LICENSE",
     "assets/lithermes-plugin/skills/autoconference/ORIGIN.json",
     "assets/lithermes-plugin/skills/autoconference/SKILL.md",
@@ -832,6 +850,7 @@
     "assets/lithermes-plugin/skills/lit-adhd/SKILL.md",
     "assets/lithermes-plugin/skills/lit-adhd/references/brief-contract.md",
     "assets/lithermes-plugin/skills/lit-adhd/references/card-examples.md",
+    "assets/lithermes-plugin/skills/lit-adhd/references/recap.md",
     "assets/lithermes-plugin/skills/lit-adhd/references/status-taxonomy.md",
     "assets/lithermes-plugin/skills/lit-adhd/scripts/adhd.mjs",
     "assets/lithermes-plugin/skills/lit-adhd/scripts/lib/board.mjs",
@@ -842,6 +861,7 @@
     "assets/lithermes-plugin/skills/lit-adhd/scripts/lib/plan-task-rows.mjs",
     "assets/lithermes-plugin/skills/lit-adhd/scripts/lib/redact.mjs",
     "assets/lithermes-plugin/skills/lit-adhd/scripts/lib/secret-shapes.mjs",
+    "assets/lithermes-plugin/skills/lit-adhd/scripts/lib/verdict.mjs",
     "assets/lithermes-plugin/skills/lit-brainstorm/SKILL.md",
     "assets/lithermes-plugin/skills/lit-burnoff-file/SKILL.md",
     "assets/lithermes-plugin/skills/lit-burnoff/SKILL.md",
@@ -1003,9 +1023,10 @@
     "assets/lithermes-plugin/skills/lit-init/SKILL.md",
     "assets/lithermes-plugin/skills/lit-plan/SKILL.md",
     "assets/lithermes-plugin/skills/lit-pptx/SKILL.md",
-    "assets/lithermes-plugin/skills/lit-recap/SKILL.md",
     "assets/lithermes-plugin/skills/lit-schematic/SKILL.md",
     "assets/lithermes-plugin/skills/lit-scientific-visualization/SKILL.md",
+    "assets/lithermes-plugin/skills/lit-team/SKILL.md",
+    "assets/lithermes-plugin/skills/lit-team/references/briefs.md",
     "assets/lithermes-plugin/skills/lit-typographic-motion/SKILL.md",
     "assets/lithermes-plugin/skills/litgoal/.gitkeep",
     "assets/lithermes-plugin/skills/litgoal/SKILL.md",
@@ -1044,6 +1065,11 @@
     "assets/lithermes-plugin/skills/rules/SKILL.md",
     "assets/lithermes-plugin/skills/start-work/SKILL.md",
     "assets/lithermes-plugin/skills/structural-search/SKILL.md",
+    "assets/lithermes-plugin/skills/ultra-brainstorm/SKILL.md",
+    "assets/lithermes-plugin/skills/ultra-brainstorm/references/fan-out.md",
+    "assets/lithermes-plugin/skills/ultra-brainstorm/references/lenses.md",
+    "assets/lithermes-plugin/skills/ultra-brainstorm/scripts/estimate.mjs",
+    "assets/lithermes-plugin/skills/ultra-brainstorm/scripts/launch-answer.mjs",
     "assets/lithermes-plugin/skills/visual-qa/SKILL.md",
     "assets/lithermes-plugin/skills/wikify/LICENSE",
     "assets/lithermes-plugin/skills/wikify/ORIGIN.json",
@@ -1098,7 +1124,6 @@
     "readme-assets/skills/lit-humanizer.webp",
     "readme-assets/skills/lit-init.webp",
     "readme-assets/skills/lit-plan.webp",
-    "readme-assets/skills/lit-recap.webp",
     "readme-assets/skills/litgoal.webp",
     "readme-assets/skills/litresearch.webp",
     "readme-assets/skills/litwork.webp",

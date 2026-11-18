@@ -4,7 +4,7 @@ The prompt hook records each lit route activation as a frame in one guarded JSON
 workspace (``.hermes/lithermes/adhd/stack.json``) so a later brief in another session can see
 which disciplines are active. Hermes has a single chat lane per session and nothing can pause
 a discipline, so a session holds at most one active frame: pushing a new skill finishes the
-previous active frame, and there are no pause/resume transitions. lit-adhd and lit-recap are
+previous active frame, and there are no pause/resume transitions. lit-adhd and its recap view are
 read-only disciplines and never push a frame, so a brief in the middle of a lit-loop leaves
 the loop exactly where it was.
 
@@ -36,7 +36,7 @@ MAX_STATE_BYTES = 2 * 1024 * 1024
 GO_TTL_SECONDS = 30 * 60
 
 # Read-only disciplines never push a stack frame.
-READ_ONLY_DISCIPLINES = frozenset({"lit-adhd", "lit-recap"})
+READ_ONLY_DISCIPLINES = frozenset({"lit-adhd"})
 
 _GO_WORD = re.compile(r"^(?:go|lit go|ㄱㄱ|고|진행)$", re.IGNORECASE)
 _SESSION_SAFE = re.compile(r"[^A-Za-z0-9_-]")

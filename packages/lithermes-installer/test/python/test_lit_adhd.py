@@ -52,6 +52,27 @@ class AdhdSkillRoutes(NaturalRoutingCase):
                 self.assertIn("READ-ONLY", context.upper() + "READ-ONLY")
                 self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
 
+    def test_code_picks_korean_unless_english_is_asked_for(self):
+        cases = {
+            "lit adhd": "ko",
+            "lit adhd what should I do next": "ko",
+            "lit adhd --here": "ko",
+            "lit adhd 요약해줘": "ko",
+            "lit adhd --en": "en",
+            "lit adhd in English please": "en",
+            "lit adhd 영어로": "en",
+        }
+        for request, lang in cases.items():
+            with self.subTest(request=request):
+                context = self._hook(request, session=f"adhd-lang-{abs(hash(request))}")["context"]
+                self.assertIn(f"Add exactly `--lang {lang}`", context)
+                self.assertNotIn(f"--lang {'en' if lang == 'ko' else 'ko'}`", context)
+        self.assertNotIn("`--lang en` otherwise", (_SKILL / "SKILL.md").read_text(encoding="utf-8"))
+        from core_commands import command_lit_adhd
+
+        self.assertIn("pass exactly `--lang ko`", command_lit_adhd("")["agent_message"])
+        self.assertIn("pass exactly `--lang en`", command_lit_adhd("--en")["agent_message"])
+
     def test_adhd_wins_ahead_of_plan_review_and_research(self):
         result = self._hook("lit adhd this plan into a brief", session="adhd-plan")
         self.assertIn('mode="lit-adhd"', result["context"])
@@ -67,7 +88,7 @@ class AdhdSkillRoutes(NaturalRoutingCase):
                 context = result.get("context", "") if isinstance(result, dict) else ""
                 self.assertNotIn("lit-adhd", context)
         result = self._hook("lit recap", session="adhd-recap")
-        self.assertNotIn("lit-adhd", result.get("context", ""))
+        self.assertIn('mode="lit-adhd" view="recap"', result.get("context", ""))
         route = self.pkg.core.detect_lit_mode("lit approve")
         self.assertIsNotNone(route)
         self.assertNotEqual(route.mode, "lit-adhd")
@@ -81,7 +102,7 @@ class AdhdSkillRoutes(NaturalRoutingCase):
         self.assertIn("lit-adhd", context.commands)
         self.assertIn("lit-adhd", [name for name, _ in context.skills])
         spec = context.command_specs["lit-adhd"]
-        self.assertIn("brief", spec["description"].lower())
+        self.assertIn("verdict card", spec["description"].lower())
         status = self.pkg.core.status_report()
         self.assertIn("lit-adhd", status)
         self.assertIn("/lit-adhd", status)
@@ -96,9 +117,9 @@ class AdhdSkillRoutes(NaturalRoutingCase):
                 result = self._hook(request, session=f"adhd-look-{len(request)}")
                 context = result["context"]
                 self.assertIn('mode="lit-adhd"', context)
-                self.assertIn("five-part brief", context)
+                self.assertIn("six-line verdict card", context)
                 self.assertIn("verbatim", context)
-                self.assertIn("one next step", context)
+                self.assertIn("one action", context)
                 self.assertIn('name="rewind"', context)
                 self.assertIn("REWIND <<", context)
                 self.assertIn("YOUR TURN", context)
@@ -120,7 +141,7 @@ class AdhdSkillRoutes(NaturalRoutingCase):
         session = "adhd-session-7"
         result = self._hook("lit adhd", session=session)
         context = result["context"]
-        line = f"Collector: `--session {session}` records the next step for `go`."
+        line = f"Collector: `--session {session}` records the next step for `go`. Run `--verdict` (the card)."
         self.assertIn(line, context)
         # The line itself must stay inert: every routable token in it is a code span.
         self.assertIsNone(self.pkg.core.detect_lit_mode(line))
@@ -133,20 +154,20 @@ class AdhdSkillRoutes(NaturalRoutingCase):
             with self.subTest(prompt=prompt):
                 context = self._hook(prompt, session=session)["context"]
                 line = next(item for item in context.split("\n") if item.startswith("Collector:"))
-                self.assertEqual(line, f"{base} Asked for detail: add `--detail`.")
+                self.assertEqual(line, f"{base} Asked for detail: run `--json --detail`, not `--verdict`.")
                 self.assertIsNone(self.pkg.core.detect_lit_mode(line))
                 self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
         for prompt in ("lit adhd", "lit rewind", "lit adhd --here"):
             with self.subTest(prompt=prompt):
                 context = self._hook(prompt, session=session)["context"]
                 line = next(item for item in context.split("\n") if item.startswith("Collector:"))
-                self.assertEqual(line, base)
+                self.assertEqual(line, f"{base} Run `--verdict` (the card).")
 
     def test_hook_and_slash_routes_ask_for_the_kpi_board(self):
         context = self._hook("lit adhd 자세히", session="adhd-board-1")["context"]
-        self.assertIn("KPI board (board.text) verbatim", context)
-        self.assertIn("adhd.mjs --json --lang ko|en", context)
-        self.assertIn("--detail for 자세히/detail", context)
+        self.assertIn("show board.text, then board.detailText", context)
+        self.assertIn("adhd.mjs --json --detail --session <id> instead", context)
+        self.assertIn("Detail (자세히/detail/--detail)", context)
         self.assertLessEqual(len(context.encode("utf-8")), self.pkg.MAX_HOST_CONTEXT_BYTES)
         ctx = _FakeCtx()
         self.pkg.register(ctx)
