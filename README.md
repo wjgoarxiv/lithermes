@@ -32,10 +32,10 @@ The picture below is a real run of LitHermes. The skills that make things aim fo
 
 ### Keep track of it
 
-`lit adhd` reads your recent Hermes sessions, plans and git history and gives you one KPI board: the one thing to do now and exactly what to type, what is done, what is left, and what you must not forget.
+`lit adhd` reads your recent Hermes sessions, plans and git history and answers in six lines: what changed since you last looked, the one thing to do now and exactly what to type, why it matters, and what waits after it. A push or a parked step always stays a question for you. `lit adhd detail` opens the full KPI board below, with what is done, what is left and what you must not forget, and `lit adhd recap` sums up one session.
 
 <table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the brief<br /><code>lit adhd</code><br /><sub>A verbatim run over this repository's own Hermes sessions.</sub></td><td width="50%" valign="top"></td></tr>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="Terminal showing the lit-adhd brief: a headline with one session and the next step, an ended-sessions table, a roadmap with plan gauges and landed commits, and a boxed next step." /><br /><b>lit-adhd</b> · the detail board<br /><code>lit adhd detail</code><br /><sub>A verbatim run over this repository's own Hermes sessions.</sub></td><td width="50%" valign="top"></td></tr>
 </table>
 
 ### Drawings, decks, documents, interfaces and films
@@ -59,7 +59,7 @@ lit plan add a --shout flag that prints the greeting in capitals, with a test
 🔥 LIT IGNITED · lit-plan 🔥
 🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·
 /start-work            → a failing test first, then the fix, then the tests pass
-🔥 LIT · lit-recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
+🔥 LIT · lit-adhd recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
 ```
 
 ## Install
@@ -100,7 +100,7 @@ LitHermes's core is complete and works on its own: planning, loops, goals, revie
 
 Inside the package are 31 core skills, from `litwork` and `lit-plan` to `review-work`, `lit-handoff` and `lit-humanizer`, and every `lit` route runs on them; each of the nine extensions left only a stub with its name. The picture shows both parts, the five families on the shelf, and the four steps `lithermes extensions install` takes to bring one extension into your profile: check, move aside, copy, receipt.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.en.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.en.light.png" width="960" alt="The LitHermes package holds 31 core skills in five groups (run the work, check it, think and research, carry it on, prose and code tools) and nine extension stubs. The stubs point to variants/lithermes/&lt;id&gt; on the wjgoarxiv-skills shelf, where the nine skills sit in five families: decks, documents, figures, design and video-covers. lithermes extensions install &lt;id&gt; --yes brings one in with four steps: check for a same-name skill in the folders Hermes reads (and stop if one competes), move an old skills/&lt;id&gt; whole into extension-backups/, copy the Hermes edition into the empty folder, write the receipt .litfamily-extension.json. The other verbs are list, check, update, remove and prune-backups." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.en.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.en.light.png" width="960" alt="The LitHermes package holds 32 core skills in five groups (run the work, check it, think and research, carry it on, prose and code tools) and nine extension stubs. The stubs point to variants/lithermes/&lt;id&gt; on the wjgoarxiv-skills shelf, where the nine skills sit in five families: decks, documents, figures, design and video-covers. lithermes extensions install &lt;id&gt; --yes brings one in with four steps: check for a same-name skill in the folders Hermes reads (and stop if one competes), move an old skills/&lt;id&gt; whole into extension-backups/, copy the Hermes edition into the empty folder, write the receipt .litfamily-extension.json. The other verbs are list, check, update, remove and prune-backups." /></picture></p>
 
 **Install one with the command.** Each extension has a Hermes edition, one self-contained folder under `variants/lithermes/`. This line brings it into your profile, and a new Hermes session picks it up; without `--yes` it only prints the plan:
 
@@ -206,22 +206,24 @@ Two helpers tell you when a long run needs you. Both stay off until you turn the
 
 ## What you get
 
-LitHermes installs 40 skills, their slash commands and the `goal_*` work tools. Most days you will use a handful, each started with a word or two; [Everyday routes](./docs/skills.md#everyday-routes) walks through each one.
+LitHermes installs 41 skills, their slash commands and the `goal_*` work tools. Most days you will use a handful, each started with a word or two; [Everyday routes](./docs/skills.md#everyday-routes) walks through each one.
 
 | Start with | What you get |
 | --- | --- |
 | `lit fix the failing login test` | Each criterion taken from a failing test to a passing one and a check of the running result, then a list of what was verified |
-| `lit plan add CSV export to the reports page` | A plan file and no code change; `/start-work <the plan file it wrote>` then runs it row by row |
+| `lit plan add CSV export to the reports page` | A plan file and no code change, ending in one test command that decides when it is done; answer `yes` and you get the `/goal` lines to paste. `/start-work <the plan file it wrote>` then runs it row by row |
 | `lit review the changes on this branch` | A plan review, or five reviewers who read the finished change separately and lead with what they found |
 | `lit research how do popular CLIs migrate old config files?` | An answer whose every claim carries its source; it stops at logins and paywalls |
 | `humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …` | Stiff Korean or English prose rewritten with facts, hedges and register kept, and your files left alone |
 | `lit brainstorm <ask>` | Many options, then a short list with trade-offs; your pick goes to an interview or to `lit plan` |
+| `ultra-brainstorm <ask>` | One question about how many idea children to launch, with the cost, then hundreds of cheap `delegate_task` children and a judged top list |
+| `lit team split the migration across workers` | This session leads: it hands out slices, watches them, merges, re-checks and reports once; members never commit |
 | `lit hijack https://example.com/post into my lit-humanizer skill` | A technique you read about, licence-checked, rebuilt in your skill and proven on the same prompt |
-| `lit adhd` | A read-only board of recent sessions: the one thing to do now, progress and reminders |
+| `lit adhd` | A read-only six-line card of recent sessions: the one thing to do now and what to type; `lit adhd recap` recaps one session |
 
 Every route also works through a Hermes gateway such as Telegram or Discord, so you can start a plan at your desk and check on it from a phone. A gateway loads a new or updated plugin only when it restarts, and `lithermes doctor` tells you when the running one is older than your last install.
 
-[All routes](./docs/guide.md#core-commands) and [all 40 skills, with a picture of each](./docs/skills.md).
+[All routes](./docs/guide.md#core-commands) and [all 41 skills, with a picture of each](./docs/skills.md).
 
 ## How it works
 
@@ -273,7 +275,7 @@ In an offline doctor run, `loaded plugin` reads PARTIAL, because offline it cann
 
 - [Install, update and remove](./docs/install.md): every install option, how updates work, troubleshooting and limits
 - [A tour of LitHermes](./docs/tour.md): screens from a first run, the short film, the Ignition skin and the LIT marks
-- [Skills and commands](./docs/skills.md): all 40 skills with pictures, the command list, and what the document, film and prose skills make
+- [Skills and commands](./docs/skills.md): all 41 skills with pictures, the command list, and what the document, film and prose skills make
 - [Automatic handoff](./docs/automatic-handoff.md): handing work across a compaction, step by step
 - <a href="./docs/guide.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> Operating guide</a>: commands, natural routing, bounded work, models, skins and safety in full
 - [Python plugin contract](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm package page](./packages/lithermes-installer/README.md) · [Changelog](./CHANGELOG.md) · [Privacy](./docs/privacy.md) · [Migration](./docs/migration.md)

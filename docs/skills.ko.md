@@ -18,7 +18,7 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <tr>
 <td><img src="./assets/skills/lit-plan.webp" width="240" alt="start-work가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 코드는 아직 건드리지 않습니다." /></td>
 <td><code>lit-plan</code><br /><sub><code>lit plan &lt;what&gt;</code> · <code>/lit-plan</code></sub></td>
-<td><code>start-work</code>가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 코드는 아직 건드리지 않습니다.</td>
+<td><code>start-work</code>가 그대로 실행할 수 있는 번호 붙은 작업 목록이 파일로 나옵니다. 끝에는 테스트 명령 하나를 적은 <code>## Done when</code> 블록이 붙습니다. 그 명령이 지금 실패하면 lit-plan이 목표로 삼을지 한 번 묻고, 정확히 <code>yes</code>라고 답하면 붙여 넣을 <code>/goal</code> 줄을 줍니다. 코드는 아직 건드리지 않습니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/start-work.webp" width="240" alt="계획을 한 줄씩 실행합니다. 다섯 관문을 모두 통과해야 체크 표시가 붙습니다." /></td>
@@ -36,11 +36,6 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td>결승선을 정하고 지킵니다. 목표 하나와 확인 가능한 기준을 디스크에 남겨 다음 세션이 이어받을 수 있고, <code>lit-loop</code>와 <code>start-work</code>가 그 결승선을 향해 달립니다.</td>
 </tr>
 <tr>
-<td><img src="./assets/skills/lit-recap.webp" width="240" alt="읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다." /></td>
-<td><code>lit-recap</code><br /><sub><code>lit-recap</code></sub></td>
-<td>읽기 전용 요약입니다. 끝난 일, 진행 중인 일, 막힌 곳, 증거 위치, 다음 단계를 보여줍니다.</td>
-</tr>
-<tr>
 <td><img src="./assets/skills/lit-handoff.webp" width="240" alt="handoff라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td><code>handoff</code>라고 치면 다음 세션이 읽고 이어갈 인수인계 파일이 생깁니다.</td>
@@ -49,6 +44,16 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <td></td>
 <td><code>lit-brainstorm</code><br /><sub><code>lit brainstorm &lt;ask&gt;</code> · <code>lit ideation &lt;ask&gt;</code> · <code>lit idea &lt;ask&gt;</code></sub></td>
 <td>이름이나 방향처럼 열린 요청에 씁니다. 서로 다른 선택지를 먼저 많이 내고, 장단점이 붙은 짧은 목록으로 좁힙니다. 고르면 그 선택을 <code>deep-interview</code>나 <code>lit-plan</code>으로 넘기며, 직접 만들지는 않습니다.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ultra-brainstorm</code><br /><sub><code>ultra-brainstorm &lt;요청&gt;</code> · <code>lit ultra-brainstorm &lt;요청&gt;</code> · <code>/ultra-brainstorm</code></sub></td>
+<td>방향을 놓치면 비싼 드문 요청에 씁니다. 먼저 아이디어 자식을 몇 개 띄울지 한 번만 묻고(100 권장, 300, 또는 숫자), 비용 줄을 함께 보여 줍니다. 자식들은 <code>delegate_task</code>로 돌고, <code>delegation.model</code>에 정한 싼 모델로 도구 없이 아이디어를 다섯 개씩 냅니다. 서른 개마다 묶는 자식이 정리하고, 이 세션이 판정해 정렬한 목록을 <code>.hermes/lithermes/brainstorm/</code>에 남깁니다. 직접 만들지는 않습니다.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-team</code><br /><sub><code>lit team &lt;작업&gt;</code> · <code>/lit-team</code></sub></td>
+<td>이 세션이 이끄는 팀 모드입니다. 누가 무엇을 맡는지 <code>.hermes/lithermes/team/&lt;slug&gt;/team.md</code>에 적고, 조각마다 빠짐없는 지시와 함께 <code>delegate_task</code> 자식에게 넘기고, 도는 동안 바로잡거나 멈추고, 합친 뒤 모든 확인을 다시 돌려 한 번 보고합니다. 팀원은 커밋하지 않습니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/deep-interview.webp" width="240" alt="한 번에 한 질문씩 물어 아이디어를 만들 수 있을 만큼 분명하게 다듬습니다. 남은 모호함은 게이지로 보입니다." /></td>
@@ -88,7 +93,7 @@ LitHermes에서 부를 수 있는 모든 스킬과 그 스킬을 시작하는 �
 <tr>
 <td></td>
 <td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
-<td>여러 세션을 한 번에 브리핑합니다. 각 세션의 질문·작업·대기 상태와 로드맵 게이지, 다음 한 단계를 보여줍니다. 읽기 전용입니다.</td>
+<td>최근 세션들이 어디까지 왔는지 여섯 줄 카드로 보여 줍니다. 지난번에 본 뒤 바뀐 것, 지금 할 일 하나와 그대로 칠 입력, 이유, 그다음 기다리는 것, 기록을 얼마나 읽었는지가 나옵니다. push나 보류된 단계는 늘 질문으로 남깁니다. <code>lit adhd 자세히</code>나 <code>--detail</code>이면 전체 보드를, <code>lit adhd recap</code>이면 세션 하나의 리캡을 보여 줍니다. 읽기 전용입니다.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/browser-drive.webp" width="240" alt="브라우저 드라이버를 먼저 확인한 뒤 실제 페이지를 조작합니다. 드라이버가 없으면 그렇다고 말합니다." /></td>
@@ -243,6 +248,9 @@ lit hijack https://example.com/post 내 lit-humanizer 스킬에
 | `/review-work [plan\|work]` | 계획이나 끝난 작업을 검토하고 발견 사항을 남깁니다. |
 | `lit review [plan\|work] <대상>` | `start-work` 전에는 계획을, 끝난 뒤에는 작업을 검토합니다. |
 | `lit brainstorm <요청>`, `lit ideation <요청>`, `lit idea <요청>` | 아이디어 세션을 엽니다. 선택지를 많이 내고, 짧은 목록으로 좁혀 고르게 합니다. |
+| `ultra-brainstorm <요청>` 또는 `/ultra-brainstorm` | 아이디어 자식을 몇 개 띄울지 한 번 묻고, 수백 개로 펼친 뒤 결과를 판정합니다. |
+| `lit +<스킬> +<스킬> <작업>` | 이번 작업에 쓸 스킬을 직접 고릅니다(최대 세 개). 예: `lit +viz +review build the results page`. 이것이 없으면 요청이 여러 스킬에 맞을 때 `lit`이 계획을 제안합니다. |
+| `lit team <작업>` 또는 `/lit-team` | 이 세션이 팀을 이끕니다. 일을 나누고, 조각을 `delegate_task` 자식에게(맞으면 herdr 창, worktree, Kanban에) 넘기고, 합치고, 다시 확인한 뒤 한 번 보고합니다. 팀원은 커밋하지 않습니다. |
 | `litresearch` 또는 `lit research <질문>` | 출처 메모가 있는 조사 흐름을 사용합니다. |
 | `/lit-loop` | 명시적 반복 작업을 시작하고 확인하고, 다시 잇거나 끝냅니다. |
 | `/litgoal` | 결승선을 정하고 지킵니다. 기준과 근거, 체크포인트와 막힌 지점을 추적합니다. |
@@ -252,7 +260,7 @@ lit hijack https://example.com/post 내 lit-humanizer 스킬에
 | `/lit-pptx <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
 | `/lit-docx <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
 | `/lit-hijack <brief>` | 공개 노하우를 클린룸으로 포팅합니다. 출처 기록·라이선스 게이트·명세·빌드·검증을 거칩니다. |
-| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
+| `/lit-adhd [recap [세션]] [--here] [--since 7d] [--max 12] [--detail] [--en]` | 최근 세션을 여섯 줄 카드로 보여 주고 지금 할 일 하나를 정합니다. `--detail`이면 KPI 보드와 세션별 브리핑을, `recap`이면 세션 하나의 리캡을 보여 줍니다(`/lit-recap`도 같음). 읽기 전용입니다. |
 | `/lit-typographic-motion <brief>` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 설치하는 줄을 알려 줍니다. |
 
 Telegram gateway에서는 `/lit_loop`와 `/lit_plan` 별칭을 씁니다. 전체 명령 예시와 훅 동작은 [운영 안내](./guide.ko.md)에 있습니다. 명령 뒤에 확인 줄이 뜨면 작업이 시작된 것입니다. 결과를 믿고 쓰기 전에는 화면 확인까지 포함해 직접 살펴보세요.

@@ -101,7 +101,7 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-    LH --> S["40 skills"]
+    LH --> S["41 skills"]
 ```
 
 > **host 연결을 한눈에 보면:** Hermes Agent가 Python plugin host를 제공하고, LitHermes의 core routing과 contract, goal/ledger runtime이 그 위에서 명령을 이어 줍니다. 설치 후 CLI 또는 gateway를 재시작하면 이 연결과 39개 skill catalog가 실제 host에 로드됩니다.
@@ -116,7 +116,10 @@ flowchart LR
 | `/review-work` | plan(`start-work` 전) 또는 완료 작업을 검토합니다. 있는 것을 보고 방식을 고르거나 `plan`·`work`로 직접 정하며, 검토 중 구현하지 않습니다. |
 | `/start-work` | 승인된 plan만 실행합니다. |
 | `/litgoal` | 결승선을 정하고 지킵니다. criteria, evidence, checkpoint, blocker를 관리하며 `lit-loop`와 `start-work`가 그 결승선을 향해 갑니다. |
-| `/lit-recap` | 작업과 evidence를 한국어로 읽기 쉽게 요약합니다. |
+| `/lit-adhd` | 최근 세션이 어디까지 왔는지 여섯 줄 카드로 보여 주고, 할 일 하나와 그대로 칠 입력을 줍니다. `--detail`이면 KPI 보드, `recap [세션]`이면 세션 하나의 리캡입니다. |
+| `/lit-recap` | `/lit-adhd recap`의 별칭입니다. 같은 한국어 리캡을 보여 주고, 옮겨 왔다는 말을 한 줄 덧붙입니다. |
+| `/lit-team` | 이 세션이 이끄는 팀 모드: 맡은 조각을 `delegate_task`로 넘기고, 지켜보고, 합치고, 다시 확인해 한 번 보고합니다. 팀원은 커밋하지 않습니다. |
+| `/ultra-brainstorm` | 아이디어 자식을 몇 개 띄울지 한 번 묻고 비용을 보여 준 뒤, `delegate_task`로 펼쳐 결과를 판정합니다. |
 | `/lit-handoff` | live state를 확인한 continuation packet을 작성합니다. |
 | `/lit-scientific-visualization` | `wjgoarxiv-skills`로 옮겨 갔습니다. 스킬이 간 곳과 복사 줄을 알려 줍니다. |
 | `/lit-humanizer` | 의미를 지키며 한국어·영어 문장을 다듬습니다. 이전 별칭: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
@@ -145,7 +148,7 @@ receipt를 반환하고 parent가 merge 또는 batch completion을 추적합니�
 전체 skill catalog는 `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-brainstorm`, `ultra-brainstorm`, `lit-team`, `lit-humanizer`, `lit-handoff`,
 `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-pptx`, `lit-docx`,
 `lit-hijack`, `lit-adhd`,
 `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
@@ -175,6 +178,12 @@ flowchart LR
 Natural routing은 standalone lit 또는 litwork, 그리고 정확한 `lit`, `lit plan`, `lit review`, `lit research`, `lit goal`, `lit workflow`, `lit kanban`, `lit team` 의도를 대응 mode로 보냅니다. code span, fenced code, substring, compound token, path, 실제 slash-command mention은 일반 task text로 둡니다. `lit start work`는 `BLOCKED`이며 `/start-work <approved-plan>`을 직접 호출해야 합니다.
 
 `lit-plan`이 `plans/` 아래에 계획을 저장한 뒤, 같은 세션에서 30분 안에 `go`만 입력하면 그 계획의 `/start-work` 명령을 보여 주고, 실행은 사용자가 그 명령으로 시작합니다. todo가 프로젝트 밖 폴더를 가리키는 계획에는 `Scope roots: <path> (<actions>)` 줄을 넣습니다. `/start-work`는 이 줄이 덮지 못한 폴더를 참고 목록으로 보여 주고 실행은 그대로 진행합니다. bounded work의 권한은 자기 worktree 안에서만 유효하므로 이 확인은 참고용입니다.
+
+`lit` 요청이 여러 스킬에 맞으면(예: 발표자료와 흐름도), 길은 여전히 하나가 이끌고 작업 순서대로 최대 세 개짜리 짧은 스킬 계획이 붙습니다. 옮겨 간 스킬은 이 프로필에 설치돼 있을 때만 들어가고, 아니면 계획 끝에 설치하는 줄 하나가 붙습니다. 마이그레이션, 아키텍처, 보안처럼 위험한 설계 요청에는 `lit-crucible`이 함께 붙고, 검토처럼 읽기만 하는 길에는 쓰는 스킬이 붙지 않습니다. 스킬을 직접 고르려면 `lit` 뒤에 적습니다: `lit +viz +review build the results page`.
+
+`lit team <작업>`이면 이 세션이 팀장이 됩니다. 나눈 내용을 `.hermes/lithermes/team/<slug>/team.md`에 적고, 조각을 `delegate_task` 묶음 하나로 넘깁니다. `HERDR_ENV=1`이고 herdr가 있으면 herdr 창을, 두 조각이 같은 파일을 고치면 따로 만든 `git worktree` 폴더를, 보드를 원하면 Kanban을 씁니다. 팀원마다 자기 작업 폴더와 커밋 금지 규칙을 줍니다. 결과가 돌아올 때마다 파일에 표시하고, 합치고, 합친 상태에서 모든 확인을 다시 돌린 뒤 한 번 보고합니다.
+
+`lit-plan`이 만든 계획 끝에는 `check:` 명령 하나를 적은 `## Done when` 블록이 붙습니다. 저장한 뒤 lit-plan은 `hermes lithermes goal propose plans/<f>.md`를 돌립니다. 이 명령은 `Every row in plans/<f>.md is ticked and \`<check>\` exits 0 [lit:<id>]` 조건을 만들고, 판단하는 말이나 push·publish 단계는 거절하고, 확인 명령을 한 번 돌려 지금은 실패한다는 것을 보입니다. 그다음 `Approve plan, start work and set goal: /goal <condition>? (yes / edit / no)`라고 묻습니다. 조건이 거절되었으면 `Approve plan and start work? (yes / no)`라고 묻고 이유를 한 줄로 붙입니다. 질문을 받은 바로 그 세션에서 정확히 `yes`라고 답하면 `/start-work <plan>`을 친 것과 같은 길로 계획을 시작하고, 시작이 된 뒤에야 목표를 받아들입니다. 다른 세션에서 친 `yes`는 아무것도 시작하지 않고 `/start-work <plan>`을 직접 치라고 알려 줍니다. Hermes의 `/goal`은 계속 사용자가 다루므로, 받아들인 목표는 붙여 넣을 두 줄 `/goal <condition>`과 `/goal gate add <check>`로 돌아옵니다. 시작이 거절되면 아무것도 시작하지 않고 목표도 받지 않습니다. 모든 줄에 표시가 되면 턴이 끝날 때 훅이 확인을 한 번 돌리고, 다음 턴 첫머리에 조건이 맞았는지 알려 줍니다.
 
 `lit research`에는 Public retrieval hardening이 적용됩니다. public endpoint/feed 우선, structured Attempt/Verdict trace, route taxonomy, HTTP 200 이상의 검증, login/paywall/CAPTCHA 및 private/loopback 거부, bounded retry, untried safe routes / `not_exhausted`, actionable diagnostics, A/B check, claim/source/confidence/uncertainty graph를 사용합니다. no bundled standalone crawler/browser engine 원칙을 지킵니다.
 

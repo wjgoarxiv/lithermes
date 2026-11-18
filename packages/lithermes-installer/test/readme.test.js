@@ -263,8 +263,9 @@ test("skill table captures ship as identical repository and package copies", () 
       assert.deepEqual(fs.readFileSync(path.join(packageDir, name)), fs.readFileSync(path.join(repoDir, name)), `${folder}/${name} package copy must match the repository copy`);
     }
   }
-  // The nine skills that moved to wjgoarxiv-skills left the gallery (eight had a snapshot).
-  assert.equal(files.skills.length, 28, "one snapshot per user-facing skill");
+  // The nine skills that moved to wjgoarxiv-skills left the gallery (eight had a snapshot);
+  // lit-recap's went with it when the skill became the lit-adhd recap view.
+  assert.equal(files.skills.length, 27, "one snapshot per user-facing skill");
   for (const name of ["README.md", "README_Ko-KR.md"]) {
     // The npm card links to the GitHub gallery instead of repeating it.
     const card = fs.readFileSync(path.join(packageRoot, name), "utf8");
@@ -281,7 +282,7 @@ test("skill table captures ship as identical repository and package copies", () 
       assert.ok(skillsAt >= 0, `${file} needs its gallery section`);
       const skillsEnd = text.indexOf("\n## ", skillsAt + 1);
       const rows = [...text.slice(skillsAt, skillsEnd).matchAll(/<td><img src="[^"]*\/skills\/([a-z0-9-]+)\.webp" width="240" alt="[^"]+" \/><\/td>\n<td><code>([a-z0-9-]+)<\/code>/g)];
-      assert.equal(rows.length, 28, `${file} skill table must hold 28 illustrated rows`);
+      assert.equal(rows.length, 27, `${file} skill table must hold 27 illustrated rows`);
       for (const [, image, id] of rows) assert.equal(image, id, `${file}: ${id} row must show its own snapshot`);
     }
   }

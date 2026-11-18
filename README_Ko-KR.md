@@ -32,10 +32,10 @@
 
 ### 흐름 붙잡기
 
-`lit adhd`는 최근 Hermes 세션과 계획, git 기록을 읽어 KPI 보드 한 장으로 정리합니다. 지금 할 일 하나와 그때 입력할 말, 끝낸 일, 남은 일, 잊지 말아야 할 것까지요.
+`lit adhd`는 최근 Hermes 세션과 계획, git 기록을 읽어 여섯 줄로 답합니다. 지난번에 본 뒤 바뀐 것, 지금 할 일 하나와 그대로 칠 입력, 그 이유, 그다음 기다리는 것까지요. push나 보류된 단계는 늘 질문으로 남깁니다. `lit adhd 자세히`라고 하면 끝낸 일, 남은 일, 잊지 말아야 할 것이 담긴 아래 KPI 보드가 열리고, `lit adhd recap`은 세션 하나를 정리합니다.
 
 <table>
-<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="lit-adhd 브리핑이 뜬 터미널: 세션 하나와 다음 단계를 담은 머리줄, 끝난 세션 표, 계획 게이지와 반영된 커밋이 있는 로드맵, 상자로 감싼 다음 단계." /><br /><b>lit-adhd</b> · 브리핑<br /><code>lit adhd</code><br /><sub>이 저장소의 실제 Hermes 세션을 대상으로 돌린 결과 그대로입니다.</sub></td><td width="50%" valign="top"></td></tr>
+<tr><td width="50%" valign="top"><img src="./docs/assets/showcase/adhd-brief.webp" width="400" alt="lit-adhd 브리핑이 뜬 터미널: 세션 하나와 다음 단계를 담은 머리줄, 끝난 세션 표, 계획 게이지와 반영된 커밋이 있는 로드맵, 상자로 감싼 다음 단계." /><br /><b>lit-adhd</b> · 자세히 보기<br /><code>lit adhd 자세히</code><br /><sub>이 저장소의 실제 Hermes 세션을 대상으로 돌린 결과 그대로입니다.</sub></td><td width="50%" valign="top"></td></tr>
 </table>
 
 ### 도면, 발표자료, 문서, 화면, 영상
@@ -59,7 +59,7 @@ lit plan add a --shout flag that prints the greeting in capitals, with a test
 🔥 LIT IGNITED · lit-plan 🔥
 🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·
 /start-work            → 실패하는 테스트 먼저, 그다음 수정, 테스트 통과
-🔥 LIT · lit-recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
+🔥 LIT · lit-adhd recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
 ```
 
 ## 설치
@@ -100,7 +100,7 @@ LitHermes의 코어는 그 자체로 완성되어 있고, 혼자서도 제대로
 
 패키지 안에는 `litwork`, `lit-plan`부터 `review-work`, `lit-handoff`, `lit-humanizer`까지 코어 스킬 31개가 들어 있고, `lit`으로 여는 모든 경로가 이 스킬들 위에서 돕니다. 확장 아홉 개는 패키지에 같은 이름의 스텁만 남겼습니다. 아래 그림에는 이 두 부분과 선반의 다섯 패밀리, 그리고 `lithermes extensions install`이 확장 하나를 프로필에 들이는 네 단계(확인, 옮겨 두기, 복사, 영수증)가 함께 있습니다.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.ko.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.ko.light.png" width="960" alt="LitHermes 패키지에는 다섯 묶음(일 굴리기, 검토하기, 생각하고 조사하기, 이어 가기, 문장과 코드 도구)으로 나눈 코어 스킬 31개와 확장 스텁 9개가 들어 있다. 스텁은 wjgoarxiv-skills 선반의 variants/lithermes/&lt;id&gt;를 가리키고, 선반에는 decks, documents, figures, design, video-covers 다섯 패밀리에 아홉 스킬이 있다. lithermes extensions install &lt;id&gt; --yes는 네 단계로 하나를 들인다. Hermes가 스킬을 읽는 폴더에 같은 이름의 스킬이 있는지 보고 겹치면 멈추고, 예전 skills/&lt;id&gt;를 extension-backups/로 통째로 옮기고, 비워진 자리에 Hermes판을 복사하고, 영수증 .litfamily-extension.json을 남긴다. 나머지 동사는 list, check, update, remove, prune-backups다." /></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="./docs/assets/readme/diagrams/core-extensions.ko.dark.png" /><img src="./docs/assets/readme/diagrams/core-extensions.ko.light.png" width="960" alt="LitHermes 패키지에는 다섯 묶음(일 굴리기, 검토하기, 생각하고 조사하기, 이어 가기, 문장과 코드 도구)으로 나눈 코어 스킬 32개와 확장 스텁 9개가 들어 있다. 스텁은 wjgoarxiv-skills 선반의 variants/lithermes/&lt;id&gt;를 가리키고, 선반에는 decks, documents, figures, design, video-covers 다섯 패밀리에 아홉 스킬이 있다. lithermes extensions install &lt;id&gt; --yes는 네 단계로 하나를 들인다. Hermes가 스킬을 읽는 폴더에 같은 이름의 스킬이 있는지 보고 겹치면 멈추고, 예전 skills/&lt;id&gt;를 extension-backups/로 통째로 옮기고, 비워진 자리에 Hermes판을 복사하고, 영수증 .litfamily-extension.json을 남긴다. 나머지 동사는 list, check, update, remove, prune-backups다." /></picture></p>
 
 **명령으로 설치하기.** 확장마다 Hermes판이 있고, `variants/lithermes/` 아래 폴더 하나가 스킬 하나입니다. 아래 한 줄로 프로필에 들이고 새 Hermes 세션을 열면 잡힙니다. `--yes`가 없으면 계획만 보여 줍니다.
 
@@ -206,22 +206,24 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 
 ## 할 수 있는 일
 
-LitHermes는 스킬 40개와 그 슬래시 명령, `goal_*` 작업 도구를 설치합니다. 평소에는 그중 몇 가지만 쓰게 되고 하나하나 한두 단어로 시작하며, 경로마다 자세한 설명은 [자주 쓰는 경로](./docs/skills.ko.md#자주-쓰는-경로)에 있습니다.
+LitHermes는 스킬 41개와 그 슬래시 명령, `goal_*` 작업 도구를 설치합니다. 평소에는 그중 몇 가지만 쓰게 되고 하나하나 한두 단어로 시작하며, 경로마다 자세한 설명은 [자주 쓰는 경로](./docs/skills.ko.md#자주-쓰는-경로)에 있습니다.
 
 | 이렇게 시작하면 | 얻는 것 |
 | --- | --- |
 | `lit 실패하는 로그인 테스트를 고쳐줘` | 기준마다 실패하는 테스트에서 통과, 실행 결과 확인까지 거친 변경과 확인한 내용 목록 |
-| `lit plan 보고서 페이지에 CSV 내보내기 추가` | 코드는 그대로 둔 계획 파일. 그다음 `/start-work <방금 쓴 계획 파일>`이 한 줄씩 실행합니다 |
+| `lit plan 보고서 페이지에 CSV 내보내기 추가` | 코드는 그대로 둔 계획 파일. 끝에 완료를 판정할 테스트 명령 하나가 붙고, `yes`라고 답하면 붙여 넣을 `/goal` 줄을 줍니다. 그다음 `/start-work <방금 쓴 계획 파일>`이 한 줄씩 실행합니다 |
 | `lit review 이 브랜치의 변경 사항` | 계획 검토, 또는 리뷰어 다섯이 끝난 변경을 각자 읽고 찾은 문제부터 알려 주는 작업 검토 |
 | `lit research 널리 쓰이는 CLI들은 오래된 설정 파일을 어떻게 옮길까?` | 주장마다 출처가 붙은 답. 로그인과 유료 벽 앞에서는 멈춥니다 |
 | `humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …` | 사실과 단서, 존댓말과 말투를 지키며 다듬은 한국어나 영어 문장. 파일은 그대로 둡니다 |
 | `lit brainstorm <질문>` | 넓게 펼친 선택지와 장단점을 붙인 짧은 목록. 고른 것은 인터뷰나 `lit plan`으로 넘어갑니다 |
+| `ultra-brainstorm <질문>` | 아이디어 자식을 몇 개 띄울지 비용과 함께 한 번 묻고, 싼 `delegate_task` 자식 수백 개를 돌려 판정한 상위 목록 |
+| `lit team 마이그레이션을 나눠서 해줘` | 이 세션이 팀장이 되어 조각을 나눠 주고, 지켜보고, 합치고, 다시 확인한 뒤 한 번 보고합니다. 팀원은 커밋하지 않습니다 |
 | `lit hijack https://example.com/post 내 lit-humanizer 스킬에` | 읽은 기법을 라이선스 확인 뒤 내 스킬로 다시 만들고, 같은 프롬프트로 차이를 증명합니다 |
-| `lit adhd` | 최근 세션을 읽어 지금 할 일, 진행, 알림을 보여 주는 읽기 전용 보드 |
+| `lit adhd` | 최근 세션을 읽어 지금 할 일 하나와 칠 입력을 알려 주는 읽기 전용 여섯 줄 카드. `lit adhd recap`은 세션 하나를 정리합니다 |
 
 위의 모든 경로는 Telegram이나 Discord 같은 Hermes gateway에서도 동작해서, 책상에서 계획을 시작하고 휴대폰으로 확인할 수 있습니다. gateway는 다시 시작해야 새로 설치하거나 업데이트한 플러그인을 불러오고, 실행 중인 gateway가 마지막 설치보다 오래됐으면 `lithermes doctor`가 알려 줍니다.
 
-[모든 경로](./docs/guide.ko.md#핵심-명령)와 [그림이 붙은 스킬 40개 전체](./docs/skills.ko.md).
+[모든 경로](./docs/guide.ko.md#핵심-명령)와 [그림이 붙은 스킬 41개 전체](./docs/skills.ko.md).
 
 ## 작동 방식
 
@@ -273,7 +275,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 - [설치, 업데이트, 삭제](./docs/install.ko.md): 설치 옵션 전부, 업데이트가 움직이는 방식, 문제 해결과 한계
 - [LitHermes 둘러보기](./docs/tour.ko.md): 처음 실행했을 때의 화면, 짧은 영상, Ignition 스킨, LIT 마크
-- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 40개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
+- [스킬과 명령](./docs/skills.ko.md): 그림이 붙은 스킬 41개 전체, 명령 목록, 문서·영상·글 스킬이 만드는 결과물
 - [자동 핸드오프](./docs/automatic-handoff.ko.md): 압축을 사이에 두고 작업을 넘기는 과정을 단계별로
 - <a href="./docs/guide.ko.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> 사용 안내</a>: 명령, 자연어 routing, bounded work, 모델, 스킨, 안전 모델 전체
 - [Python 플러그인 계약](./packages/lithermes-installer/assets/lithermes-plugin/README.md) · [npm 패키지 안내](./packages/lithermes-installer/README_Ko-KR.md) · [변경 기록](./CHANGELOG.md) · [개인정보](./docs/privacy.md) · [이전 안내](./docs/migration.md)

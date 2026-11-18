@@ -74,7 +74,6 @@ const KNOWN_PACK_BINARY_SHA256 = Object.freeze({
   "readme-assets/skills/lit-init.webp": "609aac152676687db6c06c83a91fa91d89148c7db4a8bfef816a2a9cea8bc04b",
   "readme-assets/skills/lit-plan.webp": "1819a93de45974358982bd5c03333e55cc77295033838c810b093b9632d3f162",
   "readme-assets/skills/lit-pptx.webp": "1521e8f86fd09e7d5f4a44bc11c56a41331eaa4ee2c77576dd2adb5602a43905",
-  "readme-assets/skills/lit-recap.webp": "8fba68016247eabe23d5bbefcfabce2b1c4649910b8e65aaa7d1877d46409a10",
   "readme-assets/skills/lit-scientific-visualization.webp": "218d3af1e52c4c821619f11ed3cbff2075178e1de4cf358d86a2334b2ea86c54",
   "readme-assets/skills/lit-typographic-motion.webp": "5d3b7ec895faf1fbc05599839688da61c61a0219dedb13f865c7c46c4c57edf5",
   "readme-assets/skills/litgoal.webp": "816da75756800b42827bef8f4ffea653c741b16e1c0ad654ee1d4c11736bd256",

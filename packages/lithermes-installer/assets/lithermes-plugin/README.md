@@ -126,10 +126,21 @@ CLI/plugin name, not the npm package name.
   a standalone `lit` or `litwork`. It also routes `lit plan`, `lit review`,
   `lit research`, `lit goal`, and durable `lit workflow` / `lit kanban` / `lit team`
   intents to the matching Hermes-native contract. Bare `lit-crucible`, `litresearch`,
-    `lit-init`, and `lit-recap` inject the matching bundled `SKILL.md` body into
+    and `lit-init` inject the matching bundled `SKILL.md` body into
     the natural route, while `lit start work` remains a visible BLOCKED handoff to `/start-work`.
-  Kanban routes are setup/proposal guidance for Hermes Kanban profile lanes;
-  `lit team` does not claim a literal native team mode.
+  `lit adhd recap [session]` (and the old `lit recap`, `recap`, `litrecap`, `리캡`) opens the
+  read-only recap view of lit-adhd from `skills/lit-adhd/references/recap.md`.
+  Kanban routes are setup/proposal guidance for Hermes Kanban profile lanes.
+  `lit team` does not claim a literal native team mode: this session leads, hands slices
+  to `delegate_task` batches (herdr panes, git worktrees or Kanban when they fit),
+  merges, re-verifies and reports once; members never commit.
+  When a `lit` prompt fits more than one skill, `skill_plan.py` appends a
+  `<lithermes-skill-plan>` block of at most three skills (installed extensions only,
+  otherwise one install line); `lit +x +y <task>` names them directly.
+  An exact `yes` to lit-plan's goal question (`goal_pipeline.py`,
+  `hermes lithermes goal propose`) returns the native `/goal` lines to paste; the
+  plugin never arms `/goal` itself, and `post_llm_call` runs the plan's check as an
+  advisory once every row is ticked.
   Intent-shaped skills route the same way from a bare leading token or after `lit`:
   `autoresearch`, `autoconference`, `wikify`, `lit-comprehend`, `refactor`, `debugging`, `lit-commit`,
   `lit-brainstorm` (after `lit`: `brainstorm`, `brainstorming`, `ideation`, `ideate`, `idea`, `ideas`),
@@ -201,7 +212,7 @@ CLI/plugin name, not the npm package name.
   `lithermes:lit-humanizer`, `lithermes:comment-checker`,
   `lithermes:debugging`, `lithermes:deep-interview`,
   `lithermes:frontend-ui-ux`, `lithermes:readme-studio`, `lithermes:lit-commit`,
-    `lithermes:lit-crucible`, `lithermes:lit-init`, `lithermes:lit-recap`,
+    `lithermes:lit-crucible`, `lithermes:lit-init`, `lithermes:ultra-brainstorm`, `lithermes:lit-team`,
   `lithermes:lit-handoff`, `lithermes:lit-scientific-visualization`,
   `lithermes:lit-diagram-drawer`, `lithermes:lit-schematic`, `lithermes:lit-hijack`,
   `lithermes:lit-adhd`,
@@ -395,7 +406,7 @@ npm --prefix packages/lithermes-installer run sync-plugin -- --in-place
   `not_exhausted` when evidence is incomplete, reports actionable diagnostics,
   uses A/B checks, and keeps a claim/source/confidence/uncertainty graph. The
   acquisition procedure loads from `lithermes:litresearch` through `skill_view`.
-- `lit-crucible`, `lit-init`, `lit-recap`, `lit-handoff`,
+- `lit-crucible`, `lit-init`, `ultra-brainstorm`, `lit-handoff`,
   `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-hijack`, and `lit-adhd`: bounded bare or exact natural routes load the bundled
   skill body for the matching explicit skill; they do not fall back to generic
   Litwork.

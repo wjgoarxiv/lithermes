@@ -48,6 +48,8 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `/start-work <approved-plan>` | `start-work` | Running a plan you approved |
 | `lit review [plan\|work] <target>` or `/review-work` | `review-work` | Reviewing a plan before `start-work`, or finished work after it |
 | `lit brainstorm <ask>` | `lit-brainstorm` | Many options for an open ask, then a short list to pick from |
+| `ultra-brainstorm <ask>` or `/ultra-brainstorm` | `ultra-brainstorm` | One question about how many idea children to launch, with the cost, then a judged top list. Read-only |
+| `lit team <task>` or `/lit-team` | `lit-team` | This session leads the team: slices out, results merged and re-checked, one report; members never commit |
 | `lit research <question>` | `litresearch` | Research with source notes |
 | `/lit-humanizer` | `lit-humanizer` | Revising Korean or English prose, meaning kept |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
@@ -55,7 +57,7 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 | `/lit-pptx <brief>` | `lit-pptx` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
 | `/lit-docx <brief>` | `lit-docx` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
 | `/lit-hijack <brief>` | `lit-hijack` | A clean-room port of published know-how, licence-gated with parity proof |
-| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | A cross-session KPI board: do this now, done and left counts, milestones and reminders; `--detail` adds the per-session brief. Read-only |
+| `/lit-adhd [recap [session]] [--here] [--since 7d] [--max 12] [--detail] [--en]` | `lit-adhd` | A six-line card across sessions: what changed, the one thing to do and what to type; `--detail` shows the KPI board, `recap` recaps one session (`/lit-recap` still works). Read-only |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | A LitFamily extension on `wjgoarxiv-skills`: names the folder and the copy line |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. Every skill also loads by name as `lithermes:<name>`, for example `lithermes:review-work` or `lithermes:lit-humanizer`. [Skills and commands](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.md) lists all 40; nine are stubs for the LitFamily extensions on `wjgoarxiv-skills`.

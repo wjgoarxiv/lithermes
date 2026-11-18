@@ -18,7 +18,7 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <tr>
 <td><img src="./assets/skills/lit-plan.webp" width="240" alt="A plan file with numbered task rows that start-work can execute. Nothing is edited yet." /></td>
 <td><code>lit-plan</code><br /><sub><code>lit plan &lt;what&gt;</code> · <code>/lit-plan</code></sub></td>
-<td>A plan file with numbered task rows that <code>start-work</code> can execute. Nothing is edited yet.</td>
+<td>A plan file with numbered task rows that <code>start-work</code> can execute, ending in a <code>## Done when</code> block with one test command. When that command fails today, lit-plan asks once whether to make it your goal; an exact <code>yes</code> gives you the <code>/goal</code> lines to paste. Nothing is edited yet.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/start-work.webp" width="240" alt="Runs a plan row by row. A box is checked only after all five gates pass." /></td>
@@ -36,11 +36,6 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td>Sets and keeps the finish line: one objective with checkable criteria, kept on disk so the next session can pick it up. <code>lit-loop</code> and <code>start-work</code> run toward it.</td>
 </tr>
 <tr>
-<td><img src="./assets/skills/lit-recap.webp" width="240" alt="A read-only summary: done, in progress, blocked, where the evidence is, what comes next." /></td>
-<td><code>lit-recap</code><br /><sub><code>lit-recap</code></sub></td>
-<td>A read-only summary: done, in progress, blocked, where the evidence is, what comes next.</td>
-</tr>
-<tr>
 <td><img src="./assets/skills/lit-handoff.webp" width="240" alt="Type handoff to get a continuation file the next session can read and resume from." /></td>
 <td><code>lit-handoff</code><br /><sub><code>handoff</code> · <code>/lit-handoff</code></sub></td>
 <td>Type <code>handoff</code> to get a continuation file the next session can read and resume from.</td>
@@ -49,6 +44,16 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <td></td>
 <td><code>lit-brainstorm</code><br /><sub><code>lit brainstorm &lt;ask&gt;</code> · <code>lit ideation &lt;ask&gt;</code> · <code>lit idea &lt;ask&gt;</code></sub></td>
 <td>For an open ask like a name or a direction. Many different options first, then a short list with trade-offs. You pick, and it hands the pick to <code>deep-interview</code> or <code>lit-plan</code>. It never builds.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ultra-brainstorm</code><br /><sub><code>ultra-brainstorm &lt;ask&gt;</code> · <code>lit ultra-brainstorm &lt;ask&gt;</code> · <code>/ultra-brainstorm</code></sub></td>
+<td>For the rare ask where missing a direction is expensive. It asks one question first, how many idea children to launch (100 recommended, 300, or a number), with a cost line. The children run through <code>delegate_task</code> on the cheap model you set as <code>delegation.model</code>, with no tools and five ideas each. Reducers cluster every thirty, this session judges, and the sorted list lands in <code>.hermes/lithermes/brainstorm/</code>. It never builds.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>lit-team</code><br /><sub><code>lit team &lt;task&gt;</code> · <code>/lit-team</code></sub></td>
+<td>Team mode led by this session. It writes who owns what to <code>.hermes/lithermes/team/&lt;slug&gt;/team.md</code>, hands each slice to a <code>delegate_task</code> child with a full brief, steers or stops members while they run, merges, reruns every check on the merged tree and reports once. Members never commit.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/deep-interview.webp" width="240" alt="One question at a time until the idea is clear enough to build. A meter shows how much is still vague." /></td>
@@ -88,7 +93,7 @@ These are all the skills you can call in LitHermes, with the words that start ea
 <tr>
 <td></td>
 <td><code>lit-adhd</code><br /><sub><code>lit adhd</code> · <code>/lit-adhd</code></sub></td>
-<td>A cross-session brief: what each recent session was asked, did and waits on, roadmap gauges and one next step. Read-only.</td>
+<td>Where things stand across your recent sessions, as a six-line card: what changed since you last looked, the one thing to do and the exact text to type, why, what else waits, and how much of the record it read. Pushes and parked steps stay questions for you. <code>lit adhd 자세히</code> or <code>--detail</code> shows the full board, <code>lit adhd recap</code> recaps one session. Read-only.</td>
 </tr>
 <tr>
 <td><img src="./assets/skills/browser-drive.webp" width="240" alt="Drives a real page after verifying the browser driver. If there is none, it says so." /></td>
@@ -243,6 +248,9 @@ Every route above also works through a Hermes gateway such as Telegram or Discor
 | `/review-work [plan\|work]` | Review a plan or finished work and record findings. |
 | `lit review [plan\|work] <target>` | Review a plan before `start-work`, or finished work after it. |
 | `lit brainstorm <ask>`, `lit ideation <ask>`, `lit idea <ask>` | Open an idea session: many options, a short list, your pick. |
+| `ultra-brainstorm <ask>` or `/ultra-brainstorm` | Ask once how many idea children to launch, then fan out hundreds of them and judge the result. |
+| `lit +<skill> +<skill> <task>` | Name the skills for this task yourself (up to three), for example `lit +viz +review build the results page`. Without it, `lit` proposes a plan when a prompt fits more than one skill. |
+| `lit team <task>` or `/lit-team` | This session leads a team: it splits the work, hands slices to `delegate_task` children (or herdr panes, worktrees or Kanban when they fit), merges, re-checks and reports once. Members never commit. |
 | `litresearch` or `lit research <question>` | Run the research workflow, with source notes. |
 | `/lit-loop` | Start, inspect, resume or close an explicit loop. |
 | `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints and blockers. |
@@ -252,7 +260,7 @@ Every route above also works through a Hermes gateway such as Telegram or Discor
 | `/lit-pptx <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
 | `/lit-docx <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
 | `/lit-hijack <brief>` | Port published know-how into your own skill, clean-room: capture, licence gate, spec, build, parity. |
-| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | A KPI board of recent sessions: the one thing to do now, done and left counts, milestones, reminders; `--detail` adds the per-session brief. Read-only. |
+| `/lit-adhd [recap [session]] [--here] [--since 7d] [--max 12] [--detail] [--en]` | A six-line card of recent sessions with the one thing to do now; `--detail` shows the KPI board and the per-session brief; `recap` recaps one session (also `/lit-recap`). Read-only. |
 | `/lit-typographic-motion <brief>` | Moved to `wjgoarxiv-skills`: says where the skill went and gives the line that installs it. |
 
 On a Telegram gateway, use `/lit_loop` and `/lit_plan`. The [operating guide](./guide.md) has the full command examples and hook behavior. When the acknowledgement line shows after a command, the work has started. Check the result yourself, including any visual check, before you rely on it.

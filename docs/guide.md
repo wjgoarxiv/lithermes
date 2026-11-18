@@ -101,7 +101,7 @@ flowchart LR
     end
     PY --> CORE --> LEDGER
     CORE --> GOAL --> LEDGER
-        LH --> S["40 skills"]
+        LH --> S["41 skills"]
 ```
 
 > **The host boundary in one view:** Hermes supplies the Python plugin host, while LitHermes routes commands through its contracts and ledger and adds the 40-skill workflow catalog. Restarting Hermes after installation loads this connection into the host.
@@ -116,7 +116,10 @@ flowchart LR
 | `/review-work` | Review a plan (before `start-work`) or completed work, picked from what exists or forced with `plan` or `work`, without implementing the review. |
 | `/start-work` | Execute an already-approved plan only. |
 | `/litgoal` | Set and keep the finish line: criteria, evidence, checkpoints, and blockers. `lit-loop` and `start-work` run toward it. |
-| `/lit-recap` | Read a concise Korean recap of work and evidence. |
+| `/lit-adhd` | A six-line card of where your recent sessions stand, with one thing to do and the exact text to type; `--detail` for the KPI board, `recap [session]` for a one-session recap. |
+| `/lit-recap` | Alias of `/lit-adhd recap`: the same Korean recap of work and evidence, with a one-line note that it moved. |
+| `/lit-team` | Team mode led by this session: owned slices through `delegate_task`, watched, merged, re-verified, one report. Members never commit. |
+| `/ultra-brainstorm` | Ask once how many idea children to launch, show the cost, fan out through `delegate_task` and judge the result. |
 | `/lit-handoff` | Write a verified continuation packet. |
 | `/lit-scientific-visualization` | Moved to `wjgoarxiv-skills`; says where the skill went and gives the copy line. |
 | `/lit-humanizer` | Revise Korean and English prose while preserving meaning. Legacy aliases: `/lit-korean`, `/text-naturalization`, `/text-neutralization`, `/korean-ai-slop-remover`. |
@@ -145,7 +148,7 @@ wait.
 The complete skill catalog is `lit-burnoff-file`, `autoconference`, `autoresearch`,
 `comment-checker`, `lit-comprehend`, `structural-search`, `browser-drive`, `debugging`,
 `deep-interview`, `frontend-ui-ux`, `readme-studio`, `lit-commit`, `lit-crucible`, `lit-init`,
-`lit-brainstorm`, `lit-humanizer`, `lit-recap`, `lit-handoff`,
+`lit-brainstorm`, `ultra-brainstorm`, `lit-team`, `lit-humanizer`, `lit-handoff`,
 `lit-scientific-visualization`, `lit-diagram-drawer`, `lit-schematic`, `lit-pptx`, `lit-docx`,
 `lit-hijack`, `lit-adhd`, `lit-typographic-motion`, `lsp`, `lsp-setup`, `litresearch`, `lit-code`,
 `refactor`, `lit-burnoff`, `review-work`, `rules`, `start-work`, `visual-qa`,
@@ -172,6 +175,12 @@ flowchart LR
 Natural routing sends a standalone lit or litwork, and exact intents such as `lit plan`, `lit review`, `lit research`, `lit goal`, `lit workflow`, `lit kanban`, and `lit team` to their matching modes. Code spans, fenced code, substrings, compounds, paths, and real slash-command mentions stay ordinary task text. `lit start work` is `BLOCKED`; invoke `/start-work <approved-plan>` explicitly.
 
 After `lit-plan` saves a plan under `plans/`, a bare `go` in the same session within 30 minutes shows that plan's `/start-work` command; it never starts the run. A plan whose todos name a folder outside the project carries a `Scope roots: <path> (<actions>)` line; `/start-work` lists any such folder no line covers, as advice only, because bounded work grants nothing outside its worktree.
+
+When a `lit` prompt fits more than one skill, for example a deck plus a flowchart, the route still picks one to lead and adds a short skill plan of at most three, in the order the work needs them. Moved skills appear only when they are installed on this profile; otherwise the plan ends with the one line that installs them. A risky design ask (a migration, an architecture or security change) brings `lit-crucible` along, and a read-only route such as a review never gains a writing companion. To choose the skills yourself, type them after `lit`: `lit +viz +review build the results page`.
+
+`lit team <task>` makes this session the lead. It writes the split to `.hermes/lithermes/team/<slug>/team.md`, hands each slice out through one `delegate_task` batch (or herdr panes when `HERDR_ENV=1` and herdr is installed, separate `git worktree` folders when two slices edit one file, Kanban when you want a board), and gives each member its own scratch folder and a no-commit rule. It then ticks the file as results come back, merges, reruns every check on the merged tree and reports once.
+
+A plan from `lit-plan` ends in a `## Done when` block with one `check:` command. After saving, lit-plan runs `hermes lithermes goal propose plans/<f>.md`, which builds `Every row in plans/<f>.md is ticked and \`<check>\` exits 0 [lit:<id>]`, refuses judgment words and push or publish steps, and runs the check once to prove it fails today. It then asks `Approve plan, start work and set goal: /goal <condition>? (yes / edit / no)`; when the condition was refused it asks `Approve plan and start work? (yes / no)` and names the reason. An exact `yes`, typed in the same session that was asked, starts the plan the way `/start-work <plan>` would (from any other session it starts nothing and says to run `/start-work <plan>`), and only once that start worked does it accept the goal. Hermes' own `/goal` stays yours, so the accepted goal comes back as two lines to paste, `/goal <condition>` and `/goal gate add <check>`. If the start is refused, nothing is started and no goal is accepted. Once every row is ticked, the turn-end hook runs the check once and the next turn opens with whether the condition holds.
 
 `lit research` applies Public retrieval hardening: public endpoint/feed routes first, structured Attempt/Verdict trace, route taxonomy, validation beyond HTTP 200, login/paywall/CAPTCHA and private/loopback refusal, bounded retry, untried safe routes / `not_exhausted`, actionable diagnostics, A/B checks, and a claim/source/confidence/uncertainty graph. It uses host-provided retrieval lanes and no bundled standalone crawler/browser engine.
 

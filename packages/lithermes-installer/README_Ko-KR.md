@@ -48,17 +48,19 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 | `/start-work <승인된 계획>` | `start-work` | 승인한 계획 실행 |
 | `lit review [plan\|work] <대상>` 또는 `/review-work` | `review-work` | `start-work` 전의 계획 검토, 또는 끝난 작업 검토 |
 | `lit brainstorm <요청>` | `lit-brainstorm` | 열린 요청에 대한 여러 선택지와, 고를 수 있는 짧은 목록 |
+| `ultra-brainstorm <요청>` 또는 `/ultra-brainstorm` | `ultra-brainstorm` | 아이디어 자식을 몇 개 띄울지 비용과 함께 한 번 묻고, 판정한 상위 목록을 줍니다. 읽기 전용입니다 |
+| `lit team <작업>` 또는 `/lit-team` | `lit-team` | 이 세션이 팀장이 되어 조각을 나누고, 결과를 합쳐 다시 확인하고, 한 번 보고합니다. 팀원은 커밋하지 않습니다 |
 | `lit research <질문>` | `litresearch` | 출처 메모가 있는 조사 |
 | `/lit-humanizer` | `lit-humanizer` | 의미를 지키며 한국어·영어 문장 다듬기 |
 | `/lit-diagram-drawer <brief>` | `lit-diagram-drawer` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-schematic <brief>` | `lit-schematic` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-hijack <brief>` | `lit-hijack` | 라이선스 게이트와 parity 검증을 거친 공개 노하우의 클린룸 포팅 |
-| `/lit-adhd [--here] [--since 7d] [--max 12] [--detail]` | `lit-adhd` | 최근 세션을 KPI 보드로 보여 줍니다. 지금 할 일, 끝낸 일과 남은 일 개수, 마일스톤, 알림이 나오고 `--detail`이면 세션별 브리핑이 붙습니다. 읽기 전용입니다. |
+| `/lit-adhd [recap [세션]] [--here] [--since 7d] [--max 12] [--detail] [--en]` | `lit-adhd` | 최근 세션을 여섯 줄 카드로 보여 줍니다. 바뀐 것, 지금 할 일 하나와 칠 입력이 나오고, `--detail`이면 KPI 보드를, `recap`이면 세션 하나의 리캡을 보여 줍니다(`/lit-recap`도 그대로 됩니다). 읽기 전용입니다. |
 | `/lit-pptx <brief>` | `lit-pptx` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-docx <brief>` | `lit-docx` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 | `/lit-typographic-motion <brief>` | `lit-typographic-motion` | `wjgoarxiv-skills`의 LitFamily 확장: 폴더와 복사 줄을 알려 줍니다 |
 
-Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:review-work`, `lithermes:lit-humanizer`처럼 씁니다. 스킬 40개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에 있습니다. 그 가운데 아홉 개는 `wjgoarxiv-skills`에 있는 LitFamily 확장의 스텁입니다.
+Telegram gateway에서는 `/lit_loop`와 `/lit_plan`을 쓰세요. 모든 스킬은 `lithermes:<이름>`으로도 불러올 수 있습니다. 예를 들어 `lithermes:review-work`, `lithermes:lit-humanizer`처럼 씁니다. 스킬 41개 전체는 [스킬과 명령](https://github.com/wjgoarxiv/lithermes/blob/main/docs/skills.ko.md)에 있습니다. 그 가운데 아홉 개는 `wjgoarxiv-skills`에 있는 LitFamily 확장의 스텁입니다.
 
 ## 확장
 
