@@ -802,7 +802,7 @@ def _pre_verify(**kwargs: Any) -> dict[str, str] | None:
 
 
 def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
-    """Append the cross-session goal row, the parked row and any installer notice after the reply's mark.
+    """Append the cross-session goal row, the parked row, any installer notice and the lit-loop goal question after the reply's mark.
 
     A `lit cancel|approve|deny` receipt is the whole reply: it is returned alone,
     before any other transform can add its mark or row to it.
@@ -815,6 +815,7 @@ def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
         core._lit_reentry.take_visible(_goal_resume_session(kwargs)),
         _parked_row(kwargs),
         install_notices.take_visible(platform=kwargs.get("platform"), response_text=kwargs.get("response_text")),
+        core.take_goal_row(kwargs.get("session_id")),
     ):
         if row:
             base = named if named is not None else str(kwargs.get("response_text") or "")

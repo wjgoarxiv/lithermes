@@ -32,7 +32,8 @@ LITWORK_ROUTES = {
     "litwork": "litwork fix the typo in README.md",
     "short-film": "lit make a short film about the ocean",
 }
-LITWORK_BUDGET = 4000
+# The host's own cap (MAX_HOST_CONTEXT_BYTES). A lit-loop's first activation adds one goal line.
+LITWORK_BUDGET = 4096
 LIT_PLAN_BUDGET = 3600
 LITRESEARCH_BUDGET = 4000
 

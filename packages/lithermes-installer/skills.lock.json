@@ -567,12 +567,12 @@
     },
     "litwork": {
       "skillMd": {
-        "bytes": 26073,
-        "sha256": "ad8092fce7080bc6e876524e9dfdba93514423befb1691ba8dca3454f1f89afc"
+        "bytes": 27437,
+        "sha256": "9e50084a8587670da645187b003eb400ef3ce0852b6faa6d36549cc2736aa4eb"
       },
       "files": 1,
-      "bytes": 26073,
-      "sha256": "b3aed15512a3f5c4a8502a082624ae0f689a5d0ead5d0ac6dc3de0af31a4be83"
+      "bytes": 27437,
+      "sha256": "c4968c3f6e74abbffc79ed393ab2adf4abd2d32372a5cf4096e9dc25d8ec87dd"
     },
     "lsp": {
       "skillMd": {

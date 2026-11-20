@@ -301,6 +301,22 @@ Native `/goal` is optional user-managed state that LitHermes does not observe or
 mutate. Declare the
 authoritative durable objective and success criteria with `goal_set` (objective +
 3+ criteria). Goals are unlimited; never invent a numeric budget or limit.
+
+A lit-loop with no plan gets one native goal question of its own, asked once at the run's first
+activation. When the project has a test command (`npm test`, `pytest`, `cargo test`,
+`go test ./...`), the prompt hook records it and draws
+`Set goal for this lit-loop: /goal <cond>? (yes / no)` under your reply itself, so it never depends
+on you asking; do not ask it again or repeat it. The condition is that check exiting 0 with the
+objective done. Without a test command, once a failing check proves the objective (after the RED
+step), run `hermes lithermes goal propose --loop --check "<check>" <objective>` from the workspace
+and end your reply with the line it prints; a check that already passes, cannot run or is not an
+allowlisted test command prints `No goal set: <reason>.` and records nothing, so go on without a
+goal. Only the user's exact `yes` in the session that was asked accepts: the hook records the intent
+and starts no start-work run, and Hermes' `/goal` stays the user's, so acceptance comes back as
+`/goal <cond>` and `/goal gate add <check>` to paste. `no`, `edit` and any other reply drop the
+question. Never read or write the goal records (`consent.json`, `intent.json` under
+`$HERMES_HOME/lithermes/goal/`), never type or send `/goal` yourself, and never claim a goal is set.
+litgoal keeps its own durable ledger authoritative either way.
 The criteria MUST list, upfront:
 - The user-visible deliverable in one line.
 - 3+ realistic QA scenarios: happy path, edge cases (boundary / empty /

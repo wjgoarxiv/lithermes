@@ -20,6 +20,11 @@ finds them while it works in the workspace: `$HERMES_HOME/lithermes/goal/<worksp
                   the asking session once its turn ended                        (asked)
     intent.json   the user's exact `yes` to that question                           (accepted)
     result.json   the turn-end advisory run of the check, read on the next turn      (checked)
+
+A `lit` / `lit-loop` run with no plan gets one question of its own, `kind: "loop"`: the condition is
+the project's test command exiting 0 with the objective done, there are no plan rows, and the
+question carries its asking session from the start. Only the exact `yes` records the intent; it
+starts nothing. `no` or any other reply from the asking session drops the question.
 """
 
 from __future__ import annotations
@@ -34,8 +39,16 @@ import time
 from pathlib import Path
 from typing import Any
 
+try:
+    from .redaction import redact_text
+except (ImportError, ModuleNotFoundError):
+    from redaction import redact_text  # type: ignore
+
 GOAL_MAX_CHARS = 500
 FALSIFY_TIMEOUT_SECONDS = 120
+LOOP_OBJECTIVE_CHARS = 180
+LOOP_CONSENT_TTL_SECONDS = 30 * 60
+LOOP_INTENT_TTL_SECONDS = 24 * 60 * 60
 
 _JUDGMENT_WORDS = (
     r"\bworks?\b", r"\bworking\b", r"\blooks? (?:good|fine|right|nice|great)\b", r"\bseems?\b",
@@ -65,10 +78,26 @@ _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _DONE_WHEN = re.compile(r"^##\s+Done when\s*$", re.IGNORECASE)
 _CHECK_LINE = re.compile(r"^\s*(?:[-*]\s+)?check:\s*`([^`\n]+)`\s*$")
 _PLAN_PATH = re.compile(r"^plans/[\w.-]+\.md$")
+_LOOP_LEAD = re.compile(r"^\s*(?:-?loop|work)\b\s*", re.IGNORECASE)
+_UNSAFE_COMMANDS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\b(?:rm|rmdir)\s+-r(?:f)?\b[^;&|\n]*",
+        r"\b(?:sudo|eval|exec)\b[^;&|\n]*",
+        r"\b(?:npm|pnpm|yarn)\s+(?:publish|unpublish)\b[^;&|\n]*",
+        r"\bgit\s+(?:push|reset|clean)\b[^;&|\n]*",
+    )
+)
 
 STATUS = {
     "asked": "Approve plan, start work and set goal: /goal {condition}? (yes / edit / no)",
     "asked_start": "Approve plan and start work? (yes / no)",
+    "loop_asked": "Set goal for this lit-loop: /goal {condition}? (yes / no)",
+    "loop_accepted": (
+        "Goal accepted for this lit-loop, not set by LitHermes: Hermes /goal stays yours. "
+        "Paste these two lines to arm it: /goal {condition}  then  /goal gate add {check}"
+    ),
+    "loop_declined": "No goal set: you said no.",
     "skipped": "No goal set: {reason}.",
     "not_started": "Plan not started: {reason}.",
     "accepted": (
@@ -189,6 +218,62 @@ def falsify(workspace: Path, plan_text: str, check: str, *, timeout: int = FALSI
     return {"ok": True, "open": total - ticked, "exit": code}
 
 
+def loop_objective(text: str) -> str:
+    """The objective a lit-loop goal names: one redacted line, slash lines and risky commands gone.
+
+    User text is inert data here: it is never run, only quoted into the condition after this pass.
+    """
+    lines = [line for line in str(text or "").splitlines() if not line.lstrip().startswith("/")]
+    cleaned = redact_text(" ".join(lines))
+    for pattern in _UNSAFE_COMMANDS:
+        cleaned = pattern.sub("[UNSAFE_COMMAND_REDACTED]", cleaned)
+    cleaned = " ".join(cleaned.split())
+    cleaned = _LOOP_LEAD.sub("", cleaned, count=1)
+    return cleaned[:LOOP_OBJECTIVE_CHARS].strip()
+
+
+def compile_loop_condition(objective: str, check: str) -> dict[str, Any]:
+    """A lit-loop's condition: its check exits 0 and its objective is done. No plan, so no rows."""
+    ident = goal_id(f"loop\0{objective}", check)
+    condition = f"`{check}` exits 0 and this is done: {objective} [lit:{ident}]"
+    if len(condition) > GOAL_MAX_CHARS:
+        return {"ok": False, "reason": f"the condition is over {GOAL_MAX_CHARS} characters; shorten the objective"}
+    return {"ok": True, "condition": condition, "id": ident}
+
+
+def detect_check(workspace: Path) -> str | None:
+    """The project's own test command for the question the prompt hook asks; None when it has none."""
+    root = Path(workspace)
+    try:
+        scripts = json.loads((root / "package.json").read_text(encoding="utf-8")).get("scripts")
+        if isinstance(scripts, dict) and isinstance(scripts.get("test"), str):
+            return "npm test"
+    except (OSError, ValueError, AttributeError):
+        pass
+    for name, check in (("pytest.ini", "pytest"), ("pyproject.toml", "pytest"), ("Cargo.toml", "cargo test"), ("go.mod", "go test ./...")):
+        if (root / name).is_file():
+            return check
+    return None
+
+
+def falsify_loop(workspace: Path, check: str, *, timeout: int = FALSIFY_TIMEOUT_SECONDS, run=subprocess.run) -> dict[str, Any]:
+    """A lit-loop has no unticked rows to keep its goal false, so its check must fail right now."""
+    try:
+        result = run(
+            shlex.split(check), cwd=str(workspace), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, timeout=timeout, check=False, shell=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "reason": f"`{check}` did not finish within {timeout} s"}
+    except (OSError, ValueError):
+        return {"ok": False, "reason": f"`{check}` cannot run here"}
+    if result.returncode == 127:
+        return {"ok": False, "reason": f"`{check}` cannot run here"}
+    if result.returncode == 0:
+        return {"ok": False, "reason": f"`{check}` already passes, so the goal would be met at once; write the failing test first"}
+    return {"ok": True, "exit": result.returncode}
+
+
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     staging = path.with_name(f"{path.name}.{os.getpid()}.tmp")
@@ -235,6 +320,85 @@ def propose(workspace: Path, plan_arg: str, *, now: float | None = None, timeout
     return {"line": STATUS["asked"].format(condition=refused["condition"]), "consent": consent}
 
 
+def propose_loop(
+    workspace: Path, check: str, objective: str, *, session_id: str = "", now: float | None = None,
+    timeout: int = FALSIFY_TIMEOUT_SECONDS, run=subprocess.run, falsify_now: bool = True,
+) -> dict[str, Any]:
+    """The lit-loop question once its check exists; records it, or records nothing and says why.
+
+    `falsify_now=False` skips the dry run: the prompt hook cannot wait on a test run, and the
+    objective clause keeps such a goal false until the work is done. A hook-asked question carries
+    its session at once; one asked through the CLI is bound when its turn ends, like a plan's.
+    """
+    workspace = Path(workspace).resolve()
+    goal = loop_objective(objective)
+    command = " ".join(str(check or "").split())
+    if not goal:
+        return {"line": STATUS["skipped"].format(reason="name what the loop should finish")}
+    built = compile_loop_condition(goal, command)
+    if not built["ok"]:
+        return {"line": STATUS["skipped"].format(reason=built["reason"])}
+    lint = lint_condition(built["condition"], command)
+    if not lint["ok"]:
+        return {"line": STATUS["skipped"].format(reason="; ".join(lint["reasons"]))}
+    if falsify_now:
+        dry = falsify_loop(workspace, command, timeout=timeout, run=run)
+        if not dry["ok"]:
+            return {"line": STATUS["skipped"].format(reason=dry["reason"])}
+    consent = {
+        "version": 2, "kind": "loop", "condition": built["condition"], "check": command, "id": built["id"],
+        "plan": None, "objective": goal, "askedAt": time.time() if now is None else now,
+    }
+    if session_id:
+        consent["session"] = session_id
+    consent["hash"] = consent_hash(consent)
+    _write_json(goal_dir(workspace) / "consent.json", consent)
+    return {"line": STATUS["loop_asked"].format(condition=built["condition"]), "consent": consent}
+
+
+def offer_loop(workspace: Path, session_id: str, objective: str, *, now: float | None = None) -> dict[str, Any] | None:
+    """The prompt hook's question for a lit-loop's first activation, or None when it asks nothing.
+
+    It asks only with an objective, a project test command, and no goal owned (an accepted intent)
+    or pending (a live question). An accepted loop goal counts as owned for a day. Nothing runs here.
+    """
+    if not session_id or not loop_objective(objective):
+        return None
+    folder = goal_dir(workspace)
+    stamp = now if now is not None else time.time()
+    if (folder / "intent.json").exists():
+        if not _loop_intent_is_spent(_read_json(folder / "intent.json"), stamp):
+            return None
+        (folder / "intent.json").unlink(missing_ok=True)
+    pending = _read_json(folder / "consent.json")
+    if (folder / "consent.json").exists() and not (
+        pending and pending.get("kind") == "loop" and not _loop_is_live(pending, stamp)
+    ):
+        return None
+    check = detect_check(workspace)
+    if not check:
+        return None
+    offer = propose_loop(workspace, check, objective, session_id=session_id, now=now, falsify_now=False)
+    return offer if offer.get("consent") else None
+
+
+def _loop_intent_is_spent(intent: dict[str, Any] | None, now: float) -> bool:
+    """An accepted lit-loop goal stops blocking the next question a day after the yes.
+
+    LitHermes cannot see Hermes' own `/goal`, and a loop goal has no plan rows to tick, so a day
+    stands in for "finished". A plan's intent is retired by its own check instead and never ages out.
+    """
+    if not intent or intent.get("kind") != "loop":
+        return False
+    accepted = intent.get("acceptedAt")
+    return isinstance(accepted, (int, float)) and now - accepted > LOOP_INTENT_TTL_SECONDS
+
+
+def _loop_is_live(consent: dict[str, Any], now: float) -> bool:
+    asked = consent.get("askedAt")
+    return isinstance(asked, (int, float)) and 0 <= now - asked <= LOOP_CONSENT_TTL_SECONDS
+
+
 def _goal_refusal(workspace: Path, plan: str, plan_text: str, *, timeout: int, run) -> str | dict[str, str]:
     """The reason no goal can be set for this plan, or {condition, check, id} when one can."""
     if re.search(r"(?m)^goal:\s*never\s*$", plan_text):
@@ -255,8 +419,9 @@ def _goal_refusal(workspace: Path, plan: str, plan_text: str, *, timeout: int, r
 
 
 def consent_hash(consent: dict[str, Any]) -> str:
-    """Binds the answer to exactly what was asked: the plan, the condition and the check."""
-    return condition_hash("\0".join(str(consent.get(key) or "") for key in ("plan", "condition", "check")))
+    """Binds the answer to exactly what was asked: the plan, the condition and the check (and a loop's kind)."""
+    keys = ("plan", "condition", "check") + (("kind",) if consent.get("kind") == "loop" else ())
+    return condition_hash("\0".join(str(consent.get(key) or "") for key in keys))
 
 
 def consent_answer(prompt: str) -> str | None:
@@ -266,6 +431,10 @@ def consent_answer(prompt: str) -> str | None:
 
 
 def consent_is_intact(consent: dict[str, Any] | None) -> bool:
+    if consent and consent.get("kind") == "loop":
+        if not isinstance(consent.get("condition"), str) or not consent["condition"] or consent.get("plan") is not None:
+            return False
+        return consent.get("hash") == consent_hash(consent) and isinstance(consent.get("askedAt"), (int, float))
     if not consent or not isinstance(consent.get("condition"), str) or not _PLAN_PATH.match(str(consent.get("plan") or "")):
         return False
     return consent.get("hash") == consent_hash(consent) and isinstance(consent.get("askedAt"), (int, float))
@@ -299,13 +468,15 @@ def answer_consent(
     A refused start records nothing and says why.
     """
     answer = consent_answer(prompt)
-    if answer is None:
-        return {}
     folder = goal_dir(workspace)
     consent = _read_json(folder / "consent.json")
     now = time.time() if now is None else now
+    if answer is None and not (consent and consent.get("kind") == "loop"):
+        return {}
     if not consent_is_intact(consent):
         return {}
+    if consent.get("kind") == "loop":
+        return _answer_loop(folder, consent, answer, session_id, now)
     if not session_id or consent.get("session") != session_id:
         return {"line": STATUS["other_session"].format(plan=consent["plan"])} if answer == "yes" else {}
     (folder / "consent.json").unlink(missing_ok=True)
@@ -330,6 +501,27 @@ def answer_consent(
     }
 
 
+def _answer_loop(folder: Path, consent: dict[str, Any], answer: str | None, session_id: str, now: float) -> dict[str, str]:
+    """A lit-loop question is answered by the session that was asked, and only by the exact `yes`.
+
+    That session's next prompt always settles it: `yes` records the intent (nothing is started),
+    `no` says so, and `edit`, any other words or a stale question just drop it. Another session
+    never touches it.
+    """
+    if not session_id or consent.get("session") != session_id:
+        return {}
+    (folder / "consent.json").unlink(missing_ok=True)
+    if answer not in {"yes", "no"} or not _loop_is_live(consent, now):
+        return {}
+    if answer == "no":
+        return {"line": STATUS["loop_declined"]}
+    _write_json(folder / "intent.json", {**consent, "acceptedAt": now})
+    return {
+        "line": STATUS["loop_accepted"].format(condition=consent["condition"], check=consent["check"]),
+        "note": "The user's `yes` answered the goal question only. Go on with the lit-loop work; never type /goal yourself.",
+    }
+
+
 def _one_line(text: str) -> str:
     line = " ".join(str(text or "").split())
     line = re.sub(r"^BLOCKED:\s*", "", line).rstrip(".")
@@ -346,6 +538,8 @@ def turn_end_check(workspace: Path, *, timeout: int = FALSIFY_TIMEOUT_SECONDS, r
     intent = _read_json(folder / "intent.json")
     if not intent or not intent.get("condition") or intent.get("hash") != consent_hash(intent):
         return None
+    if intent.get("kind") == "loop":
+        return None  # no plan rows to wait on; Hermes' own gate runs a loop goal's check
     try:
         plan_text = (Path(workspace) / str(intent["plan"])).read_text(encoding="utf-8")
     except (OSError, KeyError):

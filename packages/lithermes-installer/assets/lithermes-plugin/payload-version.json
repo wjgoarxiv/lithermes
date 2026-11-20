@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-18T14:50:11.134Z",
+  "syncedAt": "2026-11-20T12:20:35.670Z",
   "source": "bundled-payload",
-  "sourceHash": "2343adf2e3563756925fbb0c72b563f060d5dbe3b1c44882e9e146630509075c",
+  "sourceHash": "88e09546a1c84c31e020c3b35126227a3a01b846833aa35558bc1188bfca6a0b",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "3aa6eeae83313ca77c15e44391611efffb1e962f65e4ab4ead888d0e84c39083"
+      "sha256": "a3a4c729e8145447fdde46d43399eabe5df8f3bf80d0e29e9946131d8cb09d6d"
     },
     {
       "path": "adhd_stack.py",
@@ -37,7 +37,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "e02d487fa73e718662efabe1edba79190c4c180db704c45ef5d69383eda30ee1"
+      "sha256": "f1b58d8da324bdc922e65e7d5e4eab2166889f565ce69e5b569a7bca8077a202"
     },
     {
       "path": "core_commands.py",
@@ -117,7 +117,7 @@
     },
     {
       "path": "goal_pipeline.py",
-      "sha256": "e08c2e804de77f3d5ff618129f5dd1e78a1658f05cade9e144c1375ae8e9dd0f"
+      "sha256": "6b4b59cf30550c48de16f6ed4f137f8fec9c3b4084d0475f69ffba46a26f561f"
     },
     {
       "path": "goal_stages.py",
@@ -177,7 +177,7 @@
     },
     {
       "path": "litgoal/cli.py",
-      "sha256": "03c247630fd57e7697c6742f85b47aa647a8fa704ee2b6598ef092de65d7496c"
+      "sha256": "cadf220dc6c8af230f547076bff2e4aa645d6ff9d8cf14460bae4f59e59bc237"
     },
     {
       "path": "litgoal/fingerprint.py",
@@ -1417,7 +1417,7 @@
     },
     {
       "path": "skills/litwork/SKILL.md",
-      "sha256": "ad8092fce7080bc6e876524e9dfdba93514423befb1691ba8dca3454f1f89afc"
+      "sha256": "9e50084a8587670da645187b003eb400ef3ce0852b6faa6d36549cc2736aa4eb"
     },
     {
       "path": "skills/lsp/SKILL.md",

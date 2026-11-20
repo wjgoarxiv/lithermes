@@ -128,6 +128,8 @@ _PENDING_DISCIPLINE: dict[str, str] = {}
 # Sessions whose pending lit-adhd reply is the recap view, which keeps the workflow map row.
 _PENDING_RECAP_VIEW: set[str] = set()
 _PENDING_BLOCK: dict[str, str] = {}
+# The lit-loop goal question the hook asked this turn; it is drawn under the reply, once.
+_PENDING_GOAL_ROW: dict[str, str] = {}
 # Mutated paths observed by post_tool_call, keyed by session, drained by the next
 # pre_llm_call. Bounded so an abandoned or delegate-child session cannot grow it.
 _PENDING_POST_EDIT: dict[str, list[str]] = {}
@@ -761,6 +763,8 @@ def _evict_pending_browser_state() -> None:
         _PENDING_RECAP_VIEW.discard(stale)
     while len(_PENDING_BLOCK) > _MAX_BROWSER_DRIVE_SESSIONS:
         _PENDING_BLOCK.pop(next(iter(_PENDING_BLOCK)), None)
+    while len(_PENDING_GOAL_ROW) > _MAX_BROWSER_DRIVE_SESSIONS:
+        _PENDING_GOAL_ROW.pop(next(iter(_PENDING_GOAL_ROW)), None)
 
 
 def _has_http_url(value: str) -> bool:
@@ -1808,6 +1812,8 @@ def goal_status_lines(**kwargs: Any) -> tuple[str, str]:
         return "", ""
     block = lambda line: _goal_block(_escape_goal_line(line)) if line else ""  # noqa: E731
     consent = block(answer.get("line", ""))
+    if answer.get("note"):
+        consent = f"{consent}\n\n{_escape_goal_line(answer['note'])}"
     if answer.get("context"):
         session_id = str(kwargs.get("session_id") or "")
         if session_id:
@@ -1832,6 +1838,39 @@ def _start_plan_from_consent(workspace: Path, plan: str) -> tuple[bool, str]:
 
 def _escape_goal_line(line: str) -> str:
     return line.replace("<", "&lt;").replace(">", "&gt;")
+
+
+# Short on purpose: the litwork route already fills 3952 of the host's 4096 bytes on a first turn.
+_LOOP_GOAL_SHOWN = "Goal: LitHermes shows the user a goal question below your reply; do not ask it."
+_LOOP_GOAL_FALLBACK = (
+    'Goal: after RED run `hermes lithermes goal propose --loop --check "<cmd>" <objective>`; '
+    "end your reply with its line."
+)
+
+
+def _loop_goal_context(workspace: Path, session_id: str, platform: str, objective: str) -> str:
+    """The goal note for a lit-loop's first activation, and the question the user is shown.
+
+    With a project test command the hook records one question (no test run here) and queues it as a
+    row under the reply, so it never depends on the model asking. Without one, the note points the
+    model at the propose command to run after its RED check. A cron run has nobody to answer.
+    """
+    if platform.strip().lower() == "cron" or not _goal_pipeline.loop_objective(objective):
+        return ""
+    try:
+        offer = _goal_pipeline.offer_loop(workspace, session_id, objective) if session_id else None
+    except Exception:  # noqa: BLE001 - the goal question is advisory; never cost the turn
+        offer = None
+    if offer is None:
+        return _LOOP_GOAL_FALLBACK
+    _PENDING_GOAL_ROW[session_id] = offer["line"]
+    _evict_pending_browser_state()
+    return _LOOP_GOAL_SHOWN
+
+
+def take_goal_row(session_id: object) -> str:
+    """The lit-loop goal question to draw under this turn's reply, once; "" when there is none."""
+    return _PENDING_GOAL_ROW.pop(str(session_id or ""), "")
 
 
 def goal_turn_end(**kwargs: Any) -> None:
@@ -1933,6 +1972,7 @@ def _route_pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     _PENDING_IGNITE.discard(session_id)
     _PENDING_DISCIPLINE.pop(session_id, None)
     _PENDING_BLOCK.pop(session_id, None)
+    _PENDING_GOAL_ROW.pop(session_id, None)
     # /litgoal & /lit-plan carry a legacy bind-goal marker. It remains a bounded
     # route envelope only; native /goal is user-managed and never mutated here.
     bind_obj = _extract_bind_goal(user_message)
@@ -2071,6 +2111,7 @@ def _route_pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
 
     direct = DIRECT_LIT_PATTERN.match(route.visible_message)
     run_binding = ""
+    goal_note = ""
     if direct or route.objective:
         task = route.objective or _clamp_task(direct.group("task") if direct else "")
         if task and workspace is not None:
@@ -2082,19 +2123,21 @@ def _route_pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
             run_binding = build_run_binding(load_run_state(run_dir))
             _lit_reentry.remember(session_id, active, run=str(run_dir), compacted=compacted)
             _adhd_stack.push(workspace, session_id, active)
+            goal_note = _loop_goal_context(workspace, session_id, str(kwargs.get("platform") or ""), task)
     ui_handoff = litwork_ui_handoff(route.objective)
     # A bare `lit` with nothing active asks what to start; every other activation is unchanged.
     idle_note = f"\n\n{_lit_reentry.IDLE_NOTE}" if not run_binding and step.idle else ""
+    goal_tail = f"\n\n{goal_note}" if goal_note else ""
     if requested_reader_mode is None:
         if run_binding:
             return {
                 "context": (
-                    f"{build_litwork_context(run_binding)}{ui_handoff}\n\n"
+                    f"{build_litwork_context(run_binding)}{ui_handoff}{goal_tail}\n\n"
                     f"{reader_facing_contract_block(compact=True)}"
                 )
             }
         return {"context": LIT_CONTEXT + ui_handoff + idle_note}
-    return with_reader_contract(build_litwork_context(run_binding) + ui_handoff + idle_note)
+    return with_reader_contract(build_litwork_context(run_binding) + ui_handoff + goal_tail + idle_note)
 
 
 def transform_llm_output(**kwargs: Any) -> str | None:

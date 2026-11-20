@@ -94,9 +94,11 @@ def setup(parser) -> None:
 
     p_prop = sub.add_parser(
         "propose",
-        help="build, lint and dry-run the goal condition of an approved plan; print the consent line",
+        help="build, lint and dry-run the goal condition of an approved plan (or, with --loop --check, a lit-loop's); print the consent line",
     )
-    p_prop.add_argument("plan", help="plans/<slug>.md inside the workspace")
+    p_prop.add_argument("words", nargs="*", help="plans/<slug>.md inside the workspace, or with --loop the objective")
+    p_prop.add_argument("--loop", action="store_true", help="ask the lit-loop goal question instead of a plan's")
+    p_prop.add_argument("--check", default="", help="with --loop: the failing test command that proves the objective")
 
 
 def handle(args) -> int:
@@ -172,7 +174,10 @@ def handle(args) -> int:
             from .. import goal_pipeline
         except ImportError:  # standalone test import via PYTHONPATH
             import goal_pipeline  # type: ignore
-        print(goal_pipeline.propose(ws, args.plan)["line"])
+        if args.loop:
+            print(goal_pipeline.propose_loop(ws, args.check, " ".join(args.words))["line"])
+        else:
+            print(goal_pipeline.propose(ws, args.words[0] if args.words else "")["line"])
         return 0
     if cmd == "complete":
         result = runtime.complete_goal(ws, session_id=sid, force=force)
