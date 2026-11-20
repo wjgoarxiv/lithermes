@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.44] - 2026-11-21
+
 - A `lit`, `lit-loop` or `litwork` run with no plan can now get a goal question too. At the run's first activation, when the prompt names an objective, the project has a test command (`npm test` from `package.json` scripts, `pytest`, `cargo test` or `go test ./...`) and no goal is accepted or waiting, the prompt hook records one question and draws `Set goal for this lit-loop: /goal \`<check>\` exits 0 and this is done: <objective> [lit:<id>]? (yes / no)` under the reply through `transform_llm_output`, so it never depends on the model asking; the model's context gets one short line saying so. The hook runs no test and the objective goes through the redactor first. Without a test command, the route points the model at the new `hermes lithermes goal propose --loop --check "<cmd>" <objective>`, to run after its RED check: it runs the check once, time-boxed and without a shell, and prints `No goal set: <reason>.` and records nothing when the check already passes, cannot run or is not an allowlisted test command. Only the exact `yes` (any case) from the session that was asked counts, within 30 minutes: the hook records the intent and starts no start-work run, and Hermes' `/goal` stays yours, so acceptance comes back as `/goal <condition>` and `/goal gate add <check>` to paste. `no`, `edit` and any other reply from that session drop the question. An accepted lit-loop goal holds back the next question for 24 hours, so a finished goal never blocks the next one forever; a plan's accepted goal is retired by its own check as before. A repeat `lit`, `lit goal` and `lit plan` ask nothing, and the litwork skill says so.
 
 ## [1.0.43] - 2026-11-18

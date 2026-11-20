@@ -382,8 +382,7 @@ class LoopGoalSurfaces(unittest.TestCase):
         self.assertIn("goal propose --loop --check", skill)
         self.assertIn("never type", skill.lower())
         changelog = (Path(_ASSET_DIR).parents[3] / "CHANGELOG.md").read_text(encoding="utf-8")
-        unreleased = re.split(r"\n## \[\d", changelog.split("## [Unreleased]", 1)[1], maxsplit=1)[0]
-        self.assertIn("Set goal for this lit-loop", unreleased)
+        self.assertIn("Set goal for this lit-loop", changelog)
 
 
 if __name__ == "__main__":
