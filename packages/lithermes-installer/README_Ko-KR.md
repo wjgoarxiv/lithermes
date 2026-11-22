@@ -15,7 +15,9 @@
 
 **Keep the work lit.**
 
-**Hermes Agent**용 플러그인입니다. 요청 앞에 `lit`을 붙이면 Hermes가 작업을 계획하고, 해내고, 결과를 확인한 뒤 어디까지 왔는지 적어 둡니다. 그래서 다음 세션이 그 기록을 읽고 멈춘 자리에서 이어 갈 수 있습니다.
+LitHermes는 [Hermes Agent](https://github.com/NousResearch/hermes-agent)에 붙여 쓰는 추가 기능입니다. Hermes가 "다 됐어요"라고 말하기 전에 자기 작업을 직접 확인하게 하고, 다음 세션이 멈춘 자리에서 바로 시작하도록 기록을 남깁니다.
+
+Hermes에게 기능 하나를 맡기면 코드를 쓰고 끝났다고 말합니다. 그런데 다음 날 보면 테스트는 한 번도 돌지 않았고, 새 세션을 열면 프로젝트 설명을 처음부터 다시 해야 합니다. LitHermes가 있으면 같은 요청에 `lit`만 붙이면 됩니다. Hermes는 이 작업에서 "끝났다"가 무슨 뜻인지부터 적고, 실패하는 테스트를 추가해 통과시킨 다음, 무엇을 확인했고 무엇은 확인하지 못했는지 알려 줍니다. 세션이 닫힐 때는 핸드오프 메모를 남기고, 같은 프로젝트의 다음 세션이 그 메모를 읽고 이어서 일합니다.
 
 **[GitHub의 README와 문서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.44/README.md)
 
@@ -38,6 +40,27 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 ```
 
 응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 나오면 lit 작업이 시작된 것입니다. 끝나면 파일을 직접 확인하고 `/lit-handoff`를 실행하세요. 같은 프로젝트의 다음 세션이 그 기록을 읽고 이어 갑니다. [자동 핸드오프](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.ko.md)는 기본값이 꺼짐이고, `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면 `/compact` 전에 인계 기록을 먼저 요청합니다.
+
+### 두 가지 사용법
+
+**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. 대부분의 일은 이것으로 충분합니다.
+
+```text
+src/dates.py의 날짜 파싱 버그 고쳐줘 lit
+```
+
+**본격적으로.** 큰 작업은 한 단계씩 밟아 갑니다. 앞 단계의 결과를 다음 단계가 이어받고, 필요 없는 단계는 건너뛰어도 됩니다.
+
+| 단계 | 입력 | 하는 일 |
+| --- | --- | --- |
+| 1. 넓게 보기 | `lit brainstorm <질문>` | 선택지를 넓게 펼친 뒤 장단점과 함께 몇 개로 추립니다 |
+| 2. 구체화 | `/deep-interview <아이디어>` | 만들 수 있을 만큼 목표가 분명해질 때까지 Hermes가 묻습니다 |
+| 3. 계획 | `lit-crucible <접근법>` 또는 `lit plan <작업>` | crucible은 접근법의 약점부터 찌르고 살아남은 것을 계획으로 넘깁니다. `lit plan`은 코드는 건드리지 않고 계획 파일을 씁니다 |
+| 4. 실행 | `/start-work <계획 파일>` 또는 `/lit-loop <작업>` | 테스트와 확인을 거치며 작업합니다 |
+| 5. 검토 | `/review-work` | 검토자 다섯이 변경을 따로 읽고, 찾은 문제부터 말합니다 |
+| 6. 넘겨주기 | `/lit-handoff` | 결과와 다음 할 일을 프로젝트의 `HANDOFF.md`에 남깁니다 |
+
+두 방법 모두 [설치](#설치)의 한 줄로 시작합니다.
 
 ## 할 수 있는 일
 

@@ -15,7 +15,9 @@
 
 **Keep the work lit.**
 
-A plugin for **Hermes Agent**. Put `lit` in front of a request, and Hermes plans the task, does it, checks the result and writes down where things stand, so the next session can pick up where this one stopped.
+LitHermes is an add-on for [Hermes Agent](https://github.com/NousResearch/hermes-agent). It makes Hermes check its own work before it says "done", and leaves a note so the next session starts where this one stopped.
+
+You ask Hermes for a feature. It writes the code and says it is finished, and a day later you find the tests never ran. You open a new session and explain the whole project again. With LitHermes you add `lit` to the same request. Hermes first writes down what "finished" means for this task, adds a test that fails, makes it pass, and ends by telling you what it checked and what it could not. When the session closes, it leaves a handoff note, and the next session in that project reads it and carries on.
 
 **[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.44/README_Ko-KR.md)
 
@@ -38,6 +40,27 @@ lit Build a to-do list in one HTML file without external dependencies. Implement
 ```
 
 The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the lit workflow has started. When the task is done, check the file yourself, then run `/lit-handoff` so the next session in this project can carry on from the note it writes. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
+
+### Two ways to use it
+
+**The easy way.** Write your request as usual and put `lit` at the start or at the end. Hermes sets the goal, writes a failing test, fixes the code, checks the result and tells you what it checked. Most tasks need nothing more:
+
+```text
+fix the date parsing bug in src/dates.py lit
+```
+
+**The full workflow.** For a bigger job, go one step at a time. Each step hands its result to the next, and you can skip any step you do not need.
+
+| Step | Type | What happens |
+| --- | --- | --- |
+| 1. Explore | `lit brainstorm <question>` | Many options, then a short list with trade-offs |
+| 2. Clarify | `/deep-interview <idea>` | Hermes asks questions until the goal is clear enough to build |
+| 3. Plan | `lit-crucible <approach>` or `lit plan <task>` | Crucible attacks the approach first and hands what survives to a plan; `lit plan` writes the plan file and changes no code |
+| 4. Build | `/start-work <plan file>` or `/lit-loop <task>` | Hermes does the work, with tests and checks along the way |
+| 5. Review | `/review-work` | Five reviewers read the change separately and lead with what they found |
+| 6. Hand off | `/lit-handoff` | The result and the next step go into `HANDOFF.md` in the project |
+
+Both start from the one install line under [Install](#install).
 
 ## What you get
 
