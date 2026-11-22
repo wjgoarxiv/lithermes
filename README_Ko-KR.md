@@ -4,7 +4,7 @@
 
 **Keep the work lit.**
 
-[Hermes Agent](https://github.com/NousResearch/hermes-agent)가 세션마다 일을 계획하고, 만들고, 확인하고, 다음 세션이 이어받을 메모까지 남기게 돕는 플러그인입니다.
+LitHermes는 [Hermes Agent](https://github.com/NousResearch/hermes-agent)에 붙여 쓰는 추가 기능입니다. Hermes가 "다 됐어요"라고 말하기 전에 자기 작업을 직접 확인하게 하고, 다음 세션이 멈춘 자리에서 바로 시작하도록 기록을 남깁니다.
 
 <p align="center">
 <a href="https://www.npmjs.com/package/@litfamily/lithermes"><img src="https://img.shields.io/npm/v/%40litfamily%2Flithermes?style=flat-square&label=npm&labelColor=080d14&color=ff6337" alt="npm 버전" /></a>
@@ -13,18 +13,36 @@
 <a href="https://github.com/wjgoarxiv/lithermes/stargazers"><img src="https://img.shields.io/github/stars/wjgoarxiv/lithermes?style=flat-square&labelColor=080d14&color=f2efdf" alt="GitHub 스타 수" /></a>
 </p>
 
-요청 앞에 `lit`을 붙이면 Hermes가 무엇을 "끝"으로 볼지 먼저 정하고, 고치기 전에 실패하는 테스트를 쓰고, 실제로 돌아가는 결과를 확인한 뒤 어디까지 왔는지 적어 둡니다. `lit`을 켜면 이런 모습이 보입니다.
+Hermes에게 기능 하나를 맡기면 코드를 쓰고 끝났다고 말합니다. 그런데 다음 날 보면 테스트는 한 번도 돌지 않았고, 새 세션을 열면 프로젝트 설명을 처음부터 다시 해야 합니다. LitHermes가 있으면 같은 요청에 `lit`만 붙이면 됩니다. Hermes는 이 작업에서 "끝났다"가 무슨 뜻인지부터 적고, 실패하는 테스트를 추가해 통과시킨 다음, 무엇을 확인했고 무엇은 확인하지 못했는지 알려 줍니다. 세션이 닫힐 때는 핸드오프 메모를 남기고, 같은 프로젝트의 다음 세션이 그 메모를 읽고 이어서 일합니다. 이 흐름을 받쳐 주는 장치는 네 가지입니다.
 - **받아 낸 "끝".** 목표의 확인 항목이 아직 열려 있는데 답변이 끝났다고 하면 답변 끝에 `⛔ LIT: not done — <이유>` 한 줄이 붙고, 목표는 닫히지 않습니다. 목표를 한 번도 열지 않은 `lit` 세션이 끝났다고 말해도 같은 줄이 붙습니다.
 - **믿을 수 있는 테스트.** 플러그인이 테스트 명령이 종료 코드 0으로 끝나는 것을 직접 보고 서명한 영수증이 있어야 통과로 칩니다. 그 뒤에 코드를 고치면 테스트를 다시 돌릴 때까지 영수증은 오래된 것으로 표시됩니다. 테스트를 지우거나 단언을 빼거나 skip을 달면, 내가 직접 `/lit-accept-tests <이유>`로 받아들이기 전까지 목표는 닫힌 채로 남고, 모델에게는 이를 풀 방법이 없습니다.
 - **내일을 위한 메모.** 목표가 있던 세션이 닫히면 `.hermes/lithermes/handoff/`에 핸드오프 카드가 만들어집니다. 같은 프로젝트의 다음 세션이 끝나지 않은 목표를 알려 주고, `lit`만 입력하면 그 목표를 이어받습니다.
 - **Hermes Desktop의 패널.** 목표와 게이트가 열렸는지, 여섯 단계 타임라인이 오른쪽 패널에 나타납니다. 기본값은 꺼짐입니다. Hermes Desktop 0.23 이상에서 Capabilities > Plugins로 가서 LitHermes를 켜세요.<br /><br /><img src="./docs/assets/desktop-pane.webp" width="360" alt="Hermes Desktop의 LitHermes 패널. 목표는 Month-end export CI green입니다. 타임라인: Plan은 기준 3개, Runs는 R003, R004, R005가 모두 stale, Review는 막힘 없음, Gate는 이유 9개로 CLOSED, Handoff는 아직 없음, Resume은 새 세션입니다. 기준 세 개는 pending이고, 실행 R005를 인용한 증거 세 줄은 stale로 표시되며, 첫 이유는 실행 뒤에 tally/export.py가 바뀌어 C001 증거 R005가 stale이라고 말합니다." />
 
-> [!TIP]
-> [설치](#설치)의 한 줄을 실행하고 Hermes를 다시 시작한 뒤, [빠른 시작](#빠른-시작)처럼 요청 앞에 `lit`을 붙여 일을 맡기세요. Hermes CLI에서도, Telegram이나 Discord gateway에서도 똑같이 동작합니다.
-
 <p align="center"><a href="#설치">설치</a> &nbsp; <a href="#빠른-시작">빠른 시작</a> &nbsp; <a href="#만들-수-있는-것">결과물</a> &nbsp; <a href="./docs/guide.ko.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> 사용 안내</a> &nbsp; <a href="./docs/skills.ko.md">스킬</a> &nbsp; <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> 영상</a> &nbsp; <a href="./docs/guide.ko.md#안전-모델">안전</a> &nbsp; <a href="./README.md">English</a> &nbsp; <a href="https://www.npmjs.com/package/@litfamily/lithermes">npm</a></p>
 
 <p align="center"><img src="./docs/assets/demo.webp" width="960" alt="LitHermes를 설치한 실제 Hermes 세션을 일곱 단계로 보여 주는 짧은 무음 영상. LitHermes 마크와 &quot;The lit workflow for Hermes Agent&quot;로 시작합니다. 1, &quot;lit plan&quot;으로 시작: &quot;lit plan add a --shout flag that prints the greeting in capitals, with a test&quot;를 입력합니다. 2, PLAN에 있는 워크플로 지도: 답변 끝에 LIT 마크 &quot;🔥 LIT IGNITED · lit-plan 🔥&quot;이 붙고, 그 아래 지도 줄 &quot;🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·&quot;이 나옵니다. 3, /start-work가 계획을 실행: 코드보다 먼저 테스트 우선 스킬과 검증 스킬, test-driven-development와 verification-before-completion이 불러와집니다. 4, 실패하는 테스트부터: 새 테스트로 npm run test를 돌리고, greet.js를 고치기 전에 실패하는지 확인합니다. 5, 그다음 수정과 진짜 테스트: greet.js에 toUpperCase 줄이 들어가고 npm run test를 다시 돌립니다. 6, 검토까지 마치고 완료: lit 답변 상자에 테스트와 최종 검토가 통과했다고 나오고, node greet.js --shout Ada는 HELLO, ADA!를 출력합니다. 7, 다 채워진 지도: &quot;lit recap&quot; 뒤에 LIT 마크 &quot;🔥 LIT IGNITED · lit-recap 🔥&quot;와 지도 줄 &quot;🔥 LIT · lit-recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓&quot;이 나옵니다. 마지막은 LitHermes 마크와 설치 명령입니다." /></p> <!-- demo-gif -->
+
+### 두 가지 사용법
+
+**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. 대부분의 일은 이것으로 충분합니다.
+
+```text
+src/dates.py의 날짜 파싱 버그 고쳐줘 lit
+```
+
+**본격적으로.** 큰 작업은 한 단계씩 밟아 갑니다. 앞 단계의 결과를 다음 단계가 이어받고, 필요 없는 단계는 건너뛰어도 됩니다.
+
+| 단계 | 입력 | 하는 일 |
+| --- | --- | --- |
+| 1. 넓게 보기 | `lit brainstorm <질문>` | 선택지를 넓게 펼친 뒤 장단점과 함께 몇 개로 추립니다 |
+| 2. 구체화 | `/deep-interview <아이디어>` | 만들 수 있을 만큼 목표가 분명해질 때까지 Hermes가 묻습니다 |
+| 3. 계획 | `lit-crucible <접근법>` 또는 `lit plan <작업>` | crucible은 접근법의 약점부터 찌르고 살아남은 것을 계획으로 넘깁니다. `lit plan`은 코드는 건드리지 않고 계획 파일을 씁니다 |
+| 4. 실행 | `/start-work <계획 파일>` 또는 `/lit-loop <작업>` | 테스트와 확인을 거치며 작업합니다 |
+| 5. 검토 | `/review-work` | 검토자 다섯이 변경을 따로 읽고, 찾은 문제부터 말합니다 |
+| 6. 넘겨주기 | `/lit-handoff` | 결과와 다음 할 일을 프로젝트의 `HANDOFF.md`에 남깁니다 |
+
+설치는 한 줄이고, 그다음 Hermes를 다시 시작하면 됩니다(자세한 내용은 [설치](#설치)에 있습니다): `npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style`
 
 ## 만들 수 있는 것
 
@@ -49,18 +67,6 @@ Hermes Agent는 눈앞의 일은 잘 해내지만, 일이 한자리에서 끝나
 LitHermes는 세션마다 따라갈 순서를 주고 그 기록을 남기며, 큰 변경은 `lit plan`으로 계획을 먼저 세워 승인한 뒤에 고칩니다. 목표와 계획과 근거가 디스크에 남으니 새 세션은 그 기록을 읽고 바로 이어 갑니다. 모델과 도구, 로그인은 여전히 Hermes가 맡고, LitHermes는 그 위에 일하는 방식을 더합니다.
 
 결과를 믿고 쓸 수 있어야 하는 일에 이미 Hermes를 쓰는 분께 맞습니다. 테스트를 계속 통과해야 하는 코드, 다른 사람에게 건넬 보고서와 발표자료, 출처가 필요한 조사 같은 일이요. 한자리에서 끝나지 않는 일, 책상에서 시작해 나중에 휴대폰으로 gateway를 통해 확인하는 일에서 특히 도움이 됩니다.
-
-### 세션은 이렇게 흘러갑니다
-
-위 영상을 핵심 줄만 남기면 이렇습니다. 첫 줄은 직접 입력하고, 답변은 둘째 줄로 시작하며, 지도 줄은 작업이 진행되는 대로 움직입니다.
-
-```text
-lit plan add a --shout flag that prints the greeting in capitals, with a test
-🔥 LIT IGNITED · lit-plan 🔥
-🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·
-/start-work            → 실패하는 테스트 먼저, 그다음 수정, 테스트 통과
-🔥 LIT · lit-adhd recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
-```
 
 ## 설치
 

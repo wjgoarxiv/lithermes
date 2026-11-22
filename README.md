@@ -4,7 +4,7 @@
 
 **Keep the work lit.**
 
-A plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent) that helps every session plan the work, build it, check it and leave a note the next session can pick up.
+LitHermes is an add-on for [Hermes Agent](https://github.com/NousResearch/hermes-agent). It makes Hermes check its own work before it says "done", and leaves a note so the next session starts where this one stopped.
 
 <p align="center">
 <a href="https://www.npmjs.com/package/@litfamily/lithermes"><img src="https://img.shields.io/npm/v/%40litfamily%2Flithermes?style=flat-square&label=npm&labelColor=080d14&color=ff6337" alt="npm version" /></a>
@@ -13,18 +13,36 @@ A plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent) that h
 <a href="https://github.com/wjgoarxiv/lithermes/stargazers"><img src="https://img.shields.io/github/stars/wjgoarxiv/lithermes?style=flat-square&labelColor=080d14&color=f2efdf" alt="GitHub stars" /></a>
 </p>
 
-Put `lit` in front of a request and Hermes pins what "done" means, writes a test that fails before the change, checks the running result and writes down where things stand. With `lit` on, you see this:
+You ask Hermes for a feature. It writes the code and says it is finished, and a day later you find the tests never ran. You open a new session and explain the whole project again. With LitHermes you add `lit` to the same request. Hermes first writes down what "finished" means for this task, adds a test that fails, makes it pass, and ends by telling you what it checked and what it could not. When the session closes, it leaves a handoff note, and the next session in that project reads it and carries on. Four pieces make that hold:
 - **A "done" that has to be earned.** When a reply says it is done while the goal's checks are still open, it ends with `⛔ LIT: not done — <reason>` and the goal will not close. A `lit` session that says done without ever opening a goal gets the same line, with that reason.
 - **Tests you can trust.** A green counts only when the plugin watched that test command finish with exit 0 and signed a receipt for it. Change the code afterwards and the receipt goes stale until the tests run again. Delete a test, drop an assertion or add a skip, and the goal stays closed until you accept the change yourself with `/lit-accept-tests <reason>`; the model has no way to do that.
 - **A note for tomorrow.** When a session that held a goal closes, a handoff card is written under `.hermes/lithermes/handoff/`. The next session in that project offers the unfinished goal, and a bare `lit` picks it up.
 - **A pane in Hermes Desktop.** The goal, whether its gate is open and a six-step timeline sit in a right-hand pane. It is Off by default: in Hermes Desktop 0.23 or later, switch LitHermes on under Capabilities > Plugins.<br /><br /><img src="./docs/assets/desktop-pane.webp" width="360" alt="The LitHermes pane in Hermes Desktop for the goal Month-end export CI green. Timeline: Plan, 3 criteria; Runs, R003, R004 and R005 each marked stale; Review, no blockers; Gate, CLOSED with 9 reasons; Handoff, not written yet; Resume, fresh session. Three criteria are pending, the three evidence rows citing run R005 read stale, and the first reason says C001 evidence R005 is stale because tally/export.py changed after the run." />
 
-> [!TIP]
-> Run the one line under [Install](#install), restart Hermes, then give it a task with `lit` in front as in [Quick start](#quick-start). It works the same in the Hermes CLI and through a Telegram or Discord gateway.
-
 <p align="center"><a href="#install">Install</a> &nbsp; <a href="#quick-start">Quick start</a> &nbsp; <a href="#what-you-can-make">Showcase</a> &nbsp; <a href="./docs/guide.md"><img src="./docs/assets/readme/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp; <a href="./docs/skills.md">Skills</a> &nbsp; <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Film</a> &nbsp; <a href="./docs/guide.md#safety">Safety</a> &nbsp; <a href="./README_Ko-KR.md">한국어</a> &nbsp; <a href="https://www.npmjs.com/package/@litfamily/lithermes">npm</a></p>
 
 <p align="center"><img src="./docs/assets/demo.webp" width="960" alt="A short silent film of a real Hermes session with LitHermes, in seven numbered steps. It opens on the LitHermes mark and &quot;The lit workflow for Hermes Agent&quot;. 1, start with &quot;lit plan&quot;: the request &quot;lit plan add a --shout flag that prints the greeting in capitals, with a test&quot; is typed in. 2, the workflow map at PLAN: the reply ends with the LIT mark, &quot;🔥 LIT IGNITED · lit-plan 🔥&quot;, and under it the map row &quot;🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·&quot;. 3, /start-work runs the plan: the test-first and verification skills, test-driven-development and verification-before-completion, load before any code. 4, a failing test first: it runs npm run test on the new tests and checks that the run fails before greet.js changes. 5, then the fix and real tests: greet.js gains the toUpperCase line and npm run test runs again. 6, done, with a review: the lit answer box says the tests and the final review pass, and node greet.js --shout Ada prints HELLO, ADA!. 7, the map, all done: after &quot;lit recap&quot;, the LIT mark &quot;🔥 LIT IGNITED · lit-recap 🔥&quot; and the row &quot;🔥 LIT · lit-recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓&quot;. It closes on the LitHermes mark and the install command." /></p> <!-- demo-gif -->
+
+### Two ways to use it
+
+**The easy way.** Write your request as usual and put `lit` at the start or at the end. Hermes sets the goal, writes a failing test, fixes the code, checks the result and tells you what it checked. Most tasks need nothing more:
+
+```text
+fix the date parsing bug in src/dates.py lit
+```
+
+**The full workflow.** For a bigger job, go one step at a time. Each step hands its result to the next, and you can skip any step you do not need.
+
+| Step | Type | What happens |
+| --- | --- | --- |
+| 1. Explore | `lit brainstorm <question>` | Many options, then a short list with trade-offs |
+| 2. Clarify | `/deep-interview <idea>` | Hermes asks questions until the goal is clear enough to build |
+| 3. Plan | `lit-crucible <approach>` or `lit plan <task>` | Crucible attacks the approach first and hands what survives to a plan; `lit plan` writes the plan file and changes no code |
+| 4. Build | `/start-work <plan file>` or `/lit-loop <task>` | Hermes does the work, with tests and checks along the way |
+| 5. Review | `/review-work` | Five reviewers read the change separately and lead with what they found |
+| 6. Hand off | `/lit-handoff` | The result and the next step go into `HANDOFF.md` in the project |
+
+Install with one line, then restart Hermes ([Install](#install) has the details): `npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style`
 
 ## What you can make
 
@@ -49,18 +67,6 @@ Hermes Agent is good at the task in front of it. Work that outlasts one sitting 
 LitHermes gives each session a routine and keeps a record of it; for a bigger change, `lit plan` writes a plan you approve before anything is edited. Goals, plans and evidence stay on disk, so a fresh session reads them and carries on. Hermes still runs the model, the tools and your sign-in; LitHermes adds the way of working on top.
 
 It suits people who already use Hermes on work that has to hold up: code that must keep passing its tests, reports and decks that go to other people, research you want sources for. It helps most when the work outlasts one sitting, or when you start it at your desk and check on it later from a phone through a gateway.
-
-### What a session looks like
-
-This is the film above, cut to its key lines. You type the first line, the reply opens with the second, and the map row moves along as the work happens:
-
-```text
-lit plan add a --shout flag that prints the greeting in capitals, with a test
-🔥 LIT IGNITED · lit-plan 🔥
-🔥 LIT · lit-plan — 📝 PLAN › 🔨 · › 🔍 · › 🏁 ·
-/start-work            → a failing test first, then the fix, then the tests pass
-🔥 LIT · lit-adhd recap — 📝 plan ✓ › 🔨 work ✓ › 🔍 review ✓ › 🏁 done ✓
-```
 
 ## Install
 
