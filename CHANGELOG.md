@@ -6,7 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.45] - 2026-11-22
+
 - Every goal question now comes with an answer guide right under it, so a first-time user can see what to type and what each answer does. `hermes lithermes goal propose` prints, after the unchanged question, a `▶ Answer:` blockquote with the goal and a table of `yes` / `edit` / `no` (or `yes` / `no` when only the work is offered, and for a lit-loop) ending in `Type the word alone.`; lit-plan and litwork tell the model to keep it under the question and write its prose in the user's language while the answer words stay English. The lit-loop question the prompt hook draws under the reply gets the same two answers as plain rows. The question lines and the accepted answers are unchanged.
+- The READMEs and the npm page open with a plain pitch: LitHermes makes Hermes check its own work before it says "done" and leaves a note so the next session starts where this one stopped, followed by a short story of the same request with and without `lit`. A new "Two ways to use it" section shows the easy way (put `lit` at the start or end of a request) and the full workflow as a six-step table, from `lit brainstorm` through `/deep-interview`, `lit-crucible` or `lit plan`, `/start-work` or `/lit-loop` and `/review-work` to `/lit-handoff`.
 
 ## [1.0.44] - 2026-11-21
 
