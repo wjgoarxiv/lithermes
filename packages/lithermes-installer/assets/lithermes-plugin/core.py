@@ -1863,7 +1863,8 @@ def _loop_goal_context(workspace: Path, session_id: str, platform: str, objectiv
         offer = None
     if offer is None:
         return _LOOP_GOAL_FALLBACK
-    _PENDING_GOAL_ROW[session_id] = offer["line"]
+    guide = _goal_pipeline.answer_guide("loop_asked", plain=True)
+    _PENDING_GOAL_ROW[session_id] = f"{offer['line']}  \n{guide}"
     _evict_pending_browser_state()
     return _LOOP_GOAL_SHOWN
 

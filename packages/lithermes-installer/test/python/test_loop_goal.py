@@ -238,7 +238,7 @@ class LoopGoalPipeline(unittest.TestCase):
         with patch.object(gp, "falsify_loop", failing), contextlib.redirect_stdout(out):
             code = cli.main(["--workspace", str(self.ws), "propose", "--loop", "--check", "npm test", "fix", "the", "redirect"])
         self.assertEqual(code, 0)
-        self.assertRegex(out.getvalue(), r"^Set goal for this lit-loop: /goal `npm test` exits 0 and this is done: fix the redirect \[lit:[0-9a-f]{8}\]\? \(yes / no\)\n$")
+        self.assertRegex(out.getvalue(), r"^Set goal for this lit-loop: /goal `npm test` exits 0 and this is done: fix the redirect \[lit:[0-9a-f]{8}\]\? \(yes / no\)\n\n> \*\*▶ Answer: ")
         self.assertEqual(seen, [(self.ws.resolve(), "npm test")])
         refused = io.StringIO()
         passing = lambda workspace, check, **kwargs: {"ok": False, "reason": f"`{check}` already passes, so the goal would be met at once; write the failing test first"}  # noqa: E731
@@ -274,7 +274,7 @@ class LoopGoalHook(NaturalRoutingCase):
             self.assertNotIn("goal propose --loop", context, prompt)
             condition = gp.compile_loop_condition(OBJECTIVE, "npm test")["condition"]
             reply = self._reply(session)
-            self.assertTrue(reply.rstrip().endswith(f"Set goal for this lit-loop: /goal {condition}? (yes / no)"), (prompt, reply))
+            self.assertIn(f"\n\nSet goal for this lit-loop: /goal {condition}? (yes / no)  \n  yes  → ", reply, prompt)
             self.assertTrue(reply.startswith("done"), reply)
             self.assertNotIn("Set goal for this lit-loop", self._reply(session), "shown once")
             (gp.goal_dir(self.ws) / "consent.json").unlink(missing_ok=True)

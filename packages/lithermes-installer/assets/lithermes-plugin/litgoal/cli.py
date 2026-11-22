@@ -175,9 +175,10 @@ def handle(args) -> int:
         except ImportError:  # standalone test import via PYTHONPATH
             import goal_pipeline  # type: ignore
         if args.loop:
-            print(goal_pipeline.propose_loop(ws, args.check, " ".join(args.words))["line"])
+            out = goal_pipeline.propose_loop(ws, args.check, " ".join(args.words))
         else:
-            print(goal_pipeline.propose(ws, args.words[0] if args.words else "")["line"])
+            out = goal_pipeline.propose(ws, args.words[0] if args.words else "")
+        print(out["line"] + (f"\n\n{out['guide']}" if out.get("guide") else ""))
         return 0
     if cmd == "complete":
         result = runtime.complete_goal(ws, session_id=sid, force=force)

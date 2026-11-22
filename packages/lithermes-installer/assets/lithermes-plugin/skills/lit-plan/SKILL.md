@@ -593,7 +593,7 @@ disk. If the user wants to read it, they can open `plans/<slug>.md`.
 ### The approval question
 
 After the plan is saved, run `hermes lithermes goal propose plans/<slug>.md` once from the
-workspace and put its output, unchanged, at the end of the handoff. That command reads
+workspace and put its output at the end of the handoff, the question line unchanged. That command reads
 the `## Done when` block, builds the condition
 `Every row in plans/<slug>.md is ticked and \`<check>\` exits 0 [lit:<id>]` (at most 500
 characters), lints it, and runs the check once, time-boxed, to prove the condition is false right
@@ -611,6 +611,14 @@ No goal set: <reason>.
 ```
 
 Show the output as it is and do not argue with the reason.
+
+Under the question the command also prints an answer guide, so a first-time user can see what to
+type and what each answer does: a blockquote headed `▶ Answer:`, the goal as `/goal <condition>`, a
+table with one row per answer word (`yes`, `edit`, `no` for the goal question; `yes`, `no` when
+only the work is offered) and the closing line `Type the word alone.` Keep the guide right under the
+question line. Write its prose in the user's language, but keep the question line, the
+`/goal <condition>` text and the answer words `yes`, `edit` and `no` exactly as printed; the hook
+reads only those English words.
 
 Only a reply that is exactly `yes`, typed in this same session, to the plan that was asked about,
 accepts. The hook ties the question to this session when the turn that asked it ends; a `yes` typed

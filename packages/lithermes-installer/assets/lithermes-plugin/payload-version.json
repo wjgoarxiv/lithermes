@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-20T16:23:14.058Z",
+  "syncedAt": "2026-11-22T08:34:45.753Z",
   "source": "bundled-payload",
-  "sourceHash": "09b66b65a8d934c7dc73c5f3dca3a7cf55569ef54f17e5aa58c727335b12f3f3",
+  "sourceHash": "7d02120cf3843c8090bad2b0717318533c4e64a6ab9248b939cdd4dcf21d0454",
   "files": [
     {
       "path": "NOTICE.md",
@@ -37,7 +37,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "f1b58d8da324bdc922e65e7d5e4eab2166889f565ce69e5b569a7bca8077a202"
+      "sha256": "ccfabbe6516540b1bd084cb088b8c4ab4a9cf6c05847ab03dafbc959c97f3334"
     },
     {
       "path": "core_commands.py",
@@ -117,7 +117,7 @@
     },
     {
       "path": "goal_pipeline.py",
-      "sha256": "6b4b59cf30550c48de16f6ed4f137f8fec9c3b4084d0475f69ffba46a26f561f"
+      "sha256": "eab47287579b1435bf25bfeb441b04051c214ebc4335ed60269361e4f0848752"
     },
     {
       "path": "goal_stages.py",
@@ -177,7 +177,7 @@
     },
     {
       "path": "litgoal/cli.py",
-      "sha256": "cadf220dc6c8af230f547076bff2e4aa645d6ff9d8cf14460bae4f59e59bc237"
+      "sha256": "e44fe4315b2b72ca5d9da3115ad78ca8f4faaf955b16fa6f9d48574713c5f3a1"
     },
     {
       "path": "litgoal/fingerprint.py",
@@ -1373,7 +1373,7 @@
     },
     {
       "path": "skills/lit-plan/SKILL.md",
-      "sha256": "6461993203e00806022785d71e81b7631ad553afadcbdaaed5884b2bfd618d47"
+      "sha256": "c5a96f2bece3b54c048e108190bb92cad0e5619130198c6957f0a02aa5a484bf"
     },
     {
       "path": "skills/lit-pptx/SKILL.md",
@@ -1417,7 +1417,7 @@
     },
     {
       "path": "skills/litwork/SKILL.md",
-      "sha256": "9e50084a8587670da645187b003eb400ef3ce0852b6faa6d36549cc2736aa4eb"
+      "sha256": "bbff26e3465794d7656264196529c2cff23560c4394186701a980b307ca3c378"
     },
     {
       "path": "skills/lsp/SKILL.md",

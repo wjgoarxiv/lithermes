@@ -113,6 +113,44 @@ STATUS = {
     "not_met": "Goal condition not met yet: `{check}` exited {exit}.",
 }
 
+# What each question offers and what each answer does: the one list the answer guide is built from.
+ANSWERS = {
+    "asked": (
+        ("yes", "Starts the work now and accepts this goal; you get its /goal lines to paste"),
+        ("edit", "Change the plan or its check first, then I ask again"),
+        ("no", "Nothing starts"),
+    ),
+    "asked_start": (("yes", "Starts the work now, with no goal"), ("no", "Nothing starts")),
+    "loop_asked": (
+        ("yes", "accept this goal; you get its /goal lines to paste"),
+        ("no", "keep working without a goal"),
+    ),
+}
+_GUIDE_TITLE = {
+    "asked": "approve plan · start work · set goal",
+    "asked_start": "approve plan · start work",
+    "loop_asked": "set goal for this lit-loop",
+}
+
+
+def answer_guide(kind: str, condition: str = "", *, plain: bool = False) -> str:
+    """The guide shown right under a goal question: each answer word and what it does.
+
+    Markdown (a blockquote with a table) for a reply the model writes; plain aligned rows for text
+    the hook draws, each ending in a Markdown hard break so a rendered reply keeps the rows apart.
+    """
+    answers = ANSWERS[kind]
+    if plain:
+        width = max(len(word) for word, _ in answers)
+        rows = [f"  {word.ljust(width)}  → {what}" for word, what in answers]
+        return "  \n".join([*rows, "  Type the word alone."])
+    lines = [f"> **▶ Answer: {_GUIDE_TITLE[kind]}**", ">"]
+    if condition:
+        lines += [f"> Goal: `` /goal {condition} ``", ">"]
+    lines += ["> | Type | What happens |", "> |---|---|"]
+    lines += [f"> | **`{word}`** | {what} |" for word, what in answers]
+    return "\n".join([*lines, ">", "> Type the word alone."])
+
 
 def condition_hash(condition: str) -> str:
     return hashlib.sha256(str(condition).encode("utf-8")).hexdigest()[:16]
@@ -313,11 +351,13 @@ def propose(workspace: Path, plan_arg: str, *, now: float | None = None, timeout
         consent = {"version": 2, "condition": "", "check": "", "id": "", "plan": plan, "askedAt": asked}
         consent["hash"] = consent_hash(consent)
         _write_json(goal_dir(workspace) / "consent.json", consent)
-        return {"line": STATUS["asked_start"] + "\n" + STATUS["skipped"].format(reason=refused), "consent": consent}
+        line = STATUS["asked_start"] + "\n" + STATUS["skipped"].format(reason=refused)
+        return {"line": line, "consent": consent, "guide": answer_guide("asked_start")}
     consent = {"version": 2, **refused, "plan": plan, "askedAt": asked}
     consent["hash"] = consent_hash(consent)
     _write_json(goal_dir(workspace) / "consent.json", consent)
-    return {"line": STATUS["asked"].format(condition=refused["condition"]), "consent": consent}
+    line = STATUS["asked"].format(condition=refused["condition"])
+    return {"line": line, "consent": consent, "guide": answer_guide("asked", refused["condition"])}
 
 
 def propose_loop(
@@ -353,7 +393,8 @@ def propose_loop(
         consent["session"] = session_id
     consent["hash"] = consent_hash(consent)
     _write_json(goal_dir(workspace) / "consent.json", consent)
-    return {"line": STATUS["loop_asked"].format(condition=built["condition"]), "consent": consent}
+    line = STATUS["loop_asked"].format(condition=built["condition"])
+    return {"line": line, "consent": consent, "guide": answer_guide("loop_asked", built["condition"])}
 
 
 def offer_loop(workspace: Path, session_id: str, objective: str, *, now: float | None = None) -> dict[str, Any] | None:
