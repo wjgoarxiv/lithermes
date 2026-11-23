@@ -127,6 +127,29 @@ class HudCard(unittest.TestCase):
         self.assertIn(ESC, fitted)
         self.assertIn("Started LitHermes", _ANSI.sub("", fitted))
 
+    def test_lit_badge_only_on_a_truecolor_classic_cli(self):
+        ink = "\x1b[1m\x1b[38;2;11;14;20m"
+        first_bg, last_bg = "\x1b[48;2;255;213;79m", "\x1b[48;2;255;204;128m"
+        card = self.card.render(_snapshot(), "litwork", "cli", COLOUR_ENV)
+        head = card.splitlines()[0]
+        self.assertIn(ink, head)
+        self.assertIn(first_bg, head)
+        self.assertIn(last_bg, head)
+        self.assertTrue(_ANSI.sub("", head).startswith(self.pkg.lit_mark.PILL_LABEL + " · litwork"))
+        # Every other depth and surface keeps the bar head it had before the badge.
+        others = [
+            self.card.render(_snapshot(), "litwork", "cli", {"LANG": "en_US.UTF-8"}),
+            self.card.render(_snapshot(), "litwork", "tui", COLOUR_ENV),
+            self.card.render(_snapshot(), "litwork", "local", COLOUR_ENV),
+            self.card.render(_snapshot(), "litwork", "desktop", COLOUR_ENV),
+            self.card.render(_snapshot(), "litwork", "cli", {**COLOUR_ENV, "NO_COLOR": "1"}),
+        ]
+        for other in others:
+            self.assertNotIn("48;2;", other)
+            self.assertTrue(_ANSI.sub("", other).startswith("▌LIT · litwork"))
+        self.assertIsNone(self.pkg.lit_mark.lit_pill("256"))
+        self.assertIsNone(self.pkg.lit_mark.lit_pill("none"))
+
 
 class SlashSurfaces(unittest.TestCase):
     def setUp(self):

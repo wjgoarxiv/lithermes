@@ -220,6 +220,27 @@ def _paint_activation(text: str, mode: str) -> str:
     return "".join(painted)
 
 
+# The status badge: the label on a background running from LitHermes chrome stop 1
+# to stop 4, in bold dark ink. Truecolor only; every other depth keeps its old text.
+_PILL_STOPS = ((0xFF, 0xD5, 0x4F), (0xFF, 0xCC, 0x80))
+_PILL_INK = (0x0B, 0x0E, 0x14)
+PILL_LABEL = " 🔥 LIT "
+
+
+def lit_pill(mode: str, label: str = PILL_LABEL) -> str | None:
+    """The badge as ANSI for a truecolor client, or None for any other colour mode."""
+    if mode != "truecolor":
+        return None
+    chars = list(label)
+    last = len(chars) - 1
+    out = ["\x1b[0m\x1b[1m\x1b[38;2;" + ";".join(map(str, _PILL_INK)) + "m"]
+    for index, char in enumerate(chars):
+        t = index / last if last else 0
+        bg = (round(a + (b - a) * t) for a, b in zip(*_PILL_STOPS))
+        out.append("\x1b[48;2;" + ";".join(map(str, bg)) + "m" + char)
+    return "".join(out) + "\x1b[0m"
+
+
 def probe_contract(route: str) -> str:
     return (f"Begin your reply with exactly this one model-emitted line: `{probe_line(route)}`\n"
             "Emit it once, exactly as shown, on its own first line. This route's discipline overrides any generic skill probe. "

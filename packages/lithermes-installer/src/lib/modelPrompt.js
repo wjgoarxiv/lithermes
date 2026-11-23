@@ -1,6 +1,7 @@
 const readline = require("node:readline");
 const { parseDocument } = require("yaml");
 const mark = require("./litMark");
+const synthwave = require("./synthwaveMark");
 const { PROVIDER_IDS, ROUTE_CATALOG, managedRequest, missingCredentialWarning } = require("./modelRoutePolicy");
 
 // Installer prompts and frame per plans/references/installer-choice-contract.md.
@@ -10,9 +11,15 @@ function paint(enabled, rgb, text) {
   return enabled ? `\x1b[38;2;${rgb}m${text}\x1b[39m` : text;
 }
 
+// The synthwave mark sized to the terminal, with the version centred under it.
+// A pipe, an agent's tool call or a CI log is not a terminal anyone looks at, so
+// it gets only the plain line and the version, never rows of art.
 function renderInstallBanner({ version = "current", color = false, env = process.env, stream = process.stdout } = {}) {
-  const rows = mark.lockup(`lithermes v${version}`, mark.banner);
-  return mark.render(rows, { env, stream, mode: color ? mark.colorMode({ env, stream }) : "none" }).join("\n");
+  const versionLine = `lithermes v${version}`;
+  if (!(stream && stream.isTTY) || !mark.utf8Terminal(env)) return [synthwave.FALLBACK_LINE, versionLine].join("\n");
+  const cols = synthwave.terminalColumns({ stream, env });
+  const rows = synthwave.synthwaveRows({ cols, mode: color ? mark.colorMode({ env, stream }) : "none" });
+  return [...rows, synthwave.centred(versionLine, synthwave.markWidth(cols))].join("\n");
 }
 
 function providerLabel(id) {

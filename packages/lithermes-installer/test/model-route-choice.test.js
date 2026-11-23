@@ -388,12 +388,20 @@ test("renderModelRouteCard prints one helper row without the provider when it ma
   assert.doesNotMatch(card, /Warning/);
 });
 
-test("renderInstallBanner uses the canonical banner and product lockup", () => {
-  const mark = require("../src/lib/litMark");
-  const banner = renderInstallBanner({ version: "1.0.45", color: false, env: { LANG: "en_US.UTF-8" } });
-  assert.deepEqual(banner.split("\n"), mark.lockup("lithermes v1.0.45", mark.banner));
-  assert.equal(banner.split("\n").length, 20);
+test("renderInstallBanner uses the synthwave mark with the version under it", () => {
+  const synthwave = require("../src/lib/synthwaveMark");
+  const banner = renderInstallBanner({ version: "1.0.45", color: false, env: { LANG: "en_US.UTF-8" }, stream: { isTTY: true } });
+  const rows = banner.split("\n");
+  assert.deepEqual(rows.slice(0, -1), synthwave.synthwaveRows({ cols: 80, mode: "none" }));
+  assert.equal(rows.at(-1).trim(), "lithermes v1.0.45");
+  assert.equal(rows.length, 25);
   assert.doesNotMatch(banner, /\x1b/);
+  // Not a terminal: the plain line and the version only.
+  const version = rows.at(-1).trim().slice("lithermes v".length);
+  for (const stream of [{}, { isTTY: false, columns: 80 }]) {
+    assert.equal(renderInstallBanner({ version, color: true, env: { LANG: "en_US.UTF-8" }, stream }),
+      `LIT · hermes agent\nlithermes v${version}`);
+  }
 });
 
 async function answer(answers, options = {}) {

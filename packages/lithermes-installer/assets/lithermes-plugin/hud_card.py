@@ -114,7 +114,10 @@ def render(snapshot: Mapping[str, Any] | None, route: str, surface: str, env: Ma
     paint = _Painter("256" if lean else mode, lean)
     bar = paint("▌", "work")
     label = lit_mark.discipline(route) if re.fullmatch(r"[a-z0-9-]+", str(route or "")) else "lit"
-    head = f"{bar}{paint('LIT', 'proof', bold=True)} {paint('· ' + label, 'text')}"
+    # The classic CLI on a truecolor terminal shows the LIT badge; lean (TUI) and
+    # 256-colour cards keep the bar, so their bytes under the Ink fold do not grow.
+    pill = None if lean else lit_mark.lit_pill(mode)
+    head = f"{pill or bar + paint('LIT', 'proof', bold=True)} {paint('· ' + label, 'text')}"
     goal = (snapshot or {}).get("goal")
     if not goal:
         return "\n".join([

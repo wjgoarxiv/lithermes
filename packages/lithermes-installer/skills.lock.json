@@ -1156,6 +1156,8 @@
     "src/lib/skillPayload.js",
     "src/lib/skins.js",
     "src/lib/spinner.js",
+    "src/lib/synthwaveMark.js",
+    "src/lib/synthwaveRows.json",
     "src/lib/updateDoctor.js",
     "src/lib/updateNotifier.js",
     "src/lib/updateNotifierWorker.js"

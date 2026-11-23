@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-22T09:58:06.007Z",
+  "syncedAt": "2026-11-23T16:36:36.437Z",
   "source": "bundled-payload",
-  "sourceHash": "bbe9344be89c253fd486f8b2d47862b58c866477d5b124afd3dd0bc8ef45b5a0",
+  "sourceHash": "dd688ed0a987ae1b7daf7f064b991d45549016d5dbd004d3e4569b32bcbd50a0",
   "files": [
     {
       "path": "NOTICE.md",
@@ -133,7 +133,7 @@
     },
     {
       "path": "hud_card.py",
-      "sha256": "ee921d5d19aa38372cb5d7e86fcdd49ba48e8319be1841cd34fbc9f128468700"
+      "sha256": "632f71079b62800a7544280e87045d40faf9a375f11146ec8e9c64cb1f8358a4"
     },
     {
       "path": "humanizer_detector.py",
@@ -161,7 +161,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "8404894e62c55feb3dbd82223734f8f1495c32185c1e35400d7b488a1510f5b4"
+      "sha256": "2883621301bc20390fa3fee23a160326a0e7e7cb934bd610f87d1e9f9a4e997c"
     },
     {
       "path": "lit_mark_rows.json",

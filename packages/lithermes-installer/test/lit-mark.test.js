@@ -84,16 +84,19 @@ test("terminal policy suppresses color for NO_COLOR, CI, JSON and pipes", () => 
   }
 });
 
-test("installer banner uses Ignition cells and preserves its plain terminal policy", () => {
+test("installer banner draws the synthwave mark and preserves its plain terminal policy", () => {
   const { renderInstallBanner } = require("../src/lib/modelPrompt");
-  const stream = { isTTY: true };
+  const synthwave = require("../src/lib/synthwaveMark");
+  const stream = { isTTY: true, columns: 80 };
   const env = { LANG: "en_US.UTF-8", TERM: "xterm-256color", COLORTERM: "truecolor" };
   const version = require("../package.json").version;
-  const rows = mark.lockup(`lithermes v${version}`, mark.banner);
+  const versionLine = synthwave.centred(`lithermes v${version}`, 76);
   assert.equal(renderInstallBanner({ version, color: true, env, stream }),
-    mark.colorize(rows, { mode: "truecolor" }).join("\n"));
+    [...synthwave.synthwaveRows({ cols: 80, mode: "truecolor" }), versionLine].join("\n"));
+  const mono = [...synthwave.synthwaveRows({ cols: 80, mode: "none" }), versionLine].join("\n");
   for (const extra of [{ NO_COLOR: "" }, { CI: "" }, { CI: "1" }]) {
-    assert.equal(renderInstallBanner({ version, color: true, env: { ...env, ...extra }, stream }), rows.join("\n"));
+    assert.equal(renderInstallBanner({ version, color: true, env: { ...env, ...extra }, stream }), mono);
   }
-  assert.equal(renderInstallBanner({ version, color: true, env: { TERM: "dumb" }, stream }), "LIT");
+  assert.equal(renderInstallBanner({ version, color: true, env: { TERM: "dumb" }, stream }),
+    `LIT · hermes agent\nlithermes v${version}`);
 });
