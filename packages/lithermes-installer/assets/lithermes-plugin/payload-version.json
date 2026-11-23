@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-23T16:36:36.437Z",
+  "syncedAt": "2026-11-23T22:21:58.964Z",
   "source": "bundled-payload",
-  "sourceHash": "dd688ed0a987ae1b7daf7f064b991d45549016d5dbd004d3e4569b32bcbd50a0",
+  "sourceHash": "234a27dc531c4caa657a8cb2c09b0082120b68c9ce7b38aca6f1cfe8a7380d82",
   "files": [
     {
       "path": "NOTICE.md",
@@ -37,7 +37,7 @@
     },
     {
       "path": "core.py",
-      "sha256": "ccfabbe6516540b1bd084cb088b8c4ab4a9cf6c05847ab03dafbc959c97f3334"
+      "sha256": "9037a16154cfbdfb15d2c32e37fe8fe7c50c35ba9f01b41dc7a79089b4cc772d"
     },
     {
       "path": "core_commands.py",
@@ -73,7 +73,7 @@
     },
     {
       "path": "core_routing.py",
-      "sha256": "09e7a3232c2cd407fd51b777f8e2896f4b2330ce638d80ba8157b2da4fe3740d"
+      "sha256": "41846c8d382ead3aad57e742fa1c253a00b44826db7098e9b457de226e54cc34"
     },
     {
       "path": "core_runs.py",

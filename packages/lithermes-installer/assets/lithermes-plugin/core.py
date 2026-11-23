@@ -1857,6 +1857,9 @@ def _loop_goal_context(workspace: Path, session_id: str, platform: str, objectiv
     """
     if platform.strip().lower() == "cron" or not _goal_pipeline.loop_objective(objective):
         return ""
+    # A bare `lit continue` / `lit resume` names no new objective, even when nothing is active to resume.
+    if re.fullmatch(r"(?:continue|resume)\W*", objective.strip(), re.IGNORECASE):
+        return ""
     try:
         offer = _goal_pipeline.offer_loop(workspace, session_id, objective) if session_id else None
     except Exception:  # noqa: BLE001 - the goal question is advisory; never cost the turn

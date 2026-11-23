@@ -873,8 +873,12 @@ def detect_lit_mode(message: str) -> NaturalLitRoute | None:
         )
         if nonleading_family_example:
             continue
+        before = visible[:match.start()].strip()
+        # A run word at the end ("fix the redirect litwork", "... lit loop") names the words before it.
         if token == "litwork":
-            return NaturalLitRoute(mode="litwork", objective=_clamp_task(after), visible_message=visible)
+            return NaturalLitRoute(mode="litwork", objective=_clamp_task(after or before), visible_message=visible)
+        if before and re.fullmatch(r"loop", after, re.IGNORECASE):
+            return NaturalLitRoute(mode="litwork", objective=_clamp_task(before), visible_message=visible)
 
         renamed = _renamed_skill_route(after, visible, message, after_offset)
         if renamed is not None:
@@ -952,8 +956,16 @@ def detect_lit_mode(message: str) -> NaturalLitRoute | None:
         rest = _after_mode_word(after, "design")
         if rest is not None:
             return NaturalLitRoute(mode="frontend-ui-ux", objective=_clamp_task(rest), visible_message=visible)
-        objective = after or visible[:match.start()].strip()
+        objective = after or before
         return NaturalLitRoute(mode=_bare_lit_mode(objective), objective=_clamp_task(objective), visible_message=visible)
+
+    # A request that ends with `lit-loop` is a run of the words before it, the same as a leading one.
+    # Only reached when no `lit`/`litwork` token routed above; a question about lit-loop ends elsewhere.
+    trailing_loop = re.fullmatch(r"(?s)(?P<objective>.*?\S)[ \t]+lit-loop[ \t]*(?:\r?\n)?\s*", visible, re.IGNORECASE)
+    if trailing_loop is not None:
+        return NaturalLitRoute(
+            mode="litwork", objective=_clamp_task(trailing_loop.group("objective")), visible_message=visible
+        )
 
     # Lowest precedence, deliberately: an explicit `lit` token or a named skill
     # always wins. Only when nothing else matched does the UI intent conjunction

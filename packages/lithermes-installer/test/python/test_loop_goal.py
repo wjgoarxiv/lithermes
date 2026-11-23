@@ -313,6 +313,45 @@ class LoopGoalHook(NaturalRoutingCase):
         self.assertFalse((gp.goal_dir(self.ws) / "intent.json").exists())
         self.assertTrue((gp.goal_dir(self.ws) / "consent.json").is_file())
 
+    def test_a_request_that_ends_with_a_run_word_asks_the_goal_question_with_the_words_before_it(self):
+        from core_routing import detect_lit_mode
+
+        for prompt, objective in (
+            ("fix the login redirect lit", OBJECTIVE),
+            ("로그인 버튼 고쳐줘 lit", "로그인 버튼 고쳐줘"),
+            ("fix the login redirect lit-loop", OBJECTIVE),
+            ("로그인 버튼 고쳐줘 lit-loop", "로그인 버튼 고쳐줘"),
+            ("fix the login redirect litwork", OBJECTIVE),
+            ("fix the login redirect lit loop", OBJECTIVE),
+        ):
+            route = detect_lit_mode(prompt)
+            self.assertIsNotNone(route, prompt)
+            self.assertEqual((route.mode, route.objective), ("litwork", objective), prompt)
+            session = f"tail-{abs(hash(prompt))}"
+            self.assertIn("LitHermes shows the user a goal question", self._turn(prompt, session), prompt)
+            condition = gp.compile_loop_condition(objective, "npm test")["condition"]
+            self.assertIn(f"Set goal for this lit-loop: /goal {condition}? (yes / no)", self._reply(session), prompt)
+            (gp.goal_dir(self.ws) / "consent.json").unlink(missing_ok=True)
+
+    def test_lit_continue_and_lit_resume_ask_nothing_even_in_a_fresh_session(self):
+        for prompt in ("lit continue", "lit resume", "lit Continue.", "continue lit", "resume lit-loop", "litwork resume"):
+            session = f"cont-{abs(hash(prompt))}"
+            context = self._turn(prompt, session)
+            self.assertNotIn("shows the user a goal question", context, prompt)
+            self.assertNotIn("goal propose --loop", context, prompt)
+            self.assertNotIn("Set goal for this lit-loop", self._reply(session), prompt)
+            self.assertFalse((gp.goal_dir(self.ws) / "consent.json").exists(), prompt)
+
+    def test_a_question_about_lit_loop_is_not_an_activation(self):
+        from core_routing import detect_lit_mode
+
+        for prompt in ("what does lit-loop do?", "how do I use lit-loop?", "lit-loop"):
+            route = detect_lit_mode(prompt)
+            if prompt == "lit-loop":
+                self.assertEqual((route.mode, route.objective), ("litwork", ""), prompt)
+            else:
+                self.assertIsNone(route, prompt)
+
     def test_a_repeat_litgoal_a_plan_a_bare_lit_and_no_objective_ask_nothing(self):
         self._turn("lit fix the login redirect", "rep")
         (gp.goal_dir(self.ws) / "consent.json").unlink()
