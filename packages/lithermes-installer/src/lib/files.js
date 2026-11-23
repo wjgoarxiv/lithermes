@@ -138,12 +138,61 @@ function removeEmptyDirs(dir, stopAt) {
   }
 }
 
+// No LitHermes state update holds a lock this long, so an older lock is stale even when its pid
+// is alive again (pid reuse). An ownerless lock (holder died before writing its record) is
+// stale after the shorter window.
+const STATE_LOCK_MAX_HOLD_MS = 10 * 60 * 1000;
+const STATE_LOCK_OWNERLESS_MS = 30 * 1000;
+
+function pidIsAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code === "EPERM";
+  }
+}
+
+// The holder of a lock file: { pid, ageMs, stale, stat, label }, or null when nothing is there.
+function inspectStateLock(lockPath, { pid = null, nowMs = Date.now() } = {}) {
+  const stat = fs.lstatSync(lockPath, { throwIfNoEntry: false });
+  if (!stat) return null;
+  const ageMs = Math.max(0, nowMs - stat.mtimeMs);
+  const owner = Number.isInteger(pid) && pid > 0 ? pid : null;
+  const stale = ageMs >= STATE_LOCK_MAX_HOLD_MS
+    || (owner === null ? ageMs >= STATE_LOCK_OWNERLESS_MS : !pidIsAlive(owner));
+  const age = `age ${Math.round(ageMs / 1000)}s`;
+  return { pid: owner, ageMs, stale, stat, label: owner === null ? `no owner record, ${age}` : `pid ${owner}, ${age}` };
+}
+
+// Atomically move a stale lock aside. False when the path was replaced after it was inspected.
+function reclaimStateLock(lockPath, inspected) {
+  const tombstone = `${lockPath}.stale-${crypto.randomBytes(8).toString("hex")}`;
+  try {
+    fs.renameSync(lockPath, tombstone);
+  } catch {
+    return false;
+  }
+  const moved = fs.lstatSync(tombstone, { throwIfNoEntry: false });
+  if (moved && (moved.dev !== inspected.stat.dev || moved.ino !== inspected.stat.ino)) {
+    // A fresh lock replaced the stale one in between: put it back and leave it to its holder.
+    try { fs.linkSync(tombstone, lockPath); } catch {}
+    try { fs.unlinkSync(tombstone); } catch {}
+    return false;
+  }
+  try { fs.rmSync(tombstone, { recursive: true, force: true }); } catch {}
+  return true;
+}
+
 module.exports = {
   cleanPythonCache,
   copyTree,
   hostBytecodeSource,
+  inspectStateLock,
   inspectPythonCache,
   listFiles,
+  reclaimStateLock,
+  STATE_LOCK_MAX_HOLD_MS,
   removeEmptyDirs,
   removeHostBytecode,
   sha256,

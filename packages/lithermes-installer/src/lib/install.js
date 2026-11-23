@@ -15,7 +15,7 @@ const {
   revalidateModelConfigPlan,
   writeConfig,
 } = require("./config");
-const { copyTree, removeEmptyDirs, removeHostBytecode, sha256, writeFileAtomic } = require("./files");
+const { copyTree, inspectStateLock, reclaimStateLock, removeEmptyDirs, removeHostBytecode, sha256, writeFileAtomic } = require("./files");
 const { assertStateParent, assertPluginParent, defaultHermesHome, defaultHermesRepo, detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, inspectHermesHostCapabilities, LitHermesError } = require("./hermesDiscovery");
 const { NOT_PROBED_HOST_VERSION } = require("./modelConfigBoundary");
 const { patchInstalledHermes, patchManifestPath, rollbackPatches } = require("./patch");
@@ -51,6 +51,15 @@ function pluginDest(hermesHome) {
   return path.join(hermesHome, "plugins", "lithermes");
 }
 
+function readLockPid(lock) {
+  try {
+    const text = fs.readFileSync(lock, { encoding: "utf8", flag: fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0) }).trim();
+    return /^[1-9]\d*$/.test(text) ? Number(text) : null;
+  } catch {
+    return null;
+  }
+}
+
 function withLock(hermesHome, fn, expectedState) {
   assertStateParent(hermesHome, expectedState);
   const lock = path.join(hermesHome, "lithermes", "install.lock");
@@ -60,14 +69,21 @@ function withLock(hermesHome, fn, expectedState) {
   let fd;
   let lockStat;
   try {
-    try {
-      checkState();
-      fd = fs.openSync(lock, "wx");
-      lockStat = fs.fstatSync(fd);
-      fs.writeFileSync(fd, String(process.pid));
-    } catch (error) {
-      if (error.code === "EEXIST") throw new LitHermesError(`LitHermes install lock already exists at ${lock}`, 3);
-      throw error;
+    for (let attempt = 0; fd === undefined; attempt += 1) {
+      try {
+        checkState();
+        fd = fs.openSync(lock, "wx");
+        lockStat = fs.fstatSync(fd);
+        fs.writeFileSync(fd, String(process.pid));
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+        // A holder that died (or a pid reused past the hold ceiling) is reclaimed once; a live one is named.
+        const holder = inspectStateLock(lock, { pid: readLockPid(lock) });
+        checkState();
+        if (attempt === 0 && holder?.stale && holder.stat.isFile() && reclaimStateLock(lock, holder)) continue;
+        const who = holder ? ` (held by ${holder.label})` : "";
+        throw new LitHermesError(`LitHermes install lock already exists at ${lock}${who}`, 3);
+      }
     }
     checkState();
     const result = fn(checkState);

@@ -4,7 +4,7 @@ const https = require("node:https");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { spawn, spawnSync } = require("node:child_process");
-const { writeFileAtomic } = require("./files");
+const { inspectStateLock, reclaimStateLock, STATE_LOCK_MAX_HOLD_MS, writeFileAtomic } = require("./files");
 const { describeSpawnFailure, prepareSpawn } = require("./hostExec");
 const { defaultHermesHome } = require("./hermesDiscovery");
 const { readNotice, writeNotice } = require("./sessionNotices");
@@ -349,7 +349,17 @@ function acquireTransitionMutex(cacheDir, now) {
   try { assertStateParent(path.dirname(cacheDir)); } catch { return null; }
   const mutexPath = transitionPath(cacheDir);
   const owner = generateOwner();
-  try { return createOwnedLock(mutexPath, owner, now) ? owner : null; } catch { return null; }
+  try {
+    if (createOwnedLock(mutexPath, owner, now)) return owner;
+    // The mutex is held for a few file operations; one past the hold ceiling has a dead holder.
+    const holder = inspectStateLock(mutexPath, { nowMs: Date.now() });
+    if (!holder?.stat.isFile() || holder.ageMs < STATE_LOCK_MAX_HOLD_MS) return null;
+    assertStateParent(path.dirname(cacheDir));
+    if (!reclaimStateLock(mutexPath, holder)) return null;
+    return createOwnedLock(mutexPath, owner, now) ? owner : null;
+  } catch {
+    return null;
+  }
 }
 
 function ownsTransitionMutex(cacheDir, owner, state) {
@@ -788,13 +798,16 @@ function acquireAutoUpdateLock(lockPath, now = Date.now, checkState) {
       }
       if (error.code !== "EEXIST") throw error;
       const existing = readOwnedLock(lockPath);
-      const acquiredAt = Number.isFinite(existing?.acquiredAtMs) ? existing.acquiredAtMs : existing?.mtimeMs;
+      // An unreadable lock has only its mtime; it is reclaimed only past the hold ceiling.
+      const raw = existing ? null : fs.lstatSync(lockPath, { throwIfNoEntry: false });
+      const acquiredAt = Number.isFinite(existing?.acquiredAtMs) ? existing.acquiredAtMs : (existing?.mtimeMs ?? raw?.mtimeMs);
       const currentNow = now();
-      const stale = Boolean(existing && Number.isFinite(acquiredAt)
-        && acquiredAt <= currentNow
-        && currentNow - acquiredAt >= AUTO_UPDATE_LOCK_STALE_MS);
+      const age = Number.isFinite(acquiredAt) && acquiredAt <= currentNow ? currentNow - acquiredAt : NaN;
+      const stale = Boolean((existing || raw?.isFile()) && age >= AUTO_UPDATE_LOCK_STALE_MS);
       if (!stale) return null;
-      if (existing.pid !== null) {
+      // Past the ceiling a live pid is a reused one: no update holds the lock that long.
+      if (!existing && age < STATE_LOCK_MAX_HOLD_MS) return null;
+      if (existing && existing.pid !== null && age < STATE_LOCK_MAX_HOLD_MS) {
         try {
           process.kill(existing.pid, 0);
           return null;
