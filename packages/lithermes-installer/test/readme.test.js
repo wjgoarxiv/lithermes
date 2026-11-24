@@ -173,23 +173,27 @@ test("the landing READMEs link every docs page that holds their moved material, 
     const demo = text.split("\n").filter((line) => line.includes("<!-- demo-gif -->"));
     assert.equal(demo.length, 1, `${name} keeps exactly one marked demo slot`);
     assert.match(demo[0], /<img src="\.\/docs\/assets\/[^"]+" width="\d+" alt="[^"]{40,}"/, `${name} demo slot needs a real picture with alt text`);
-    assert.ok(demo[0].includes('<img src="./docs/assets/demo.webp"'), `${name} demo slot shows the session film`);
+    const film = lang === "ko" ? "demo-ko.webp" : "demo.webp";
+    assert.ok(demo[0].includes(`<img src="./docs/assets/${film}"`), `${name} demo slot shows the session film ${film}`);
     assert.ok(text.indexOf("<!-- demo-gif -->") < text.indexOf("\n## "), `${name} demo slot belongs above the first section`);
     const lines = text.split("\n").length;
     assert.ok(lines <= 300, `${name} stays a short landing page (${lines} lines)`);
   }
 });
 
-test("the README demo film is an animated WebP that lives outside the package and stays off the npm cards", () => {
-  const film = path.join(repoRoot, "docs", "assets", "demo.webp");
-  const bytes = fs.readFileSync(film);
-  assert.equal(bytes.toString("ascii", 0, 4), "RIFF", "demo.webp must be a RIFF container");
-  assert.equal(bytes.toString("ascii", 8, 12), "WEBP", "demo.webp must be a WebP");
-  assert.ok(bytes.length <= 8 * 1024 * 1024, `demo.webp must stay within 8 MiB (${bytes.length} bytes)`);
-  assert.ok(path.relative(packageRoot, film).startsWith(".."), "demo.webp must sit outside the published package folder");
-  assert.ok(!fs.readdirSync(path.join(packageRoot, "readme-assets")).includes("demo.webp"), "the package must not carry a copy of demo.webp");
+test("the README demo films are animated WebP loops that live outside the package and stay off the npm cards", () => {
+  for (const name of ["demo.webp", "demo-ko.webp"]) {
+    const film = path.join(repoRoot, "docs", "assets", name);
+    const bytes = fs.readFileSync(film);
+    assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${name} must be a RIFF container`);
+    assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${name} must be a WebP`);
+    assert.ok(bytes.includes(Buffer.from("ANIM")), `${name} must be animated`);
+    assert.ok(bytes.length <= 8 * 1024 * 1024, `${name} must stay within 8 MiB (${bytes.length} bytes)`);
+    assert.ok(path.relative(packageRoot, film).startsWith(".."), `${name} must sit outside the published package folder`);
+    assert.ok(!fs.readdirSync(path.join(packageRoot, "readme-assets")).includes(name), `the package must not carry a copy of ${name}`);
+  }
   for (const name of ["README.md", "README_Ko-KR.md"]) {
-    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /demo\.(gif|webp)/, `${name} npm card must not embed the demo film`);
+    assert.doesNotMatch(fs.readFileSync(path.join(packageRoot, name), "utf8"), /demo(?:-ko)?\.(gif|webp)/, `${name} npm card must not embed the demo film`);
   }
 });
 
