@@ -165,7 +165,7 @@ LitHermes ships litgoal as a **real durable runtime**, not prose. State persists
   evidence stays verified only while the workspace still matches the fingerprint of the
   cited run: an edit afterwards makes the gate report "C001 evidence R004 is stale: ...
   changed after the run (re-run the tests)", and the fix is to re-run and cite the new run.
-- `gate.json` — read-only mirror of the last gate evaluation (`open`, `reasons`, `runs`
+- `gate.json` — read-only mirror of the last gate evaluation (`goal`, `open`, `reasons`, the goal's `runs`
   with `stale` flags, `blockers` with their `source`) for the dashboard; the real gate
   stays in-process. It is refreshed on every run, evidence add, status change and
   blocker change.

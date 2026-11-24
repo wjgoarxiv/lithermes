@@ -116,15 +116,15 @@ def _blocker_row(item: Any) -> dict[str, Any] | None:
     }
 
 
-def read_gate_report(path: Path, workspace: Path) -> dict[str, Any] | None:
-    """The session's ``gate.json`` as a bounded, typed report, or None when absent or malformed.
+def read_gate_report(path: Path, workspace: Path, goal_id: str) -> dict[str, Any] | None:
+    """The session's ``gate.json`` as a bounded, typed report, or None when absent, malformed or about another goal.
 
-    Its contract is ``{"open": bool, "reasons": [str], "evaluated_at": str, "runs":
+    Its contract is ``{"goal": str, "open": bool, "reasons": [str], "evaluated_at": str, "runs":
     [{"id", "exit", "preview", "at", "stale", "changed"}], "blockers": [{"source", "text", "resolved"}]}``.
     Callers show it as "reported by the session": it is a file, not a proof.
     """
     data = _read_json_object(path, workspace)
-    if data is None or type(data.get("open")) is not bool or not isinstance(data.get("reasons"), list):
+    if data is None or data.get("goal") != goal_id or type(data.get("open")) is not bool or not isinstance(data.get("reasons"), list):
         return None
     runs, blockers = data.get("runs", []), data.get("blockers", [])
     if not isinstance(runs, list) or not isinstance(blockers, list):
@@ -167,7 +167,7 @@ def build_card(workspace: Path, session_id: str, now: datetime | None = None) ->
     goal = runtime.get_active(workspace, session_id)
     if goal is None:
         return None
-    report = read_gate_report(store.state_dir(workspace, session_id) / "gate.json", workspace)
+    report = read_gate_report(store.state_dir(workspace, session_id) / "gate.json", workspace, goal.id)
     if report:
         gate = {"open": report["open"], "reasons": report["reasons"], "source": "gate.json"}
         observed = report["runs"]
@@ -180,7 +180,7 @@ def build_card(workspace: Path, session_id: str, now: datetime | None = None) ->
         }
         observed = [
             {"id": r.get("id"), "exit": r.get("exit_code"), "preview": r.get("cmd_preview"), "stale": False}
-            for r in runs.recent_runs(workspace, session_id, limit=MAX_RUNS)
+            for r in runs.goal_runs(workspace, session_id, goal, limit=MAX_RUNS)
         ]
     criteria = [
         {"id": _clip(c.id, 40), "text": _clip(c.scenario, 300), "status": _clip(c.status, 40)}

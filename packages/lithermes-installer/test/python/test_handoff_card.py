@@ -121,7 +121,7 @@ class HandoffCard(NaturalRoutingCase):
             {"id": f"R00{n}", "exit": 0, "preview": f"pytest run {n}", "stale": n == 4} for n in range(1, 5)
         ]
         self.write_gate("s1", {
-            "open": True, "reasons": [], "evaluated_at": "2026-11-09T01:02:03+00:00",
+            "goal": "G001", "open": True, "reasons": [], "evaluated_at": "2026-11-09T01:02:03+00:00",
             "runs": reported, "blockers": [],
         })
         self.finalize()
@@ -131,9 +131,17 @@ class HandoffCard(NaturalRoutingCase):
         self.assertEqual([r["id"] for r in card["runs"]], ["R002", "R003", "R004"])
         self.assertTrue(card["runs"][-1]["stale"])
 
+    def test_the_card_of_a_new_goal_leaves_out_the_last_goals_gate_and_runs(self):
+        self.seed(criteria=1, passed=1)
+        self.seed(criteria=1, title="Second goal")
+        self.finalize()
+        card = self.card()
+        self.assertEqual((card["goal"]["title"], card["runs"]), ("Second goal", []))
+        self.assertFalse(card["gate"]["open"])
+
     def test_a_malformed_gate_json_falls_back_to_the_live_gate(self):
         self.seed()
-        for payload in ("{not json", json.dumps(["wrong shape"]), json.dumps({"open": "yes"})):
+        for payload in ("{not json", json.dumps(["wrong shape"]), json.dumps({"goal": "G001", "open": "yes", "reasons": []})):
             with self.subTest(payload=payload):
                 self.write_gate("s1", payload)
                 self.assertIsNone(self.finalize())

@@ -233,6 +233,17 @@ test("the end of the turn, another session and the settings reach the card witho
   await host.until(() => host.state.model === null);
 });
 
+test("the card of a new goal shows only the runs its record names", async (t) => {
+  const host = makeHost(t);
+  await host.start();
+  assert.match(JSON.stringify(host.render()), /R004 ✓/);
+  await host.write(record({ at: Date.now() / 1000, title: "Second goal", passed: 0, runs: [] }));
+  await host.until(() => host.state.model?.title === "Second goal");
+  const tree = JSON.stringify(host.render());
+  assert.doesNotMatch(tree, /R004|R006/);
+  assert.match(tree, /no signed runs yet/);
+});
+
 test("a lost file event does not leave the card at work", async (t) => {
   t.mock.method(fs, "watch", () => ({ on() {}, close() {} })); // no event ever reaches the card
   const host = makeHost(t);

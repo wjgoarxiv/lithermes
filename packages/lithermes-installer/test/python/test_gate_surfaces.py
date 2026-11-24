@@ -228,7 +228,7 @@ class SlashSurfaces(unittest.TestCase):
 def _write_gate(ws: Path, session: str, **report):
     from litgoal import store
 
-    payload = {"open": False, "reasons": [], "evaluated_at": "2026-11-10T05:00:00+00:00", "runs": [], "blockers": []}
+    payload = {"goal": "G001", "open": False, "reasons": [], "evaluated_at": "2026-11-10T05:00:00+00:00", "runs": [], "blockers": []}
     payload.update(report)
     path = store.state_dir(ws, session) / "gate.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -272,6 +272,16 @@ class GateToasts(unittest.TestCase):
         self.assertEqual(self.ctx.handles[0].texts, [first, self.ctx.edits[0], stale, guard])
         for text in self.ctx.handles[0].texts:
             self.assertNotIn(ESC, text)
+
+    def test_a_new_goal_is_not_announced_with_the_last_goals_gate(self):
+        from litgoal import runtime
+
+        _write_gate(self.ws, "s1", open=True)
+        self.assertIn("lit gate OPEN", self.toasts.observe(self.ws, "s1"))
+        runtime.create_goal(self.ws, "second", title="Second goal", session_id="s1")
+        self.assertIsNone(self.toasts.observe(self.ws, "s1"))
+        _write_gate(self.ws, "s1", goal="G002", reasons=["C001 status is 'pending' (need 'pass')"])
+        self.assertIn("lit gate CLOSED · Second goal", self.toasts.observe(self.ws, "s1"))
 
     def test_toasts_fail_open(self):
         _write_gate(self.ws, "s1", reasons=["x"])

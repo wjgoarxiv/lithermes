@@ -229,6 +229,7 @@ class GoalStages(unittest.TestCase):
 
     def _reported(self, **overrides):
         report = {
+            "goal": "G001",
             "open": False,
             "reasons": ["C001 evidence R007 is stale: export.py changed after the run", "C002 status is 'pending'"],
             "evaluated_at": "2026-11-09T05:00:00+00:00",
@@ -401,7 +402,7 @@ class GoalStages(unittest.TestCase):
 
     def test_hostile_reports_are_ignored_or_bounded_and_redacted(self):
         self._goal()
-        for payload in ("{not json", json.dumps(["list"]), json.dumps({"open": "yes", "reasons": "x"}), "x" * 400_000):
+        for payload in ("{not json", json.dumps(["list"]), json.dumps({"goal": "G001", "open": "yes", "reasons": "x"}), "x" * 400_000):
             with self.subTest(payload=payload[:20]):
                 self._gate_json(payload)
                 snapshot = plugin_api.goal_snapshot(str(self.ws))
@@ -546,6 +547,17 @@ class StagesFromARealGateSnapshot(unittest.TestCase):
         self.assertEqual(self._by_key()["review"]["detail"], "1 blocker: needs a retry")
         self.session_runtime.resolve_review_blocker(self.ws, blocker.id, session_id=self.SESSION)
         self.assertEqual(self._by_key()["review"]["detail"], "no blockers")
+
+    def test_a_new_goal_does_not_show_the_last_goals_gate_or_runs(self):
+        self._finish(self._terminal())
+        self.assertTrue(plugin_api.goal_snapshot(str(self.ws))["gate"]["open"])
+        self.session_runtime.create_goal(
+            self.ws, "second", criteria=[{"scenario": "next"}], session_id=self.SESSION
+        )
+        snapshot = plugin_api.goal_snapshot(str(self.ws))
+        self.assertFalse(snapshot["gate"]["open"])
+        self.assertEqual(snapshot["receipts"], [])
+        self.assertEqual(self._by_key()["runs"]["detail"], "no runs yet")
 
     def test_without_a_snapshot_file_the_route_falls_back_to_the_live_reading(self):
         self.snapshot.gate_path(self.ws, self.SESSION).unlink()

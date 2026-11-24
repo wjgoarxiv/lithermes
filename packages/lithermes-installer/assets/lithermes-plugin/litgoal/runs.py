@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import fingerprint, store
+from . import fingerprint, model, store
 
 try:
     from ..redaction import redact_text
@@ -37,7 +37,7 @@ RUN_REF_PREFIX = "run:"
 _PREVIEW_MAX = 100
 _BACKGROUND_STATUSES = frozenset({"started", "yielded_to_background"})
 _BACKGROUND_OUTPUT = "background process started"
-_SIGNED_FIELDS = ("id", "tool", "cmd_sha256", "cmd_preview", "exit_code", "at", "fp")
+_SIGNED_FIELDS = ("id", "tool", "cmd_sha256", "cmd_preview", "exit_code", "at", "fp", "goal")
 
 
 def runs_path(workspace: Path, session_id: Any = "") -> Path:
@@ -84,6 +84,23 @@ def recent_runs(workspace: Path, session_id: Any = "", limit: int = 5) -> list[d
     except ValueError:
         return []
     return records[-limit:] if limit > 0 else []
+
+
+def goal_runs(workspace: Path, session_id: Any, goal: model.Goal, limit: int = 5) -> list[dict[str, Any]]:
+    """The session's signed runs that belong to ``goal``, oldest first: made while it was active, or cited by it."""
+    cited = {e.ref.strip() for c in goal.criteria for e in c.evidence}
+    records = [
+        r for r in recent_runs(workspace, session_id, limit=1 << 30)
+        if r.get("goal") == goal.id or RUN_REF_PREFIX + str(r.get("id")) in cited
+    ]
+    return records[-limit:] if limit > 0 else []
+
+
+def _active_goal_id(workspace: Path, session_id: Any) -> str:
+    try:
+        return store.load_or_create(workspace, session_id).active_goal_id
+    except (OSError, ValueError):  # an unreadable state file never costs the run its record
+        return ""
 
 
 def verify_run(workspace: Path, session_id: Any, ref: str) -> dict[str, Any] | None:
@@ -174,6 +191,7 @@ def record_run(
                 "exit_code": exit_code,
                 "at": datetime.now(timezone.utc).isoformat(),
                 "fp": fp,
+                "goal": _active_goal_id(workspace, session_id),
             }
             record["sig"] = _signature(workspace, session_id, record)
             path.parent.mkdir(parents=True, exist_ok=True)

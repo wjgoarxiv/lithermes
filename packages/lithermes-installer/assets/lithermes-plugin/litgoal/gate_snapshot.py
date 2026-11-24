@@ -41,8 +41,9 @@ def write(
     workspace: Path, session_id: Any, goal: model.Goal, gate: dict[str, Any], now: fingerprint.Current
 ) -> None:
     try:
-        recent = runs.recent_runs(workspace, session_id, limit=RUNS_SHOWN)
+        recent = runs.goal_runs(workspace, session_id, goal, limit=RUNS_SHOWN)
         payload = {
+            "goal": goal.id,
             "open": bool(gate["passed"]),
             "reasons": list(gate["reasons"]),
             "evaluated_at": datetime.now(timezone.utc).isoformat(),

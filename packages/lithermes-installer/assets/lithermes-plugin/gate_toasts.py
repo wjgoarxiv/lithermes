@@ -137,7 +137,7 @@ def observe(workspace: Path | None, session_id: Any, *, files_changed: bool = Fa
             return None
         if files_changed:
             runtime.refresh_gate(workspace, session)
-        report = handoff_card.read_gate_report(gate_snapshot.gate_path(workspace, session), workspace)
+        report = handoff_card.read_gate_report(gate_snapshot.gate_path(workspace, session), workspace, goal.id)
         if report is None:
             return None
         view = picture(report, goal)

@@ -486,7 +486,7 @@ class GateSnapshot(Base):
     def test_evaluating_the_gate_writes_the_snapshot(self):
         gate = self.gate()
         data = self.read()
-        self.assertEqual(set(data), {"open", "reasons", "evaluated_at", "runs", "blockers"})
+        self.assertEqual(set(data), {"goal", "open", "reasons", "evaluated_at", "runs", "blockers"})
         self.assertIs(data["open"], False)
         self.assertEqual(data["reasons"], gate["reasons"])
         datetime.fromisoformat(data["evaluated_at"])

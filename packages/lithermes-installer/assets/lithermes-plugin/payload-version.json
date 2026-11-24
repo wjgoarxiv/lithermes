@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-24T17:16:33.428Z",
+  "syncedAt": "2026-11-24T22:09:33.045Z",
   "source": "bundled-payload",
-  "sourceHash": "5f92e9c24ee165f788304bcab8d8e5d50557bbae79ea4df383a83baa3fa206e3",
+  "sourceHash": "1fbdc95f8ae7db7ff85189902f6e6126f5e2a16adcd507991536ddb39c1f5324",
   "files": [
     {
       "path": "NOTICE.md",
@@ -93,7 +93,7 @@
     },
     {
       "path": "dashboard/plugin_api.py",
-      "sha256": "9ef458a7c9ee3a9dd63a7ff40630d57e0316b6ad51011b0c2a5326bd495f42bc"
+      "sha256": "fb21e0cc23fdff2b9a9c0406d31350a4311fd59dc50dbe525d92ad347107c2b4"
     },
     {
       "path": "deliverable_hedge_guard.py",
@@ -113,7 +113,7 @@
     },
     {
       "path": "gate_toasts.py",
-      "sha256": "d5db548b043e47fcf37d7de7b29679b53c3cfee8b24757d77dd5b71d9d10863b"
+      "sha256": "f790ffd616cd7c1bb7c8b239d01a3fe6bc2a27c297fd076c82d357f651f3669d"
     },
     {
       "path": "goal_pipeline.py",
@@ -129,7 +129,7 @@
     },
     {
       "path": "handoff_card.py",
-      "sha256": "003472abedc62c6e8bf7d9d658566e20701bd2e0c0d3ded802e8c1e908240f92"
+      "sha256": "616ae1126b48ba5d3fb6ba91d4d813fa2055166e2e9a97c1a5151ce4b9d7533e"
     },
     {
       "path": "hud_card.py",
@@ -185,7 +185,7 @@
     },
     {
       "path": "litgoal/gate_snapshot.py",
-      "sha256": "f5be9aa16d7bf045dd4f6610317cbc49e36baad3d9d45f87092dfab6e4af423c"
+      "sha256": "5e699846616877e9ff0909a2819cf2e0ff113ce8066e06777455182858dbaaea"
     },
     {
       "path": "litgoal/hook.py",
@@ -197,7 +197,7 @@
     },
     {
       "path": "litgoal/runs.py",
-      "sha256": "f2bee7ee9b772d190b47eb4acbbb76e4c7f2bbfaf45b1c7e53b549121eec4b83"
+      "sha256": "90b124358b84a057b28aad49ef657919a747608f17054edc51a5490fe7a0d06e"
     },
     {
       "path": "litgoal/runtime.py",
@@ -1405,7 +1405,7 @@
     },
     {
       "path": "skills/litgoal/SKILL.md",
-      "sha256": "da7c24423c920bd7bad4f9d198cbde84b05361de66283d5d5bbeb6af1ef5b07e"
+      "sha256": "89a6c008a38abe5a3f7beb8280c504d55289ee25f2c3a66971fa2ec448498414"
     },
     {
       "path": "skills/litresearch/ATTRIBUTION.md",

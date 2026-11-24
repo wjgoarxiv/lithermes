@@ -152,7 +152,7 @@ def _newest_state(store, workspace: Path) -> str | None:
 def _stage_inputs(store, runtime, workspace: Path, session_id: str, goal, state, clean) -> dict[str, Any]:
     """Gate, runs, blockers and handoff time: the session's ``gate.json`` first, today's live reading otherwise."""
     cards = _load_by_path("_lithermes_dashboard_handoff_card", "handoff_card.py")
-    report = cards.read_gate_report(store.state_dir(workspace, session_id) / "gate.json", workspace)
+    report = cards.read_gate_report(store.state_dir(workspace, session_id) / "gate.json", workspace, goal.id)
     if report:
         gate: dict[str, Any] = {
             "open": report["open"],
@@ -168,7 +168,7 @@ def _stage_inputs(store, runtime, workspace: Path, session_id: str, goal, state,
             "open": bool(live.get("passed")),
             "reasons": [clean(reason, 300) for reason in live.get("reasons", [])[:_MAX_REASONS]],
         }
-        observed = importlib.import_module(_VIEW_PACKAGE + ".runs").recent_runs(workspace, session_id, limit=3)
+        observed = importlib.import_module(_VIEW_PACKAGE + ".runs").goal_runs(workspace, session_id, goal, limit=3)
         runs = [
             {"id": clean(r.get("id"), 40), "exit": r.get("exit_code"), "preview": r.get("cmd_preview", ""),
              "at": r.get("at", ""), "stale": False, "changed": []}

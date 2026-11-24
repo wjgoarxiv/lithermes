@@ -90,6 +90,60 @@ class Records(unittest.TestCase):
             build.assert_called_once()
         self.card.observe("unknown")
 
+    def run_tests(self, session="s-1"):
+        runs = self.card.runtime.runs
+        run_id = runs.record_run(self.ws, session, "terminal", {"command": "pytest -q"}, '{"exit_code": 0}')
+        self.card.runtime.refresh_gate(self.ws, session)
+        return run_id
+
+    def classic(self, session="s-1"):
+        hud = self.card.hud_card
+        return hud.render(hud.snapshot_for(self.ws, session), "litgoal", "desktop", {"LANG": "en_US.UTF-8"})
+
+    def test_a_new_goal_does_not_inherit_the_last_goals_runs_or_gate(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertEqual(self.run_tests(), "R001")
+        self.card.observe("s-1")
+        self.assertEqual(self.record()["runs"], [["R001 ✓", "ok"]])
+        self.assertIn("R001 ✓", self.classic())
+        self.card.runtime.add_review_blocker(self.ws, "a blocker of the first goal", session_id="s-1")
+
+        self.goal(title="Second goal")
+        self.card.observe("s-1")
+        second = self.record()
+        self.assertEqual((second["title"], second["runs"]), ("Second goal", []))
+        self.assertNotIn("first goal", second["next"])
+        self.assertEqual(dict(second["stages"])["runs"], "active", "the runs stage waits for a first run")
+        self.assertNotIn("R001", self.classic())
+        self.assertIn("no signed runs yet", self.classic())
+
+        self.card.runtime.refresh_gate(self.ws, "s-1")
+        self.card.observe("s-1")
+        self.assertEqual(self.record()["runs"], [], "a gate evaluated for the new goal lists only its own runs")
+        self.assertEqual(self.run_tests(), "R002")
+        self.card.observe("s-1")
+        self.assertEqual(self.record()["runs"], [["R002 ✓", "ok"]])
+        self.assertNotIn("R001", self.classic())
+
+    def test_an_earlier_run_the_goal_cites_is_shown(self):
+        self.goal()
+        self.run_tests()
+        self.goal(title="Second goal")
+        self.card.runtime.add_evidence(self.ws, "C001", "green", "run:R001", session_id="s-1")
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertEqual(self.record()["runs"], [["R001 ✓", "ok"]])
+
+    def test_the_goal_a_run_belongs_to_is_signed(self):
+        runs = self.card.runtime.runs
+        self.goal()
+        self.run_tests()
+        path = runs.runs_path(self.ws, "s-1")
+        line = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(line["goal"], "G001")
+        path.write_text(json.dumps({**line, "goal": "G002"}) + "\n", encoding="utf-8")
+        self.assertEqual(runs.recent_runs(self.ws, "s-1"), [])
+
     def finish(self, sealed=True):
         """The goal reaches `complete`; only a sealed one counts as finished."""
         goal = self.card.runtime.get_active(self.ws, "s-1")
