@@ -73,7 +73,9 @@ npx --package @litfamily/lithermes -- lithermes install --yes --no-spinner
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes
 ```
 
-대화형 설치는 `PREPARING INSTALL` 요약과 `INSTALL RECEIPT` 또는 조치 가능한 `INSTALL STOPPED` 패널을 보여줍니다. redirect, CI, `NO_COLOR`, dry-run, `--no-spinner`에서는 plain하고 script-safe한 출력을 사용합니다.
+`--yes` 없이 터미널에서 설치하면 질문이 카드로 나옵니다. 에이전트가 쓸 제공자와 모델, 도우미가 쓸 제공자와 모델, 그 경로를 확인하는 카드, HUD 색상, 답변 문체, 완료 벨 순서입니다. 카드마다 답이 무엇을 바꾸는지 한 문장으로 알려 주고 기본값을 표시합니다. 화살표 키나 `j`/`k`로 움직이고, 번호를 누르면 그 항목으로 건너뛰고, `Enter`로 고릅니다. 예/아니요 카드에서는 `y`나 `n`을 눌러도 됩니다. 모델 경로를 확인하기 전에는 아무것도 쓰지 않으므로, 그 전에 Ctrl+C나 Ctrl+D를 누르면 Hermes 홈은 그대로입니다. 답한 카드는 한 줄로 접히고, 마지막 카드가 설치한 것을 경고부터 보여 줍니다. 설치가 멈추면 `Install stopped`와 이유를 보여 줍니다.
+
+`--yes`로 설치하면 `PREPARING INSTALL` 요약과 `INSTALL RECEIPT` 또는 조치 가능한 `INSTALL STOPPED` 패널을 보여줍니다. `NO_COLOR`에서는 카드가 색 없이 나옵니다. 화면 낭독기를 쓸 때처럼 번호만 묻는 plain 질문이 필요하면 `--no-spinner`를 붙이세요. dumb 터미널이나 가로 40칸, 세로 14줄보다 작은 창에서도 plain 질문이 나옵니다. redirect, CI, dry-run, `--no-spinner`에서는 plain하고 script-safe한 출력을 사용합니다.
 
 TTY에서 스타일 선택 질문도 생략하려면 `--no-style`을 함께 지정하세요.
 
@@ -280,9 +282,9 @@ Astra가 다른 곳에 있다는 이유만으로 이를 재귀적으로 필터�
 `/skin lithermes-<accent>`가 즉시 적용되고, CLI에서 변경하면 Hermes를 다시 시작합니다.
 스킨은 LitHermes 이름, `LIT ready` 환영 문구, `stay lit` 종료 문구,
 `🔥 ›` 프롬프트, LIT 로고, LIT 스피너, CLI 팔레트와 TUI의 밝은/어두운 팔레트를 포함합니다.
-대화형 설치는 확인 뒤 색상 선택기를 표시합니다.
+대화형 설치는 확인 뒤 이 스킨들을 카드로 보여 줍니다.
 
-Ignition은 `lithermes hud ignition`으로 선택합니다. 기존 번호 1~10의 선택은
+Ignition은 `lithermes hud ignition`으로 선택합니다. `lithermes hud`의 번호 1~10은
 바뀌지 않습니다. 배너는 주황 `#FF6337`, 활성 항목은 라임 `#D7F75B`, 본문은
 아이보리 `#F2EFDF`, 상태 표시줄과 자동완성 배경은 네이비 `#080D14`를 씁니다.
 밝은 화면용 팔레트는 아이보리 바탕에 네이비 글자를 사용합니다. 터미널 앱의

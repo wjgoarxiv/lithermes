@@ -45,7 +45,7 @@ unchanged while the landing art shows seven machines.
 
 ## Terminal screens
 
-`../screens/` holds the five terminal pictures in the "What you will see on your first run" subsection of the landing pages, each in a dark and a light version at twice the display size. The install, doctor, start-and-stop and update-notice pictures are captured from the installer and from Hermes running in a scratch Hermes home, and the acknowledgement picture is built from the output of the plugin's own acknowledgement code; the captions on the pages say which is which. The terminal type is MesloLGS NF (Apache License 2.0) and the window labels use Pretendard (SIL Open Font License 1.1). Only the rendered pictures are kept, so the repository carries no font files for them. The folder sits outside the installer package.
+`../screens/` holds the five terminal pictures in the "What you will see on your first run" subsection of the landing pages, each in a dark and a light version at twice the display size. The install, doctor, start-and-stop and update-notice pictures are captured from the installer and from Hermes running in a scratch Hermes home, and the acknowledgement picture is built from the output of the plugin's own acknowledgement code; the captions on the pages say which is which. The terminal type is MesloLGS NF (Apache License 2.0), or JetBrains Mono (SIL Open Font License, the notice above) in the install picture, and the window labels use Pretendard (SIL Open Font License 1.1). Only the rendered pictures are kept, so the repository carries no font files for them. The folder sits outside the installer package.
 
 ## Diagrams and the plant drawing
 

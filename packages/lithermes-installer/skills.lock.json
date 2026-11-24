@@ -549,12 +549,12 @@
     },
     "litgoal": {
       "skillMd": {
-        "bytes": 28228,
-        "sha256": "da7c24423c920bd7bad4f9d198cbde84b05361de66283d5d5bbeb6af1ef5b07e"
+        "bytes": 28247,
+        "sha256": "89a6c008a38abe5a3f7beb8280c504d55289ee25f2c3a66971fa2ec448498414"
       },
       "files": 2,
-      "bytes": 28228,
-      "sha256": "d9e6d94091d7ef2a9cf5d5effd9243fa3bd7ee3f426116b11bdb8cb190a245a6"
+      "bytes": 28247,
+      "sha256": "5c658b14cba18b96a220775e6edf9ef9090780d6b8f22cbf0b72af4c0f8c7e46"
     },
     "litresearch": {
       "skillMd": {
@@ -1141,6 +1141,7 @@
     "src/cli.js",
     "src/lib/autoUpdate.js",
     "src/lib/canonicalCorpus.js",
+    "src/lib/cards.js",
     "src/lib/check.js",
     "src/lib/config.js",
     "src/lib/extensions.js",

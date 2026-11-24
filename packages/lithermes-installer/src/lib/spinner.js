@@ -97,6 +97,47 @@ function renderInstallReceipt(message, { env = process.env, stream = process.std
   return ["", c.bold("╭─ INSTALL RECEIPT"), ...rows, "╰─ LitHermes is installed; restart Hermes to load the new plugin"].join("\n");
 }
 
+// The steps every install runs; the compatibility step joins only where it applies.
+const INSTALL_STEPS = Object.keys(installStages).slice(0, -1);
+
+function receiptTone(label, value) {
+  if (/^(?:warning|credential guard|model (?:reason|fallback|write))$/i.test(label)) return "warn";
+  if (/^(?:skipped|aborted|fallback|blocked|stop|FOREIGN|MISSING|OUTDATED)/.test(value)) return "warn";
+  return /^(?:updated|preserved|hard|safe|configured|PASS|none needed|\d+ accents|\/)/.test(value) ? "good" : "note";
+}
+
+// The receipt and what the questions after it changed, as sections of the closing card. Every line of
+// the message is kept; warnings come first.
+function receiptSections(message, answers = []) {
+  const [title, ...details] = message.split("\n");
+  const installed = [];
+  const warnings = [];
+  const settings = [];
+  const next = [];
+  for (const line of details) {
+    const at = line.indexOf(": ");
+    const label = at === -1 ? "Detail" : `${line[0].toUpperCase()}${line.slice(1, at)}`;
+    const value = at === -1 ? line : line.slice(at + 2);
+    if (line.startsWith("Restart ")) next.push({ label: "Gateway", value: line });
+    else (receiptTone(label, value) === "warn" ? warnings : installed).push({ label, value, tone: receiptTone(label, value) });
+  }
+  for (const { label, text } of answers) {
+    const lines = text.split("\n");
+    const after = lines.filter((line) => line.startsWith("Restart "));
+    lines.filter((line) => !after.includes(line)).forEach((value, i) => settings.push({ label: i ? "" : label, value, tone: i ? "note" : "good" }));
+    for (const value of after) next.push({ label, value });
+  }
+  return {
+    title: title || "LitHermes installed",
+    sections: [
+      { head: "Warnings", rows: warnings },
+      { head: "Installed", rows: installed },
+      { head: "Your answers", rows: settings },
+      { head: "Next", rows: next },
+    ],
+  };
+}
+
 // Step-aware install renderer. Each onProgress phase becomes a live spinner line
 // that is finalized in place with its own ✓ (or ✗ on failure), producing an
 // ordered checklist. Plain terminals retain the stages without cursor controls.
@@ -190,4 +231,4 @@ function createSpinner({ stream = process.stderr, text = "Installing LitHermes",
   };
 }
 
-module.exports = { createSpinner, renderInstallReceipt, shouldUseSpinner };
+module.exports = { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner };

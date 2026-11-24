@@ -14,6 +14,8 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 
 This one line fetches the installer, puts the plugin into your Hermes home and changes your Hermes configuration so the plugin loads. It is written to run without stopping for approval, which is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. `--no-style` skips the picker for how replies are written, which would otherwise still come up in a terminal. The Ignition skin installs either way. The bell Hermes can ring when a turn finishes stays off unless you add `--bell` or answer yes when an interactive install asks; a `display.bell_on_complete` value you already set is kept, and `--no-bell` skips the question. Nothing connects to Telegram during installation.
 
+To choose the models, the skin and the reply style yourself, leave out the `--yes` and `--no-style` after `install`. In a terminal the questions then come one card at a time, `Enter` takes the marked default, and nothing is written before you confirm the model route.
+
 Maybe you want to try LitHermes before it touches your everyday setup. Point `HERMES_HOME` at a new, empty directory before you install, and start Hermes with that same value; your usual home and settings stay as they are. The installer can also make compatibility edits to the Hermes installation it finds. If that installation lives outside your trial profile and you want it left alone too, add `--no-patch-installed-hermes`.
 
 <details>

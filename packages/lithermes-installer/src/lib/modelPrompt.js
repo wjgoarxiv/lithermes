@@ -60,7 +60,7 @@ function createLineReader(rl) {
   };
 }
 
-async function menu(nextLine, output, title, items, defaultIndex) {
+async function menu(nextLine, output, { title, items, defaultIndex }) {
   const max = items.length - 1;
   output.write(`${title}\n`);
   items.forEach((item, index) => output.write(`   ${index}. ${item}\n`));
@@ -99,51 +99,66 @@ function routeFromConfig(text) {
   }
 }
 
-// Provider → lead model+effort → helper provider → helper model+effort.
-// Falls back to the shipped default route if the input closes before an answer.
-async function runMenus(nextLine, output, preset = managedRequest()) {
+const providerChoices = () => PROVIDER_IDS.map((id) => ({ label: ROUTE_CATALOG[id].label, detail: id, folded: id }));
+const rowChoices = (rows) => rows.map((row) => ({ label: `${row.model} · ${row.effort}`, detail: row.note }));
+
+// Provider → lead model+effort → helper provider → helper model+effort, each asked through `ask`,
+// which returns an index. Falls back to the shipped default route if the input closes early.
+async function runMenus(ask, preset = managedRequest()) {
   try {
     const providerDefaultIndex = Math.max(0, PROVIDER_IDS.indexOf(preset.provider));
-    const providerIndex = await menu(
-      nextLine,
-      output,
-      "Choose the provider for LitHermes agents.",
-      PROVIDER_IDS.map(providerLabel),
-      providerDefaultIndex,
-    );
+    const providerIndex = await ask({
+      title: "Choose the provider for LitHermes agents.",
+      items: PROVIDER_IDS.map(providerLabel),
+      defaultIndex: providerDefaultIndex,
+      card: {
+        title: "Agent provider",
+        note: `Sets which provider serves the LitHermes agents; the route now is ${preset.model} · ${preset.effort}, and Enter keeps what is marked.`,
+        choices: providerChoices(),
+      },
+    });
     const provider = PROVIDER_IDS[providerIndex];
     const leadRows = ROUTE_CATALOG[provider].rows;
     const leadPreset = provider === preset.provider ? preset : ROUTE_CATALOG[provider].lead;
-    const leadIndex = await menu(
-      nextLine,
-      output,
-      "Choose the LEAD model (plans and reviews).",
-      leadRows.map(rowLabel),
-      rowIndex(leadRows, leadPreset),
-    );
+    const leadIndex = await ask({
+      title: "Choose the LEAD model (plans and reviews).",
+      items: leadRows.map(rowLabel),
+      defaultIndex: rowIndex(leadRows, leadPreset),
+      card: {
+        title: "Lead model",
+        note: "Sets the model and reasoning effort that plan and review; Enter keeps what is marked.",
+        choices: rowChoices(leadRows),
+      },
+    });
     const childProviderDefault = provider === preset.provider ? preset.childProvider : provider;
     const childProviderDefaultIndex = Math.max(0, PROVIDER_IDS.indexOf(childProviderDefault));
-    const childProviderIndex = await menu(
-      nextLine,
-      output,
-      "Choose the provider for HELPER agents (delegated workers).",
-      PROVIDER_IDS.map(providerLabel),
-      childProviderDefaultIndex,
-    );
+    const childProviderIndex = await ask({
+      title: "Choose the provider for HELPER agents (delegated workers).",
+      items: PROVIDER_IDS.map(providerLabel),
+      defaultIndex: childProviderDefaultIndex,
+      card: {
+        title: "Helper provider",
+        note: "Sets which provider serves the helper agents, the delegated workers; Enter keeps what is marked.",
+        choices: providerChoices(),
+      },
+    });
     const childProvider = PROVIDER_IDS[childProviderIndex];
     const helperRows = ROUTE_CATALOG[childProvider].rows;
     const helperPreset = provider === preset.provider && childProvider === preset.childProvider
       ? preset
       : ROUTE_CATALOG[childProvider].helper;
-    const helperIndex = await menu(
-      nextLine,
-      output,
-      "Choose the HELPER model (delegated workers).",
-      helperRows.map(rowLabel),
-      rowIndex(helperRows, helperPreset === preset
+    const helperIndex = await ask({
+      title: "Choose the HELPER model (delegated workers).",
+      items: helperRows.map(rowLabel),
+      defaultIndex: rowIndex(helperRows, helperPreset === preset
         ? { model: preset.childModel, effort: preset.childEffort }
         : helperPreset),
-    );
+      card: {
+        title: "Helper model",
+        note: "Sets the model and reasoning effort of the delegated workers; Enter keeps what is marked.",
+        choices: rowChoices(helperRows),
+      },
+    });
     return managedRequest({
       childEffort: helperRows[helperIndex].effort,
       childModel: helperRows[helperIndex].model,
@@ -160,7 +175,8 @@ async function runMenus(nextLine, output, preset = managedRequest()) {
 async function promptModelRoute({ input = process.stdin, output = process.stdout } = {}) {
   const rl = readline.createInterface({ input, terminal: false });
   try {
-    return await runMenus(createLineReader(rl), output);
+    const nextLine = createLineReader(rl);
+    return await runMenus((question) => menu(nextLine, output, question));
   } finally {
     rl.close();
   }
@@ -174,7 +190,7 @@ async function promptModelRouteSession({ input = process.stdin, output = process
   try {
     output.write(`Model route: currently ${preset.model} · ${preset.effort}\n`);
     output.write("   0. keep current            (recommended)\n");
-    const route = await runMenus(nextLine, output, preset);
+    const route = await runMenus((question) => menu(nextLine, output, question), preset);
     output.write(`${renderModelRouteCard(route, { configPath, env })}\n`);
     const answer = await nextLine();
     return { confirmed: !answer.closed, route };
@@ -183,15 +199,44 @@ async function promptModelRouteSession({ input = process.stdin, output = process
   }
 }
 
-function renderModelRouteCard(route, { configPath, env = process.env } = {}) {
+// The same questions and the same last look, drawn as cards (cards.js).
+async function pickModelRoute({ ui, env = process.env, configPath, preset = managedRequest() }) {
+  let closed = false;
+  const route = await runMenus(async ({ card, defaultIndex }) => {
+    const index = closed ? null : await ui.pick({ ...card, start: defaultIndex });
+    closed = index === null;
+    return closed ? defaultIndex : index;
+  }, preset);
+  if (closed) return { confirmed: false, route };
+  const warning = missingCredentialWarning(route, env);
+  const confirmed = await ui.review({
+    title: "Model route",
+    note: "Check the route: Enter installs LitHermes with it.",
+    rows: [
+      { label: "Provider", value: route.provider },
+      { label: "Lead", value: `${route.model} · ${route.effort}` },
+      { label: "Helpers", value: helpersLabel(route) },
+      { label: "Writes", value: `${configPath} (managed keys only)` },
+      ...(warning ? [{ label: "Warning", value: warning, tone: "warn" }] : []),
+    ],
+    button: "Continue",
+    stopNote: "(nothing written yet)",
+  });
+  return { confirmed: confirmed === true, route };
+}
+
+function helpersLabel(route) {
   const sameProvider = route.childProvider === route.provider;
-  const helpers = `${sameProvider ? "" : `${route.childProvider} / `}${route.childModel} · ${route.childEffort}`;
+  return `${sameProvider ? "" : `${route.childProvider} / `}${route.childModel} · ${route.childEffort}`;
+}
+
+function renderModelRouteCard(route, { configPath, env = process.env } = {}) {
   const warning = missingCredentialWarning(route, env);
   return [
     "╭─ MODEL ROUTE",
     `│ Provider   ${route.provider}`,
     `│ Lead       ${route.model} · ${route.effort}`,
-    `│ Helpers    ${helpers}`,
+    `│ Helpers    ${helpersLabel(route)}`,
     `│ Writes     ${configPath}  (managed keys only)`,
     ...(warning ? [`│ Warning    ${warning}`] : []),
     "╰─ Enter to continue · Ctrl-C to abort (nothing written yet)",
@@ -200,6 +245,7 @@ function renderModelRouteCard(route, { configPath, env = process.env } = {}) {
 
 module.exports = {
   missingCredentialWarning,
+  pickModelRoute,
   promptModelRoute,
   promptModelRouteSession,
   routeFromConfig,

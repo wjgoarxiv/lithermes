@@ -1,10 +1,11 @@
 const path = require("node:path");
 const readline = require("node:readline");
 const { installLitHermes, previewModelRoute, previewUninstall, uninstallLitHermes } = require("./lib/install");
-const { promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
+const { pickModelRoute, promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
 const { checkLitHermes, doctorLitHermes } = require("./lib/check");
-const { createSpinner, renderInstallReceipt, shouldUseSpinner } = require("./lib/spinner");
-const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, promptAccent, resolveHome } = require("./lib/hud");
+const { cardTerminal, createCards } = require("./lib/cards");
+const { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner } = require("./lib/spinner");
+const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, pickAccent, promptAccent, resolveHome } = require("./lib/hud");
 const { supportsColor, findAccent, skinName } = require("./lib/skins");
 const {
   readConfig,
@@ -243,7 +244,7 @@ async function runLifecycleUpdateSafely(command, flags, runtime = {}) {
 // and null when the prompts do not apply. Consent is granted ONLY by that
 // explicit Enter: fallback and unsafe-stop previews leave the --yes gate
 // untouched.
-async function maybePromptModelRoute(flags, runtime = {}) {
+async function maybePromptModelRoute(flags, runtime = {}, cards = null) {
   if (flags.yes || flags["dry-run"] || flags.json) return null;
   const env = runtime.env || process.env;
   const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
@@ -259,13 +260,16 @@ async function maybePromptModelRoute(flags, runtime = {}) {
   }
   if (preview.action !== "write" && preview.action !== "preserve") return null;
   const currentRoute = routeFromConfig(readConfig(resolveHome(flags)));
-  const { confirmed, route } = await promptModelRouteSession({
-    configPath: preview.configPath,
-    env,
-    input,
-    output,
-    preset: currentRoute,
-  });
+  if (cards) cards.note(`Installs into ${resolveHome(flags)}. Nothing is written before you confirm the model route.`);
+  const { confirmed, route } = cards
+    ? await pickModelRoute({ ui: cards, configPath: preview.configPath, env, preset: currentRoute })
+    : await promptModelRouteSession({
+      configPath: preview.configPath,
+      env,
+      input,
+      output,
+      preset: currentRoute,
+    });
   if (!confirmed) return "aborted";
   const routeChanged = ["provider", "model", "effort", "childProvider", "childModel", "childEffort"]
     .some((key) => route[key] !== currentRoute[key]);
@@ -287,7 +291,9 @@ const STYLE_MENU = [
   { id: "eli5-ko",       label: "ELI5 (한국어)" },
 ];
 
-async function maybePickOutputStyle(flags) {
+const logLine = (label, text) => console.log(text);
+
+async function maybePickOutputStyle(flags, { cards = null, report = logLine } = {}) {
   if (flags["dry-run"]) return;
   const home = resolveHome(flags);
   const current = readOutputStyleConfig(readConfig(home));
@@ -301,6 +307,17 @@ async function maybePickOutputStyle(flags) {
     chosen = styleId;
   } else if (flags["no-style"]) {
     return;
+  } else if (cards) {
+    const index = await cards.pick({
+      title: "Output style",
+      note: "Sets how Hermes words its replies; None keeps the style you use now.",
+      choices: [
+        { label: "None / keep current", detail: current ? `now ${current}` : "", folded: "kept as it is" },
+        ...STYLE_MENU.map(({ id, label }) => ({ label, detail: id })),
+      ],
+      ctrlCSkips: supportsColor(),
+    });
+    chosen = index ? STYLE_MENU[index - 1].id : null;
   } else if (process.stdin.isTTY && process.stdout.isTTY && !("CI" in process.env)) {
     chosen = await (new Promise((resolve) => {
       process.stdout.write("Choose an output style:\n");
@@ -324,14 +341,14 @@ async function maybePickOutputStyle(flags) {
     const before = readConfig(home);
     const after = setOutputStyleConfig(before, chosen);
     if (after !== before) writeConfig(home, after);
-    console.log(`Output style set to '${chosen}'.`);
+    report("Output style", `Output style set to '${chosen}'.`);
   }
 }
 
 // Keep explicit HUD choices manual. On the prompted install path the accent
 // picker runs; the --yes path auto-applies the named Ignition skin on
 // a fresh interactive color-capable install.
-async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false } = {}) {
+async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false, cards = null, report = logLine } = {}) {
   if (flags["dry-run"]) return;
   let entry = null;
   if (typeof flags.hud === "string" && flags.hud.trim()) {
@@ -344,13 +361,16 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
     return;
   } else if (promptForAccent) {
     const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
-    const chosen = await promptAccent({
-      input: streams.stdin || process.stdin,
-      output: streams.stdout || process.stdout,
-      color: supportsColor({ stream: streams.stdout || process.stdout, env: runtime.env || process.env }),
-    });
+    const color = supportsColor({ stream: streams.stdout || process.stdout, env: runtime.env || process.env });
+    const chosen = cards
+      ? await pickAccent({ ui: cards, current: readDisplaySkinConfig(readConfig(resolveHome(flags))), ctrlCSkips: color })
+      : await promptAccent({
+        input: streams.stdin || process.stdin,
+        output: streams.stdout || process.stdout,
+        color,
+      });
     if (chosen) {
-      console.log(applyHud(chosen.accent, flags));
+      report("HUD accent", applyHud(chosen.accent, flags));
     }
     return;
   } else {
@@ -374,7 +394,7 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
     console.log(`LitHermes HUD set to ${entry.label} (${name}).`);
     return;
   }
-  if (entry) console.log(applyHud(entry.accent, flags));
+  if (entry) report("HUD accent", applyHud(entry.accent, flags));
 }
 
 // Hermes rings the terminal bell (plus a desktop notice) at the end of a turn
@@ -382,9 +402,9 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
 // it only on --bell or a "y" to the interactive question, never changes a value
 // the user already chose, and leaves config.yaml alone when the edit is not
 // clean or the file changed while the question was open.
-async function maybeOfferBell(flags, runtime = {}, { prompt = false } = {}) {
+async function maybeOfferBell(flags, runtime = {}, { prompt = false, cards = null, report = logLine } = {}) {
   if (flags["dry-run"] || flags["no-bell"]) return;
-  const say = flags.json ? console.error : console.log;
+  const say = flags.json ? console.error : (text) => report("Finish bell", text);
   const home = resolveHome(flags);
   const before = readConfig(home);
   const current = readBellOnCompleteConfig(before);
@@ -405,7 +425,10 @@ async function maybeOfferBell(flags, runtime = {}, { prompt = false } = {}) {
     const output = streams.stdout || process.stdout;
     const interactive = runtime.isInteractive ?? Boolean(input.isTTY && output.isTTY);
     if (!interactive || "CI" in env) return;
-    wanted = await new Promise((resolve) => {
+    wanted = cards ? await cards.confirm({
+      title: "Finish bell",
+      note: "Rings the terminal bell when a Hermes turn finishes; No leaves that setting alone.",
+    }) : await new Promise((resolve) => {
       const rl = readline.createInterface({ input, output, terminal: false });
       rl.on("close", () => resolve(false));
       rl.question("Ring the terminal bell when a Hermes turn finishes? [y/N] ", (answer) => {
@@ -426,6 +449,60 @@ async function maybeOfferBell(flags, runtime = {}, { prompt = false } = {}) {
   }
   writeConfig(home, after);
   say("Finish bell on: Hermes rings the terminal when a turn finishes (display.bell_on_complete).");
+}
+
+// The cards for this run, or null where the plain prompts stay. The step pill counts the questions
+// the flags and the config leave open: five for the model route, then skin, reply style and bell.
+function installCards(flags, runtime = {}) {
+  const env = runtime.env || process.env;
+  const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
+  const input = streams.stdin || process.stdin;
+  const output = streams.stdout || process.stdout;
+  if (!cardTerminal({ input, output, env, flags })) return null;
+  const named = (key) => typeof flags[key] === "string" && Boolean(flags[key].trim());
+  const asks = [
+    !named("hud") && !flags["no-hud"],
+    !named("style") && !flags["no-style"],
+    !flags.bell && !flags["no-bell"] && readBellOnCompleteConfig(readConfig(resolveHome(flags))) === null,
+  ];
+  return createCards({ input, output, env, total: 5 + asks.filter(Boolean).length });
+}
+
+// The confirmed install with cards: the steps, the questions left, then one card with what was done.
+async function installWithCards(flags, runtime, cards) {
+  const { version } = require(path.join(__dirname, "..", "package.json"));
+  const steps = cards.steps({ title: `Installing LitHermes ${version}`, names: INSTALL_STEPS });
+  let result;
+  try {
+    result = installLitHermes({ ...flags, onProgress: steps.reach });
+  } catch (error) {
+    steps.fail();
+    cards.summary({
+      title: "Install stopped",
+      bad: true,
+      sections: [{ head: "LitHermes install failed", rows: [
+        { label: "Reason", value: error instanceof Error ? error.message : "Unexpected install error.", tone: "bad" },
+        { label: "Safety", value: "No later install stages were run" },
+        { label: "Next", value: "Resolve the reason above, then rerun `lithermes install --yes`" },
+      ] }],
+    });
+    throw error;
+  }
+  steps.finish();
+  const answers = [];
+  const close = () => {
+    cards.summary(receiptSections(result.message, answers));
+    if (result.notice) cards.notice(result.notice);
+  };
+  cards.onStop(close);
+  const report = (label, text) => answers.push({ label, text });
+  try {
+    await maybePickHudAccent(flags, runtime, { promptForAccent: true, cards, report });
+    await maybePickOutputStyle(flags, { cards, report });
+    await maybeOfferBell(flags, runtime, { prompt: true, cards, report });
+  } finally {
+    close();
+  }
 }
 
 async function main(argv, runtime = {}) {
@@ -486,9 +563,15 @@ async function main(argv, runtime = {}) {
     return;
   }
   if (command === "install") {
-    const prompted = await maybePromptModelRoute(flags, runtime);
+    const cards = installCards(flags, runtime);
+    const prompted = await maybePromptModelRoute(flags, runtime, cards);
     if (prompted === "aborted") {
       console.log("Install aborted; nothing was written.");
+      return;
+    }
+    if (cards && prompted === "chosen") {
+      await installWithCards(flags, runtime, cards);
+      scheduleUpdateSafely(command, flags, runtime);
       return;
     }
     const spinner = shouldUseSpinner({ flags }) ? createSpinner({

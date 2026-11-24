@@ -73,7 +73,9 @@ npx --package @litfamily/lithermes -- lithermes install --yes --no-spinner
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes
 ```
 
-Interactive installs show `PREPARING INSTALL` and finish with an `INSTALL RECEIPT` or an actionable `INSTALL STOPPED` panel. Redirected output, CI, `NO_COLOR`, dry-run, and `--no-spinner` remain plain and script-safe.
+Without `--yes`, an install in a terminal asks its questions on cards: the provider and model for the agents, the same for the helpers, a last look at that route, then the HUD accent, the reply style and the finish bell. Each card says what the answer changes and marks the default. Use the arrow keys or `j`/`k` to move, a number to jump, `Enter` to take the highlighted choice, and `y` or `n` on the yes/no card. Nothing is written until you confirm the model route; Ctrl+C or Ctrl+D before that leaves your Hermes home untouched. After an answer the card folds to one line, and a closing card lists what was installed, with warnings first, or says `Install stopped` and why.
+
+`--yes` shows `PREPARING INSTALL` and finishes with an `INSTALL RECEIPT` or an actionable `INSTALL STOPPED` panel. With `NO_COLOR` the cards stay, without colour. For plain numbered prompts, for example with a screen reader, add `--no-spinner`; a dumb terminal or a window under 40 columns or 14 rows gets them too. Redirected output, CI, dry-run, and `--no-spinner` remain plain and script-safe.
 
 Add `--no-style` to skip the style picker on a TTY as well.
 
@@ -232,8 +234,8 @@ lithermes hud off        # remove display.skin (back to the Hermes default)
 
 Inside a Hermes session, `/skin lithermes-<accent>` switches immediately;
 restart Hermes after `lithermes hud <accent>` to apply it everywhere. The
-interactive installer also offers the accent picker after a confirmed install.
-Ignition is selected by name; the existing ten numbered choices are unchanged.
+interactive installer also offers these skins on a card after a confirmed install.
+`lithermes hud` selects Ignition by name; its ten numbered choices are unchanged.
 On a fresh interactive color-capable `--yes` install, Ignition is selected only
 when `display.skin` is absent. Existing values, including an empty value, are
 preserved. `--no-hud` skips selection; `--no-style` only skips the reply-writing

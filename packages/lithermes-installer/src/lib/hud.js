@@ -3,6 +3,7 @@ const os = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline");
 const skins = require("./skins");
+const { ink } = require("./cards");
 const { MODES, applyTuiCard, tuiCardStatus } = require("./tuiCard");
 const {
   readConfig,
@@ -178,4 +179,21 @@ function promptAccent({ input = process.stdin, output = process.stdout, color = 
   });
 }
 
-module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, promptAccent };
+// The same question as a card. Enter keeps the skin, as it does at the plain prompt; the named themes
+// that prompt takes by name are rows here.
+async function pickAccent({ ui, current = null, ctrlCSkips = false }) {
+  const accents = [...skins.HUD_ACCENTS, skins.IGNITION, ...skins.NAMED_THEMES];
+  const index = await ui.pick({
+    title: "HUD accent",
+    note: "Sets the colour of the Hermes HUD skin; Enter leaves your skin as it is.",
+    choices: [
+      { label: "keep current", detail: current ? `stay with ${current}` : "no skin change", folded: "kept as it is" },
+      ...accents.map(({ accent, hex, mood }) => ({ label: accent, detail: mood, color: ink(hex) })),
+    ],
+    ctrlCSkips,
+    follow: true,
+  });
+  return index ? accents[index - 1] : null;
+}
+
+module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, pickAccent, promptAccent };
