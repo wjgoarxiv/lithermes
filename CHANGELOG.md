@@ -6,6 +6,10 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.47] - 2026-11-24
+
+- The READMEs, the npm pages, the install guide and the tour now describe what 1.0.46 changed: a request may end with `lit`, `lit-loop` or `litwork` and still gets the goal question with the words before it, and `lit continue` asks for no new goal; `install`, `doctor` and `--help` open with the synthwave LIT mark, with a plain `LIT · hermes agent` line for a pipe, a CI log or a terminal without UTF-8, and the truecolor HUD card starts with the `🔥 LIT` pill; and "When something goes wrong" explains the install lock message, when a lock left by a crashed run clears itself, and what to do if it does not. The tour no longer says `--help` prints the old banner.
+
 ## [1.0.46] - 2026-11-24
 
 - `lithermes install`, `doctor` and `--help` open with the synthwave LIT mark, sized to the terminal with the version centred under it. A pipe, a CI log or an agent's tool call gets the plain line and the version only. On a truecolor terminal the classic CLI's HUD card shows a gradient LIT pill; the lean (TUI) and 256-colour cards keep the old bar.
