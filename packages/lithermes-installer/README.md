@@ -1,14 +1,14 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
 
 <p align="center">
-<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/badge-version.svg" alt="1.0.45" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/badge-version.svg" alt="1.0.46" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -19,7 +19,7 @@ LitHermes is an add-on for [Hermes Agent](https://github.com/NousResearch/hermes
 
 You ask Hermes for a feature. It writes the code and says it is finished, and a day later you find the tests never ran. You open a new session and explain the whole project again. With LitHermes you add `lit` to the same request. Hermes first writes down what "finished" means for this task, adds a test that fails, makes it pass, and ends by telling you what it checked and what it could not. When the session closes, it leaves a handoff note, and the next session in that project reads it and carries on.
 
-**[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.45/README_Ko-KR.md)
+**[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.46/README_Ko-KR.md)
 
 ## Install
 

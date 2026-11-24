@@ -6,6 +6,12 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.46] - 2026-11-24
+
+- `lithermes install`, `doctor` and `--help` open with the synthwave LIT mark, sized to the terminal with the version centred under it. A pipe, a CI log or an agent's tool call gets the plain line and the version only. On a truecolor terminal the classic CLI's HUD card shows a gradient LIT pill; the lean (TUI) and 256-colour cards keep the old bar.
+- A request that ends with the activation word now gets the goal question too, with the words before it as the objective: `fix the login redirect lit`, `로그인 버튼 고쳐줘 lit`, `… litwork` and `… lit loop`. A request that ends with `lit-loop` now routes like a leading `lit-loop` (it did not route at all before). `lit continue` and `lit resume` ask no goal question, even in a fresh session, and a question such as `what does lit-loop do?` still does not route.
+- An install, update or update-check lock left by a crashed process no longer blocks forever. The lock is reclaimed when its holder's pid is dead, when it has no owner record and is older than 30 seconds, or when it is older than 10 minutes even if its pid is alive again (pid reuse). A fresh lock still waits, and the install error now names the lock path and its holder.
+
 ## [1.0.45] - 2026-11-22
 
 - Every goal question now comes with an answer guide right under it, so a first-time user can see what to type and what each answer does. `hermes lithermes goal propose` prints, after the unchanged question, a `▶ Answer:` blockquote with the goal and a table of `yes` / `edit` / `no` (or `yes` / `no` when only the work is offered, and for a lit-loop) ending in `Type the word alone.`; lit-plan and litwork tell the model to keep it under the question and write its prose in the user's language while the answer words stay English. The lit-loop question the prompt hook draws under the reply gets the same two answers as plain rows. The question lines and the accepted answers are unchanged.

@@ -38,9 +38,9 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.45 factual release scope
+### 1.0.46 factual release scope
 
-This checklist covers the 1.0.45 release.
+This checklist covers the 1.0.46 release.
 
 - [ ] The nine moved skills (`lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`) ship as same-name stubs that name `variants/lithermes/<id>` in `wjgoarxiv-skills` and give the five install lines (check, move any old copy aside into `extension-backups/`, copy into the emptied folder, receipt) that the extension tests run in bash and zsh; every command, bare `lit` route, post-edit hand-off and doctor entry still reaches them, and `frontend-ui-ux` keeps the interface probe.
 - [ ] `lithermes extensions list|check|install|update|remove|prune-backups` works in a scratch Hermes home (`test/extensions-cli.test.js`): every write verb is a dry run without `--yes`, an old folder moves into `extension-backups/`, a same-name skill elsewhere stops the install, `remove` refuses a folder without a receipt, and a missing git or network stops before any change. The stubs, both notices, the READMEs, `docs/skills*.md`, help and doctor name the verbs.
@@ -57,6 +57,9 @@ This checklist covers the 1.0.45 release.
 - [ ] `lit adhd` shows the verdict card, `lit adhd detail` the board, and `lit recap` / `litrecap` open the recap view with the moved note; the `lit-recap` skill is gone from the payload and the lock.
 - [ ] Every goal question carries the `▶ Answer:` guide right under it (`yes` / `edit` / `no`, or `yes` / `no` for a work-only or lit-loop question) ending in `Type the word alone.`, while the question lines and the accepted answers stay unchanged (`test_goal_answer_guide.py`).
 - [ ] Both READMEs and both npm pages open with the plain pitch and the "Two ways to use it" section.
+- [ ] `lithermes install`, `doctor` and `--help` show the synthwave mark on a terminal and only the plain line and version in a pipe; the classic truecolor HUD card shows the gradient LIT pill (`test/synthwave-mark.test.js`, `test_gate_surfaces.py`).
+- [ ] A request ending with `lit`, `litwork`, `lit loop` or `lit-loop` routes like the leading form and asks the goal question with the words before it, while `lit continue` / `lit resume` ask nothing (`test_loop_goal.py`).
+- [ ] A dead-holder, ownerless or over-ceiling install, auto-update or transition lock is reclaimed and a fresh one waits (`test/state-lock-recovery.test.js`).
 - [ ] The version lockstep, full color-on Node suite, Python suite, both token scans, dry pack, `hermes plugins validate` and fresh-clone gates pass; the packed tarball stays under the 13 MiB cap.
 
 ### 1.0.3 factual release scope
@@ -359,7 +362,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.45 version`.
+  from `npm view @litfamily/lithermes@1.0.46 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -381,10 +384,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.45 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.46 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.45 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.45.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.45.tgz"
+  npm pack @litfamily/lithermes@1.0.46 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.46.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.46.tgz"
 rm -rf "$VERIFY_DIR"
 ```
