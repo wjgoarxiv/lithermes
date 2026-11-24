@@ -221,8 +221,10 @@ def goal_snapshot(cwd: str) -> dict[str, Any]:
     return workspace_snapshot(_resolve_workspace(cwd))
 
 
-def workspace_snapshot(workspace: Path) -> dict[str, Any]:
-    """The same payload for a workspace the caller already resolved (the plugin's own slash card)."""
+def workspace_snapshot(workspace: Path, session_id: str | None = None) -> dict[str, Any]:
+    """The same payload for a workspace the caller already resolved (the plugin's own cards).
+
+    ``session_id`` asks for that session's goal instead of the newest one in the folder."""
     redact = _load_redactor()
 
     def clean(value: Any, limit: int) -> str:
@@ -230,7 +232,8 @@ def workspace_snapshot(workspace: Path) -> dict[str, Any]:
 
     try:
         store, runtime = _load_litgoal()
-        session_id = _newest_state(store, workspace)
+        if session_id is None:
+            session_id = _newest_state(store, workspace)
         if session_id is None:
             return _empty()
         goal = runtime.get_active(workspace, session_id)

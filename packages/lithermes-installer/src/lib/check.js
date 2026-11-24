@@ -6,6 +6,7 @@ const { detectHermesRuntimeRepo, detectHermesVersion, ensureHermesHome, expandHo
 const { formatManagedRoute } = require("./modelRoutePolicy");
 const { inspectPythonCache } = require("./files");
 const { assetRoot, pluginDest } = require("./install");
+const { tuiCardStatus } = require("./tuiCard");
 const { autoUpdateDoctorLines } = require("./updateDoctor");
 const { extensionsSummary, readReceipt } = require("./extensions");
 const {
@@ -318,6 +319,7 @@ function doctorLitHermes(flags = {}) {
     ...movedCopies.map(formatMovedSkillCopy),
     extensionsSummary(flags).line,
     formatStatusBarFields(configText),
+    tuiCardStatus(hermesHome),
     `auto-compaction: ${auto.status}${auto.reason ? ` (${auto.reason})` : ""}`,
 		`concurrency: ${formatConcurrencyCapability(concurrency)}`,
 		`recursion: ${recursion.status}${recursion.status === "hard" ? recursion.flatBy === "depth" ? ` (depth ${recursion.limit}, flat)` : ` (configured depth ${recursion.limit}, flat via orchestrator kill switch)` : ` (${recursion.reason})`}`,

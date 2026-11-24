@@ -39,7 +39,7 @@ Restart the Hermes CLI or gateway, then type:
 lit Build a to-do list in one HTML file without external dependencies. Implement add, complete, and delete; record what you checked and what remains.
 ```
 
-The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the lit workflow has started. When the task is done, check the file yourself, then run `/lit-handoff` so the next session in this project can carry on from the note it writes. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
+The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the lit workflow has started. In `hermes --tui`, a card under the prompt shows the goal, how much is proven and what comes next while your session has a lit goal. When the task is done, check the file yourself, then run `/lit-handoff` so the next session in this project can carry on from the note it writes. [Automatic handoff](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.md) is off by default; `/lit-handoff auto on 60` (a whole number from 1 to 99) asks for a handoff before you run `/compact`.
 
 ### Two ways to use it
 

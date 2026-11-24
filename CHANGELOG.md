@@ -6,6 +6,12 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.48] - Unreleased
+
+- `hermes --tui` gets a goal card. While the session has a lit goal, six rows under the prompt show the stage map, the goal, the proof, the next step and the gate, with a half-sunk sun, stars and a sea in the cells no word uses and a pink-to-blue frame. The picture moves at four frames a second while a turn runs, stands still with no timer at rest, and takes no rows when there is no goal. A goal that is completed reads `DONE ✓` until the next message, and only a completion this install recorded counts. Its state is real: the plugin writes a small record for that TUI session at the start and end of a turn (the new `on_session_end` hook also covers an interrupted one) and when the goal's files change. Without a dark truecolor terminal the card is plain text, and the sun stays away on a narrow card or beside a long line.
+- `lithermes hud card on|still|off` sets it, `/lit-card` puts it away for one TUI run, and `lithermes doctor` reports it. The installer copies the widget to `tui-widgets/lit-card.mjs` in the Hermes home and replaces or removes it only while its bytes are its own; an edited, foreign or symlinked file is left alone, and nothing is written through a symlinked folder.
+- On the classic CLI's truecolor HUD card the `🔥 LIT` pill now runs from orange to pink, and a still sunset stands right of the last three rows when the terminal is dark and at least 80 columns wide and no word needs the room. The lean TUI, 256-colour and plain cards are unchanged.
+
 ## [1.0.47] - 2026-11-24
 
 - The READMEs, the npm pages, the install guide and the tour now describe what 1.0.46 changed: a request may end with `lit`, `lit-loop` or `litwork` and still gets the goal question with the words before it, and `lit continue` asks for no new goal; `install`, `doctor` and `--help` open with the synthwave LIT mark, with a plain `LIT · hermes agent` line for a pipe, a CI log or a terminal without UTF-8, and the truecolor HUD card starts with the `🔥 LIT` pill; and "When something goes wrong" explains the install lock message, when a lock left by a crashed run clears itself, and what to do if it does not. The tour no longer says `--help` prints the old banner.

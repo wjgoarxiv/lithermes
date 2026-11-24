@@ -128,4 +128,4 @@ Hermes 로그에 import 오류가 보이면 플러그인을 불러오지 못한 
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-설치 프로그램이 Hermes에 호환성 수정을 했다면 `--rollback-patches`를 붙여 되돌리세요. 삭제해도 스킨 파일과 `display.skin` 선택은 남습니다. Hermes 기본 모습으로 돌아가려면 같은 프로필에서 `npx --package @litfamily/lithermes -- lithermes hud off`를 실행하세요. 선택만 지우고, 스킨 파일과 다른 설정은 그대로 둡니다.
+설치 프로그램이 Hermes에 호환성 수정을 했다면 `--rollback-patches`를 붙여 되돌리세요. 삭제하면 TUI 목표 카드와 그 기록은 지워지고, 스킨 파일과 `display.skin` 선택, 저장해 둔 `hud card off`·`still`은 남습니다. Hermes 기본 모습으로 돌아가려면 같은 프로필에서 `npx --package @litfamily/lithermes -- lithermes hud off`를 실행하세요. 선택만 지우고, 스킨 파일과 다른 설정은 그대로 둡니다.

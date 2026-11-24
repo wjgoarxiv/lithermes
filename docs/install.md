@@ -128,4 +128,4 @@ An import error in the Hermes log means the plugin failed to load. Resist instal
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-If the installer made compatibility edits to Hermes, add `--rollback-patches` to undo them. Uninstalling keeps the skin files and your `display.skin` choice. To go back to the Hermes default look, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; it clears the choice and keeps the skin files and your other settings.
+If the installer made compatibility edits to Hermes, add `--rollback-patches` to undo them. Uninstalling removes the TUI goal card and its records, and keeps the skin files, your `display.skin` choice and a saved `hud card off` or `still`. To go back to the Hermes default look, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; it clears the choice and keeps the skin files and your other settings.

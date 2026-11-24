@@ -3,6 +3,7 @@ const os = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline");
 const skins = require("./skins");
+const { MODES, applyTuiCard, tuiCardStatus } = require("./tuiCard");
 const {
   readConfig,
   writeConfig,
@@ -74,6 +75,7 @@ function listHud({ color = false, hermesHome = null } = {}) {
   lines.push(`Apply:     ${applyCmd}   (e.g. lithermes hud rose, or hud 1)`);
   lines.push(`Clear:     ${clearCmd}`);
   lines.push(`In Hermes: ${skinCmd}  (or set display.skin in config.yaml)`);
+  lines.push(`TUI card:  lithermes hud card on|still|off`);
   return lines.join("\n");
 }
 
@@ -141,6 +143,19 @@ function previewClearHud(flags = {}) {
     : `DRY RUN: would remove display.skin from ${path.join(home, "config.yaml")}\nNothing was changed.`;
 }
 
+// `hud card [on|still|off]`: the goal card of `hermes --tui`.
+function hudCard(mode, flags = {}) {
+  const home = resolveHome(flags);
+  if (!mode) return tuiCardStatus(home);
+  if (!MODES.includes(mode)) {
+    const err = new Error(`unknown card mode '${mode}'. choose one of: ${MODES.join(", ")}`);
+    err.exitCode = 4;
+    throw err;
+  }
+  if (flags["dry-run"]) return `DRY RUN: would set the TUI card to ${mode} (now: ${tuiCardStatus(home)})\nNothing was changed.`;
+  return applyTuiCard(mode, home);
+}
+
 // Interactive accent picker used during `lithermes install` on a TTY.
 // Returns the chosen accent entry, or null to skip (empty / unknown answer).
 function promptAccent({ input = process.stdin, output = process.stdout, color = false } = {}) {
@@ -163,4 +178,4 @@ function promptAccent({ input = process.stdin, output = process.stdout, color = 
   });
 }
 
-module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, promptAccent };
+module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, promptAccent };

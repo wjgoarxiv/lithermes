@@ -39,7 +39,7 @@ Hermes CLI 또는 gateway를 다시 시작한 뒤 이렇게 입력하세요.
 lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘. 추가·완료·삭제를 구현하고 확인한 내용과 다음 행동을 남겨줘.
 ```
 
-응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 나오면 lit 작업이 시작된 것입니다. 끝나면 파일을 직접 확인하고 `/lit-handoff`를 실행하세요. 같은 프로젝트의 다음 세션이 그 기록을 읽고 이어 갑니다. [자동 핸드오프](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.ko.md)는 기본값이 꺼짐이고, `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면 `/compact` 전에 인계 기록을 먼저 요청합니다.
+응답 첫 줄에 `🔥 **LIT IGNITED · <discipline>** 🔥`가 나오면 lit 작업이 시작된 것입니다. `hermes --tui`에서는 세션에 lit 목표가 있는 동안 입력창 아래 카드에 목표, 증명된 정도, 다음 할 일이 보입니다. 끝나면 파일을 직접 확인하고 `/lit-handoff`를 실행하세요. 같은 프로젝트의 다음 세션이 그 기록을 읽고 이어 갑니다. [자동 핸드오프](https://github.com/wjgoarxiv/lithermes/blob/main/docs/automatic-handoff.ko.md)는 기본값이 꺼짐이고, `/lit-handoff auto on 60`(1에서 99 사이의 정수)을 켜 두면 `/compact` 전에 인계 기록을 먼저 요청합니다.
 
 ### 두 가지 사용법
 

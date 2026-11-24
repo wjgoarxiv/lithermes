@@ -4,7 +4,7 @@ const { installLitHermes, previewModelRoute, previewUninstall, uninstallLitHerme
 const { promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
 const { checkLitHermes, doctorLitHermes } = require("./lib/check");
 const { createSpinner, renderInstallReceipt, shouldUseSpinner } = require("./lib/spinner");
-const { listHud, applyHud, clearHud, previewClearHud, previewHud, promptAccent, resolveHome } = require("./lib/hud");
+const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, promptAccent, resolveHome } = require("./lib/hud");
 const { supportsColor, findAccent, skinName } = require("./lib/skins");
 const {
   readConfig,
@@ -60,10 +60,10 @@ const COMMAND_SPECS = {
     flags: { yes: "", "dry-run": "", "rollback-patches": "", offline: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
   },
   hud: {
-    usage: "hud [<accent>|off]",
-    positionals: [0, 1],
+    usage: "hud [<accent>|off|card [on|still|off]]",
+    positionals: [0, 2],
     flags: { list: "", "dry-run": "", ...HOME },
-    note: "(Hermes HUD skin accents)",
+    note: "(Hermes HUD skin accents and the TUI goal card)",
   },
   extensions: {
     usage: "extensions list|check|install|update|remove|prune-backups [<id>...]",
@@ -443,6 +443,7 @@ async function main(argv, runtime = {}) {
   }
   if (command === "hud") {
     const accent = positionals[1];
+    if (positionals[2] !== undefined && accent !== "card") throw new UsageError(`lithermes hud: unexpected argument '${positionals[2]}'.`);
     if (flags.list || !accent) {
       console.log(listHud({ color: supportsColor(), hermesHome: resolveHome(flags) }));
       return;
@@ -452,7 +453,8 @@ async function main(argv, runtime = {}) {
       return;
     }
     try {
-      console.log(flags["dry-run"] ? previewHud(accent, flags) : applyHud(accent, flags));
+      if (accent === "card") console.log(hudCard(positionals[2], flags));
+      else console.log(flags["dry-run"] ? previewHud(accent, flags) : applyHud(accent, flags));
     } catch (error) {
       console.error(error.message);
       process.exitCode = error.exitCode || 1;

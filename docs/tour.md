@@ -62,7 +62,7 @@ LitHermes won't overwrite a named skin file you already have. To get a fresh cop
 
 ## The LIT marks
 
-`lithermes install`, `doctor` and `--help` open with a large synthwave LIT mark drawn to the width of your terminal, with the version under it; a pipe, a CI log or a terminal without UTF-8 gets the plain line `LIT · hermes agent` instead. On a truecolor terminal, the classic CLI's HUD card starts with a small gradient `🔥 LIT` pill. Below are the LitHermes banner as an image and as copyable text, the display wordmark and the clay mark.
+`lithermes install`, `doctor` and `--help` open with a large synthwave LIT mark drawn to the width of your terminal, with the version under it; a pipe, a CI log or a terminal without UTF-8 gets the plain line `LIT · hermes agent` instead. On a truecolor terminal, the classic CLI's HUD card starts with a small `🔥 LIT` pill in sunset colours, and a still sunset stands beside its words when the terminal is wide enough. In `hermes --tui`, the goal card shows the same sunset moving while a turn runs; the [guide](./guide.md#the-goal-card-in-hermes---tui) explains it. Below are the LitHermes banner as an image and as copyable text, the display wordmark and the clay mark.
 
 <p align="center"><img src="./assets/readme/ascii-readme.svg" width="480" alt="LIT ASCII B mark" /></p>
 

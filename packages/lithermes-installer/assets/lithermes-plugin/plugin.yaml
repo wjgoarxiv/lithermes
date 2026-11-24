@@ -20,6 +20,7 @@ hooks:
   - on_session_reset
   - post_llm_call
   - post_compaction
+  - on_session_end
 provides_tools:
   - goal_status
   - goal_set
@@ -47,3 +48,4 @@ provides_hooks:
   - on_session_reset
   - post_llm_call
   - post_compaction
+  - on_session_end

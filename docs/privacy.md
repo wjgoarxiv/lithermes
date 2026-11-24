@@ -19,6 +19,8 @@ Automatic handoff is off by default and makes no network call. When you switch i
 | Hermes home `plugins/lithermes/` | Installed Python plugin and skill payload |
 | Hermes home `config.yaml` | Plugin enablement and managed model/display settings alongside existing host settings |
 | Hermes home `lithermes/` | Install manifest, event log, update cache, transaction receipts and backups; your automatic-handoff switch in `auto-handoff.json`; `litgoal.key`, the random key that seals your goal files |
+| Hermes home `lithermes/tui-card/` and `lithermes/tui-card.json` | One small record per TUI session with a lit goal (mode 0600): the redacted goal title, next step and run ids, criteria counts, stage and whether a turn runs. It is removed when the session ends; a leftover older than seven days is cleared when another session writes its first record; `lithermes hud card off` stops it. The settings file holds that choice and the widget's hash |
+| Hermes home `tui-widgets/lit-card.mjs` | The goal card widget that Hermes loads in `hermes --tui` |
 | Hermes home `lithermes/retained-python-cache-*/` | Relocated Python cache bytes and a `retention.json` inventory |
 | Hermes home `lithermes/notices/` | The LitFamily extensions note and a blocked-update note waiting for the next reply (version numbers, file names inside the plugin folder, folder paths); renamed to `*.shown.json` once shown |
 | Hermes home `lithermes/replaced-files/<time>/` | Copies of plugin files you changed or added, made by `install --force` before it replaces the plugin folder |

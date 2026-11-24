@@ -613,7 +613,7 @@ writes only there, plus the `handoff/` folder named in its own bullet.
   the catalog entry repeats. The floor is set by the Desktop half. Unified agent and desktop
   packages, the `ctx.rest` call, the pane and `statusBar.right` areas and `useQuery` in
   `@hermes/plugin-sdk` are all in 0.21.3 (checked against the Hermes source tagged
-  `v2026.9.14`), and so are all twelve hooks listed in `plugin.yaml`. Workspace
+  `v2026.9.14`), and so are the hooks listed in `plugin.yaml`. Workspace
   resolution reads newer host helpers when they exist and works without them.
 - Processes the plugin starts. The plugin builds every argument list itself and no call uses
   a shell. The one caller-supplied value is the base ref of a review diff, and it goes after

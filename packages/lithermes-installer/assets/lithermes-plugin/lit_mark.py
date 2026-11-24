@@ -220,9 +220,9 @@ def _paint_activation(text: str, mode: str) -> str:
     return "".join(painted)
 
 
-# The status badge: the label on a background running from LitHermes chrome stop 1
-# to stop 4, in bold dark ink. Truecolor only; every other depth keeps its old text.
-_PILL_STOPS = ((0xFF, 0xD5, 0x4F), (0xFF, 0xCC, 0x80))
+# The status badge: the label on a sunset running from orange to pink, in bold dark
+# ink. Truecolor only; every other depth keeps its old text.
+_PILL_STOPS = ((0xFF, 0xA0, 0x33), (0xFF, 0x6A, 0x55), (0xFF, 0x33, 0x88))
 _PILL_INK = (0x0B, 0x0E, 0x14)
 PILL_LABEL = " 🔥 LIT "
 
@@ -235,8 +235,9 @@ def lit_pill(mode: str, label: str = PILL_LABEL) -> str | None:
     last = len(chars) - 1
     out = ["\x1b[0m\x1b[1m\x1b[38;2;" + ";".join(map(str, _PILL_INK)) + "m"]
     for index, char in enumerate(chars):
-        t = index / last if last else 0
-        bg = (round(a + (b - a) * t) for a, b in zip(*_PILL_STOPS))
+        t = (index / last if last else 0) * (len(_PILL_STOPS) - 1)
+        stop = min(len(_PILL_STOPS) - 2, int(t))
+        bg = (round(a + (b - a) * (t - stop)) for a, b in zip(_PILL_STOPS[stop], _PILL_STOPS[stop + 1]))
         out.append("\x1b[48;2;" + ";".join(map(str, bg)) + "m" + char)
     return "".join(out) + "\x1b[0m"
 

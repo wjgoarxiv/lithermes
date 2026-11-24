@@ -49,6 +49,7 @@ HOOKS = (
     "on_session_reset",
     "post_llm_call",
     "post_compaction",
+    "on_session_end",
 )
 SLASH_COMMANDS = (
     "lit", "lit-loop", "lit-plan", "litgoal", "review-work", "start-work",

@@ -66,6 +66,7 @@ class RegisterWiring(unittest.TestCase):
             "on_session_reset",
             "post_llm_call",
             "post_compaction",
+            "on_session_end",
         ]
         self.assertEqual(declared, expected, "plugin.yaml hooks must match the exact public hook surface")
         self.assertEqual(

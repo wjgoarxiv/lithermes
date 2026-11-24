@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-24T04:31:30.276Z",
+  "syncedAt": "2026-11-24T16:55:42.714Z",
   "source": "bundled-payload",
-  "sourceHash": "d9458032f1678f1dea57c5077a86f57ace8b9f100e218347b574abf93adae860",
+  "sourceHash": "2856a89da2cd8bcccb82bf8259d041ee81bb3681a155f1476853ea84b0268b97",
   "files": [
     {
       "path": "NOTICE.md",
@@ -9,11 +9,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "d0f96255ee73a8734639af09428b88f63b715e5f5bcad2a53a876772438eddce"
+      "sha256": "c6465870a185723f509a8b4aeb78550b4315dc363980f2de628070cdf8408b61"
     },
     {
       "path": "__init__.py",
-      "sha256": "a3a4c729e8145447fdde46d43399eabe5df8f3bf80d0e29e9946131d8cb09d6d"
+      "sha256": "d80d2f718cfcf32a48a4a34b49be938fb374893ca2db087b85e79584910d15e8"
     },
     {
       "path": "adhd_stack.py",
@@ -93,7 +93,7 @@
     },
     {
       "path": "dashboard/plugin_api.py",
-      "sha256": "75d57bdae6744383d38190a35b62bad7f9213104c44b512927090754595c0b4f"
+      "sha256": "9ef458a7c9ee3a9dd63a7ff40630d57e0316b6ad51011b0c2a5326bd495f42bc"
     },
     {
       "path": "deliverable_hedge_guard.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "77f1d370358832b7bc8db7a5f07deec814375297dc88acb1c37684a3c265667e"
+      "sha256": "70636d63f26de5825fefaec10a00324bd4076fdb207c83e071db27080fc1d5e5"
     },
     {
       "path": "followup.py",
@@ -133,7 +133,7 @@
     },
     {
       "path": "hud_card.py",
-      "sha256": "632f71079b62800a7544280e87045d40faf9a375f11146ec8e9c64cb1f8358a4"
+      "sha256": "f3dec44427630cb942aaa2382591ad1a4f4f9882b4842884d45b629bebf5bd53"
     },
     {
       "path": "humanizer_detector.py",
@@ -161,7 +161,7 @@
     },
     {
       "path": "lit_mark.py",
-      "sha256": "2883621301bc20390fa3fee23a160326a0e7e7cb934bd610f87d1e9f9a4e997c"
+      "sha256": "01c3be3ab019404206c7d1205bc529d4a0554d20d3a368b607f9c6e9d84ee89a"
     },
     {
       "path": "lit_mark_rows.json",
@@ -245,7 +245,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "82613e04e3b2dbb413f7c9e0c170411b944c057f38199c71600e586c220d8f38"
+      "sha256": "859cf8ccca6350c3b8ab10fbf73376e690cfbd46b2b91ccc403d36df6a4f8e64"
     },
     {
       "path": "provider_metrics.py",
@@ -1626,6 +1626,18 @@
     {
       "path": "skills/wikify/references/full-contract.md",
       "sha256": "27fec9e2143eda9af3cffc7e478f2fba16b9424062dd69b6b1e86455acde7e6b"
+    },
+    {
+      "path": "sunset.py",
+      "sha256": "0f115fa7a7572682a38af2add2e58c3e7ab8b0cb578d19c7fcaacc9040c123c1"
+    },
+    {
+      "path": "tui-widgets/lit-card.mjs",
+      "sha256": "28e33a572dc6b074be0e283c78f674b103da2cf6bedfbb57a5c86b54ff0be589"
+    },
+    {
+      "path": "tui_card.py",
+      "sha256": "22e8f6abfd60d14f04a8b7b7217b22ba23e9095f42e6668a1d38633aac36f42f"
     },
     {
       "path": "vendor/NOTICE.md",

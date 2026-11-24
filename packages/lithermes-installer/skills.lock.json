@@ -1085,6 +1085,9 @@
     "assets/lithermes-plugin/skills/wikify/modes/query/SKILL.md",
     "assets/lithermes-plugin/skills/wikify/modes/save/SKILL.md",
     "assets/lithermes-plugin/skills/wikify/references/full-contract.md",
+    "assets/lithermes-plugin/sunset.py",
+    "assets/lithermes-plugin/tui-widgets/lit-card.mjs",
+    "assets/lithermes-plugin/tui_card.py",
     "assets/lithermes-plugin/vendor/NOTICE.md",
     "assets/lithermes-plugin/vendor/handoff/SKILL.md",
     "assets/lithermes-plugin/vendor/handoff/evals/evals.json",
@@ -1158,6 +1161,7 @@
     "src/lib/spinner.js",
     "src/lib/synthwaveMark.js",
     "src/lib/synthwaveRows.json",
+    "src/lib/tuiCard.js",
     "src/lib/updateDoctor.js",
     "src/lib/updateNotifier.js",
     "src/lib/updateNotifierWorker.js"

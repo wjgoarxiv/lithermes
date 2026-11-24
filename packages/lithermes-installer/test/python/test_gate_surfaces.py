@@ -129,7 +129,7 @@ class HudCard(unittest.TestCase):
 
     def test_lit_badge_only_on_a_truecolor_classic_cli(self):
         ink = "\x1b[1m\x1b[38;2;11;14;20m"
-        first_bg, last_bg = "\x1b[48;2;255;213;79m", "\x1b[48;2;255;204;128m"
+        first_bg, last_bg = "\x1b[48;2;255;160;51m", "\x1b[48;2;255;51;136m"
         card = self.card.render(_snapshot(), "litwork", "cli", COLOUR_ENV)
         head = card.splitlines()[0]
         self.assertIn(ink, head)
@@ -146,6 +146,7 @@ class HudCard(unittest.TestCase):
         ]
         for other in others:
             self.assertNotIn("48;2;", other)
+            self.assertNotIn("▆", other)
             self.assertTrue(_ANSI.sub("", other).startswith("▌LIT · litwork"))
         self.assertIsNone(self.pkg.lit_mark.lit_pill("256"))
         self.assertIsNone(self.pkg.lit_mark.lit_pill("none"))

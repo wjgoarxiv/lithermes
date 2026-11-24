@@ -8,7 +8,8 @@ Colour follows the client the command came from, as ``ctx.session_surface()`` na
 never ``isatty``: the TUI gateway's stdout is a JSON-RPC pipe, so a tty check would
 always print plain there even though Ink draws ANSI system lines.
 
-- ``cli``: ANSI (truecolor when COLORTERM says so, else 256 colours).
+- ``cli``: ANSI (truecolor when COLORTERM says so, else 256 colours). A truecolor card
+  with a goal gets a still sunset (``sunset``) in the cells right of its words.
 - ``tui``: the same, painted per segment rather than per glyph, because Ink folds a
   system line longer than 400 characters (escape bytes included) behind a toggle.
   :func:`fit_tui` keeps the whole slash output under that.
@@ -31,9 +32,10 @@ from pathlib import Path
 from typing import Any, Mapping
 
 try:
-    from . import lit_mark
+    from . import lit_mark, sunset
 except ImportError:  # standalone import (tests load modules from the payload folder)
     import lit_mark  # type: ignore
+    import sunset  # type: ignore
 
 TUI_LIMIT = 400
 _LINE_WIDTH = 58
@@ -77,26 +79,26 @@ def _clip(text: Any, width: int) -> str:
     return plain if len(plain) <= width else plain[: max(0, width - 1)] + "…"
 
 
-def _run_marks(receipts: list[dict[str, Any]], reasons: list[str], paint: _Painter) -> list[str]:
-    """Only a run the gate names as stale evidence warns; another stale run is superseded."""
+def run_marks(receipts: list[dict[str, Any]], reasons: list[str]) -> list[tuple[str, str]]:
+    """The last three runs, oldest first, as (text, ink). Only a run the gate names as stale evidence warns; another stale run is superseded."""
     named = {m.group(1) for reason in reasons for m in [_NAMED_STALE.search(str(reason))] if m}
     marks = []
     for run in list(reversed(receipts[:3])):
         run_id = str(run.get("id") or "?")
         if run.get("stale") and run_id in named:
-            marks.append(paint(f"{run_id} ⚠ stale", "warn"))
+            marks.append((f"{run_id} ⚠ stale", "warn"))
         elif run.get("stale"):
-            marks.append(paint(f"{run_id} superseded", "dim"))
+            marks.append((f"{run_id} superseded", "dim"))
         elif run.get("exit") == 0:
-            marks.append(paint(f"{run_id} ✓", "ok"))
+            marks.append((f"{run_id} ✓", "ok"))
         elif run.get("exit") is None:
-            marks.append(paint(f"{run_id} ?", "dim"))
+            marks.append((f"{run_id} ?", "dim"))
         else:
-            marks.append(paint(f"{run_id} ✗ exit {run.get('exit')}", "bad"))
+            marks.append((f"{run_id} ✗ exit {run.get('exit')}", "bad"))
     return marks
 
 
-def _next_step(snapshot: Mapping[str, Any]) -> str:
+def next_step(snapshot: Mapping[str, Any]) -> str:
     gate = snapshot.get("gate") or {}
     if gate.get("open"):
         return "every criterion has proof; the agent may say done"
@@ -130,15 +132,15 @@ def render(snapshot: Mapping[str, Any] | None, route: str, surface: str, env: Ma
     criteria = snapshot.get("criteria") or []
     passed = sum(1 for item in criteria if item.get("status") == "pass")
     state = paint("gate OPEN ✓", "ok", bold=True) if gate.get("open") else paint("gate CLOSED ⛔", "bad", bold=True)
-    runs = _run_marks(snapshot.get("receipts") or [], gate.get("reasons") or [], paint)
+    runs = [paint(*mark) for mark in run_marks(snapshot.get("receipts") or [], gate.get("reasons") or [])]
     proof = paint(f"{passed}/{len(criteria)} criteria", "proof" if criteria and passed == len(criteria) else "text")
     rows = [
         f"{head} {paint('──', 'dim')} {state}",
         f"{bar} {paint('goal', 'dim')}  {_clip(goal.get('title'), _LINE_WIDTH - 8)}",
         f"{bar} {paint('proof', 'dim')} {proof}" + (f" · {' '.join(runs)}" if runs else " · no signed runs yet"),
-        f"{bar} {paint('next', 'dim')}  {_clip(_next_step(snapshot), _LINE_WIDTH - 8)}",
+        f"{bar} {paint('next', 'dim')}  {_clip(next_step(snapshot), _LINE_WIDTH - 8)}",
     ]
-    return "\n".join(rows)
+    return "\n".join(sunset.behind(rows, env) if pill else rows)
 
 
 def fit_tui(card: str, display: str) -> str:
@@ -154,12 +156,12 @@ def fit_tui(card: str, display: str) -> str:
     return f"{card}\n{_clip(first, room)}" if room > 8 else card
 
 
-def snapshot_for(workspace: Any) -> dict[str, Any] | None:
-    """The pane's snapshot for ``workspace``, or None; never raises into a slash command."""
+def snapshot_for(workspace: Any, session_id: str | None = None) -> dict[str, Any] | None:
+    """The pane's snapshot for ``workspace`` (or for one session's goal in it), or None; never raises into a slash command."""
     if workspace is None:
         return None
     try:
-        return _plugin_api().workspace_snapshot(Path(workspace))
+        return _plugin_api().workspace_snapshot(Path(workspace), session_id)
     except Exception:  # noqa: BLE001 - the card is decoration; a broken read shows the first-run card
         return None
 

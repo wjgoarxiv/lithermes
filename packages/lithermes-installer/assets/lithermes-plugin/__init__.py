@@ -18,6 +18,7 @@ from . import handoff
 from . import handoff_card
 from . import hud_card
 from . import install_notices
+from . import tui_card
 from .workspace import is_hermes_home
 from . import knowledge
 from . import knowledge_tools
@@ -532,6 +533,7 @@ def _compose_turn(kwargs: dict[str, Any], *, settled: str | None = None) -> dict
     knowledge_context = (
         knowledge.query(workspace, str(kwargs.get("user_message") or "")) if workspace is not None else ""
     )
+    tui_card.turn_started(workspace, kwargs.get("session_id"), kwargs.get("platform"))
     if settled:
         # A settled `lit approve` / `lit deny` is this turn's whole task: no route
         # or litwork run is opened for the words themselves.
@@ -859,6 +861,7 @@ def _post_tool_call(**kwargs: Any) -> None:
     litgoal_runs.observe_tool_call(**kwargs)
     result = core.post_tool_call(**kwargs)
     _toast_gate_change(kwargs)
+    tui_card.observe(kwargs.get("session_id"))
     return result
 
 
@@ -878,6 +881,11 @@ def _transform_tool_result(**kwargs: Any) -> str | None:
     return deliverable_hedge_guard.transform_tool_result(**kwargs)
 
 
+def _on_session_end(**kwargs: Any) -> None:
+    """Hermes fires this after every turn, also an interrupted one: the TUI card comes to rest."""
+    tui_card.turn_ended(kwargs.get("session_id"))
+
+
 def _on_session_start(**kwargs: Any) -> None:
     core._lit_reentry.forget_offers(kwargs.get("session_id"))
     return core.on_session_start(**kwargs)
@@ -895,6 +903,7 @@ def _release_bounded_session(**kwargs: Any) -> None:
     core.release_rules_session(session_id)
     core._lit_reentry.forget_offers(session_id)
     gate_toasts.forget_session(raw_session_id)
+    tui_card.forget(raw_session_id)
     followup.release_session(raw_session_id)
     return None
 
@@ -951,6 +960,7 @@ def register(ctx) -> None:
     # near the context limit writes the handoff file and the first turn after post_compaction reloads it.
     ctx.register_hook("post_llm_call", _post_llm_call)
     ctx.register_hook("post_compaction", _post_compaction)
+    ctx.register_hook("on_session_end", _on_session_end)
 
     # Model-facing litgoal tools (durable criteria/evidence/checkpoint/steering/gate).
     litgoal_tools.register_tools(ctx)

@@ -175,7 +175,8 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 - **스피너와 도우미.** Hermes가 일하는 동안 스피너는 `(🔥 lit)` 같은 불꽃 얼굴로 돌며 `lit-looping`, `verifying` 같은 짧은 말로 하는 일을 알려 주고, `/agents`를 입력하면 Hermes가 `delegate_task`로 보낸 도우미들을 볼 수 있습니다.
 - **다른 스킨.** 처음 대화형으로 설치할 때 스킨이 정해져 있지 않으면 Ignition이 골라집니다. 다른 스킨은 `lithermes hud`로 볼 수 있고, 밝은 터미널에서는 `/skin lithermes-tokyonight-day`가 잘 읽힙니다.
 - **벨.** 긴 작업 중에 자리를 비운다면 설치할 때 `--bell`을 붙이세요. 턴이 끝날 때 터미널 벨이 울리고, 붙이지 않으면 꺼져 있으며, 이미 정해 둔 `display.bell_on_complete` 값은 그대로 둡니다.
-- **LIT 마크.** `lithermes install`, `doctor`, `--help`는 터미널 너비에 맞춘 큰 신스웨이브 LIT 마크와 그 아래 버전 줄로 시작합니다. 파이프, CI 로그, 에이전트의 도구 호출, UTF-8을 쓰지 않는 터미널에는 `LIT · hermes agent` 한 줄과 버전만 나옵니다. truecolor 터미널의 클래식 CLI에서는 HUD 카드 첫머리에 작은 그라데이션 `🔥 LIT` 배지가 붙습니다.
+- **LIT 마크.** `lithermes install`, `doctor`, `--help`는 터미널 너비에 맞춘 큰 신스웨이브 LIT 마크와 그 아래 버전 줄로 시작합니다. 파이프, CI 로그, 에이전트의 도구 호출, UTF-8을 쓰지 않는 터미널에는 `LIT · hermes agent` 한 줄과 버전만 나옵니다. truecolor 터미널의 클래식 CLI에서는 HUD 카드 첫머리에 노을빛 `🔥 LIT` 배지가 붙고, 자리가 있으면 글 옆에 멈춘 노을 그림이 함께 나옵니다.
+- **`hermes --tui`의 목표 카드.** 세션에 lit 목표가 있으면 입력창 아래에 여섯 줄짜리 카드가 놓입니다. 지금 단계, 목표, 어디까지 증명했는지, 다음 할 일을 보여 줍니다. 카드의 빈자리에는 작은 바다 위로 해가 집니다. 해와 바다는 작업이 도는 동안에만 움직이고, 사용자 차례가 되면 멈춥니다. 목표가 없으면 카드는 한 줄도 차지하지 않습니다. `lithermes hud card still`은 움직임을 멈추고 `lithermes hud card off`는 카드를 없앱니다.
 - **gateway.** gateway 메시지에는 CLI 스킨이 나오지 않습니다. [스킨, 마크, 영상](./docs/tour.ko.md).
 
 ## 자동 핸드오프

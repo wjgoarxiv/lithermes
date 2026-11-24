@@ -253,6 +253,47 @@ which adds the Git branch the default leaves out. LitHermes never writes this
 key; add it under `display:` in `config.yaml` yourself if you want it. Plugins
 cannot add their own status bar segments in Hermes.
 
+### The goal card in hermes --tui
+
+When a session in `hermes --tui` has a lit goal, a card sits in the dock under
+the prompt. Its six rows say which stage the goal is in, what the goal is, how
+many criteria are proven, what the next step is, and whether the gate is open.
+In the cells no word uses, a half-sunk sun stands over a small sea with a few
+stars, and the frame runs from pink to blue.
+
+The picture tells you one thing at a glance: it moves while a turn runs, and it
+stands still when the turn is over and the frame says `YOUR TURN`. Standing
+still costs nothing, because the card then runs no timer. When the goal is done
+the frame says `DONE ✓`, and the card leaves with your next message. A session
+without a goal has no card and loses no rows, and a card left alone for half an
+hour leaves by itself. Everything on it comes from a small record the plugin writes
+for that session in Hermes home `lithermes/tui-card/`; a turn whose Hermes
+process died stops counting as work.
+
+The sunset needs a truecolor terminal with a dark background. With `NO_COLOR`,
+fewer colours or a light background the card is plain text in a plain frame. On
+a narrow card or beside a long line the sun stays away, so it never covers a
+word. A window under 48 columns or 20 rows shows no card. Round pill ends are
+drawn only where the terminal is known to have them (Windows Terminal and VS
+Code).
+
+```text
+lithermes hud card         # how the card stands
+lithermes hud card still   # keep the card, hold the picture still
+lithermes hud card off     # remove the card; upgrades respect this
+lithermes hud card on      # bring it back
+/lit-card                  # inside the TUI: put it away, or open it again, for this run
+```
+
+Hermes loads the card as a TUI widget from `$HERMES_HOME/tui-widgets/lit-card.mjs`
+and says so in one line when the TUI starts. The installer replaces or removes
+that file only while its bytes are the ones it wrote; a file you edited, a
+symlink or another file of that name is left alone, and `lithermes doctor`
+reports it. Hermes passes a widget no more than four frames a second, so the
+motion is calm. The classic CLI prints its HUD card once, so there the sunset
+is a still picture, drawn only when Hermes runs the command in your terminal's
+own process and the terminal is at least 80 columns wide.
+
 ### When Lit skills are missing
 
 Restart the same Hermes profile used for installation. Ask the agent to call
