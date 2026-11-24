@@ -43,7 +43,7 @@ The reply opens with a `🔥 **LIT IGNITED · <discipline>** 🔥` line once the
 
 ### Two ways to use it
 
-**The easy way.** Write your request as usual and put `lit` at the start or at the end. Hermes sets the goal, writes a failing test, fixes the code, checks the result and tells you what it checked. Most tasks need nothing more:
+**The easy way.** Write your request as usual and put `lit` at the start or at the end. Hermes sets the goal, writes a failing test, fixes the code, checks the result and tells you what it checked. The word works the same at either end: when it comes last, the words before it become the objective, so `fix the login redirect lit` gets the same goal question as `lit fix the login redirect` in a project with a test command. `lit-loop` and `litwork` work at the end too, and `lit continue` on its own carries on without asking for a new goal. Most tasks need nothing more:
 
 ```text
 fix the date parsing bug in src/dates.py lit
@@ -113,7 +113,7 @@ npx --package @litfamily/lithermes -- lithermes doctor --offline
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-`doctor --offline` checks the install without going online; add `--rollback-patches` when uninstalling if the installer patched Hermes. LitHermes updates itself with a backup and a rollback; set `LITHERMES_NO_AUTO_UPDATE=1` to update by hand. [Details and troubleshooting](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
+`doctor --offline` checks the install without going online; add `--rollback-patches` when uninstalling if the installer patched Hermes. LitHermes updates itself with a backup and a rollback; set `LITHERMES_NO_AUTO_UPDATE=1` to update by hand. An install lock left by a crashed run clears itself on a later run. [Details and troubleshooting](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.md).
 
 ## Learn more
 

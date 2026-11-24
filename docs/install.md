@@ -111,6 +111,8 @@ If Lit skills seem to be missing, ask Hermes to call its `skills_list` tool and 
 
 A skill with the same name somewhere else can win over the LitHermes one. When you ask for a skill by its plain name, Hermes looks in the folders listed under `skills.external_dirs` in its `config.yaml` and in `<HERMES_HOME>/skills` before it reaches the plugin. The prefixed form, `lithermes:<name>`, skips that search. `lithermes doctor` spots the clash and prints a `skill shadow check: WARNING` line with the skill and the path that hides it. Load the LitHermes copy as `lithermes:<name>`, or remove or rename the other one. The warning is informational and leaves doctor's pass/fail exit status as it was.
 
+An install or update can stop with `LitHermes install lock already exists at <path> (held by …)`. The lock keeps two installs from writing the plugin at once, and the message names its holder: a pid with the lock's age, or `no owner record`. A lock left behind by a crashed run clears itself. The next run takes it over when the holder's process is gone, when the lock has had no owner record for 30 seconds, or when it is more than 10 minutes old, even if its pid now belongs to another program. The automatic update and the update check recover their own locks too. If you still see the message, let the other install finish; if none is running, close every `lithermes` command and delete the file the message names.
+
 An import error in the Hermes log means the plugin failed to load. Resist installing pip packages on a guess; keep the message and check the [operating guide](./guide.md).
 
 ## Limits worth knowing

@@ -43,7 +43,7 @@ lit 외부 의존성 없이 HTML 파일 하나로 할 일 목록을 만들어줘
 
 ### 두 가지 사용법
 
-**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. 대부분의 일은 이것으로 충분합니다.
+**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. `lit`은 앞에 붙이든 끝에 붙이든 똑같이 동작합니다. 끝에 붙이면 그 앞의 말이 목표가 되므로, 테스트 명령이 있는 프로젝트에서는 `로그인 버튼 고쳐줘 lit`도 `lit 로그인 버튼 고쳐줘`와 똑같이 목표 질문을 받습니다. `lit-loop`과 `litwork`도 끝에 붙일 수 있고, `lit continue`만 쓰면 새 목표를 묻지 않고 하던 일을 이어 갑니다. 대부분의 일은 이것으로 충분합니다.
 
 ```text
 src/dates.py의 날짜 파싱 버그 고쳐줘 lit
@@ -113,7 +113,7 @@ npx --package @litfamily/lithermes -- lithermes doctor --offline
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-`doctor --offline`은 인터넷에 나가지 않고 설치 상태를 확인합니다. 설치 프로그램이 Hermes에 호환성 수정을 했다면 삭제할 때 `--rollback-patches`를 붙이세요. 업데이트는 백업과 되돌리기를 거쳐 스스로 하고, 직접 하려면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요. 자세한 내용과 문제 해결은 [설치 문서](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.ko.md)에 있습니다.
+`doctor --offline`은 인터넷에 나가지 않고 설치 상태를 확인합니다. 설치 프로그램이 Hermes에 호환성 수정을 했다면 삭제할 때 `--rollback-patches`를 붙이세요. 업데이트는 백업과 되돌리기를 거쳐 스스로 하고, 직접 하려면 `LITHERMES_NO_AUTO_UPDATE=1`을 설정하세요. 중간에 멈춘 설치가 남긴 잠금은 다음 실행 때 저절로 풀립니다. 자세한 내용과 문제 해결은 [설치 문서](https://github.com/wjgoarxiv/lithermes/blob/main/docs/install.ko.md)에 있습니다.
 
 ## 더 알아보기
 

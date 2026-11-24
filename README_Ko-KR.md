@@ -25,7 +25,7 @@ Hermes에게 기능 하나를 맡기면 코드를 쓰고 끝났다고 말합니�
 
 ### 두 가지 사용법
 
-**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. 대부분의 일은 이것으로 충분합니다.
+**간단하게.** 평소처럼 요청을 쓰고 앞이나 끝에 `lit`을 붙이세요. Hermes가 목표를 정하고, 실패하는 테스트를 쓰고, 코드를 고친 뒤 결과를 확인하고, 무엇을 확인했는지 알려 줍니다. `lit`은 앞에 붙이든 끝에 붙이든 똑같이 동작합니다. 끝에 붙이면 그 앞의 말이 목표가 되므로, 테스트 명령이 있는 프로젝트에서는 `로그인 버튼 고쳐줘 lit`도 `lit 로그인 버튼 고쳐줘`와 똑같이 목표 질문을 받습니다. `lit-loop`과 `litwork`도 끝에 붙일 수 있고, `lit continue`만 쓰면 새 목표를 묻지 않고 하던 일을 이어 갑니다. 대부분의 일은 이것으로 충분합니다.
 
 ```text
 src/dates.py의 날짜 파싱 버그 고쳐줘 lit
@@ -175,6 +175,7 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 - **스피너와 도우미.** Hermes가 일하는 동안 스피너는 `(🔥 lit)` 같은 불꽃 얼굴로 돌며 `lit-looping`, `verifying` 같은 짧은 말로 하는 일을 알려 주고, `/agents`를 입력하면 Hermes가 `delegate_task`로 보낸 도우미들을 볼 수 있습니다.
 - **다른 스킨.** 처음 대화형으로 설치할 때 스킨이 정해져 있지 않으면 Ignition이 골라집니다. 다른 스킨은 `lithermes hud`로 볼 수 있고, 밝은 터미널에서는 `/skin lithermes-tokyonight-day`가 잘 읽힙니다.
 - **벨.** 긴 작업 중에 자리를 비운다면 설치할 때 `--bell`을 붙이세요. 턴이 끝날 때 터미널 벨이 울리고, 붙이지 않으면 꺼져 있으며, 이미 정해 둔 `display.bell_on_complete` 값은 그대로 둡니다.
+- **LIT 마크.** `lithermes install`, `doctor`, `--help`는 터미널 너비에 맞춘 큰 신스웨이브 LIT 마크와 그 아래 버전 줄로 시작합니다. 파이프, CI 로그, 에이전트의 도구 호출, UTF-8을 쓰지 않는 터미널에는 `LIT · hermes agent` 한 줄과 버전만 나옵니다. truecolor 터미널의 클래식 CLI에서는 HUD 카드 첫머리에 작은 그라데이션 `🔥 LIT` 배지가 붙습니다.
 - **gateway.** gateway 메시지에는 CLI 스킨이 나오지 않습니다. [스킨, 마크, 영상](./docs/tour.ko.md).
 
 ## 자동 핸드오프
@@ -275,7 +276,7 @@ npx --package @litfamily/lithermes -- lithermes doctor --offline
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-오프라인 doctor에서 `loaded plugin`이 PARTIAL로 나오는 건, 오프라인으로는 Hermes가 어떤 플러그인을 불러왔는지 물어볼 수 없어서이니 정상입니다. 설치 프로그램이 Hermes 설치본에 호환성 수정을 했다면, 삭제할 때 `--rollback-patches`를 붙여 그 수정까지 되돌리세요. 스킬이 보이지 않거나, 이름이 겹치거나, import 오류가 날 때는 [문제가 생겼을 때](./docs/install.ko.md#문제가-생겼을-때)를 보세요.
+오프라인 doctor에서 `loaded plugin`이 PARTIAL로 나오는 건, 오프라인으로는 Hermes가 어떤 플러그인을 불러왔는지 물어볼 수 없어서이니 정상입니다. 설치 프로그램이 Hermes 설치본에 호환성 수정을 했다면, 삭제할 때 `--rollback-patches`를 붙여 그 수정까지 되돌리세요. 스킬이 보이지 않거나, 이름이 겹치거나, import 오류가 나거나, 멈춘 설치가 잠금을 남겼을 때는 [문제가 생겼을 때](./docs/install.ko.md#문제가-생겼을-때)를 보세요.
 
 ## 더 알아보기
 

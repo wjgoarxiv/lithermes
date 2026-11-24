@@ -62,7 +62,7 @@ LitHermes는 Hermes CLI의 겉모습도 바꿔 줍니다. CLI에서 `/skin`을 �
 
 ## LIT 마크
 
-`lithermes --help`가 출력하는 것과 같은 LitHermes 배너를 그림과 복사할 수 있는 글자로 실었고, 디스플레이 워드마크와 클레이 마크도 함께 두었습니다.
+`lithermes install`, `doctor`, `--help`는 터미널 너비에 맞춰 그린 큰 신스웨이브 LIT 마크와 그 아래 버전 줄로 시작합니다. 파이프나 CI 로그, UTF-8을 쓰지 않는 터미널에는 `LIT · hermes agent` 한 줄만 나옵니다. truecolor 터미널의 클래식 CLI에서는 HUD 카드 첫머리에 작은 그라데이션 `🔥 LIT` 배지가 붙습니다. 아래에는 LitHermes 배너를 그림과 복사할 수 있는 글자로 실었고, 디스플레이 워드마크와 클레이 마크도 함께 두었습니다.
 
 <p align="center"><img src="./assets/readme/ascii-readme.svg" width="480" alt="LIT ASCII B 마크" /></p>
 
