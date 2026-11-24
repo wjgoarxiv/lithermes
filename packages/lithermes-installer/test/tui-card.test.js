@@ -233,6 +233,19 @@ test("the end of the turn, another session and the settings reach the card witho
   await host.until(() => host.state.model === null);
 });
 
+test("a lost file event does not leave the card at work", async (t) => {
+  t.mock.method(fs, "watch", () => ({ on() {}, close() {} })); // no event ever reaches the card
+  const host = makeHost(t);
+  await host.start();
+  host.render();
+  await host.write(record({ at: Date.now() / 1000, working: false }));
+  const [timer] = host.timers;
+  for (let i = 0; i < 40; i += 1) timer.fn();
+  assert.equal(host.state.model.working, false, "the ten-second look found the end of the turn");
+  await host.write(record({ at: Date.now() / 1000, title: "later" }));
+  await host.until(() => host.state.model?.title === "later");
+});
+
 test("still keeps the picture and drops the timer; no record means zero rows", async (t) => {
   const still = makeHost(t, { mode: "still" });
   await still.start();

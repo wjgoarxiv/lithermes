@@ -353,7 +353,7 @@ export default function register(sdk) {
   // A hot reload runs this again: the earlier copy's watches and timers end here.
   globalThis[KEY]?.close();
   const reopened = Boolean(globalThis[KEY]);
-  const held = { watchers: [], settle: null, expire: null };
+  const held = { watchers: [], settle: null, expire: null, catchUp: null };
 
   const load = () => {
     const session = active ? readJson(active)?.session_id : null;
@@ -372,9 +372,10 @@ export default function register(sdk) {
       let frames = 0;
       const timer = setInterval(() => {
         frames += 1;
-        // Every ten seconds: a gateway that died mid-turn never reports the end of it.
-        if (frames % 40 === 0 && !alive(model.pid)) refresh();
-        else setTick(frames);
+        // Every ten seconds: a gateway that died mid-turn never reports the end of it, and a file
+        // watch can drop an event.
+        if (frames % 40 === 0) refresh();
+        setTick(frames);
       }, FRAME_MS);
       return () => clearInterval(timer);
     }, [moving, model.pid]);
@@ -428,6 +429,7 @@ export default function register(sdk) {
       held.watchers.splice(0).forEach((watcher) => watcher.close());
       clearTimeout(held.settle);
       clearTimeout(held.expire);
+      clearTimeout(held.catchUp);
     },
   };
 
@@ -446,4 +448,7 @@ export default function register(sdk) {
   updateWidget(app, (current) => { docked = true; return current; });
   if (docked) openWidget(app, load());
   refresh();
+  // macOS starts a watch late: a record written in the first moments raises no event.
+  held.catchUp = setTimeout(refresh, 1000);
+  held.catchUp.unref?.();
 }
