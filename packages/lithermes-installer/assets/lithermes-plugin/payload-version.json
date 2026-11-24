@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-24T16:55:42.714Z",
+  "syncedAt": "2026-11-24T17:16:33.428Z",
   "source": "bundled-payload",
-  "sourceHash": "2856a89da2cd8bcccb82bf8259d041ee81bb3681a155f1476853ea84b0268b97",
+  "sourceHash": "5f92e9c24ee165f788304bcab8d8e5d50557bbae79ea4df383a83baa3fa206e3",
   "files": [
     {
       "path": "NOTICE.md",
@@ -245,7 +245,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "859cf8ccca6350c3b8ab10fbf73376e690cfbd46b2b91ccc403d36df6a4f8e64"
+      "sha256": "d881f480ba1cae5e6d711602ba423cc7ade306a03b86f50783ee5521fab2b622"
     },
     {
       "path": "provider_metrics.py",
@@ -1633,7 +1633,7 @@
     },
     {
       "path": "tui-widgets/lit-card.mjs",
-      "sha256": "28e33a572dc6b074be0e283c78f674b103da2cf6bedfbb57a5c86b54ff0be589"
+      "sha256": "f99321dcbdc62a7ded8a75fdd069e46d8491c8e832273b44f0ab69aabfe269e3"
     },
     {
       "path": "tui_card.py",

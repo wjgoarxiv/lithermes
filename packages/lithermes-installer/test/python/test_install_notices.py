@@ -102,21 +102,21 @@ class InstallNotices(NaturalRoutingCase):
         self.write(
             "update-blocked",
             currentVersion=VERSION,
-            targetVersion="1.0.48",
+            targetVersion="1.0.49",
             files=[{"path": "skills/lit-pptx/SKILL.md", "change": "changed"}],
             summary="skills/lit-pptx/SKILL.md (changed)",
             replacedFilesPath=str(self.home / "lithermes" / "replaced-files"),
             userSkillsPath=str(self.home / "skills"),
-            remedy="npx --yes --package @litfamily/lithermes@1.0.48 -- lithermes install --yes --force",
+            remedy="npx --yes --package @litfamily/lithermes@1.0.49 -- lithermes install --yes --force",
         )
         shown = self.reply()
         self.assertIn(
-            "LitHermes could not update to 1.0.48, because files in its plugin folder were changed: skills/lit-pptx/SKILL.md (changed)",
+            "LitHermes could not update to 1.0.49, because files in its plugin folder were changed: skills/lit-pptx/SKILL.md (changed)",
             shown,
         )
         self.assertIn(f"You are still on {VERSION}, and those files were not touched.", shown)
         self.assertIn(str(self.home / "lithermes" / "replaced-files"), shown)
-        self.assertIn("npx --yes --package @litfamily/lithermes@1.0.48 -- lithermes install --yes --force", shown)
+        self.assertIn("npx --yes --package @litfamily/lithermes@1.0.49 -- lithermes install --yes --force", shown)
         self.assertEqual(self.reply("again"), "again")
 
     def test_a_planted_link_is_not_read(self):

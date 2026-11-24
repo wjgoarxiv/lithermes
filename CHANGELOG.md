@@ -6,7 +6,7 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
-## [1.0.48] - Unreleased
+## [1.0.48] - 2026-11-25
 
 - `hermes --tui` gets a goal card. While the session has a lit goal, six rows under the prompt show the stage map, the goal, the proof, the next step and the gate, with a half-sunk sun, stars and a sea in the cells no word uses and a pink-to-blue frame. The picture moves at four frames a second while a turn runs, stands still with no timer at rest, and takes no rows when there is no goal. A goal that is completed reads `DONE ✓` until the next message, and only a completion this install recorded counts. Its state is real: the plugin writes a small record for that TUI session at the start and end of a turn (the new `on_session_end` hook also covers an interrupted one) and when the goal's files change. Without a dark truecolor terminal the card is plain text, and the sun stays away on a narrow card or beside a long line.
 - `lithermes hud card on|still|off` sets it, `/lit-card` puts it away for one TUI run, and `lithermes doctor` reports it. The installer copies the widget to `tui-widgets/lit-card.mjs` in the Hermes home and replaces or removes it only while its bytes are its own; an edited, foreign or symlinked file is left alone, and nothing is written through a symlinked folder.
