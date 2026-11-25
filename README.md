@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: a terminal in a sunset look. LitHermes's goal card sits at the top with its stage map, goal, proof and next lines, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom." /></picture></p>
 
 # LitHermes
 
@@ -290,7 +290,7 @@ In an offline doctor run, `loaded plugin` reads PARTIAL, because offline it cann
 
 ## LitFamily
 
-LitHermes belongs to [LitFamily](https://github.com/wjgoarxiv/litfamily), the same `lit` way of working ported to seven coding agents. The seven armored robots on the cover stand for those seven products; each runs on its own in its own host, so install only the one you use. The cover is brand motion and the <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition film</a> a short brand film in the same spirit, while the demo near the top of this page shows a real Hermes session.
+LitHermes belongs to [LitFamily](https://github.com/wjgoarxiv/litfamily), the same `lit` way of working ported to seven coding agents. The cover shows LitHermes's goal card in the sunset look under the LITFAMILY wordmark; each of the seven products runs on its own in its own host, so install only the one you use. The cover is brand motion and the <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition film</a> a short brand film in the same spirit, while the demo near the top of this page shows LitHermes's own card output inside a redrawn Hermes screen.
 
 If LitHermes has saved you from explaining a project all over again to a fresh session, a star helps other Hermes users find it.
 

@@ -20,13 +20,13 @@ lime. Their geometry comes from the pinned upstream revision:
 The complete upstream [Lucide and Feather license notices](./Lucide-LICENSE.txt)
 accompany the icons. These documentation assets are outside the installer package.
 
-The current landing pages open with one motion cover: the seven armory robot panels power
-on in turn, the LitHermes robot wakes, then LITFAMILY and KEEP THE WORK LIT. light up.
-`../cover-motion.webp` is the 960×640 looping animated WebP (1,795,568 bytes, SHA-256
-`6c06f2952d621bb5357f7156fb25b9bf0117688905c0b7dde19e9820bcac9254`), and
-`../cover-motion-still.webp` is its fully lit hold frame, served when reduced motion is
-preferred (130,038 bytes, SHA-256
-`7000a8cac2ecbb0415e0f29d828e4daa3e9d43ac8b0c9512709715406e2a9cce`). The package copies
+The current landing pages open with one motion cover: a terminal in the sunset look with the
+LitHermes goal card, a pixel LITFAMILY wordmark and a striped half-sunk sun.
+`../cover-motion.webp` is the 960×640 looping animated WebP (1,246,508 bytes, SHA-256
+`2b9867e5e6bf3bee86aec13084ee4315cc74b7e1d3acc3703d648ef2740450e1`), and
+`../cover-motion-still.webp` is its first frame, served when reduced motion is
+preferred (60,530 bytes, SHA-256
+`344d405c235a1917a8e292a453487f862b20576eaa798de2fef7af1dbfeae1e8`). The package copies
 under `readme-assets/` are byte-identical.
 
 The static seven-machine armory WebP stays at `../cover.webp` (SHA-256

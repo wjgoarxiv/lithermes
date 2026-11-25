@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 일곱 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상" /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 노을빛 터미널 화면입니다. 위쪽에는 LitHermes의 목표 카드가 단계 지도, 목표, 증명, 다음 줄과 함께 있고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다." /></picture></p>
 
 # LitHermes
 
@@ -290,7 +290,7 @@ npx --package @litfamily/lithermes -- lithermes uninstall --yes
 
 ## LitFamily
 
-LitHermes는 같은 `lit` 작업 방식을 코딩 에이전트 일곱 곳에 옮긴 [LitFamily](https://github.com/wjgoarxiv/litfamily)의 하나입니다. 커버의 갑옷 로봇 일곱은 이 일곱 제품을 뜻하고, 제품마다 자기 호스트에서 따로 돌아가니 쓰는 것 하나만 설치하면 됩니다. 커버는 브랜드 모션이고 <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition 영상</a>도 같은 결의 짧은 브랜드 영상이며, 실제 Hermes 세션을 보여 주는 건 이 페이지 위쪽의 데모입니다.
+LitHermes는 같은 `lit` 작업 방식을 코딩 에이전트 일곱 곳에 옮긴 [LitFamily](https://github.com/wjgoarxiv/litfamily)의 하나입니다. 커버는 LITFAMILY 글자 아래에 노을빛으로 그린 LitHermes의 목표 카드를 보여 주고, 일곱 제품은 각자 자기 호스트에서 따로 돌아가니 쓰는 것 하나만 설치하면 됩니다. 커버는 브랜드 모션이고 <a href="./docs/assets/readme/ignition-film.mp4"><img src="./docs/assets/readme/lucide-play.svg" width="16" alt="" /> Ignition 영상</a>도 같은 결의 짧은 브랜드 영상이며, 이 페이지 위쪽의 데모는 다시 그린 Hermes 화면에 LitHermes의 카드 출력을 담아 보여 줍니다.
 
 새 세션에 프로젝트를 처음부터 다시 설명하는 수고를 LitHermes가 덜어 주었다면, 스타를 하나 눌러 주세요. 다른 Hermes 사용자가 이 저장소를 찾는 데 도움이 됩니다.
 

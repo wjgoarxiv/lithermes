@@ -32,8 +32,8 @@ function assertCoverImage(text, label, repository) {
   assert.ok(text.includes('srcset="' + reducedMotionSrc + '"'), label + " needs a reduced-motion still from the motion cover");
   assert.ok(text.includes('src="' + motionSrc + '"'), label + " needs the motion cover as the img fallback");
   const coverAlt = text.includes('alt="LitFamily motion cover:')
-    ? "LitFamily motion cover: seven armored robots power on one by one, the LitHermes robot wakes with glowing eyes and a lit frame, then LITFAMILY and KEEP THE WORK LIT. light up."
-    : "LitFamily 모션 커버: 일곱 로봇 패널이 차례로 켜지고, LitHermes 로봇의 눈과 테두리가 빛난 뒤 LITFAMILY와 KEEP THE WORK LIT. 문구가 밝아지는 영상";
+    ? "LitFamily motion cover: a terminal in a sunset look. LitHermes's goal card sits at the top with its stage map, goal, proof and next lines, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom."
+    : "LitFamily 모션 커버: 노을빛 터미널 화면입니다. 위쪽에는 LitHermes의 목표 카드가 단계 지도, 목표, 증명, 다음 줄과 함께 있고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다.";
   assert.ok(text.includes('alt="' + coverAlt + '"'), label + " needs meaningful motion-cover alt text");
   const heroPicture = '<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="' + reducedMotionSrc + '" /><img src="' + motionSrc + '" width="100%" alt="' + coverAlt + '" /></picture></p>';
   assert.ok(text.startsWith(heroPicture + "\n\n"), label + " must open with the motion cover as its only cover picture");
@@ -61,10 +61,10 @@ test("repository covers match the Hermes outlined vector and WebP exports", () =
   assert.equal(createHash("sha256").update(cover).digest("hex"), "eaa94fe07f86deca1bafe7a5b89b64e93c775cc9989e31ea4853d5e1281c05f2");
   const motionCover = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover-motion.webp"));
   assert.ok(motionCover.length <= 2_621_440, "motion cover must stay under 2.5 MiB");
-  assert.equal(createHash("sha256").update(motionCover).digest("hex"), "6c06f2952d621bb5357f7156fb25b9bf0117688905c0b7dde19e9820bcac9254");
+  assert.equal(createHash("sha256").update(motionCover).digest("hex"), "2b9867e5e6bf3bee86aec13084ee4315cc74b7e1d3acc3703d648ef2740450e1");
   assert.deepEqual(fs.readFileSync(path.join(packageRoot, "readme-assets", "cover-motion.webp")), motionCover);
   const motionStill = fs.readFileSync(path.join(repoRoot, "docs", "assets", "cover-motion-still.webp"));
-  assert.equal(createHash("sha256").update(motionStill).digest("hex"), "7000a8cac2ecbb0415e0f29d828e4daa3e9d43ac8b0c9512709715406e2a9cce");
+  assert.equal(createHash("sha256").update(motionStill).digest("hex"), "344d405c235a1917a8e292a453487f862b20576eaa798de2fef7af1dbfeae1e8");
   assert.deepEqual(fs.readFileSync(path.join(packageRoot, "readme-assets", "cover-motion-still.webp")), motionStill);
 });
 
