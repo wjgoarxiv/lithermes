@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-25T02:16:07.906Z",
+  "syncedAt": "2026-11-25T03:04:22.066Z",
   "source": "bundled-payload",
-  "sourceHash": "f72c9d66f0f3d0b5163fe504969a44a03625cbf2d28937115448d8fe95dec6c5",
+  "sourceHash": "85bfa7dbe80f412b94a997277d25f3d0fada803695e27bd7af2787ca926197b4",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "d80d2f718cfcf32a48a4a34b49be938fb374893ca2db087b85e79584910d15e8"
+      "sha256": "b1b2addf0d52702368ab14cdcdd7c1c5931ffcf6a1c6f7f06365380c6b636424"
     },
     {
       "path": "adhd_stack.py",
@@ -105,7 +105,7 @@
     },
     {
       "path": "diagnostics.py",
-      "sha256": "70636d63f26de5825fefaec10a00324bd4076fdb207c83e071db27080fc1d5e5"
+      "sha256": "c65dd4e7cc0152d5b0bc1aa3eaba36dbf225e67af1836ee3e942c0f1ffdf28d2"
     },
     {
       "path": "followup.py",
@@ -133,7 +133,11 @@
     },
     {
       "path": "hud_card.py",
-      "sha256": "f3dec44427630cb942aaa2382591ad1a4f4f9882b4842884d45b629bebf5bd53"
+      "sha256": "24e7e435f91d333a59f39cdda6034a9d6d22ebd2cbc0c8e41ec87b6dabaaf58f"
+    },
+    {
+      "path": "hud_frame.py",
+      "sha256": "b18cbfaa5b8fa410804d16134028bb2c08d18a5e584041afd394480c60b0d37c"
     },
     {
       "path": "humanizer_detector.py",
@@ -245,7 +249,7 @@
     },
     {
       "path": "plugin.yaml",
-      "sha256": "e747ada09d0e878c4670d2d8fde28159e6d1cd290f1c02f6810c3caae029fe16"
+      "sha256": "98f09a3129569c78809c511462cc8d2646ca37de320c58d365079f163e1e8d9a"
     },
     {
       "path": "provider_metrics.py",
@@ -254,6 +258,10 @@
     {
       "path": "redaction.py",
       "sha256": "8cc38851d074e8816e4df67c0ccaaaff4ab2b32e32783c1035327cadc67bb57c"
+    },
+    {
+      "path": "round_caps.py",
+      "sha256": "d89060bb166d38f94bfb55bc16e241ff656bc956526a3bd3c53bd908835721b2"
     },
     {
       "path": "rules/__init__.py",
@@ -1629,15 +1637,15 @@
     },
     {
       "path": "sunset.py",
-      "sha256": "0f115fa7a7572682a38af2add2e58c3e7ab8b0cb578d19c7fcaacc9040c123c1"
+      "sha256": "3606291054847c820379fa1baae205a3a0f63e778837169353e241c58d0c67eb"
     },
     {
       "path": "tui-widgets/lit-card.mjs",
-      "sha256": "f99321dcbdc62a7ded8a75fdd069e46d8491c8e832273b44f0ab69aabfe269e3"
+      "sha256": "0b2c54bcee0a515f66cf821b5170a5bf3e1aa1447ed511d77471ca0360f17c31"
     },
     {
       "path": "tui_card.py",
-      "sha256": "22e8f6abfd60d14f04a8b7b7217b22ba23e9095f42e6668a1d38633aac36f42f"
+      "sha256": "4b991021a24d589913d3944c628cbc831694a294ba1b45e3e1de6ca30fb97ef8"
     },
     {
       "path": "vendor/NOTICE.md",

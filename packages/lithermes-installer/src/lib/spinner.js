@@ -99,6 +99,7 @@ function renderInstallReceipt(message, { env = process.env, stream = process.std
 
 // The steps every install runs; the compatibility step joins only where it applies.
 const INSTALL_STEPS = Object.keys(installStages).slice(0, -1);
+const stepTarget = (name) => installStages[name]?.target || "";
 
 function receiptTone(label, value) {
   if (/^(?:warning|credential guard|model (?:reason|fallback|write))$/i.test(label)) return "warn";
@@ -107,9 +108,10 @@ function receiptTone(label, value) {
 }
 
 // The receipt and what the questions after it changed, as sections of the closing card. Every line of
-// the message is kept; warnings come first.
+// the message is kept; warnings come first, and a line that is no result of the install is a setting.
 function receiptSections(message, answers = []) {
   const [title, ...details] = message.split("\n");
+  const version = /^Installed (LitHermes \S+)$/.exec(title);
   const installed = [];
   const warnings = [];
   const settings = [];
@@ -119,20 +121,22 @@ function receiptSections(message, answers = []) {
     const label = at === -1 ? "Detail" : `${line[0].toUpperCase()}${line.slice(1, at)}`;
     const value = at === -1 ? line : line.slice(at + 2);
     if (line.startsWith("Restart ")) next.push({ label: "Gateway", value: line });
-    else (receiptTone(label, value) === "warn" ? warnings : installed).push({ label, value, tone: receiptTone(label, value) });
+    else {
+      const tone = receiptTone(label, value);
+      ({ warn: warnings, good: installed, note: settings })[tone].push({ label, value, tone });
+    }
   }
   for (const { label, text } of answers) {
     const lines = text.split("\n");
     const after = lines.filter((line) => line.startsWith("Restart "));
-    lines.filter((line) => !after.includes(line)).forEach((value, i) => settings.push({ label: i ? "" : label, value, tone: i ? "note" : "good" }));
+    lines.filter((line) => !after.includes(line)).forEach((value, i) => settings.push({ label: i ? "" : label, value, tone: "note" }));
     for (const value of after) next.push({ label, value });
   }
   return {
-    title: title || "LitHermes installed",
+    title: version ? `${version[1]} is installed` : title || "LitHermes is installed",
     sections: [
-      { head: "Warnings", rows: warnings },
-      { head: "Installed", rows: installed },
-      { head: "Your answers", rows: settings },
+      { head: "Installed", rows: [...warnings, ...installed] },
+      { head: "Settings", rows: settings },
       { head: "Next", rows: next },
     ],
   };
@@ -231,4 +235,4 @@ function createSpinner({ stream = process.stderr, text = "Installing LitHermes",
   };
 }
 
-module.exports = { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner };
+module.exports = { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner, stepTarget };

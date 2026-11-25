@@ -8,8 +8,8 @@ Colour follows the client the command came from, as ``ctx.session_surface()`` na
 never ``isatty``: the TUI gateway's stdout is a JSON-RPC pipe, so a tty check would
 always print plain there even though Ink draws ANSI system lines.
 
-- ``cli``: ANSI (truecolor when COLORTERM says so, else 256 colours). A truecolor card
-  with a goal gets a still sunset (``sunset``) in the cells right of its words.
+- ``cli``: ANSI (truecolor when COLORTERM says so, else 256 colours). On a dark truecolor
+  terminal of a known width it is one framed card (``hud_frame``); else the bar rows.
 - ``tui``: the same, painted per segment rather than per glyph, because Ink folds a
   system line longer than 400 characters (escape bytes included) behind a toggle.
   :func:`fit_tui` keeps the whole slash output under that.
@@ -26,15 +26,20 @@ text is stored in the session database and replayed, so it never carries escapes
 from __future__ import annotations
 
 import importlib.util
+import os
 import re
 import sys
 from pathlib import Path
 from typing import Any, Mapping
 
 try:
-    from . import lit_mark, sunset
+    from . import hud_frame, lit_mark, round_caps, sunset
+    from .core_runtime import get_hermes_home
 except ImportError:  # standalone import (tests load modules from the payload folder)
+    import hud_frame  # type: ignore
     import lit_mark  # type: ignore
+    import round_caps  # type: ignore
+    from core_runtime import get_hermes_home  # type: ignore
     import sunset  # type: ignore
 
 TUI_LIMIT = 400
@@ -119,6 +124,15 @@ def render(snapshot: Mapping[str, Any] | None, route: str, surface: str, env: Ma
     # The classic CLI on a truecolor terminal shows the LIT badge; lean (TUI) and
     # 256-colour cards keep the bar, so their bytes under the Ink fold do not grow.
     pill = None if lean else lit_mark.lit_pill(mode)
+    if pill:
+        values = os.environ if env is None else env
+        width = None if sunset.light_background(values) else hud_frame.width_for(sunset.columns())
+        if width:
+            gate = (snapshot or {}).get("gate") or {}
+            return "\n".join(hud_frame.render(
+                snapshot, label, width=width, caps=round_caps.round_caps(values, round_caps.saved_choice(get_hermes_home())),
+                runs=run_marks((snapshot or {}).get("receipts") or [], gate.get("reasons") or []), next_step=next_step(snapshot or {}),
+            ))
     head = f"{pill or bar + paint('LIT', 'proof', bold=True)} {paint('· ' + label, 'text')}"
     goal = (snapshot or {}).get("goal")
     if not goal:
@@ -140,7 +154,7 @@ def render(snapshot: Mapping[str, Any] | None, route: str, surface: str, env: Ma
         f"{bar} {paint('proof', 'dim')} {proof}" + (f" · {' '.join(runs)}" if runs else " · no signed runs yet"),
         f"{bar} {paint('next', 'dim')}  {_clip(next_step(snapshot), _LINE_WIDTH - 8)}",
     ]
-    return "\n".join(sunset.behind(rows, env) if pill else rows)
+    return "\n".join(rows)
 
 
 def fit_tui(card: str, display: str) -> str:

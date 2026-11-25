@@ -4,7 +4,7 @@ const path = require("node:path");
 const readline = require("node:readline");
 const skins = require("./skins");
 const { ink } = require("./cards");
-const { MODES, applyTuiCard, tuiCardStatus } = require("./tuiCard");
+const { CAPS, MODES, applyCaps, applyTuiCard, readSettings, tuiCardStatus } = require("./tuiCard");
 const {
   readConfig,
   writeConfig,
@@ -77,6 +77,7 @@ function listHud({ color = false, hermesHome = null } = {}) {
   lines.push(`Clear:     ${clearCmd}`);
   lines.push(`In Hermes: ${skinCmd}  (or set display.skin in config.yaml)`);
   lines.push(`TUI card:  lithermes hud card on|still|off`);
+  lines.push(`Caps:      lithermes hud caps round|square|auto`);
   return lines.join("\n");
 }
 
@@ -157,6 +158,20 @@ function hudCard(mode, flags = {}) {
   return applyTuiCard(mode, home);
 }
 
+// `hud caps [round|square|auto]`: round ends on pills and gauges, on every surface.
+function hudCaps(choice, flags = {}) {
+  const home = resolveHome(flags);
+  const current = readSettings(home).glyphs || "auto";
+  if (!choice) return `Round caps: ${current}`;
+  if (!CAPS.includes(choice)) {
+    const err = new Error(`unknown caps choice '${choice}'. choose one of: ${CAPS.join(", ")}`);
+    err.exitCode = 4;
+    throw err;
+  }
+  if (flags["dry-run"]) return `DRY RUN: would set round caps to ${choice} (now: ${current})\nNothing was changed.`;
+  return applyCaps(choice, home);
+}
+
 // Interactive accent picker used during `lithermes install` on a TTY.
 // Returns the chosen accent entry, or null to skip (empty / unknown answer).
 function promptAccent({ input = process.stdin, output = process.stdout, color = false } = {}) {
@@ -196,4 +211,4 @@ async function pickAccent({ ui, current = null, ctrlCSkips = false }) {
   return index ? accents[index - 1] : null;
 }
 
-module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, pickAccent, promptAccent };
+module.exports = { resolveHome, listHud, applyHud, clearHud, previewClearHud, previewHud, hudCaps, hudCard, pickAccent, promptAccent };

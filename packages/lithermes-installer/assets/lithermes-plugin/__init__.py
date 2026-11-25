@@ -611,7 +611,7 @@ def _setup_lithermes_cli(parser) -> None:
         "contract schema: lithermes_llm_contract/v1 headings include #contract.activation, "
         "#contract.inputs, #contract.outputs, #contract.evidence, and #contract.hard_stops\n"
         "hooks: on_session_start, pre_llm_call, pre_tool_call, pre_command, post_tool_call, "
-        "transform_tool_result, post_api_request, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset, "
+        "transform_tool_result, post_api_request, subagent_start, subagent_stop, transform_llm_output, pre_verify, on_session_finalize, on_session_reset, "
         "post_llm_call, post_compaction\n"
         "bounded work: schema 3 via /lit-loop init|status|resume|cancel|complete and lithermes_work_progress; "
         "whole-prompt lit cancel|approve|deny; /lit-loop ping on|off sends one message per parked step (off by default)\n"
@@ -853,7 +853,24 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
         return humanizer_denial
     if knowledge_tools.pre_tool_call(**kwargs):
         return None
-    return bounded_work_tools.pre_tool_call(**kwargs)
+    denial = bounded_work_tools.pre_tool_call(**kwargs)
+    if denial is None:
+        tui_card.tool_started(kwargs.get("session_id"), kwargs.get("tool_name"), kwargs.get("args"))
+    return denial
+
+
+def _post_api_request(**kwargs: Any) -> None:
+    tui_card.note_usage(kwargs.get("session_id"), kwargs.get("usage"), kwargs.get("context_length"))
+    return core.post_api_request(**kwargs)
+
+
+def _subagent_start(**kwargs: Any) -> None:
+    tui_card.lane_started(kwargs.get("parent_session_id"), kwargs.get("child_session_id"), kwargs.get("child_goal"))
+
+
+def _subagent_stop(**kwargs: Any) -> None:
+    tui_card.lane_stopped(kwargs.get("child_session_id"), kwargs.get("child_status"))
+    return core.subagent_stop(**kwargs)
 
 
 def _post_tool_call(**kwargs: Any) -> None:
@@ -945,9 +962,10 @@ def register(ctx) -> None:
     # Hermes exposes normalized provider usage here. The callback records only
     # bounded numeric cache counters and hashed labels; raw request/response
     # compatibility fields are intentionally ignored.
-    ctx.register_hook("post_api_request", core.post_api_request)
+    ctx.register_hook("post_api_request", _post_api_request)
     # Record each delegate_task child (review lanes, reviewer gate) to the ledger.
-    ctx.register_hook("subagent_stop", core.subagent_stop)
+    ctx.register_hook("subagent_start", _subagent_start)
+    ctx.register_hook("subagent_stop", _subagent_stop)
     # Draw natural-route acknowledgements without synthesizing model probe lines.
     ctx.register_hook("transform_llm_output", _transform_llm_output_with_offer)
     # Hermes 0.18+ asks this once code was edited and the answer is about to go out; while the

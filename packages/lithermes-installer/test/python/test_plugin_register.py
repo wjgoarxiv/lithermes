@@ -48,7 +48,7 @@ class RegisterWiring(unittest.TestCase):
             "pre_command",
             "post_llm_call", "pre_api_request", "post_api_request",
             "on_session_start", "on_session_end", "on_session_finalize",
-            "on_session_reset", "subagent_stop", "pre_gateway_dispatch",
+            "on_session_reset", "subagent_start", "subagent_stop", "pre_gateway_dispatch",
             "pre_approval_request", "post_approval_response", "pre_verify", "post_compaction",
         }
         expected = [
@@ -59,6 +59,7 @@ class RegisterWiring(unittest.TestCase):
             "post_tool_call",
             "transform_tool_result",
             "post_api_request",
+            "subagent_start",
             "subagent_stop",
             "transform_llm_output",
             "pre_verify",

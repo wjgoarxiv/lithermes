@@ -1,4 +1,4 @@
-"""The record behind the Ink TUI card, and the still sunset on the classic HUD card."""
+"""The record behind the Ink TUI card, the rule for round caps, and the classic framed card."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ _ANSI = re.compile(r"\x1b\[[0-9;]*m")
 SUN = re.compile("[▁▂▃▄▅▆▇█]")
 
 
-class Records(unittest.TestCase):
+class RecordsCase(unittest.TestCase):
     def setUp(self):
         self.pkg = _load_plugin_package()
         self.card = self.pkg.tui_card
@@ -49,6 +49,8 @@ class Records(unittest.TestCase):
     def record(self, session="s-1"):
         return json.loads(self.path(session).read_text(encoding="utf-8"))
 
+
+class Records(RecordsCase):
     def test_a_turn_writes_work_then_rest_then_nothing(self):
         self.goal()
         self.card.turn_started(self.ws, "s-1", "tui")
@@ -214,47 +216,231 @@ class Records(unittest.TestCase):
         self.assertFalse(self.path().exists())
 
 
-class StillSunset(unittest.TestCase):
+class LiveFacts(RecordsCase):
+    """What the host reports while the turn runs stands beside the goal in the record."""
+
+    def test_the_running_tool_is_named_and_leaves_when_it_ends(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertNotIn("tool", self.record())
+        self.card.tool_started("s-1", "terminal", {"command": "cat secret"})
+        name, since = self.record()["tool"]
+        self.assertEqual(name, "terminal")
+        self.assertGreater(since, 1e9)
+        self.assertNotIn("secret", self.path().read_text(encoding="utf-8"))
+        self.card.observe("s-1")
+        self.assertNotIn("tool", self.record())
+        self.card.tool_started("s-1", "terminal")
+        self.card.turn_ended("s-1")
+        self.assertNotIn("tool", self.record(), "an interrupted call does not run on")
+        self.card.tool_started("s-1", "terminal")
+        self.assertNotIn("tool", self.record())
+        for name in ("x" * 49, "a\x1b[2J", "", None):
+            self.card.tool_started("s-1", name)
+        self.card.tool_started("unknown", "terminal")
+
+    def test_skills_are_the_ones_the_turn_loaded(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        for name in ("lithermes:lit-loop", "debugging", "lit-loop", "bad\x1bname", None):
+            self.card.tool_started("s-1", "skill_view", {"name": name})
+        self.assertEqual(self.record()["skills"], ["lit-loop", "debugging"])
+        self.card.tool_started("s-1", "read_file", {"name": "not-a-skill"})
+        self.assertEqual(self.record()["skills"], ["lit-loop", "debugging"])
+        for i in range(9):
+            self.card.tool_started("s-1", "skill_view", {"name": f"s{i}"})
+        self.assertEqual(self.record()["skills"], ["s5", "s6", "s7", "s8"])
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertNotIn("skills", self.record(), "the next turn loaded none yet")
+
+    def test_context_is_the_hosts_own_numbers_or_nothing(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        for usage, window in (({"prompt_tokens": 10}, None), ({"prompt_tokens": 10}, 0), ({}, 100), (None, 100), ({"prompt_tokens": "9"}, 100), ({"prompt_tokens": 5}, True)):
+            self.card.note_usage("s-1", usage, window)
+            self.assertNotIn("context", self.record())
+        self.card.note_usage("s-1", {"prompt_tokens": 25_000}, 200_000)
+        self.assertEqual(self.record()["context"], 12.5)
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertEqual(self.record()["context"], 12.5, "the last reading stays until the next one")
+        self.card.forget("s-1")
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertNotIn("context", self.record())
+
+    def test_lanes_follow_the_delegated_children(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.card.lane_started("s-1", "c-1", "review the rounding\nwith care")
+        self.card.lane_started("s-1", "c-2", "use api_key=sk-abcdefghijklmnopqrstuvwxyz012345 " + "x" * 90)
+        self.card.lane_started("other", "c-3", "not ours")
+        self.card.lane_started("s-1", "", "no id")
+        lanes = self.record()["lanes"]
+        self.assertEqual([lane["state"] for lane in lanes], ["running", "running"])
+        self.assertEqual(lanes[0]["name"], "review the rounding with care")
+        self.assertNotIn("sk-abc", lanes[1]["name"])
+        self.assertLessEqual(len(lanes[1]["name"]), 40)
+        self.card.tool_started("c-1", "read_file")
+        self.card.tool_started("c-1", "terminal")
+        self.assertNotIn("tool", self.record(), "a child's tool is not the session's")
+        self.card.lane_stopped("c-1", "completed")
+        self.card.lane_stopped("c-1", "failed")
+        self.card.lane_stopped("unknown", "completed")
+        first = self.record()["lanes"][0]
+        self.assertEqual((first["state"], first["calls"]), ("ok", 2))
+        self.assertGreaterEqual(first["ended"], first["since"])
+        self.card.turn_ended("s-1")
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertEqual([lane["state"] for lane in self.record()["lanes"]], ["running"], "a child in the background goes on")
+        self.card.lane_stopped("c-2", "failed")
+        self.assertEqual(self.record()["lanes"][0]["state"], "bad")
+
+    def test_the_branch_is_read_from_the_workspace(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertNotIn("branch", self.record())
+        (self.ws / ".git").mkdir()
+        (self.ws / ".git" / "HEAD").write_text("ref: refs/heads/fix/totals\n", encoding="utf-8")
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertEqual(self.record()["branch"], "fix/totals")
+        (self.ws / ".git" / "HEAD").write_text("0123456789abcdef\n", encoding="utf-8")
+        self.card.turn_started(self.ws, "s-1", "tui")
+        self.assertNotIn("branch", self.record(), "a detached head has no branch")
+
+    def test_live_facts_do_not_read_the_goal_again_and_never_raise(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        with mock.patch.object(self.card, "build") as build:
+            self.card.tool_started("s-1", "terminal")
+            self.card.note_usage("s-1", {"prompt_tokens": 1}, 10)
+            self.card.lane_started("s-1", "c-1", "x")
+            build.assert_not_called()
+        with mock.patch.object(self.card, "_write", side_effect=RuntimeError("x")):
+            self.card.tool_started("s-1", "terminal")
+            self.card.note_usage("s-1", {"prompt_tokens": 1}, 10)
+            self.card.lane_started("s-1", "c-2", "x")
+            self.card.lane_stopped("c-2", "completed")
+
+    def test_the_hooks_feed_the_card(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        with mock.patch.object(self.pkg, "_session_workspace", lambda kw: self.ws):
+            self.pkg._pre_tool_call(session_id="s-1", tool_name="read_file", args={"path": "a.txt"})
+            self.assertEqual(self.record()["tool"][0], "read_file")
+        with mock.patch.object(self.pkg.core, "post_api_request") as ledger:
+            self.pkg._post_api_request(session_id="s-1", usage={"prompt_tokens": 50}, context_length=100)
+            ledger.assert_called_once()
+        self.pkg._subagent_start(parent_session_id="s-1", child_session_id="c-1", child_goal="look")
+        with mock.patch.object(self.pkg.core, "subagent_stop") as ledger:
+            self.pkg._subagent_stop(parent_session_id="s-1", child_session_id="c-1", child_status="completed")
+            ledger.assert_called_once()
+        record = self.record()
+        self.assertEqual((record["context"], record["lanes"][0]["state"]), (50.0, "ok"))
+
+    def test_a_refused_call_is_not_shown_as_running(self):
+        self.goal()
+        self.card.turn_started(self.ws, "s-1", "tui")
+        with mock.patch.object(self.pkg.bounded_work_tools, "pre_tool_call", return_value={"action": "block", "message": "no"}):
+            self.assertIsNotNone(self.pkg._pre_tool_call(session_id="s-1", tool_name="terminal", args={"command": "ls"}))
+        self.assertNotIn("tool", self.record())
+
+
+class RoundCaps(unittest.TestCase):
+    def test_one_rule_the_same_as_the_widgets(self):
+        rule = _load_plugin_package().hud_card.round_caps
+        table = json.loads((Path(__file__).parents[1] / "fixtures" / "round-caps.json").read_text(encoding="utf-8"))
+        for row in table:
+            with self.subTest(row["name"]), tempfile.TemporaryDirectory() as home:
+                for font in row.get("fonts", []):
+                    path = Path(home, "fonts", font)
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.touch()
+                env = {"XDG_DATA_HOME": home, "HOME": home + "/none", **row.get("env", {})}
+                self.assertIs(rule.round_caps(env, row.get("choice", "auto"), lambda: rule.has_icon_font(env, "linux")), row["round"])
+        with tempfile.TemporaryDirectory() as home:
+            Path(home, "fonts").mkdir()
+            Path(home, "fonts", "HackNerdFont-Regular.ttf").touch()
+            self.assertFalse(rule.has_icon_font({"XDG_DATA_HOME": home, "HOME": home}, "linux", 0), "the read is bounded")
+
+    def test_the_saved_choice_and_one_read_per_process(self):
+        rule = _load_plugin_package().hud_card.round_caps
+        with tempfile.TemporaryDirectory() as home:
+            path = Path(home, "lithermes", "tui-card.json")
+            self.assertEqual(rule.saved_choice(home), "auto")
+            path.parent.mkdir()
+            for text, expected in (('{"glyphs": "square"}', "square"), ('{"glyphs": "x"}', "auto"), ("[]", "auto"), ("{", "auto")):
+                path.write_text(text, encoding="utf-8")
+                self.assertEqual(rule.saved_choice(home), expected)
+        rule._FOUND.clear()
+        self.addCleanup(rule._FOUND.clear)
+        with mock.patch.object(rule, "has_icon_font", return_value=True) as look:
+            for _ in range(3):
+                self.assertTrue(rule.round_caps({"HOME": "/h"}))
+            look.assert_called_once()
+
+
+class FramedCard(unittest.TestCase):
+    ROUND, SQUARE = {**COLOUR_ENV, "TERM_PROGRAM": "ghostty"}, {**COLOUR_ENV, "SSH_CONNECTION": "x"}
+
     @classmethod
     def setUpClass(cls):
         cls.pkg = _load_plugin_package()
         cls.card, cls.sunset = cls.pkg.hud_card, cls.pkg.hud_card.sunset
 
-    def render(self, columns=120, env=None, snapshot=None, surface="cli"):
-        with mock.patch.object(self.sunset, "_columns", lambda: columns):
-            return self.card.render(snapshot or _snapshot(), "litwork", surface, env or COLOUR_ENV)
+    def render(self, columns=102, env=None, snapshot=None, surface="cli", first=False):
+        with mock.patch.object(self.sunset, "columns", lambda: columns), mock.patch.object(self.card, "get_hermes_home", lambda: "/nonexistent"):
+            return self.card.render(None if first else snapshot or self.snapshot(), "litwork", surface, env or self.SQUARE)
 
-    def test_the_words_stay_and_the_sun_stands_beside_them(self):
-        for title in ("Fix the export", "분기 내보내기 합계가 맞도록 고치기", "x" * 300):
-            snapshot = _snapshot(goal={"id": "G1", "title": title, "objective": "", "status": "active"})
-            without, scene = self.render(0, snapshot=snapshot).splitlines(), self.render(snapshot=snapshot).splitlines()
-            self.assertEqual(len(without), len(scene))
-            self.assertEqual(without[0], scene[0])
-            for before, after in zip(without, scene):
-                self.assertTrue(after.startswith(before), after)
-                self.assertLessEqual(self.sunset.cells(after), self.sunset.WIDTH)
-                rest = _ANSI.sub("", after[len(before):])
-                if rest.strip():
-                    self.assertTrue(rest.startswith("  "), rest)
-        self.assertRegex("\n".join(self.render().splitlines()), SUN)
+    @staticmethod
+    def snapshot(**over):
+        stages = [{"key": key, "state": state} for key, state in (("plan", "done"), ("runs", "active"), ("review", "todo"), ("gate", "todo"), ("handoff", "todo"), ("resume", "todo"))]
+        return {**_snapshot(), "stages": stages, **over}
 
-    def test_no_room_no_colour_and_light_backgrounds_keep_the_old_card(self):
-        plain = self.render(0)
-        for columns in (0, 40, 79):
-            self.assertEqual(self.render(columns), plain)
+    def test_every_row_is_framed_in_column_at_every_width(self):
+        for title in ("Fix", "분기 내보내기 합계가 맞도록 고치기", "x" * 300, "a🔥b\x1b[2J e\u0301 \u200b\u202e", "👩‍👩‍👧 ⚠️"):
+            snapshot = self.snapshot(goal={"id": "G1", "title": title, "objective": "", "status": "active"})
+            for columns in range(62, 130):
+                for env in (self.ROUND, self.SQUARE):
+                    for first in (False, True):
+                        rows = self.render(columns, env, snapshot, first=first).splitlines()
+                        for row in rows:
+                            self.assertEqual(self.sunset.cells(row), min(100, columns - 2), row)
+                            self.assertRegex(_ANSI.sub("", row), "^[╭│╰].*[╮│╯]$")
+                            self.assertNotIn("\x1b[2J", row)
+
+    def test_the_card_says_what_the_snapshot_says(self):
+        plain = _ANSI.sub("", self.render())
+        for part in ("🔥 LIT  · litwork ─", "─ RUNS ● ─╮", "PLAN ✓ ━━  RUNS  ── REVIEW ·", "proof 2/3", "next ▸ C002 evidence R007 is stale", "● Fix the quarterly export",
+                     "runs R004 ✓ · R006 ✗ exit 1 · R007 ⚠ stale", "╰─ gate CLOSED ─"):
+            self.assertIn(part, plain)
+        self.assertRegex(plain, SUN)
+        self.assertIn("no signed runs yet", _ANSI.sub("", self.render(snapshot=self.snapshot(receipts=[]))))
+        first = _ANSI.sub("", self.render(first=True))
+        for part in ("READY ○", "the agent writes criteria before it works", "/litgoal any time", "no goal yet"):
+            self.assertIn(part, first)
+        self.assertEqual(self.render(), self.render(), "the picture is the same every time")
+
+    def test_round_is_round_and_square_is_square(self):
+        caps = re.compile("[\ue0b6\ue0b4]")
+        for first in (False, True):
+            round_card, square = self.render(env=self.ROUND, first=first), self.render(env=self.SQUARE, first=first)
+            self.assertNotRegex(square, caps)
+            self.assertEqual(caps.sub(" ", _ANSI.sub("", round_card)), _ANSI.sub("", square))
+            for row in round_card.splitlines():
+                self.assertEqual(row.count("\ue0b6"), row.count("\ue0b4"))
+            self.assertNotRegex(_ANSI.sub("", round_card + square), "[▯▮▰▱░▒▓▌]|\\[[#█ -]")
+        self.assertEqual(self.render(env=self.ROUND).count("\ue0b6"), 3, "brand, stage and gauge")
+
+    def test_no_room_no_colour_and_light_backgrounds_keep_the_bar_rows(self):
+        bars = self.render(0)
+        self.assertIn("▌", bars)
+        for columns in (0, 40, 61):
+            self.assertEqual(self.render(columns), bars)
         for name, value in (("COLORFGBG", "0;15"), ("HERMES_LIGHT", "1"), ("HERMES_TUI_THEME", "light"), ("HERMES_TUI_BACKGROUND", "#ffffff")):
-            self.assertEqual(self.render(env={**COLOUR_ENV, name: value}), plain, name)
-        self.assertRegex(self.render(env={**COLOUR_ENV, "COLORFGBG": "15;0"}), SUN)
-        long_runs = _snapshot()
-        long_runs["receipts"] = [{**row, "id": "R" + "0" * 20, "stale": True} for row in long_runs["receipts"]]
-        self.assertNotRegex(self.render(snapshot=long_runs), "[▁▂▃]")
+            self.assertEqual(self.render(env={**self.SQUARE, name: value}), bars, name)
+        self.assertNotEqual(self.render(env={**self.SQUARE, "COLORFGBG": "15;0"}), bars)
         for surface, env in (("tui", COLOUR_ENV), ("local", COLOUR_ENV), ("desktop", COLOUR_ENV), ("cli", {"LANG": "en_US.UTF-8"}), ("cli", {**COLOUR_ENV, "NO_COLOR": "1"})):
             self.assertEqual(self.render(120, env, surface=surface), self.render(0, env, surface=surface))
-        first = self.card.render(None, "litwork", "cli", COLOUR_ENV)
-        self.assertNotRegex(first, "[▁▂▃]")
-
-    def test_the_picture_is_the_same_every_time(self):
-        self.assertEqual(self.render(), self.render())
+            self.assertNotRegex(self.render(120, env, surface=surface), "[╭\ue0b6]")
 
 
 if __name__ == "__main__":

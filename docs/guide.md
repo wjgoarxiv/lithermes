@@ -73,9 +73,9 @@ npx --package @litfamily/lithermes -- lithermes install --yes --no-spinner
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes
 ```
 
-Without `--yes`, an install in a terminal asks its questions on cards: the provider and model for the agents, the same for the helpers, a last look at that route, then the HUD accent, the reply style and the finish bell. Each card says what the answer changes and marks the default. Use the arrow keys or `j`/`k` to move, a number to jump, `Enter` to take the highlighted choice, and `y` or `n` on the yes/no card. Nothing is written until you confirm the model route; Ctrl+C or Ctrl+D before that leaves your Hermes home untouched. After an answer the card folds to one line, and a closing card lists what was installed, with warnings first, or says `Install stopped` and why.
+Without `--yes`, an install in a terminal asks its questions on cards: the provider and model for the agents, the same for the helpers, a last look at that route, then the HUD accent, the reply style and the finish bell. Each card says what the answer changes and marks the default. Use the arrow keys or `j`/`k` to move, a number to jump, `Enter` to take the highlighted choice, and `y` or `n` on the yes/no card. Nothing is written until you confirm the model route; Ctrl+C or Ctrl+D before that leaves your Hermes home untouched. After an answer the card folds to one line, and a closing card lists what was installed, with warnings first, then the settings and what to do next, or says `INSTALL STOPPED`, at which stage and why. Pills, buttons and the highlighted row have round ends when your terminal can draw them and square ends otherwise, by the same rule as the [goal card](#the-goal-card-in-hermes---tui).
 
-`--yes` shows `PREPARING INSTALL` and finishes with an `INSTALL RECEIPT` or an actionable `INSTALL STOPPED` panel. With `NO_COLOR` the cards stay, without colour. For plain numbered prompts, for example with a screen reader, add `--no-spinner`; a dumb terminal or a window under 40 columns or 14 rows gets them too. Redirected output, CI, dry-run, and `--no-spinner` remain plain and script-safe.
+`--yes` shows `PREPARING INSTALL` and finishes with an `INSTALL RECEIPT` or an actionable `INSTALL STOPPED` panel. With `NO_COLOR` the cards stay, without colour. For plain numbered prompts, for example with a screen reader, add `--no-spinner`; a dumb terminal or a window under 40 columns or 12 rows gets them too. Redirected output, CI, dry-run, and `--no-spinner` remain plain and script-safe.
 
 Add `--no-style` to skip the style picker on a TTY as well.
 
@@ -258,15 +258,25 @@ cannot add their own status bar segments in Hermes.
 ### The goal card in hermes --tui
 
 When a session in `hermes --tui` has a lit goal, a card sits in the dock under
-the prompt. Its six rows say which stage the goal is in, what the goal is, how
-many criteria are proven, what the next step is, and whether the gate is open.
-In the cells no word uses, a half-sunk sun stands over a small sea with a few
-stars, and the frame runs from pink to blue.
+the prompt. The frame names the route and the state, and its rows say which stage
+the goal is in, what the goal is, how many criteria are proven, what the next step
+is, which runs were signed, and whether the gate is open. In the cells no word
+uses, a half-sunk sun stands over a small sea with a few stars, and the frame runs
+from pink to blue.
+
+While a turn runs, the card adds what Hermes reports about it: the tool that is
+running and for how long, the share of the context used at the last model call,
+the skills the turn loaded, and one row for each helper agent with its time and
+tool calls. A running helper has no known end, so its row shows a moving line, not
+a filled gauge; helper rows need a window taller than 24 rows. The branch comes
+from `.git/HEAD`. A fact Hermes does not report is left out.
 
 The picture tells you one thing at a glance: it moves while a turn runs, and it
-stands still when the turn is over and the frame says `YOUR TURN`. Standing
+stands still when the turn is over and the frame turns amber and says `YOUR TURN`. Standing
 still costs nothing, because the card then runs no timer. When the goal is done
-the frame says `DONE ✓`, and the card leaves with your next message. A session
+the frame says `DONE ✓`, and the card leaves with your next message. A goal with no
+proof and no run yet says `READY`. A failed last run says `RUN FAILED`, a run older than the code says `STALE RUN`, and after ten
+quiet minutes the card says `IDLE`. A session
 without a goal has no card and loses no rows, and a card left alone for half an
 hour leaves by itself. Everything on it comes from a small record the plugin writes
 for that session in Hermes home `lithermes/tui-card/`; a turn whose Hermes
@@ -275,15 +285,23 @@ process died stops counting as work.
 The sunset needs a truecolor terminal with a dark background. With `NO_COLOR`,
 fewer colours or a light background the card is plain text in a plain frame. On
 a narrow card or beside a long line the sun stays away, so it never covers a
-word. A window under 48 columns or 20 rows shows no card. Round pill ends are
-drawn only where the terminal is known to have them (Windows Terminal and VS
-Code).
+word. A window under 48 columns or 20 rows shows no card.
+
+Pills and gauges have round ends when your terminal can draw them and square ends
+otherwise, never a mix. Your saved choice comes first. Without one, they are round
+in Windows Terminal, VS Code, WezTerm, Ghostty and kitty; square over SSH, where
+the fonts on this machine are not the ones on your screen; and elsewhere round
+when a Nerd Font is installed, which is told by file names alone. If the ends show
+as boxes, set `lithermes hud caps square`. The installer's cards and the classic
+HUD card follow the same rule.
 
 ```text
 lithermes hud card         # how the card stands
 lithermes hud card still   # keep the card, hold the picture still
 lithermes hud card off     # remove the card; upgrades respect this
 lithermes hud card on      # bring it back
+lithermes hud caps         # round, square or auto: how the choice stands
+lithermes hud caps square  # square ends everywhere (or round, or auto)
 /lit-card                  # inside the TUI: put it away, or open it again, for this run
 ```
 
@@ -292,9 +310,11 @@ and says so in one line when the TUI starts. The installer replaces or removes
 that file only while its bytes are the ones it wrote; a file you edited, a
 symlink or another file of that name is left alone, and `lithermes doctor`
 reports it. Hermes passes a widget no more than four frames a second, so the
-motion is calm. The classic CLI prints its HUD card once, so there the sunset
-is a still picture, drawn only when Hermes runs the command in your terminal's
-own process and the terminal is at least 80 columns wide.
+motion is calm. Hermes draws its own status row, with its own context bar; a plugin
+cannot restyle it. The classic CLI prints its HUD card once, so there the card is
+still, and it is framed like this one only when Hermes runs the command in your
+terminal's own process on a dark truecolor terminal at least 62 columns wide. Hermes
+0.23 runs slash commands in its gateway, so there it stays four coloured bar rows.
 
 ### When Lit skills are missing
 

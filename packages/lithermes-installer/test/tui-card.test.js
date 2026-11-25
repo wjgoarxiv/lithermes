@@ -22,33 +22,141 @@ const paint = (rows) => rows.map((row) => row.map((span) => JSON.stringify([span
 const SUN = /[▁▂▃▄▅▆▇]/u;
 const hexes = (rows) => rows.flat().filter((span) => span.fg || span.bg).length;
 
-test("every row is exactly the card's width, at every size and with wide text", async () => {
+const LANES = [
+  { name: "review the rounding", state: "running", since: NOW / 1000 - 40, calls: 6 },
+  { name: "run the CLI on sample data", state: "ok", since: NOW / 1000 - 40, ended: NOW / 1000 - 9, calls: 1 },
+  { name: "한국어 보고서 문장 확인", state: "bad", since: NOW / 1000 - 40, ended: NOW / 1000 - 3 },
+];
+const FULL = {
+  route: "lit-loop", branch: "fix/totals", context: 31.4, tool: ["terminal", NOW / 1000 - 4], skills: ["lit-loop", "debugging"], lanes: LANES,
+};
+const CAP = /[]/u;
+const joined = (rows) => rows.map(text).join("\n");
+// The record's own states, as the card can meet them.
+const STATES = {
+  working: {}, full: FULL, review: { stages: STAGES, ...FULL, lanes: [] }, rest: { working: false, runs: [["R004 ✓", "ok"]] },
+  failed: { working: false }, stale: { working: false, runs: [["R001 ⚠ stale", "warn"], ["R002 ✓", "ok"]], context: 91 },
+  ready: { working: false, passed: 0, runs: [] }, idle: { working: false, at: NOW / 1000 - 900, runs: [] },
+  done: { working: false, status: "complete", passed: 3, gate: true, stages: STAGES.map(([key]) => [key, "done"]), runs: [["R004 ✓", "ok"]] },
+};
+
+test("every row is exactly the card's width, at every size, in every state and with wide text", async () => {
   const card = await load();
-  for (const title of ["short", "분기 내보내기 합계가 맞도록 고치고 보고서까지 다시 만들기", "x".repeat(200), "a🔥b é \u001b[31mred​"]) {
+  for (const title of ["short", "분기 내보내기 합계가 맞도록 고치고 보고서까지 다시 만들기", "x".repeat(200), "a🔥b é \u001b[31mred​ ⚡"]) {
     for (let width = card.MIN_COLS - 4; width <= card.MAX_WIDTH; width += 1) {
-      for (const rich of [true, false]) {
-        const model = card.toModel(record({ title, runs: [["R001 ⚠ stale", "warn"], ["R002 superseded", "dim"], ["R003 ✗ exit 127", "bad"]] }), NOW);
-        const rows = card.cardRows(model, { width, t: 2.5, now: NOW, rich, caps: width % 2 === 0 });
-        assert.equal(rows.length, 6);
-        for (const row of rows) assert.equal(card.textWidth(text(row)), width, `${width} ${title}: ${text(row)}`);
+      for (const over of Object.values(STATES)) {
+        const lanes = over.lanes?.map((lane) => ({ ...lane, name: title }));
+        const model = card.toModel(record({ ...over, title, next: title, branch: title, ...(lanes ? { lanes } : {}) }), NOW);
+        for (const rows of [20, 27, 40]) {
+          const shown = card.cardRows(model, { width, t: 2.5, now: NOW, caps: width % 2 === 0, rows });
+          assert.ok(shown.length >= 7 && shown.length <= 13 && shown.length <= rows - 8, `${shown.length} rows of ${rows}`);
+          for (const row of shown) {
+            assert.equal(card.textWidth(text(row)), width, `${width} ${title}: ${text(row)}`);
+            assert.match(text(row), /^[╭│╰].*[╮│╯]$/u);
+          }
+        }
+        assert.equal(card.cardRows(model, { width, t: 2.5, now: NOW, rich: false }).length, 6);
       }
     }
   }
 });
 
-test("the scene stands only in cells no text uses: stars and sea three cells clear of words, the sun two", async () => {
+test("lanes take only the rows the window has over 24", async () => {
   const card = await load();
-  for (const next of ["one", "a longer next step that names a file and a run", "y".repeat(58)]) {
-    const model = card.toModel(record({ next }), NOW);
-    for (let width = 44; width <= 100; width += 1) {
-      const plain = card.cardRows(model, { width, t: 4, now: NOW, rich: false }).map(text);
-      for (const t of [null, 0, 0.5, 1, 4, 9.3]) {
-        const rows = card.cardRows(model, { width, t, now: NOW, rich: true }).map(text);
-        for (const r of [2, 4]) {
-          const words = plain[r].trimEnd().replace(/ *│$/, "");
-          assert.ok(rows[r].startsWith(words), `${width}: ${rows[r]}`);
-          const rest = rows[r].slice(words.length);
-          if (rest.slice(0, -1).trim()) assert.match(rest, /^ {3}|^ {2}[▁-█]/u, `${width}: ${rows[r]}`);
+  const model = card.toModel(record({ ...FULL, lanes: Array(9).fill(LANES[0]) }), NOW);
+  for (let rows = 18; rows <= 60; rows += 1) {
+    const shown = card.cardRows(model, { width: 100, t: 1, now: NOW, rows }).length;
+    assert.ok(shown <= 7 + Math.max(0, Math.min(6, rows - 24)), `${shown} rows of ${rows}`);
+    if (rows <= 24) assert.equal(shown, 7);
+  }
+  assert.equal(card.cardRows(model, { width: 100, t: 1, now: NOW, rows: 30 }).length, 13);
+});
+
+test("round is round everywhere and square is square everywhere", async () => {
+  const card = await load();
+  for (const [name, over] of Object.entries(STATES)) {
+    const model = card.toModel(record(over), NOW);
+    for (const width of [60, 80, 100]) {
+      const round = card.cardRows(model, { width, t: null, now: NOW, caps: true });
+      const square = card.cardRows(model, { width, t: null, now: NOW, caps: false });
+      assert.doesNotMatch(joined(square), CAP, name);
+      assert.doesNotMatch(joined(round) + joined(square), /[▯▮▰▱░▒▓]|\[[#█ -]/u, name);
+      assert.equal(joined(round).replace(/[]/gu, " "), joined(square), "caps take the padding cells and move nothing");
+      // Every filled run of the round card starts after a left cap and ends before a right one.
+      for (const row of round) {
+        const cells = row.flatMap((span) => [...span.text].map((ch) => ({ ch, filled: Boolean(span.bg) && span.bg !== "#1a1030" })));
+        cells.forEach((cell, i) => {
+          if (cell.filled && !cells[i - 1].filled) assert.equal(cells[i - 1].ch, "", `${name}: ${text(row)}`);
+          if (cell.filled && !cells[i + 1].filled) assert.equal(cells[i + 1].ch, "", `${name}: ${text(row)}`);
+        });
+      }
+    }
+  }
+});
+
+test("one rule for round caps, the same in the widget and in Python", async (t) => {
+  const card = await load();
+  for (const [i, row] of require("./fixtures/round-caps.json").entries()) {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-caps."));
+    t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+    for (const font of row.fonts ?? []) {
+      fs.mkdirSync(path.dirname(path.join(home, "fonts", font)), { recursive: true });
+      fs.writeFileSync(path.join(home, "fonts", font), "");
+    }
+    const env = { XDG_DATA_HOME: home, HOME: path.join(home, "none"), ...row.env };
+    assert.equal(card.hasRoundCaps(env, row.choice ?? "auto", () => card.hasIconFont(env, "linux")), row.round, `${i} ${row.name}`);
+  }
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lithermes-caps."));
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(home, "fonts"));
+  fs.writeFileSync(path.join(home, "fonts", "HackNerdFont-Regular.ttf"), "");
+  assert.equal(card.hasIconFont({ XDG_DATA_HOME: home, HOME: home }, "linux", 0), false, "the read is bounded");
+  let asked = 0;
+  for (const env of [{ TERM_PROGRAM: "ghostty" }, { SSH_CONNECTION: "x" }]) card.hasRoundCaps(env, "auto", () => { asked += 1; return true; });
+  assert.equal(asked, 0, "the folders are not read when the answer is known");
+});
+
+test("the card shows what the record holds and leaves out what it does not", async () => {
+  const card = await load();
+  const show = (over, t = 2) => joined(card.cardRows(card.toModel(record(over), NOW), { width: 100, t, now: NOW, caps: false }));
+  const full = show(FULL);
+  for (const part of [/🔥 LIT {2}· lit-loop/, /● 1 lane 0:17/, /terminal · 0:04/, /┬ 3 lanes in parallel +2\/3 done/, /├─ ● review the rounding/,
+    /├─ ✓ run the CLI on sample.*done 0:31 · 1 call/, /└─ ✗ 한국어 보고서 문장 확인.*stopped 0:37/, /skills +⚡ lit-loop +⚡ debugging/, /ctx 31% +· gate CLOSED · ⎇ fix\/totals/]) assert.match(full, part);
+  assert.match(full, /━━━━━━ running 0:40 · 6 calls/, "a lane without a known end is a line, not a gauge");
+  const bare = show({});
+  assert.doesNotMatch(bare, /ctx|⎇|skills|lanes|terminal/);
+  assert.match(bare, /· goal/);
+  assert.match(joined(card.cardRows(card.toModel(record({ ...FULL, lanes: Array(9).fill(LANES[0]) }), NOW), { width: 100, t: 1, now: NOW, rows: 40 })), /└─ \+5 more/);
+  assert.doesNotMatch(show({ ...FULL, skills: ["a".repeat(30), "b".repeat(20)] }), /⚡/, "no room for the mark: the names stay");
+  const rest = show({ ...FULL, working: false }, null);
+  assert.doesNotMatch(rest, /terminal|0:40/, "a finished turn runs no tool, and at rest no clock stands still");
+  const gone = card.toModel(record(FULL), NOW, () => false);
+  assert.deepEqual(gone.lanes.map((lane) => lane.state), ["bad", "ok", "bad"], "a lane of a process that is gone does not run");
+  const hostile = card.toModel(record({ route: "a\u001b[2J", branch: "x\u001b]0;y\u0007", context: "9", tool: ["\u001b", 1], skills: ["ok", "\u0007"], lanes: [{ name: "n", state: "odd", since: 1 }, null, { name: "\u001b[31mq", state: "ok", since: 5 }] }), NOW);
+  assert.deepEqual([hostile.route, hostile.context, hostile.tool, hostile.skills, hostile.lanes.length], ["", null, null, ["ok"], 1]);
+  assert.doesNotMatch(JSON.stringify(hostile), /\\u001b|\\u0007/u);
+});
+
+test("each state says so on the top edge, and the ones that wait for the user colour the frame", async () => {
+  const card = await load();
+  const rows = (name) => card.cardRows(card.toModel(record(STATES[name]), NOW), { width: 100, t: null, now: NOW });
+  const words = { working: "REVIEW ●", full: "1 LANE ●", rest: "YOUR TURN ◆", failed: "RUN FAILED ✗", stale: "STALE RUN ▲", ready: "READY ○", idle: "IDLE ○", done: "DONE ✓" };
+  for (const [name, word] of Object.entries(words)) assert.ok(text(rows(name)[0]).includes(` ${word} `), `${name}: ${text(rows(name)[0])}`);
+  const corner = (name) => rows(name)[0][0].fg;
+  assert.equal(new Set(["working", "rest", "failed", "stale", "idle"].map(corner)).size, 5);
+  assert.equal(corner("rest"), "#ff8f3c");
+});
+
+test("the scene stands only in cells no text uses: stars and sea three cells clear of words", async () => {
+  const card = await load();
+  for (const over of Object.values(STATES)) {
+    for (const title of ["one", "a longer goal that names a file and a run", "y".repeat(58)]) {
+      const model = card.toModel(record({ ...over, title }), NOW);
+      for (let width = 44; width <= 100; width += 1) {
+        const body = card.cardRows(model, { width, t: 4, now: NOW }).slice(1, -1).map((row) => text(row).slice(2, -2));
+        if (!SUN.test(body.join(""))) continue;
+        for (const row of body.slice(-3)) {
+          assert.doesNotMatch(row, /[\p{L}\p{N}]\s{0,1}[▁-█]/u, row);
         }
       }
     }
@@ -90,25 +198,16 @@ test("no scene, no colour and no round cap without a dark truecolor terminal", a
   const plain = card.cardRows(model, { width: 100, t: 3, now: NOW, rich: false });
   assert.equal(hexes(plain), 0);
   assert.doesNotMatch(plain.map(text).join("\n"), SUN);
-  const round = /[]/u;
-  assert.equal(card.hasRoundCaps(env), false);
-  assert.equal(card.hasRoundCaps({ ...env, WT_SESSION: "1" }), true);
-  assert.equal(card.hasRoundCaps({ ...env, TERM_PROGRAM: "vscode" }), true);
-  const square = card.cardRows(model, { width: 100, t: null, now: NOW });
-  const rounded = card.cardRows(model, { width: 100, t: null, now: NOW, caps: true });
-  assert.doesNotMatch(square.map(text).join(""), round);
-  assert.match(rounded.map(text).join(""), round);
 });
 
-test("a finished goal has no sun; the frame says what the record says", async () => {
+test("the plain card says what the record says, as before", async () => {
   const card = await load();
-  const show = (over) => card.cardRows(card.toModel(record(over), NOW), { width: 100, t: null, now: NOW }).map(text).join("\n");
-  assert.match(show({}), /WORK ●/);
+  const show = (over) => joined(card.cardRows(card.toModel(record(over), NOW), { width: 100, t: null, now: NOW, rich: false }));
+  assert.equal(show({}).split("\n")[3].trimEnd(), `│ ${"proof #####--- 2/3 criteria R004 ✓ R006 ✗ exit 1".padEnd(96)} │`);
+  assert.match(show({}), /LIT · goal ─+ WORK ● ─╮\n│ plan ✓ ━━ runs ✓ ━━ \[review\] ── gate · ── handoff ·/);
   assert.match(show({ working: false }), /YOUR TURN/);
-  const done = show({ working: false, status: "complete", gate: true, passed: 3 });
-  assert.match(done, /DONE ✓/);
-  assert.match(done, /gate OPEN/);
-  assert.doesNotMatch(done, SUN);
+  assert.match(show({ working: false, status: "complete", gate: true }), /DONE ✓[^]*gate OPEN ✓/);
+  assert.match(show({ runs: [] }), /no signed runs yet/);
 });
 
 test("a record that cannot be true shows nothing or no work", async () => {
@@ -219,7 +318,7 @@ test("the end of the turn, another session and the settings reach the card witho
   const host = makeHost(t);
   await host.start();
   host.render();
-  await host.write(record({ at: Date.now() / 1000, working: false }));
+  await host.write(record({ at: Date.now() / 1000, working: false, runs: [["R004 ✓", "ok"]] }));
   await host.until(() => host.state.model?.working === false);
   const tree = host.render();
   assert.equal(host.timers.size, 0, "idle costs no frames");
@@ -229,6 +328,11 @@ test("the end of the turn, another session and the settings reach the card witho
   assert.equal(host.render(), null, "a session without a goal has no card");
   fs.writeFileSync(host.active, JSON.stringify({ session_id: "s-1" }));
   await host.until(() => host.state.model !== null);
+  for (const [glyphs, caps] of [["round", true], ["square", false]]) {
+    fs.writeFileSync(path.join(host.home, "lithermes", "tui-card.json"), JSON.stringify({ mode: "on", glyphs }));
+    await host.until(() => host.state.caps === caps);
+    assert.equal(CAP.test(JSON.stringify(host.render())), caps, glyphs);
+  }
   fs.writeFileSync(path.join(host.home, "lithermes", "tui-card.json"), JSON.stringify({ mode: "off" }));
   await host.until(() => host.state.model === null);
 });
@@ -353,4 +457,29 @@ test("hud card saves the choice and a later install honours it", (t) => {
   assert.equal(JSON.parse(fs.readFileSync(settings, "utf8")).mode, "still", "a choice outlives an uninstall");
   assert.equal(run(home, "hud", "card", "loud").status, 4);
   assert.equal(run(home, "hud", "rose", "extra").status, 2);
+});
+
+test("hud caps saves the choice, and card changes, installs and uninstalls keep it", (t) => {
+  const { home, widget, settings } = installed(t);
+  const saved = () => JSON.parse(fs.readFileSync(settings, "utf8"));
+  assert.match(run(home, "hud", "caps").stdout, /Round caps: auto/);
+  assert.match(run(home, "hud", "caps", "square", "--dry-run").stdout, /Nothing was changed/);
+  assert.equal(saved().glyphs, undefined);
+  assert.match(run(home, "hud", "caps", "square").stdout, /Round caps: square/);
+  assert.match(run(home, "hud", "card").stdout, /PASS \(on\)/, "the recorded widget hash is kept");
+  run(home, "hud", "card", "still");
+  assert.equal(run(home, "install", "--yes", "--offline", "--no-patch-installed-hermes").status, 0);
+  run(home, "hud", "card", "off");
+  run(home, "hud", "card", "on");
+  assert.deepEqual([saved().mode, saved().glyphs], ["on", "square"]);
+  fs.appendFileSync(widget, "// my edit\n");
+  run(home, "hud", "card", "still");
+  assert.equal(saved().glyphs, "square", "also beside a foreign widget");
+  fs.copyFileSync(source, widget);
+  run(home, "hud", "card", "on");
+  run(home, "uninstall", "--yes");
+  assert.equal(saved().glyphs, "square", "a choice outlives an uninstall");
+  assert.match(run(home, "hud", "caps", "auto").stdout, /Round caps: auto/);
+  assert.equal(saved().glyphs, undefined);
+  assert.equal(run(home, "hud", "caps", "oval").status, 4);
 });

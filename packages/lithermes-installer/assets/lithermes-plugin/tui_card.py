@@ -10,6 +10,10 @@ its own through the session id the TUI itself records.
 - At the start and end of a turn, and after a tool call only when the goal's own files moved
   (two ``stat`` calls otherwise) or a minute passed, so a long turn is still known to be alive.
 - A goal completed in a turn shows as done until the next turn starts; then the card leaves.
+- With it stand live facts the host itself reports while the turn runs: the running tool's name, the
+  context percent of the last model call, the skills the turn loaded, the ``delegate_task`` children
+  and the workspace's branch. Arguments, outputs and replies are never recorded; a child's goal is
+  redacted. A fact the host did not report is left out.
 - Removed when the session has no active goal, is finalized or is reset. ``pid`` names the
   process that wrote it: a turn whose process is gone no longer counts as working.
 
@@ -23,17 +27,20 @@ import contextlib
 import hashlib
 import json
 import os
+import re
 import threading
 import time
 from pathlib import Path
 from typing import Any
 
 try:
-    from . import hud_card
+    from . import hud_card, lit_reentry, redaction
     from .core_runtime import assert_within_isolation, get_hermes_home
     from .litgoal import gate_snapshot, runtime, store
 except ImportError:  # standalone import (tests load modules from the payload folder)
     import hud_card  # type: ignore
+    import lit_reentry  # type: ignore
+    import redaction  # type: ignore
     from core_runtime import assert_within_isolation, get_hermes_home  # type: ignore
     from litgoal import gate_snapshot, runtime, store  # type: ignore
 
@@ -43,14 +50,23 @@ HEARTBEAT_SECONDS = 60
 KEEP_SECONDS = 7 * 24 * 3600
 _MAX_TRACKED = 256
 _MAX_PRUNED = 200
+_MAX_LANES = 12
+_MAX_SKILLS = 4
+_NAME = re.compile(r"[\w.:/ -]{1,48}")
 _LOCK = threading.Lock()
 # session id -> {"workspace", "home", "since", "working", "mark", "wrote", "over"}
 _TURNS: dict[str, dict[str, Any]] = {}
+# child session id -> (parent session id, its lane row)
+_CHILDREN: dict[str, tuple[str, dict[str, Any]]] = {}
+# session id -> context percent of its last model call
+_CONTEXT: dict[str, float] = {}
 
 
 def reset() -> None:
     with _LOCK:
         _TURNS.clear()
+        _CHILDREN.clear()
+        _CONTEXT.clear()
 
 
 def _home() -> Path:
@@ -148,16 +164,52 @@ def _write(path: Path, record: dict[str, Any]) -> None:
             temporary.unlink()
 
 
+def _branch(workspace: Path) -> str:
+    """The branch name out of ``.git/HEAD``; a linked worktree's ``.git`` file names its folder."""
+    try:
+        git = workspace / ".git"
+        if git.is_file():
+            git = workspace / git.read_text(encoding="utf-8")[:4096].partition("gitdir:")[2].strip()
+        head = (git / "HEAD").read_text(encoding="utf-8")[:512].strip()
+    except (OSError, ValueError):
+        return ""
+    return head.removeprefix("ref: refs/heads/") if head.startswith("ref: refs/heads/") else ""
+
+
+def _live(session_id: str, turn: dict[str, Any]) -> dict[str, Any]:
+    route = lit_reentry.active_discipline(session_id)
+    facts = {
+        "at": time.time(),
+        "working": turn["working"],
+        "route": route,
+        "branch": turn["branch"],
+        "context": _CONTEXT.get(session_id),
+        "tool": turn["tool"] if turn["working"] else None,
+        "skills": turn["skills"],
+        "lanes": turn["lanes"],
+    }
+    return {key: value for key, value in facts.items() if value not in (None, "", [])}
+
+
+def _publish_live(session_id: str, turn: dict[str, Any], every: float = 0.0) -> None:
+    """Rewrite the record with the live facts alone: the goal's own files are not read again."""
+    if turn["base"] is None or time.monotonic() - turn["live_at"] < every:
+        return
+    turn["live_at"] = time.monotonic()
+    _write(record_path(session_id, turn["home"]), {**turn["base"], **_live(session_id, turn)})
+
+
 def _publish(session_id: str, turn: dict[str, Any]) -> None:
     workspace, home = turn["workspace"], turn["home"]
     turn["mark"], turn["wrote"] = _mark(workspace, session_id), time.monotonic()
     path = record_path(session_id, home)
     record = build(workspace, session_id, working=turn["working"], since=turn["since"], over=turn["over"])
+    turn["base"], turn["live_at"] = record, time.monotonic()
     if record is None:
         with contextlib.suppress(OSError):
             path.unlink()
         return
-    _write(path, record)
+    _write(path, {**record, **_live(session_id, turn)})
 
 
 def turn_started(workspace: Path | None, session_id: Any, platform: Any) -> None:
@@ -169,13 +221,91 @@ def turn_started(workspace: Path | None, session_id: Any, platform: Any) -> None
             return
         goal, finished = _goal(workspace, session)
         turn = {"workspace": workspace, "home": home, "since": time.time(), "working": True, "mark": None, "wrote": 0.0,
-                "over": goal.id if finished else ""}
+                "over": goal.id if finished else "", "base": None, "live_at": 0.0, "tool": None, "skills": [], "lanes": [],
+                "branch": _branch(workspace)}
         with _LOCK:
+            before = _TURNS.get(session)
+            # A child handed off in the last turn may still run in this one.
+            turn["lanes"] = [lane for lane in (before or {}).get("lanes", []) if lane["state"] == "running"]
             if len(_TURNS) >= _MAX_TRACKED and session not in _TURNS:
                 _TURNS.pop(next(iter(_TURNS)))
             _TURNS[session] = turn
         _publish(session, turn)
     except Exception:  # noqa: BLE001 - decoration never costs the turn
+        return
+
+
+def tool_started(session_id: Any, tool_name: Any, args: Any = None) -> None:
+    """Before a tool call: its name, the skill it loads, or one more call of a child."""
+    try:
+        session, name = str(session_id or ""), str(tool_name or "")
+        if not _NAME.fullmatch(name):
+            return
+        with _LOCK:
+            parent, lane = _CHILDREN.get(session, ("", None))
+            turn = _TURNS.get(parent or session)
+        if turn is None:
+            return
+        if lane is not None:
+            lane["calls"] += 1
+            _publish_live(parent, turn, every=1.0)
+            return
+        if not turn["working"]:
+            return
+        turn["tool"] = [name, time.time()]
+        skill = str(args.get("name") or "") if name == "skill_view" and isinstance(args, dict) else ""
+        skill = skill.rpartition(":")[2]
+        if _NAME.fullmatch(skill) and skill not in turn["skills"]:
+            turn["skills"] = [*turn["skills"], skill][-_MAX_SKILLS:]
+        _publish_live(session, turn)
+    except Exception:  # noqa: BLE001 - decoration never costs the tool call
+        return
+
+
+def note_usage(session_id: Any, usage: Any, context_length: Any) -> None:
+    """After a model call: what share of the model's context the host says it used."""
+    try:
+        session = str(session_id or "")
+        with _LOCK:
+            turn = _TURNS.get(session)
+        used = usage.get("prompt_tokens") if isinstance(usage, dict) else getattr(usage, "prompt_tokens", None)
+        if turn is None or isinstance(context_length, bool) or not isinstance(used, int) or not isinstance(context_length, int) or context_length <= 0:
+            return
+        if len(_CONTEXT) >= _MAX_TRACKED and session not in _CONTEXT:
+            _CONTEXT.pop(next(iter(_CONTEXT)))
+        _CONTEXT[session] = round(min(100.0, used * 100 / context_length), 1)
+        _publish_live(session, turn)
+    except Exception:  # noqa: BLE001
+        return
+
+
+def lane_started(parent_session_id: Any, child_session_id: Any, goal: Any) -> None:
+    try:
+        parent, child = str(parent_session_id or ""), str(child_session_id or "")
+        name = " ".join(redaction.redact_text(str(goal or "")).split())[:40]
+        with _LOCK:
+            turn = _TURNS.get(parent)
+            if turn is None or not child or not name or len(turn["lanes"]) >= _MAX_LANES:
+                return
+            lane = {"name": name, "state": "running", "since": time.time(), "calls": 0}
+            turn["lanes"].append(lane)
+            _CHILDREN[child] = (parent, lane)
+        _publish_live(parent, turn)
+    except Exception:  # noqa: BLE001
+        return
+
+
+def lane_stopped(child_session_id: Any, status: Any) -> None:
+    try:
+        with _LOCK:
+            parent, lane = _CHILDREN.pop(str(child_session_id or ""), ("", None))
+            turn = _TURNS.get(parent)
+        if lane is None:
+            return
+        lane["state"], lane["ended"] = "ok" if str(status) == "completed" else "bad", time.time()
+        if turn is not None:
+            _publish_live(parent, turn)
+    except Exception:  # noqa: BLE001
         return
 
 
@@ -187,7 +317,9 @@ def observe(session_id: Any) -> None:
             turn = _TURNS.get(session)
         if turn is None or not turn["working"]:
             return
+        turn["tool"] = None
         if turn["mark"] == _mark(turn["workspace"], session) and time.monotonic() - turn["wrote"] < HEARTBEAT_SECONDS:
+            _publish_live(session, turn)
             return
         _publish(session, turn)
     except Exception:  # noqa: BLE001
@@ -214,6 +346,9 @@ def forget(session_id: Any) -> None:
         session = str(session_id or "")
         with _LOCK:
             turn = _TURNS.pop(session, None)
+            _CONTEXT.pop(session, None)
+            for child in [key for key, (parent, _) in _CHILDREN.items() if parent == session]:
+                _CHILDREN.pop(child)
         if session:
             record_path(session, turn["home"] if turn else _home()).unlink(missing_ok=True)
     except Exception:  # noqa: BLE001

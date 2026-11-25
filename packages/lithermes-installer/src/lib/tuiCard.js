@@ -7,6 +7,7 @@ const { sha256, writeFileAtomic } = require("./files");
 // <home>/lithermes/tui-card.json. A file whose bytes are not the recorded ones is the user's: it is
 // never replaced and never removed. Nothing is written through a symlink.
 const MODES = Object.freeze(["on", "still", "off"]);
+const CAPS = Object.freeze(["round", "square", "auto"]);
 const FILE = "lit-card.mjs";
 const widgetSource = path.resolve(__dirname, "../../assets/lithermes-plugin/tui-widgets", FILE);
 
@@ -19,15 +20,16 @@ const lstat = (file) => fs.lstatSync(file, { throwIfNoEntry: false });
 function readSettings(home) {
   const file = settingsPath(home);
   const stat = lstat(file);
-  if (!stat || !stat.isFile() || stat.size > 4096) return { mode: "on", sha256: null };
+  if (!stat || !stat.isFile() || stat.size > 4096) return { mode: "on", sha256: null, glyphs: null };
   try {
     const saved = JSON.parse(fs.readFileSync(file, "utf8"));
     return {
       mode: MODES.includes(saved?.mode) ? saved.mode : "on",
       sha256: /^[0-9a-f]{64}$/.test(saved?.sha256) ? saved.sha256 : null,
+      glyphs: saved?.glyphs === "round" || saved?.glyphs === "square" ? saved.glyphs : null,
     };
   } catch {
-    return { mode: "on", sha256: null };
+    return { mode: "on", sha256: null, glyphs: null };
   }
 }
 
@@ -35,7 +37,11 @@ function writeSettings(home, settings) {
   const file = settingsPath(home);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   if (!lstat(path.dirname(file)).isDirectory()) throw new Error(`${path.dirname(file)} is not a regular folder`);
-  const text = `${JSON.stringify({ mode: settings.mode, ...(settings.sha256 ? { sha256: settings.sha256 } : {}) })}\n`;
+  const text = `${JSON.stringify({
+    mode: settings.mode,
+    ...(settings.sha256 ? { sha256: settings.sha256 } : {}),
+    ...(settings.glyphs ? { glyphs: settings.glyphs } : {}),
+  })}\n`;
   const stat = lstat(file);
   if (stat && !stat.isFile()) throw new Error(`${file} is not a regular file`);
   if (stat && fs.readFileSync(file, "utf8") === text) return;
@@ -64,7 +70,7 @@ function removeWidget(home, settings) {
 // Brings the widget file in line with the saved mode (or `mode`, which is then saved).
 function syncTuiCard(home, mode = null) {
   const settings = readSettings(home);
-  const wanted = { mode: mode || settings.mode, sha256: null };
+  const wanted = { ...settings, mode: mode || settings.mode, sha256: null };
   const owner = ownership(home, settings);
   if (wanted.mode === "off") {
     removeWidget(home, settings);
@@ -96,8 +102,8 @@ function removeTuiCard(home) {
     if (fs.readdirSync(records).length === 0) fs.rmdirSync(records);
   }
   if (!lstat(settingsPath(home))?.isFile()) return;
-  if (settings.mode === "on") fs.unlinkSync(settingsPath(home));
-  else writeSettings(home, { mode: settings.mode, sha256: null });
+  if (settings.mode === "on" && !settings.glyphs) fs.unlinkSync(settingsPath(home));
+  else writeSettings(home, { ...settings, sha256: null });
 }
 
 const FOREIGN = (home) => `${widgetPath(home)} is not the file LitHermes installed, so it was left alone`;
@@ -115,6 +121,16 @@ function applyTuiCard(mode, home) {
   ].join("\n");
 }
 
+// Whether pills and gauges end in round caps, for the TUI card, the classic CLI card and the installer.
+function applyCaps(choice, home) {
+  writeSettings(home, { ...readSettings(home), glyphs: choice === "auto" ? null : choice });
+  return `Round caps: ${choice}. ${{
+    round: "Pills and gauges end in round caps everywhere; the terminal font needs U+E0B6 and U+E0B4.",
+    square: "Pills and gauges are square everywhere.",
+    auto: "The terminal and the installed fonts decide.",
+  }[choice]}`;
+}
+
 function tuiCardStatus(home) {
   const settings = readSettings(home);
   const owner = ownership(home, settings);
@@ -127,7 +143,9 @@ function tuiCardStatus(home) {
 }
 
 module.exports = {
+  CAPS,
   MODES,
+  applyCaps,
   applyTuiCard,
   readSettings,
   removeTuiCard,

@@ -14,12 +14,16 @@ function paint(enabled, rgb, text) {
 // The synthwave mark sized to the terminal, with the version centred under it.
 // A pipe, an agent's tool call or a CI log is not a terminal anyone looks at, so
 // it gets only the plain line and the version, never rows of art.
-function renderInstallBanner({ version = "current", color = false, env = process.env, stream = process.stdout } = {}) {
+// `over` is the width of the cards the mark stands over: it is centred there, at a size that leaves
+// the window room for the first card.
+function renderInstallBanner({ version = "current", color = false, env = process.env, stream = process.stdout, over = 0 } = {}) {
   const versionLine = `lithermes v${version}`;
   if (!(stream && stream.isTTY) || !mark.utf8Terminal(env)) return [synthwave.FALLBACK_LINE, versionLine].join("\n");
-  const cols = synthwave.terminalColumns({ stream, env });
+  const height = (over && stream.rows) || 60;
+  const cols = Math.min(synthwave.terminalColumns({ stream, env }), height >= 48 ? Infinity : height >= 34 ? 75 : 43);
   const rows = synthwave.synthwaveRows({ cols, mode: color ? mark.colorMode({ env, stream }) : "none" });
-  return [...rows, synthwave.centred(versionLine, synthwave.markWidth(cols))].join("\n");
+  const indent = over ? " ".repeat(Math.max(0, 1 + Math.floor((over - synthwave.markWidth(cols)) / 2))) : "";
+  return [...(over ? [""] : []), ...[...rows, synthwave.centred(versionLine, synthwave.markWidth(cols))].map((row) => indent + row)].join("\n");
 }
 
 function providerLabel(id) {
@@ -219,8 +223,8 @@ async function pickModelRoute({ ui, env = process.env, configPath, preset = mana
       { label: "Writes", value: `${configPath} (managed keys only)` },
       ...(warning ? [{ label: "Warning", value: warning, tone: "warn" }] : []),
     ],
-    button: "Continue",
-    stopNote: "(nothing written yet)",
+    word: "Continue",
+    stopNote: "nothing written yet",
   });
   return { confirmed: confirmed === true, route };
 }

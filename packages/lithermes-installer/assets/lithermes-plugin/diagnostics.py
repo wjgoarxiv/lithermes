@@ -42,6 +42,7 @@ HOOKS = (
     "post_tool_call",
     "transform_tool_result",
     "post_api_request",
+    "subagent_start",
     "subagent_stop",
     "transform_llm_output",
     "pre_verify",

@@ -1,0 +1,21 @@
+[
+  { "name": "nothing known", "round": false },
+  { "name": "the saved choice wins over the terminal", "env": { "TERM_PROGRAM": "ghostty" }, "choice": "square", "fonts": ["JetBrainsMonoNerdFont-Bold.ttf"], "round": false },
+  { "name": "the saved choice wins over SSH", "env": { "SSH_CONNECTION": "a 1 b 2" }, "choice": "round", "round": true },
+  { "name": "an unknown choice is auto", "choice": "maybe", "round": false },
+  { "name": "Windows Terminal", "env": { "WT_SESSION": "x" }, "round": true },
+  { "name": "VS Code", "env": { "TERM_PROGRAM": "vscode" }, "round": true },
+  { "name": "WezTerm", "env": { "TERM_PROGRAM": "WezTerm" }, "round": true },
+  { "name": "Ghostty", "env": { "TERM_PROGRAM": "ghostty" }, "round": true },
+  { "name": "kitty by TERM", "env": { "TERM": "xterm-kitty" }, "round": true },
+  { "name": "kitty by window", "env": { "KITTY_WINDOW_ID": "3" }, "round": true },
+  { "name": "Ghostty over SSH", "env": { "TERM_PROGRAM": "ghostty", "SSH_CONNECTION": "a 1 b 2" }, "round": true },
+  { "name": "another terminal", "env": { "TERM_PROGRAM": "Apple_Terminal" }, "round": false },
+  { "name": "a Nerd Font is installed", "fonts": ["JetBrainsMonoNerdFont-Regular.ttf"], "round": true },
+  { "name": "its short name", "fonts": ["CaskaydiaCoveNFM-Regular.otf"], "round": true },
+  { "name": "its spelled name, two folders down", "fonts": ["a/b/Hack Nerd Font Mono.ttc"], "round": true },
+  { "name": "the fonts here are not the ones over SSH", "env": { "SSH_CONNECTION": "a 1 b 2" }, "fonts": ["JetBrainsMonoNerdFont-Regular.ttf"], "round": false },
+  { "name": "an ordinary font", "fonts": ["Menlo.ttc", "Arial.ttf"], "round": false },
+  { "name": "a file that is no font", "fonts": ["JetBrainsMonoNerdFont-README.txt"], "round": false },
+  { "name": "a font deeper than the read goes", "fonts": ["a/b/c/d/e/HackNerdFont-Regular.ttf"], "round": false }
+]

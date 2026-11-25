@@ -1,11 +1,13 @@
 const path = require("node:path");
 const readline = require("node:readline");
+const { pathToFileURL } = require("node:url");
 const { installLitHermes, previewModelRoute, previewUninstall, uninstallLitHermes } = require("./lib/install");
 const { pickModelRoute, promptModelRouteSession, renderInstallBanner, routeFromConfig } = require("./lib/modelPrompt");
 const { checkLitHermes, doctorLitHermes } = require("./lib/check");
-const { cardTerminal, createCards } = require("./lib/cards");
-const { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner } = require("./lib/spinner");
-const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCard, pickAccent, promptAccent, resolveHome } = require("./lib/hud");
+const { cardTerminal, cardWidth, createCards } = require("./lib/cards");
+const { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner, stepTarget } = require("./lib/spinner");
+const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCaps, hudCard, pickAccent, promptAccent, resolveHome } = require("./lib/hud");
+const { readSettings, widgetSource } = require("./lib/tuiCard");
 const { supportsColor, findAccent, skinName } = require("./lib/skins");
 const {
   readConfig,
@@ -61,7 +63,7 @@ const COMMAND_SPECS = {
     flags: { yes: "", "dry-run": "", "rollback-patches": "", offline: "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH" },
   },
   hud: {
-    usage: "hud [<accent>|off|card [on|still|off]]",
+    usage: "hud [<accent>|off|card [on|still|off]|caps [round|square|auto]]",
     positionals: [0, 2],
     flags: { list: "", "dry-run": "", ...HOME },
     note: "(Hermes HUD skin accents and the TUI goal card)",
@@ -187,6 +189,7 @@ function printCommandBanner(command, flags, runtime = {}) {
   const version = require(path.join(__dirname, "..", "package.json")).version;
   output.write(`${renderInstallBanner({
     version, env, stream: output,
+    over: command === "install" && cardTerminal({ input: streams.stdin || process.stdin, output, env, flags }) ? cardWidth(output.columns || 80) : 0,
     color: !flags.yes && !flags["dry-run"] && supportsColor({ stream: output, env }),
   })}\n`);
 }
@@ -453,7 +456,7 @@ async function maybeOfferBell(flags, runtime = {}, { prompt = false, cards = nul
 
 // The cards for this run, or null where the plain prompts stay. The step pill counts the questions
 // the flags and the config leave open: five for the model route, then skin, reply style and bell.
-function installCards(flags, runtime = {}) {
+async function installCards(flags, runtime = {}) {
   const env = runtime.env || process.env;
   const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
   const input = streams.stdin || process.stdin;
@@ -465,22 +468,26 @@ function installCards(flags, runtime = {}) {
     !named("style") && !flags["no-style"],
     !flags.bell && !flags["no-bell"] && readBellOnCompleteConfig(readConfig(resolveHome(flags))) === null,
   ];
-  return createCards({ input, output, env, total: 5 + asks.filter(Boolean).length });
+  // Round or square is the TUI card's own answer, so every surface agrees; asked once for the run.
+  const { hasRoundCaps, isRich } = await import(pathToFileURL(widgetSource).href);
+  const caps = isRich(env) && hasRoundCaps(env, readSettings(resolveHome(flags)).glyphs || "auto");
+  return createCards({ input, output, env, caps, total: 5 + asks.filter(Boolean).length });
 }
 
 // The confirmed install with cards: the steps, the questions left, then one card with what was done.
 async function installWithCards(flags, runtime, cards) {
   const { version } = require(path.join(__dirname, "..", "package.json"));
-  const steps = cards.steps({ title: `Installing LitHermes ${version}`, names: INSTALL_STEPS });
+  const steps = cards.steps({ title: `Installing LitHermes ${version}`, names: INSTALL_STEPS, about: stepTarget });
   let result;
   try {
     result = installLitHermes({ ...flags, onProgress: steps.reach });
   } catch (error) {
     steps.fail();
     cards.summary({
-      title: "Install stopped",
+      title: "INSTALL STOPPED",
       bad: true,
       sections: [{ head: "LitHermes install failed", rows: [
+        ...(steps.stage() ? [{ label: "Stage", value: steps.stage(), tone: "bad" }] : []),
         { label: "Reason", value: error instanceof Error ? error.message : "Unexpected install error.", tone: "bad" },
         { label: "Safety", value: "No later install stages were run" },
         { label: "Next", value: "Resolve the reason above, then rerun `lithermes install --yes`" },
@@ -520,7 +527,7 @@ async function main(argv, runtime = {}) {
   }
   if (command === "hud") {
     const accent = positionals[1];
-    if (positionals[2] !== undefined && accent !== "card") throw new UsageError(`lithermes hud: unexpected argument '${positionals[2]}'.`);
+    if (positionals[2] !== undefined && accent !== "card" && accent !== "caps") throw new UsageError(`lithermes hud: unexpected argument '${positionals[2]}'.`);
     if (flags.list || !accent) {
       console.log(listHud({ color: supportsColor(), hermesHome: resolveHome(flags) }));
       return;
@@ -531,6 +538,7 @@ async function main(argv, runtime = {}) {
     }
     try {
       if (accent === "card") console.log(hudCard(positionals[2], flags));
+      else if (accent === "caps") console.log(hudCaps(positionals[2], flags));
       else console.log(flags["dry-run"] ? previewHud(accent, flags) : applyHud(accent, flags));
     } catch (error) {
       console.error(error.message);
@@ -563,7 +571,7 @@ async function main(argv, runtime = {}) {
     return;
   }
   if (command === "install") {
-    const cards = installCards(flags, runtime);
+    const cards = await installCards(flags, runtime);
     const prompted = await maybePromptModelRoute(flags, runtime, cards);
     if (prompted === "aborted") {
       console.log("Install aborted; nothing was written.");

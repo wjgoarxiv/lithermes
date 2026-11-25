@@ -21,6 +21,7 @@ export const MIN_COLS = 48;
 export const MIN_ROWS = 20;
 export const MAX_WIDTH = 100;
 export const SUN_W = 18;
+const IDLE_AFTER_MS = 10 * 60 * 1000; // At rest this long, the card says so.
 const IDLE_HIDE_MS = 30 * 60 * 1000; // A card nobody came back to leaves the dock.
 const WORK_STALE_MS = 30 * 60 * 1000; // A turn that stopped reporting no longer counts as working.
 const MAX_BYTES = 16 * 1024;
@@ -44,7 +45,7 @@ const STAGE_KEYS = ["plan", "runs", "review", "gate", "handoff"];
 
 // --- text -------------------------------------------------------------------------------------
 
-const WIDE = /[ᄀ-ᅟ⺀-〾ぁ-꓏가-힣豈-﫿︰-﹯＀-｠￠-￦\u{1f300}-\u{1faff}\u{20000}-\u{3fffd}]/u;
+const WIDE = /[⚡ᄀ-ᅟ⺀-〾ぁ-꓏가-힣豈-﫿︰-﹯＀-｠￠-￦\u{1f300}-\u{1faff}\u{20000}-\u{3fffd}]/u;
 export const textWidth = (text) => [...text].reduce((sum, ch) => sum + (WIDE.test(ch) ? 2 : 1), 0);
 
 // Stored text as one plain line: no control, format or combining characters (they have no width of
@@ -173,38 +174,18 @@ const pill = (text, stops, caps) => {
     : [{ text: " ", bg: at(0) }, ...body, { text: " ", bg: at(chars.length - 1) }];
 };
 
-// The stage map keeps as many stages as fit, always with the current one.
-const mapRow = (model, width, rich, caps) => {
-  const now = model.stages.findIndex((stage) => stage.state === "active");
-  const draw = (stages, rail) => stages.flatMap((stage, i) => {
-    const join = i === 0 ? [] : [{ text: rail ? (stage.state === "todo" ? " ── " : " ━━ ") : " ", fg: rich ? "#46505c" : undefined }];
-    if (stage.state === "active") return [...join, ...(rich ? pill(stage.key, [VIOLET, ACCENT], caps) : [{ text: `[${stage.key}]`, bold: true }])];
-    if (stage.state === "done") return [...join, { text: `${stage.key} ✓`, fg: rich ? mix("#ff6337", PINK, i / 5) : undefined }];
-    return [...join, { text: `${stage.key} ·`, fg: rich ? DIM : undefined }];
-  });
-  const size = (spans) => spans.reduce((sum, part) => sum + textWidth(part.text), 0);
-  for (const row of [draw(model.stages, true), draw(model.stages, false), draw(model.stages.filter((_, i) => i === now), false)]) {
-    if (size(row) <= width) return row;
-  }
-  return [];
+// The stage map of a plain card keeps as many stages as fit, always with the current one.
+const plainMap = (model, width) => {
+  const draw = (stages, rail) => stages.map((stage, i) => {
+    const join = i === 0 ? "" : rail ? (stage.state === "todo" ? " ── " : " ━━ ") : " ";
+    return join + (stage.state === "active" ? `[${stage.key}]` : `${stage.key} ${stage.state === "done" ? "✓" : "·"}`);
+  }).join("");
+  const active = model.stages.filter((stage) => stage.state === "active");
+  const text = [draw(model.stages, true), draw(model.stages, false), draw(active, false)].find((row) => textWidth(row) <= width) ?? "";
+  return text ? [{ text, bold: false }] : [];
 };
 
-const proofRow = (model, rich, caps) => {
-  const label = { text: "proof ", fg: rich ? DIM : undefined };
-  const count = { text: `${model.passed}/${model.total} criteria`, fg: rich ? (model.total > 0 && model.passed === model.total ? TONES.ok : WHITE) : undefined };
-  const lit = model.total > 0 ? Math.round((model.passed / model.total) * 8) : 0;
-  const tone = (i) => (i < lit ? mix(VIOLET, ACCENT, i / 7) : "#2a2340");
-  const bar = !rich
-    ? [{ text: `${"#".repeat(lit)}${"-".repeat(8 - lit)}` }]
-    : Array.from({ length: 8 }, (_, i) => (caps && (i === 0 || i === 7)
-      ? { text: i === 0 ? "" : "", fg: tone(i) }
-      : { text: " ", bg: tone(i) }));
-  const runs = model.runs.length === 0
-    ? [{ text: " · no signed runs yet", fg: rich ? DIM : undefined }]
-    : model.runs.map((run) => ({ text: ` ${run.text}`, fg: rich ? TONES[run.tone] : undefined }));
-  return [label, ...bar, { text: " " }, count, ...runs];
-};
-
+const size = (spans) => spans.reduce((sum, part) => sum + textWidth(part.text), 0);
 const fit = (spans, width) => {
   const cells = toCells(spans);
   if (cells.length > width) {
@@ -215,59 +196,215 @@ const fit = (spans, width) => {
   return cells;
 };
 
-// Six rows of spans, each exactly `width` cells. `t` is the motion's seconds or null at rest, `now`
-// the clock the running time is read from.
-export const cardRows = (model, { width, t = null, now = Date.now(), rich = true, caps = false }) => {
+// No colour: the same words in a plain frame, six rows.
+const plainRows = (model, { width, t, now }) => {
   const inner = width - 4;
-  const working = model.working;
-  // Without the timer a clock would stand at a false time, so it is left out.
-  const running = t !== null && model.since ? `${clock(now - model.since)}` : "";
-  const map = mapRow(model, inner - (running ? running.length + 2 : 0), rich, caps);
-  const mapCells = fit(map, inner);
-  [...running].forEach((ch, i) => { mapCells[inner - running.length + i] = { ch, fg: rich ? DIM : undefined }; });
+  const running = t !== null && model.since ? clock(now - model.since) : "";
+  const map = fit(plainMap(model, inner - (running ? running.length + 2 : 0)), inner);
+  [...running].forEach((ch, i) => { map[inner - running.length + i] = { ch }; });
   const reach = Math.min(TEXT_MAX, inner);
-  const line = (label, text) => fit([{ text: label, fg: rich ? DIM : undefined }, { text: clip(text, reach - label.length), fg: rich ? WHITE : undefined }], inner);
-  const body = [mapCells, line("goal  ", model.title), fit(proofRow(model, rich, caps), inner), line("next  ", model.next)];
-  // On a narrow card the sun stands against the right edge, and a long row keeps it away.
-  const edgeAt = inner - SUN_W - 2;
-  const at = edgeAt < TEXT_MAX + 2 ? edgeAt : Math.max(TEXT_MAX + 2, Math.min(edgeAt, Math.round(inner * 0.62)));
-  const sun = rich && !model.done && paintScene(body.slice(1), at, t);
+  const line = (label, text) => fit([{ text: label + clip(text, reach - label.length) }], inner);
+  const lit = model.total > 0 ? Math.round((model.passed / model.total) * 8) : 0;
+  const runs = model.runs.length ? model.runs.map((run) => ` ${run.text}`).join("") : " · no signed runs yet";
+  const proof = `proof ${"#".repeat(lit)}${"-".repeat(8 - lit)} ${model.passed}/${model.total} criteria${runs}`;
+  const frame = (bottom, left, right) => {
+    const cells = Array.from({ length: width }, () => ({ ch: "─" }));
+    cells[0].ch = bottom ? "╰" : "╭";
+    cells[width - 1].ch = bottom ? "╯" : "╮";
+    const put = (spans, from) => toCells([{ text: " " }, ...spans, { text: " " }]).forEach((cell, i) => { cells[from + i] = cell; });
+    put(left, 2);
+    if (right.length && 2 + size(left) + 2 + size(right) + 2 + 4 <= width) put(right, width - 4 - size(right));
+    return cells;
+  };
+  const state = model.done ? "DONE ✓" : model.working ? "WORK ●" : "YOUR TURN";
+  const side = (cells) => [{ ch: "│" }, { ch: " " }, ...cells, { ch: " " }, { ch: "│" }];
+  return [
+    frame(false, [{ text: "LIT", bold: true }, { text: " · goal", bold: true }], [{ text: state, bold: true }]),
+    ...[map, line("goal  ", model.title), fit([{ text: proof }], inner), line("next  ", model.next)].map(side),
+    frame(true, [{ text: model.gate ? "gate OPEN ✓" : "gate CLOSED", bold: true }], []),
+  ].map(toSpans);
+};
 
+const TRACK = "#2a2340";
+// A bar of `cells` cells with both ends inside it, so it is as wide round as square. `tone(i)` is null for the track.
+const bar = (cells, caps, tone) => Array.from({ length: cells }, (_, i) => {
+  const hue = tone(i) ?? TRACK;
+  return caps && (i === 0 || i === cells - 1) ? { text: i === 0 ? "\ue0b6" : "\ue0b4", fg: hue } : { text: " ", bg: hue };
+});
+const gauge = (part, cells, caps, stops) => {
+  const lit = part <= 0 ? 0 : Math.max(1, Math.round(Math.min(1, part) * cells));
+  return bar(cells, caps, (i) => (i < lit ? ramp(stops, i / (cells - 1)) : null));
+};
+// Work without a known end is a thin line, not a gauge: two lit cells walk along it while the card
+// moves. The glyph never changes, only its colour.
+const walk = (cells, t) => Array.from({ length: cells }, (_, i) => ({
+  text: "━", fg: t !== null && [0, 1].includes((i - Math.floor(t * 4) % cells + cells) % cells) ? TONES.ok : "#3a3354",
+}));
+
+const words = (text, fg, bold = false) => ({ text, fg, ...(bold ? { bold } : {}) });
+
+const FRAME = [PINK, VIOLET, ACCENT];
+// What the top edge says: one word and one mark, from the record alone. Third: the frame's own colours
+// where the state has some.
+const stateOf = (model, now) => {
+  const busy = model.lanes.filter((lane) => lane.state === "running").length;
+  const stage = model.stages.find((row) => row.state === "active")?.key ?? "work";
+  if (model.done) return ["DONE ✓", TONES.ok];
+  if (busy) return [`${busy} ${busy === 1 ? "LANE" : "LANES"} ●`, TONES.ok];
+  if (model.working) return [`${stage.toUpperCase()} ●`, stage === "review" ? VIOLET : ACCENT];
+  if (now - model.seen >= IDLE_AFTER_MS) return ["IDLE ○", DIM];
+  if (model.runs.at(-1)?.tone === "bad") return ["RUN FAILED ✗", TONES.bad, [TONES.bad, PINK]];
+  if (model.runs.some((run) => run.tone === "warn")) return ["STALE RUN ▲", TONES.warn, [TONES.warn, TONES.bad]];
+  if (model.passed === 0 && model.runs.length === 0) return ["READY ○", ACCENT];
+  return ["YOUR TURN ◆", TONES.warn, ["#ff8f3c", "#ffd24a"]];
+};
+
+const stageMap = (model, width, caps) => {
+  const draw = (stages, rail) => stages.flatMap((stage, i) => {
+    const walked = stage.state !== "todo";
+    const hue = mix("#ff6337", PINK, i / 5);
+    const join = i === 0 ? [] : [words(rail ? (walked ? " ━━ " : " ── ") : " ", walked ? hue : "#46505c")];
+    const name = stage.key.toUpperCase();
+    if (stage.state === "active") return [...join, ...pill(name, [VIOLET, ACCENT], caps)];
+    return [...join, words(`${name} ${walked ? "✓" : "·"}`, walked ? hue : DIM)];
+  });
+  const active = model.stages.filter((stage) => stage.state === "active");
+  return [draw(model.stages, true), draw(model.stages, false), draw(active, false)].find((row) => size(row) <= width) ?? [];
+};
+
+// Left and right parts of one row; the right part leaves first.
+const pair = (left, right, width) => {
+  if (!right.length || size(left) + 2 + size(right) > width) return fit(left, width);
+  return [...fit(left, width - size(right)), ...toCells(right)];
+};
+
+const laneRows = (model, reach, room, t, now, caps) => {
+  const { lanes } = model;
+  if (!lanes.length || room < 2) return [];
+  const ended = lanes.filter((lane) => lane.state !== "running").length;
+  const shown = lanes.length <= room - 1 ? lanes : lanes.slice(0, room - 2);
+  const barW = 6;
+  const nameW = Math.max(8, Math.min(28, reach - 35));
+  const out = [[
+    words("┬ ", DIM), words(String(lanes.length), WHITE, true), words(lanes.length === 1 ? " lane " : " lanes in parallel ", DIM),
+    ...gauge(ended / lanes.length, 8, caps, [TONES.ok, ACCENT]), words(" ", DIM), words(`${ended}/${lanes.length}`, WHITE, true), words(" done", DIM),
+  ]];
+  shown.forEach((lane, i) => {
+    const running = lane.state === "running";
+    const tone = running ? TONES.ok : lane.state === "ok" ? ACCENT : TONES.bad;
+    const last = i === shown.length - 1 && shown.length === lanes.length;
+    const name = clip(lane.name, nameW);
+    const time = running && t === null ? "" : ` ${clock((running ? now : lane.ended) - lane.since)}`;
+    out.push([
+      words(last ? "└─ " : "├─ ", DIM), words(running ? "● " : lane.state === "ok" ? "✓ " : "✗ ", tone),
+      words(name + " ".repeat(nameW - textWidth(name) + 1), WHITE, true),
+      ...(running ? walk(barW, t) : gauge(lane.state === "ok" ? 1 : 0, barW, caps, [TONES.ok, ACCENT])),
+      words(` ${running ? "running" : lane.state === "ok" ? "done" : "stopped"}`, tone), words(time, WHITE),
+      ...(lane.calls ? [words(" · ", DIM), words(String(lane.calls), WHITE), words(lane.calls === 1 ? " call" : " calls", DIM)] : []),
+    ]);
+  });
+  if (shown.length < lanes.length) out.push([words(`└─ +${lanes.length - shown.length} more`, DIM)]);
+  return out;
+};
+
+const skillChips = (model, reach, caps) => {
+  const draw = (mark) => {
+    const out = [words("skills ", DIM)];
+    let all = true;
+    for (const name of model.skills) {
+      const chip = [...(out.length > 1 ? [words(" ")] : []), ...pill(mark + name, [ACCENT, ACCENT, VIOLET], caps)];
+      all = size(out) + size(chip) <= reach;
+      if (!all) break;
+      out.push(...chip);
+    }
+    return { out: out.length > 1 ? out : [], all };
+  };
+  const marked = draw("⚡ ");
+  return marked.all ? marked.out : draw("").out;
+};
+
+// Full colour: the whole card. Between five and ten rows stand in the frame.
+const richRows = (model, { width, t, now, caps, rows }) => {
+  const inner = width - 4;
+  const edgeAt = inner - SUN_W - 2;
+  const at = inner < 90 ? edgeAt : Math.round(inner * 0.66);
+  const reach = at >= 50 ? at - 3 : inner;
+  const moving = t !== null;
+  const busy = model.lanes.filter((lane) => lane.state === "running").length;
+  const timer = moving && model.since ? clock(now - model.since) : "";
+  const mapRight = [
+    ...(busy ? [words("●".repeat(Math.min(busy, 4)), TONES.ok), words(` ${busy} ${busy === 1 ? "lane" : "lanes"}`, DIM)] : []),
+    ...(timer ? [words(busy ? ` ${timer}` : timer, DIM)] : []),
+  ];
+  const map = stageMap(model, inner - (mapRight.length ? size(mapRight) + 2 : 0), caps);
+  const tool = model.working && model.tool
+    ? [words(`${moving ? "|/-\\"[Math.floor(t * 4) % 4] : "·"} `, ACCENT), words(clip(model.tool.name, 24), WHITE, true),
+      ...(moving ? [words(" · ", DIM), words(clock(now - model.tool.since), DIM)] : [])]
+    : [];
+  const proven = model.total > 0 && model.passed === model.total;
+  const task = [
+    words("└ ", DIM), words("proof ", DIM), words(String(model.passed), proven ? TONES.ok : WHITE, true), words(`/${model.total} `, DIM),
+    ...gauge(model.total ? model.passed / model.total : 0, 8, caps, proven ? [TONES.ok, ACCENT] : [VIOLET, ACCENT]),
+  ];
+  const nextW = inner - size(task) - 10 - (tool.length ? size(tool) + 2 : 0);
+  if (model.next && nextW >= 12) task.push(words(" · ", DIM), words("next ▸ ", ACCENT), words(clip(model.next, nextW), WHITE));
+  const dot = model.done ? ["✓ ", TONES.ok] : model.working || busy ? ["● ", TONES.ok] : ["○ ", DIM];
+  const goal = [words(dot[0], dot[1]), words(clip(model.title, reach - 2), WHITE, true)];
+  const runs = [words("└ ", DIM), ...(model.runs.length ? [words("runs ", DIM)] : []), ...(model.runs.length
+    ? model.runs.flatMap((run, i) => [words(i ? " · " : "", DIM), words(run.text, TONES[run.tone])])
+    : [words("no signed runs yet", DIM)])];
+  const chips = skillChips(model, reach, caps);
+  const room = Math.max(0, Math.min(6, rows - 24));
+  const body = [pair(map, mapRight, inner), pair(task, tool, inner), fit(goal, inner), fit(runs, inner),
+    ...laneRows(model, reach, room, t, now, caps).map((row) => fit(row, inner)), fit(chips, inner)];
+  // The sun stands in the last three rows; a row that needs its place keeps it away.
+  const scene = body.slice(-3);
+  const sun = paintScene(scene, at, t);
+
+  const state = stateOf(model, now);
   const edge = (col, bottom) => {
-    if (!rich) return undefined;
     const i = Math.floor(col / 4) * 4;
-    let hue = ramp([PINK, VIOLET, ACCENT], i / width);
+    let hue = ramp(state[2] ?? FRAME, i / width);
     if (bottom && sun) {
       const dx = i - (at + 1.5 + SUN_W / 2);
       const near = Math.max(0, 1 - Math.abs(dx) / 26);
       const ring = 0.5 + 0.5 * Math.sin(Math.abs(dx) * 0.55 - (t ?? 0) * 2.6);
       hue = mix(hue, near > 0.6 ? "#ffd24a" : "#ff8f3c", Math.min(1, near * (0.45 + 0.85 * ring)));
     }
-    return working ? hue : mix(hue, FAINT, 0.45);
+    return model.working || busy || model.done || state[2] ? hue : mix(hue, FAINT, 0.45);
   };
   const frame = (bottom, left, right) => {
     const cells = Array.from({ length: width }, (_, col) => ({ ch: "─", fg: edge(col, bottom) }));
     cells[0].ch = bottom ? "╰" : "╭";
     cells[width - 1].ch = bottom ? "╯" : "╮";
-    const put = (spans, from) => toCells([{ text: " " }, ...spans, { text: " " }]).forEach((cell, i) => { cells[from + i] = cell; });
-    const size = (spans) => spans.reduce((sum, part) => sum + textWidth(part.text), 2);
+    const put = (spans, from) => toCells([words(" "), ...spans, words(" ")]).forEach((cell, i) => { cells[from + i] = cell; });
     if (left.length) put(left, 2);
-    if (right.length && 2 + size(left) + size(right) + 4 <= width) put(right, width - 2 - size(right));
+    if (right.length && size(left) + size(right) + 10 <= width) put(right, width - 4 - size(right));
     return cells;
   };
-  const brand = rich ? pill("🔥 LIT", BRAND, caps) : [{ text: "LIT", bold: true }];
-  const label = { text: " · goal", fg: rich ? ACCENT : undefined, bold: true };
-  const state = model.done ? ["DONE ✓", TONES.ok] : working ? ["WORK ●", ACCENT] : ["YOUR TURN", TONES.warn];
-  const gate = model.gate ? ["gate OPEN ✓", TONES.ok] : ["gate CLOSED", TONES.bad];
-  const side = (cells) => [
-    { ch: "│", fg: edge(0) }, { ch: " " }, ...cells, { ch: " " }, { ch: "│", fg: edge(width - 1) },
+  const route = model.route || "goal";
+  const heat = model.context === null ? null : model.context >= 85 ? TONES.bad : model.context >= 65 ? TONES.warn : ACCENT;
+  const parts = [
+    ...(heat ? [[words("ctx ", DIM), words(`${model.context}% `, heat, true), ...gauge(model.context / 100, 8, caps, heat === ACCENT ? [VIOLET, ACCENT] : [heat, heat])]] : []),
+    [words("gate ", DIM), words(model.gate ? "OPEN ✓" : "CLOSED", model.gate ? TONES.ok : TONES.bad, true)],
+    ...(model.branch ? [[words("⎇ ", DIM), words(clip(model.branch, 28), ACCENT)]] : []),
   ];
+  const foot = parts.reduce((out, part) => {
+    const next = out.length ? [...out, words(" · ", DIM), ...part] : part;
+    return size(next) + 8 <= width ? next : out;
+  }, []);
+  const side = (cells) => [{ ch: "│", fg: edge(0) }, { ch: " " }, ...cells, { ch: " " }, { ch: "│", fg: edge(width - 1) }];
   return [
-    frame(false, [...brand, label], [{ text: state[0], fg: rich ? state[1] : undefined, bold: true }]),
-    ...body.map(side),
-    frame(true, [{ text: gate[0], fg: rich ? gate[1] : undefined, bold: true }], []),
+    frame(false, [...pill("🔥 LIT", BRAND, caps), words(" · ", DIM), words(route, state[2] ? state[1] : ACCENT, true)], [words(state[0], state[1], true)]),
+    ...body.slice(0, -3).concat(scene).map(side),
+    frame(true, foot, []),
   ].map(toSpans);
 };
+
+// The card's rows of spans, each exactly `width` cells. `t` is the motion's seconds or null at rest,
+// `now` the clock the running times are read from, `rows` the terminal's height.
+export const cardRows = (model, { width, t = null, now = Date.now(), rich = true, caps = false, rows = 40 }) => (
+  rich ? richRows(model, { width, t, now, caps, rows }) : plainRows(model, { width, t, now }));
 
 // --- state ------------------------------------------------------------------------------------
 
@@ -289,6 +426,8 @@ const alive = (pid) => {
     return error.code === "EPERM";
   }
 };
+const LANE_STATES = ["running", "ok", "bad"];
+const named = (value) => (/^[\w.:/ -]{1,48}$/.test(String(value ?? "")) ? String(value) : "");
 const count = (value) => (Number.isInteger(value) && value >= 0 && value <= 999 ? value : 0);
 
 export const recordName = (session) => `${createHash("sha256").update(session, "utf8").digest("hex").slice(0, 32)}.json`;
@@ -313,6 +452,20 @@ export const toModel = (record, now = Date.now(), isAlive = alive) => {
     done: record.status === "complete",
     passed: count(record.passed), total: count(record.total), gate: record.gate === true,
     next: clip(plainText(record.next), 120),
+    route: named(record.route),
+    branch: clip(plainText(record.branch), 60),
+    context: typeof record.context === "number" && record.context >= 0 ? Math.min(100, Math.round(record.context)) : null,
+    tool: working && Array.isArray(record.tool) && named(record.tool[0]) && Number(record.tool[1]) > 0
+      ? { name: named(record.tool[0]), since: Number(record.tool[1]) * 1000 } : null,
+    skills: (Array.isArray(record.skills) ? record.skills : []).map(named).filter(Boolean).slice(0, 4),
+    lanes: (Array.isArray(record.lanes) ? record.lanes : []).slice(0, 12).flatMap((lane) => {
+      const name = clip(plainText(lane?.name), 40);
+      const live = now - seen < WORK_STALE_MS && isAlive(record.pid);
+      const state = LANE_STATES.includes(lane?.state) ? (lane.state === "running" && !live ? "bad" : lane.state) : null;
+      const since = Number(lane?.since) * 1000;
+      if (!name || !state || !(since > 0)) return [];
+      return [{ name, state, since, ended: Math.max(since, Number(lane.ended) * 1000 || since), calls: count(lane.calls) }];
+    }),
   };
 };
 
@@ -339,7 +492,48 @@ export const isRich = (env, textColor) => {
   if (saysLight(env)) return false;
   return !/^#[0-9a-f]{6}$/i.test(textColor ?? "") || brightness(textColor) >= 128;
 };
-export const hasRoundCaps = (env) => Boolean(env.WT_SESSION) || env.TERM_PROGRAM === "vscode";
+
+// Whether pills and gauges end in round caps (U+E0B6, U+E0B4). The saved choice wins, then a terminal
+// that draws the caps itself; over SSH the fonts here are not the ones on screen; else an icon font
+// installed on this machine, told by file names alone. `round_caps.py` answers the same for the
+// classic CLI, and one test runs both through one table.
+const ICON_FONT = /(?:nerd[ _-]?font|[a-z0-9]NF[MP]?[ _.-]).*\.(?:ttf|otf|ttc)$/i;
+const fontFolders = (env, platform) => {
+  const home = env.HOME || env.USERPROFILE || os.homedir();
+  if (platform === "darwin") return [path.join(home, "Library", "Fonts"), "/Library/Fonts"];
+  if (platform === "win32") {
+    return [env.LOCALAPPDATA && path.join(env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"), env.WINDIR && path.join(env.WINDIR, "Fonts")].filter(Boolean);
+  }
+  return [path.join(env.XDG_DATA_HOME || path.join(home, ".local", "share"), "fonts"), path.join(home, ".fonts"), "/usr/local/share/fonts", "/usr/share/fonts"];
+};
+export const hasIconFont = (env, platform = process.platform, limit = 4000) => {
+  let left = limit;
+  let level = fontFolders(env, platform);
+  for (let depth = 0; depth < 4 && level.length; depth += 1) {
+    const below = [];
+    for (const folder of level) {
+      let entries = [];
+      try {
+        entries = fs.readdirSync(folder, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries) {
+        if (left-- <= 0) return false;
+        if (entry.isDirectory()) below.push(path.join(folder, entry.name));
+        else if (entry.isFile() && ICON_FONT.test(entry.name)) return true;
+      }
+    }
+    level = below;
+  }
+  return false;
+};
+export const hasRoundCaps = (env, glyphs = "auto", iconFont = () => hasIconFont(env)) => {
+  if (glyphs === "round" || glyphs === "square") return glyphs === "round";
+  if (env.WT_SESSION || /^(?:vscode|wezterm|ghostty)$/i.test(env.TERM_PROGRAM ?? "")) return true;
+  if (env.TERM === "xterm-kitty" || env.KITTY_WINDOW_ID) return true;
+  return env.SSH_CONNECTION ? false : iconFont();
+};
 
 // --- the widget -------------------------------------------------------------------------------
 
@@ -355,17 +549,20 @@ export default function register(sdk) {
   const reopened = Boolean(globalThis[KEY]);
   const held = { watchers: [], settle: null, expire: null, catchUp: null };
 
+  // The font folders are read at most once in this process.
+  let font = null;
+  const iconFont = () => (font ??= hasIconFont(env));
   const load = () => {
     const session = active ? readJson(active)?.session_id : null;
-    const mode = readJson(path.join(state, "tui-card.json"))?.mode ?? "on";
-    if (typeof session !== "string" || !session || mode === "off") return { model: null, still: false };
-    return { model: toModel(readJson(path.join(records, recordName(session)))), still: mode === "still" };
+    const { mode = "on", glyphs } = readJson(path.join(state, "tui-card.json")) ?? {};
+    if (typeof session !== "string" || !session || mode === "off") return { model: null, still: false, caps: false };
+    return { model: toModel(readJson(path.join(records, recordName(session)))), still: mode === "still", caps: hasRoundCaps(env, glyphs, iconFont) };
   };
 
-  function Card({ model, still, width, rich, caps }) {
+  function Card({ model, still, width, rich, caps, rows }) {
     const [, setTick] = React.useState(0);
     const started = React.useRef(0);
-    const moving = model.working && !still && rich;
+    const moving = (model.working || model.lanes.some((lane) => lane.state === "running")) && !still && rich;
     React.useEffect(() => {
       if (!moving) return undefined;
       started.current = Date.now();
@@ -381,7 +578,7 @@ export default function register(sdk) {
     }, [moving, model.pid]);
     const t = moving && started.current ? (Date.now() - started.current) / 1000 : null;
     return h(Box, { flexDirection: "column", width },
-      ...cardRows(model, { width, t, rich, caps }).map((row, i) => h(Text, { key: i, wrap: "truncate-end" },
+      ...cardRows(model, { width, t, rich, caps, rows }).map((row, i) => h(Text, { key: i, wrap: "truncate-end" },
         ...row.map(({ text, fg, bg, bold }, j) => h(Text, {
           key: j, ...(fg ? { color: fg } : {}), ...(bg ? { backgroundColor: bg } : {}), ...(bold ? { bold: true } : {}),
         }, text)))));
@@ -395,9 +592,9 @@ export default function register(sdk) {
     usage: "usage: /lit-card",
     init: load,
     reduce: (current, { ch, key }) => (key.escape || ch === "q" ? null : current),
-    render({ state: { model, still }, cols, rows, t }) {
+    render({ state: { model, still, caps }, cols, rows, t }) {
       if (!model || cols < MIN_COLS || rows < MIN_ROWS) return null;
-      return h(Card, { model, still, width: Math.min(MAX_WIDTH, cols - 4), rich: isRich(env, t?.color?.text), caps: hasRoundCaps(env) });
+      return h(Card, { model, still, width: Math.min(MAX_WIDTH, cols - 4), rich: isRich(env, t?.color?.text), caps, rows });
     },
   });
 
@@ -405,7 +602,8 @@ export default function register(sdk) {
     const next = load();
     clearTimeout(held.expire);
     if (next.model && !next.model.working) {
-      held.expire = setTimeout(refresh, Math.max(1000, next.model.seen + IDLE_HIDE_MS - Date.now() + 1000));
+      const rest = Date.now() - next.model.seen;
+      held.expire = setTimeout(refresh, Math.max(1000, (rest < IDLE_AFTER_MS ? IDLE_AFTER_MS : IDLE_HIDE_MS) - rest + 1000));
       held.expire.unref?.();
     }
     updateWidget(app, () => next);

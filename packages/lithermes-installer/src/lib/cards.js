@@ -8,11 +8,14 @@ const { colorMode, utf8Terminal } = require("./litMark");
 // prompts and receipt. A card is redrawn in place, never wider or taller than the window, and an
 // answered one folds to a single line.
 const MIN_COLS = 40;
-const MIN_ROWS = 14;
+const MIN_ROWS = 12;
 const MAX_WIDTH = 100;
 const LIST_ROWS = 14;
 const SETTLE_MS = 30;
 const DIGIT_MS = 1000;
+const VALUE_AT = 24; // the column every value starts at: answers, steps, the closing card
+const CAP_LEFT = "\ue0b6";
+const CAP_RIGHT = "\ue0b4";
 
 // The bright half of a 16-colour terminal, for an ink that names no slot of its own.
 const BRIGHT = [[255, 85, 85], [85, 255, 85], [255, 255, 85], [85, 85, 255], [255, 85, 255], [85, 255, 255], [255, 255, 255]];
@@ -42,6 +45,8 @@ const PLAIN = Object.freeze({
   updown: "Up Down", leftright: "Left Right", more: ["^", "v"], box: "+-+|++", held: "#=####", swatch: "##",
 });
 const SPELLED = { "—": "-", "·": "-", "…": "...", "→": "->", "한국어": "Korean" };
+
+const cardWidth = (cols) => Math.max(24, Math.min(cols - 2, MAX_WIDTH));
 
 /** Cards need two terminals, raw mode, room, and nobody who asked for plain output. */
 function cardTerminal({ input, output, env = process.env, flags = {} }) {
@@ -127,11 +132,13 @@ function code(color, layer, depth) {
 /**
  * `total` is how many questions this run will ask, for the step pill. `proc` and `settleMs` exist
  * for tests. A question returns null when the input ends (Ctrl+D, a closed terminal), as the plain
- * prompts do; Ctrl+C interrupts the process unless the question says it only skips.
+ * prompts do; Ctrl+C interrupts the process unless the question says it only skips. `caps` asks for
+ * the round form, decided once for the run; without truecolor or UTF-8 every card is square.
  */
-function createCards({ input, output, env = process.env, total = 1, proc = process, settleMs = SETTLE_MS, now = Date.now }) {
+function createCards({ input, output, env = process.env, total = 1, caps = false, proc = process, settleMs = SETTLE_MS, now = Date.now }) {
   const depth = colorDepth(env, output);
   const ascii = !utf8Terminal(env);
+  const round = caps && depth === "truecolor" && !ascii;
   const g = ascii ? PLAIN : PRETTY;
   let edge = AMBER;
   let asked = 0;
@@ -162,12 +169,16 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     return out;
   }
   const onPaper = (stops) => (text) => shade(text, stops, (bg) => ({ fg: NIGHT, bg, bold: true }));
-  const pill = (text) => (depth === "none" ? `[${text}]` : onPaper([ORANGE, PINK])(` ${text} `));
+  // Text on a filled gradient; the round caps stand where the square form has its padding.
+  const filled = (text, stops) => (round
+    ? style(CAP_LEFT, { fg: stops[0] }) + onPaper(stops)(text) + style(CAP_RIGHT, { fg: stops[stops.length - 1] })
+    : onPaper(stops)(` ${text} `));
+  const pill = (text) => (depth === "none" ? `[${text}]` : filled(text, [ORANGE, PINK]));
 
   // ── layout ───────────────────────────────────────────────────────────────
   const cols = () => output.columns || 80;
   const lines = () => output.rows || 24;
-  const width = () => Math.max(24, Math.min(cols() - 2, MAX_WIDTH));
+  const width = () => cardWidth(cols());
   const inner = () => width() - 4;
 
   function frame(tag, title, body, stops = [PINK, VIOLET, edge]) {
@@ -175,11 +186,12 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     const [tl, tr, bl, br] = g.corners;
     const line = (text, from) => shade(text, stops, (fg) => ({ fg }), from, wide);
     const badge = pill(tag);
-    const inEdge = cells(badge) + cells(say(title)) + 8 <= wide;
-    const used = 2 + cells(badge) + (inEdge ? cells(say(title)) + 2 : 0);
+    const inEdge = cells(badge) + cells(say(title)) + 9 <= wide;
+    const named = ` ${badge} ${inEdge ? `${quiet(g.dot)} ${bold(title)} ` : ""}`;
+    const used = 2 + cells(named);
     const rows = [...(inEdge ? [] : wrap(say(title), inner()).map(bold)), ...body];
     return [
-      line(tl + g.across, 0) + badge + (inEdge ? ` ${bold(title)} ` : "") + line(g.across.repeat(wide - used - 1) + tr, used),
+      line(tl + g.across, 0) + named + line(g.across.repeat(wide - used - 1) + tr, used),
       ...rows.map((row) => `${line(g.side, 0)} ${pad(row, wide - 4)} ${line(g.side, wide - 1)}`),
       line(bl + g.across.repeat(wide - 2) + br, 0),
     ].map((row) => ` ${row}`);
@@ -191,7 +203,7 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     const join = (gap) => groups.flatMap((rows, i) => (i && gap ? ["", ...rows] : rows));
     const layouts = [
       () => ["", ...frame(tag, title, ["", ...join(true)], stops)],
-      () => ["", ...frame(tag, title, join(true), stops)],
+      () => frame(tag, title, ["", ...join(true)], stops),
       () => frame(tag, title, join(false), stops),
     ];
     for (const layout of layouts) {
@@ -214,7 +226,7 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
 
   function folded(mark, color, title, value) {
     const lead = ` ${style(mark, { fg: color, bold: true })} `;
-    const name = pad(say(title), Math.max(22, cells(say(title)) + 2));
+    const name = `${pad(say(title), VALUE_AT - cells(lead) - 1)} `;
     if (cells(lead + name + say(value)) < cols()) return lead + name + bold(value);
     const room = cols() - cells(lead) - 1;
     const rows = cells(`${title} ${say(value)}`) <= room ? [`${say(title)} ${bold(value)}`] : [say(title), ...wrap(say(value), room).map(bold)];
@@ -239,8 +251,10 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     shown = [];
     draw(rows);
   }
+  // The first folded row keeps the blank row its card stood under; the rest follow without one.
+  let folds = 0;
   function replace(row) {
-    output.write(`${up(shown.length)}\r\x1b[J${row}\r\n`);
+    output.write(`${up(shown.length)}\r\x1b[J${folds++ ? "" : "\r\n"}${row}\r\n`);
     shown = [];
   }
 
@@ -355,10 +369,10 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     let page = LIST_ROWS;
 
     function view() {
-      const room = inner();
+      const room = inner() - 2; // a gutter on either side, where the lit row has its caps
       const keyWidth = Math.max(...keys.map(cells));
       const swatch = ({ color }) => (depth === "none" || !choices.some((choice) => choice.color) ? ""
-        : `${color ? style(g.swatch, { fg: color }) : " ".repeat(g.swatch.length)} `);
+        : `${color ? style(round ? CAP_LEFT + CAP_RIGHT : g.swatch, { fg: color }) : " ".repeat(g.swatch.length)} `);
       const lead = 2 + keyWidth + 1;
       const labelRoom = room - lead - cells(swatch(choices[0])) - 3;
       const clipped = choices.some(({ label }) => cells(say(label)) > labelRoom);
@@ -373,15 +387,18 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
         const detail = !inline || !detailWidth ? "" : `  ${pad(on ? say(choice.detail || "") : quiet(choice.detail || ""), detailWidth)}`;
         const mark = i === start ? `  ${style(markText, on ? { bold: true } : { fg: PINK, bold: true })}` : "";
         const row = `${on ? g.at : " "} ${keys[i].padStart(keyWidth)} ${pad(labels[i], labelWidth)}${detail}${mark}`;
-        if (!on || depth === "none") return row;
+        if (!on || depth === "none") return ` ${row}`;
         const bar = `\x1b[${code(IVORY, 38, depth)};${code(ROW, 48, depth)}m`;
-        return `${bar}${pad(row, room).replace(/\x1b\[0m/g, `\x1b[0m${bar}`)}\x1b[0m`;
+        const lit = `${bar}${pad(row, room).replace(/\x1b\[0m/g, `\x1b[0m${bar}`)}`;
+        return round
+          ? `${style(CAP_LEFT, { fg: ROW })}${lit}\x1b[0m${style(CAP_RIGHT, { fg: ROW })}`
+          : `${bar} ${lit} \x1b[0m`;
       });
-      const noteRows = wrap(say(note), room);
+      const noteRows = wrap(say(note), inner());
       // Where a detail has no room beside its row, the highlighted one is spelled out under the list.
       const under = inline ? [] : choices.map(({ label, detail = "" }) => {
         const text = clipped ? `${label} ${detail}` : detail;
-        return text ? wrap(say(text), room) : [];
+        return text ? wrap(say(text), inner()) : [];
       });
       const underHeight = Math.max(0, ...under.map((rowsOf) => rowsOf.length));
       const detailRows = inline || !underHeight ? [] : [...under[at], ...Array(underHeight - under[at].length).fill("")].map(quiet);
@@ -428,25 +445,28 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     return index;
   }
 
+  // One button of three rows, or of one. The lit one is a filled chip in a gradient outline.
+  function button(label, on, tall) {
+    const size = cells(label) + 4;
+    const chip = on && depth !== "none" ? filled(label, [PINK, VIOLET]) : ` ${label} `;
+    if (!tall) return [on && depth === "none" ? `[${label}]` : on ? chip : quiet(chip)];
+    const [tl, across, tr, side, bl, br] = on && (depth === "none" || ascii) ? g.held : g.box;
+    const outline = [tl + across.repeat(size) + tr, side, bl + across.repeat(size) + br];
+    const trim = (text, from = 0) => (!on ? quiet(text) : depth === "none" ? bold(text) : shade(text, [PINK, VIOLET], (fg) => ({ fg }), from, size + 2));
+    return [trim(outline[0]), `${trim(side)} ${chip} ${trim(side, size + 1)}`, trim(outline[2])];
+  }
+  const compact = () => inner() < 44;
+  const faceOf = (word, on) => pad(`${on ? g.at : " "} ${word}`, compact() ? 13 : 15);
+
   /** Yes or no on two buttons. `start` is the default, and says so on its button and in the title. */
   async function confirm({ title, note, start = false }) {
     const tag = nextTag();
     let yes = start;
 
     function buttons(tall) {
-      const names = [[true, "Yes"], [false, "No"]].map(([value, word]) => [value, `${word}${value === start ? " (default)" : ""}`]);
-      const size = Math.max(...names.map(([, word]) => cells(word))) + 2;
-      const faces = names.map(([value, word]) => {
-        const on = value === yes;
-        const text = pad(`${on ? g.at : " "} ${word}`, size);
-        if (!tall) return [on && depth !== "none" ? onPaper([PINK, VIOLET])(` ${text} `) : on ? `[${text}]` : ` ${quiet(text)} `];
-        if (on && depth !== "none") {
-          const line = (ch) => shade(ch.repeat(size + 4), [PINK, VIOLET], (fg) => ({ fg }));
-          return [line("▄"), onPaper([PINK, VIOLET])(`  ${text}  `), line("▀")];
-        }
-        const [tl, across, tr, side, bl, br] = on ? g.held : g.box;
-        const trim = on ? bold : quiet;
-        return [trim(tl + across.repeat(size + 2) + tr), `${trim(side)} ${text} ${trim(side)}`, trim(bl + across.repeat(size + 2) + br)];
+      const faces = [[true, "Yes"], [false, "No"]].map(([value, word]) => {
+        const marked = value === start ? (compact() ? " default" : " (default)") : "";
+        return button(faceOf(`${word}${marked}`, value === yes), value === yes, tall);
       });
       return faces[0].map((left, i) => `${left}  ${faces[1][i]}`);
     }
@@ -473,51 +493,67 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     });
   }
 
-  // Rows of { label, value, tone }: tone "good", "warn", "bad" or "note". A value wraps, it is never cut.
-  const widest = (rows) => Math.max(...rows.map(({ label }) => cells(label)));
-  function table(rows, widestLabel = widest(rows)) {
+  // Rows of { label, value, tone }: tone "good", "warn", "bad" or "note". A value wraps, it is never
+  // cut; a long label pushes its own value right.
+  function table(rows) {
     const room = inner();
     const marks = { good: [g.done, GOOD], warn: [g.warn, WARN], bad: [g.stop, BAD], note: [g.dot, VIOLET] };
     const gutter = cells(g.done) + 1;
-    const labelWidth = widestLabel + 2;
-    const stacked = room - gutter - labelWidth < 30;
+    const stacked = room < 56;
     return rows.flatMap(({ label, value, tone = "note" }) => {
       const [sign, color] = marks[tone];
       const loud = tone === "warn" || tone === "bad" ? (row) => style(row, { bold: true }) : (row) => row;
       const lead = label ? pad(style(sign, { fg: color, bold: true }), gutter) : " ".repeat(gutter);
-      const text = wrap(say(atHome(value)), room - gutter - (stacked ? 0 : labelWidth)).map(loud);
+      const at = stacked ? gutter : Math.max(VALUE_AT - 3, gutter + cells(say(label)) + 1);
+      const text = wrap(say(atHome(value)), room - at).map(loud);
       if (stacked) return [...(label ? [lead + bold(label)] : []), ...text.map((row) => " ".repeat(gutter) + row)];
-      return text.map((row, i) => (i ? " ".repeat(gutter + labelWidth) + row : lead + pad(bold(label), labelWidth) + row));
+      return text.map((row, i) => (i ? " ".repeat(at) + row : pad(lead + bold(label), at) + row));
     });
   }
 
   /** A last look before anything is written; only Enter goes on. Returns true, or null on Ctrl+D. */
-  function review({ title, note, rows, button, stopNote }) {
+  function review({ title, note, rows, word, stopNote }) {
     const tag = nextTag();
-    const fits = () => spaced(tag, title, [wrap(say(note), inner()), table(rows), [""], hints([stopNote, ""])]).length < lines();
+    const hintRows = () => hints([`Enter = ${word}`, `Ctrl+C stop, ${stopNote}`]);
+    const go = (tall) => button(faceOf(word, true), true, tall);
+    const layout = (tall, shownRows) => spaced(tag, title, [wrap(say(note), inner()), shownRows, go(tall), hintRows()]);
+    const fits = () => layout(false, table(rows)).length < lines();
     // Every row has to be readable before the answer: what a short window cannot hold is printed above the card.
     const above = !fits();
     if (above) output.write(`\n${frame("LIT", title, table(rows)).join("\n")}\n`);
-    const go = depth === "none" ? `[${g.at} ${button}]` : onPaper([PINK, VIOLET])(`  ${g.at} ${button}  `);
     return ask({
       title,
       left: "not confirmed",
       fold: () => "confirmed",
       key: ({ enter }) => (enter ? { value: true } : null),
-      view: () => spaced(tag, title, [wrap(say(note), inner()), above ? [] : table(rows), [go], hints([`Enter ${button.toLowerCase()}`, `Ctrl+C stop ${stopNote}`])]),
+      view() {
+        const shownRows = above ? [] : table(rows);
+        const roomy = layout(true, shownRows);
+        return cells(go(true)[0]) <= inner() && roomy.length < lines() ? roomy : layout(false, shownRows);
+      },
     });
   }
 
-  /** Install steps on one card. The work is synchronous, so the cursor and Ctrl+C stay the terminal's. */
-  function steps({ title, names: known }) {
+  /**
+   * Install steps on one card; `about(name)` is the step's own text, shown where every row has room.
+   * The work is synchronous, so the cursor and Ctrl+C stay the terminal's.
+   */
+  function steps({ title, names: known, about = () => "" }) {
     const names = [...known];
     let at = -1;
     let failed = false;
-    const view = () => ["", ...frame("LIT", title, names.map((name, i) => {
-      const [sign, color] = i < at ? [g.done, GOOD] : i > at ? [g.dot, VIOLET] : failed ? [g.stop, BAD] : [g.run, edge];
-      const mark = pad(style(sign, { fg: color, bold: i <= at }), cells(g.done));
-      return `${mark} ${i === at ? bold(name) : i < at ? say(name) : quiet(name)}`;
-    }), failed ? [BAD, BAD] : undefined)].slice(0, lines() - 1);
+    const view = () => {
+      const gutter = cells(g.done) + 1;
+      const nameWidth = Math.max(VALUE_AT - 3 - gutter, Math.max(...names.map(cells)) + 2);
+      const rows = names.map((name, i) => {
+        const [sign, color] = i < at ? [g.done, GOOD] : i > at ? [g.dot, VIOLET] : failed ? [g.stop, BAD] : [g.run, edge];
+        const mark = pad(style(sign, { fg: color, bold: i <= at }), gutter);
+        const text = say(about(name));
+        const beside = text && gutter + nameWidth + cells(text) <= inner() ? quiet(text) : "";
+        return mark + (beside ? pad(i > at ? quiet(name) : bold(name), nameWidth) + beside : i > at ? quiet(name) : bold(name));
+      });
+      return ["", ...frame("LIT", title, ["", ...rows], failed ? [BAD, BAD] : undefined)].slice(0, lines() - 1);
+    };
     draw(view());
     return {
       reach(name) {
@@ -525,16 +561,16 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
         at = names.indexOf(name);
         draw(view());
       },
-      finish: () => replace(folded(g.done, GOOD, "Install steps", `${names.length} of ${names.length} done`)),
+      stage: () => names[at] || "",
+      finish: () => replace(folded(g.done, GOOD, "Install steps", `${names.length} of ${names.length} checked`)),
       fail() { failed = true; draw(view()); shown = []; },
     };
   }
 
   /** The closing card: sections of { head, rows }. */
   function summary({ title, sections, bad = false }) {
-    const filled = sections.filter(({ rows }) => rows.length);
-    const labels = widest(filled.flatMap(({ rows }) => rows));
-    const body = filled.flatMap(({ head, rows }) => ["", style(head, { fg: PINK, bold: true }), ...table(rows, labels)]);
+    const full = sections.filter(({ rows }) => rows.length);
+    const body = full.flatMap(({ head, rows }) => ["", style(head, { fg: PINK, bold: true }), ...table(rows)]);
     output.write(`\n${frame("LIT", title, body, bad ? [BAD, BAD] : undefined).join("\n")}\n`);
   }
 
@@ -543,7 +579,7 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
     const rows = [];
     let prose = [];
     const flush = () => {
-      if (prose.length) rows.push(...wrap(say(prose.join(" ")), Math.min(cols() - 4, MAX_WIDTH)).map((row) => `   ${row}`));
+      if (prose.length) rows.push(...wrap(say(prose.join(" ")), width() - 2).map((row) => `   ${row}`));
       prose = [];
     };
     for (const line of text.split("\n").filter(Boolean)) {
@@ -559,10 +595,10 @@ function createCards({ input, output, env = process.env, total = 1, proc = proce
 
   return {
     pick, confirm, review, steps, summary,
-    note: (text) => output.write(`\n${wrap(say(atHome(text)), cols() - 2).map((row) => ` ${quiet(row)}`).join("\n")}\n\n`),
+    note: (text) => output.write(`\n${wrap(say(atHome(text)), width()).map((row) => ` ${quiet(row)}`).join("\n")}\n`),
     notice,
     onStop: (action) => { beforeStop = action; },
   };
 }
 
-module.exports = { cardTerminal, cells, createCards, ink, wrap };
+module.exports = { cardTerminal, cardWidth, cells, createCards, ink, wrap };
