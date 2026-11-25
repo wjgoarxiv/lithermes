@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.49] - 2026-11-25
+
 - The README cover is a new loop: a terminal in the sunset look with the goal card, a pixel LITFAMILY wordmark and a striped half-sunk sun, in place of the seven robot panels. The still for reduced motion is its first frame; the packaged copies match.
 - The README demo is a new silent loop of one request: the goal question, the goal card in the dock, a red and a green signed run, the open gate and DONE, with a Korean copy for the Korean page; the Hermes screen around the card is redrawn.
 - `lithermes install` in a terminal asks its questions on cards: one framed card each, with a step pill (`LIT 1/8`), one sentence on what the answer does, the choices with the default marked, and the keys. Arrow keys or `j`/`k` move, the number keys jump as the old menu numbers did, `Enter` takes the highlight, and the yes/no question has two buttons that also answer to `y` and `n`. An answered card folds to one line, the install steps fold too, and one closing card lists what was installed, with warnings first. The questions, their order and their defaults are the same, Enter all the way writes the same config as before, and Ctrl+C and Ctrl+D do what they did: nothing is written before the model route is confirmed. The HUD card also lists the two TokyoNight skins, which the old prompt took only by name.

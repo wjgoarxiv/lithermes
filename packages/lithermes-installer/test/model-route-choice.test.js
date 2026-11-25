@@ -390,10 +390,10 @@ test("renderModelRouteCard prints one helper row without the provider when it ma
 
 test("renderInstallBanner uses the synthwave mark with the version under it", () => {
   const synthwave = require("../src/lib/synthwaveMark");
-  const banner = renderInstallBanner({ version: "1.0.48", color: false, env: { LANG: "en_US.UTF-8" }, stream: { isTTY: true } });
+  const banner = renderInstallBanner({ version: "1.0.49", color: false, env: { LANG: "en_US.UTF-8" }, stream: { isTTY: true } });
   const rows = banner.split("\n");
   assert.deepEqual(rows.slice(0, -1), synthwave.synthwaveRows({ cols: 80, mode: "none" }));
-  assert.equal(rows.at(-1).trim(), "lithermes v1.0.48");
+  assert.equal(rows.at(-1).trim(), "lithermes v1.0.49");
   assert.equal(rows.length, 25);
   assert.doesNotMatch(banner, /\x1b/);
   // Not a terminal: the plain line and the version only.

@@ -70,7 +70,7 @@ LitHermes는 세션마다 따라갈 순서를 주고 그 기록을 남기며, �
 
 ## 설치
 
-Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.48` 기준입니다. 아무 터미널에서나 실행하세요.
+Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 쓸 권한이 필요합니다. 이 문서는 `@litfamily/lithermes@1.0.49` 기준입니다. 아무 터미널에서나 실행하세요.
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style

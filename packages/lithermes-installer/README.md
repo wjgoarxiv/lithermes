@@ -1,14 +1,14 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: a terminal in a sunset look. LitHermes's goal card sits at the top with its stage map, goal, proof and next lines, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: a terminal in a sunset look. LitHermes's goal card sits at the top with its stage map, goal, proof and next lines, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom." /></picture></p>
 
 <p align="center">
-<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/badge-version.svg" alt="1.0.48" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#install"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/badge-version.svg" alt="1.0.49" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-book-open.svg" width="16" alt="" /> Guide</a> &nbsp;
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition film</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -19,7 +19,7 @@ LitHermes is an add-on for [Hermes Agent](https://github.com/NousResearch/hermes
 
 You ask Hermes for a feature. It writes the code and says it is finished, and a day later you find the tests never ran. You open a new session and explain the whole project again. With LitHermes you add `lit` to the same request. Hermes first writes down what "finished" means for this task, adds a test that fails, makes it pass, and ends by telling you what it checked and what it could not. When the session closes, it leaves a handoff note, and the next session in that project reads it and carries on.
 
-**[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.48/README_Ko-KR.md)
+**[README and docs on GitHub](https://github.com/wjgoarxiv/lithermes#readme)** · [한국어](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/README_Ko-KR.md)
 
 ## Install
 
