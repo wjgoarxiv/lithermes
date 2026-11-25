@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: a terminal in a sunset look. LitHermes's goal card sits at the top with its stage map, goal, proof and next lines, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="./docs/assets/cover-motion-still.webp" /><img src="./docs/assets/cover-motion.webp" width="100%" alt="LitFamily motion cover: a terminal in a sunset look. LitHermes's round-cornered goal card frames the screen with its stage map, proof gauge, goal, runs and gate, a pixel LITFAMILY wordmark and a striped half-sunk sun fill the middle, the row of seven product names lights LITHERMES, and a Hermes prompt types a request at the bottom." /></picture></p>
 
 # LitHermes
 

@@ -49,8 +49,8 @@ const KNOWN_PACK_BINARY_SHA256 = Object.freeze({
   "cover.png": "245c14ebc4fd93a088928bc8d8effe8a45c6c0de47dad60b749722746fef5bfe",
   // The published landing set is binary by design. Each exact path is pinned
   // to its reviewed bytes; no wildcard or extension-wide exemption is allowed.
-  "readme-assets/cover-motion.webp": "2b9867e5e6bf3bee86aec13084ee4315cc74b7e1d3acc3703d648ef2740450e1",
-  "readme-assets/cover-motion-still.webp": "344d405c235a1917a8e292a453487f862b20576eaa798de2fef7af1dbfeae1e8",
+  "readme-assets/cover-motion.webp": "eb0cdc8cffae041ca4c74b7d0cd64b64c6d9c9373849107f13050fb0da6a6d68",
+  "readme-assets/cover-motion-still.webp": "ed8617ee25c6a497747ef1ab7458e0b2745824eb053cf48a8aaeb131a3b28ae9",
   "readme-assets/ignition-film.mp4": "b1579c89a677ab453765f77ae6361bd9730fabc4291a85071de7f373fc5ebfad",
   "readme-assets/lithermes-clay-icon.png": "8e665c88d29b597fd317cb8c8ec77d6f2205601f473a0d5f50374df224b3e98d",
   // Skill-table snapshots are exact, reviewed package bytes.

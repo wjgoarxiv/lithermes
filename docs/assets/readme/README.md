@@ -22,11 +22,11 @@ accompany the icons. These documentation assets are outside the installer packag
 
 The current landing pages open with one motion cover: a terminal in the sunset look with the
 LitHermes goal card, a pixel LITFAMILY wordmark and a striped half-sunk sun.
-`../cover-motion.webp` is the 960×640 looping animated WebP (1,246,508 bytes, SHA-256
-`2b9867e5e6bf3bee86aec13084ee4315cc74b7e1d3acc3703d648ef2740450e1`), and
+`../cover-motion.webp` is the 960×640 looping animated WebP (1,107,714 bytes, SHA-256
+`eb0cdc8cffae041ca4c74b7d0cd64b64c6d9c9373849107f13050fb0da6a6d68`), and
 `../cover-motion-still.webp` is its first frame, served when reduced motion is
-preferred (60,530 bytes, SHA-256
-`344d405c235a1917a8e292a453487f862b20576eaa798de2fef7af1dbfeae1e8`). The package copies
+preferred (63,996 bytes, SHA-256
+`ed8617ee25c6a497747ef1ab7458e0b2745824eb053cf48a8aaeb131a3b28ae9`). The package copies
 under `readme-assets/` are byte-identical.
 
 The static seven-machine armory WebP stays at `../cover.webp` (SHA-256

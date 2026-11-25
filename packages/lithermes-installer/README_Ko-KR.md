@@ -1,4 +1,4 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 노을빛 터미널 화면입니다. 위쪽에는 LitHermes의 목표 카드가 단계 지도, 목표, 증명, 다음 줄과 함께 있고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 노을빛 터미널 화면입니다. LitHermes의 모서리가 둥근 목표 카드가 단계 지도, 증명 게이지, 목표, 실행 기록, 게이트와 함께 화면을 두르고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다." /></picture></p>
 
 <p align="center">
 <a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/badge-version.svg" alt="1.0.49" /></a>
