@@ -12,7 +12,9 @@ You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-This one line fetches the installer, puts the plugin into your Hermes home and changes your Hermes configuration so the plugin loads. It is written to run without stopping for approval, which is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. `--no-style` skips the picker for how replies are written, which would otherwise still come up in a terminal. The Ignition skin installs either way. The bell Hermes can ring when a turn finishes stays off unless you add `--bell` or answer yes when an interactive install asks; a `display.bell_on_complete` value you already set is kept, and `--no-bell` skips the question. Nothing connects to Telegram during installation.
+This one line fetches the installer, puts the plugin into your Hermes home and changes your Hermes configuration so the plugin loads. It is written to run without stopping for approval, which is why `--yes` appears twice: the first lets npx run the package, and the second approves the configuration changes. With `--yes` nothing is asked, so the skin and the reply style you use now stay; `--hud <accent>` and `--style ID` set them, and `--no-style` says the same out loud for an older release that still asked. The skin files, Ignition among them, are installed either way. The bell Hermes can ring when a turn finishes stays off unless you add `--bell` or answer yes when an interactive install asks; a `display.bell_on_complete` value you already set is kept, and `--no-bell` skips the question. Nothing connects to Telegram during installation.
+
+Add `--round` for round ends on pills and gauges. If no icon font is on this machine, it adds one file, `SymbolsNerdFontMono-Regular.ttf` (Nerd Fonts 3.5.1, its licence beside it), to `~/Library/Fonts` on macOS or `${XDG_DATA_HOME:-~/.local/share}/fonts` on Linux, and never replaces a file that is there. Windows gets no font, because Windows Terminal and VS Code draw the ends themselves. `--glyphs auto|round|square` saves how the ends are drawn. The last line of every install and every `doctor` run, `ROUND_ENDS:`, says how it stands: `shown`, `ready`, `check` (look at the pill and decide) or `square` with the reason and one fix. An installed icon font still needs a terminal that uses it: set the terminal's own font to a full Nerd Font, or add the symbols font as its fallback font (iTerm2's Non-ASCII Font, VS Code's `fontFamily`, kitty's `symbol_map`). Terminal.app has no fallback setting, so it needs a full Nerd Font as its font. `LITHERMES_HUD_GLYPHS` (`auto`, `round`, `nerd`, `square` or `basic`) decides for one shell and comes before the saved choice.
 
 To choose the models, the skin and the reply style yourself, leave out the `--yes` and `--no-style` after `install`. In a terminal the questions then come one card at a time, `Enter` takes the marked default, and nothing is written before you confirm the model route.
 
@@ -44,25 +46,44 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 
 ## Hand the install to a coding agent
 
-You can hand the install to a coding agent. With this prompt it checks your setup, waits for your yes, installs the official package, runs the offline check and leaves the restart to you:
+You can hand the install to a coding agent. With this prompt it checks your setup, shows you the preview, asks you the questions, waits for your yes, installs the official package, runs the offline check and leaves the restart to you. `lithermes install --agent` prints the same steps for the agent to read:
 
 ```text
 Install LitHermes, the lit workflow plugin for Hermes Agent, on this machine.
 
 1. Check first: Hermes Agent is installed (hermes --version), Node.js is 18 or later
-   (node --version), and I can write to my Hermes home (~/.hermes, or $HERMES_HOME if set).
-2. Show me your plan and the exact commands, and wait for my yes before you change
-   anything. You may preview the install first; it changes nothing:
-   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
-3. Use only the official npm package @litfamily/lithermes. Do not clone a repository,
-   copy plugin files by hand or install any other package. Install with:
-   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
-4. Verify with:
-   npx --package @litfamily/lithermes -- lithermes doctor --offline
-   Report the result to me, including every line that is not PASS. "loaded plugin:
-   PARTIAL" is expected offline, and model routes may show as unavailable.
-5. Do not restart Hermes or its gateway yourself. Remind me to restart the Hermes CLI
-   and any running Hermes gateway (Telegram, Discord and so on) so the plugin loads,
+   (node --version), and you can write to my Hermes home (~/.hermes, or $HERMES_HOME if set).
+2. Preview the install and show me what it would change. This changes nothing:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run --round
+3. Ask me, and offer "keep every default" first. The questions, the defaults and the flags for other answers:
+   - Agent provider: what Hermes has now; --provider ID
+   - Lead model: what Hermes has now; --model ID --effort LEVEL
+   - Helper provider: the lead's provider; --child-provider ID
+   - Helper model: what Hermes has now; --child-model ID --child-effort LEVEL
+   - Model route: go on with it; I can choose it later with hermes model
+   - HUD accent: the skin stays as it is; --hud <accent>
+   - Output style: the reply style stays as it is; --style ID
+   - Finish bell: no bell; --bell
+   A different route for a Hermes that already has one also needs --reconfigure-model.
+   Icon font: --round adds SymbolsNerdFontMono-Regular.ttf and its licence to ~/Library/Fonts on macOS or
+   ${XDG_DATA_HOME:-~/.local/share}/fonts on Linux, only when no icon font is here.
+   Visible surface: the goal card in hermes --tui and the HUD card of the classic CLI, both on by default.
+4. Wait for my yes before you change anything. Use only the official npm package @litfamily/lithermes: add no
+   other source, clone no repository, copy no plugin files by hand, and do not approve hooks, trust or sign-in for me.
+5. Install, with the flags for my other answers at the end:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --round
+   The same line updates it later and keeps my saved choices.
+6. Verify with:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes doctor --offline
+   Report every line that is not PASS. "loaded plugin: PARTIAL" is expected offline, and model routes may show
+   as unavailable. The install must print a line that starts with ROUND_ENDS:. If a step fails, show me the lines and stop.
+7. Show me this and ask if both ends are round:  LIT 
+   Both round: rerun the install line with --glyphs round. Boxes: rerun it with --glyphs square. To get round
+   ends later, I set the terminal's own font to a full Nerd Font, or add Symbols Nerd Font Mono as its fallback font
+   (iTerm2: Non-ASCII Font; VS Code: fontFamily; kitty: symbol_map). Terminal.app has no fallback setting, so it
+   needs a full Nerd Font as its font. Over SSH or from a phone: leave it. To undo a choice: --glyphs auto.
+8. Do not restart Hermes or its gateway yourself. Remind me to quit and start the Hermes CLI again and to restart any
+   running Hermes gateway (Telegram, Discord and so on) so the plugin loads, to sign in with hermes model if needed,
    and then to start a task with lit in front.
 ```
 
@@ -130,4 +151,4 @@ An import error in the Hermes log means the plugin failed to load. Resist instal
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-If the installer made compatibility edits to Hermes, add `--rollback-patches` to undo them. Uninstalling removes the TUI goal card and its records, and keeps the skin files, your `display.skin` choice and a saved `hud card off` or `still`. To go back to the Hermes default look, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; it clears the choice and keeps the skin files and your other settings.
+If the installer made compatibility edits to Hermes, add `--rollback-patches` to undo them. Uninstalling removes the TUI goal card and its records, and keeps the skin files, your `display.skin` choice and a saved `hud card off` or `still`. An icon font that `--round` added goes too, as long as its bytes are unchanged; other products may then draw square ends. To go back to the Hermes default look, run `npx --package @litfamily/lithermes -- lithermes hud off` in the same profile; it clears the choice and keeps the skin files and your other settings.

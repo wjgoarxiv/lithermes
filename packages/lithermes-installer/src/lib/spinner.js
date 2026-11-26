@@ -109,7 +109,8 @@ function receiptTone(label, value) {
 
 // The receipt and what the questions after it changed, as sections of the closing card. Every line of
 // the message is kept; warnings come first, and a line that is no result of the install is a setting.
-function receiptSections(message, answers = []) {
+// `ends` is the ROUND_ENDS line, the last row.
+function receiptSections(message, answers = [], ends = null) {
   const [title, ...details] = message.split("\n");
   const version = /^Installed (LitHermes \S+)$/.exec(title);
   const installed = [];
@@ -131,6 +132,10 @@ function receiptSections(message, answers = []) {
     const after = lines.filter((line) => line.startsWith("Restart "));
     lines.filter((line) => !after.includes(line)).forEach((value, i) => settings.push({ label: i ? "" : label, value, tone: "note" }));
     for (const value of after) next.push({ label, value });
+  }
+  if (ends) {
+    const [label, value] = [ends.slice(0, ends.indexOf(" ")), ends.slice(ends.indexOf(" ") + 1)];
+    next.push({ label, value, tone: /^(?:shown|ready)/.test(value) ? "good" : "note" });
   }
   return {
     title: version ? `${version[1]} is installed` : title || "LitHermes is installed",

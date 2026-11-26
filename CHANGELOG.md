@@ -6,6 +6,12 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+- `lithermes install --agent` (or `lithermes --agent`) prints an install guide for coding agents: preview, the questions with their flags, waiting for the user's yes, install, check and what only the user can do. It writes nothing. Help, runs without a person at the terminal and the first install card point to it, and the prompts in docs/install.md and docs/install.ko.md carry the same steps.
+- `install --round` adds the symbols-only Nerd Font to the user's font folder where no icon font is found (checked by SHA-256, never over an existing file, removed by uninstall while unchanged). `install --glyphs auto|round|square` saves the same choice as `hud caps`, and `LITHERMES_HUD_GLYPHS` comes before it on every surface.
+- Every install and `doctor` run ends with a `ROUND_ENDS:` line: `shown`, `ready`, `check` or `square` with the reason and one fix.
+- `install --yes` at a terminal no longer stops at the output style question and no longer picks the Ignition skin by itself; `--style` and `--hud` still set them.
+- The receipt asks for a restart of the gateway and of every open Hermes CLI.
+
 ## [1.0.49] - 2026-11-25
 
 - The goal card in `hermes --tui` is rebuilt: a framed card with the route and the state on its top edge, the stage map and the proof gauge, the goal, its signed runs, and context, gate and branch on the bottom edge. While a turn runs it also shows the running tool with its time, the skills the turn loaded and one row for each helper agent (a moving line while it runs, because its end is unknown; its time and tool calls when it stops). `YOUR TURN` has an amber frame, and `RUN FAILED`, `STALE RUN`, `READY` and `IDLE` have their own words. Every fact comes from Hermes hooks and the plugin's own records, and one that Hermes does not report is left out. The plain card (`NO_COLOR`, fewer colours, light background) reads as before.

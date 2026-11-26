@@ -382,15 +382,15 @@ test("install on a non-interactive stream does not prompt or set an accent", () 
   assert.doesNotMatch(cfg, /skin: lithermes-/);
 });
 
-test("fresh interactive install activates the Ignition default skin", async (t) => {
+test("--yes at a terminal leaves the HUD accent unset", async (t) => {
   const home = makeTempHome();
   t.after(() => fs.rmSync(home, { force: true, recursive: true }));
 
   await runInteractiveInstall(home);
 
   const cfg = fs.readFileSync(path.join(home, "config.yaml"), "utf8");
-  assert.equal(readDisplaySkinConfig(cfg), "lithermes-ignition");
-  assert.equal(fs.existsSync(path.join(home, "skins", "lithermes-ignition.yaml")), true);
+  assert.equal(readDisplaySkinConfig(cfg), null);
+  assert.equal(fs.existsSync(path.join(home, "skins", "lithermes-ignition.yaml")), true, "the presets are still installed");
 });
 
 test("fresh interactive install preserves an existing empty display.skin key", async (t) => {

@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-25T03:04:22.066Z",
+  "syncedAt": "2026-11-25T15:06:53.418Z",
   "source": "bundled-payload",
-  "sourceHash": "85bfa7dbe80f412b94a997277d25f3d0fada803695e27bd7af2787ca926197b4",
+  "sourceHash": "1a7ef76f8f9c8f2a0cd3aa2e819b50f1420608314ed70487667761ff76751ca1",
   "files": [
     {
       "path": "NOTICE.md",
@@ -261,7 +261,7 @@
     },
     {
       "path": "round_caps.py",
-      "sha256": "d89060bb166d38f94bfb55bc16e241ff656bc956526a3bd3c53bd908835721b2"
+      "sha256": "dcfa04d2d094c71247a1eff6e005d2f04a52da1733fd944c05634648a134b465"
     },
     {
       "path": "rules/__init__.py",
@@ -1641,7 +1641,7 @@
     },
     {
       "path": "tui-widgets/lit-card.mjs",
-      "sha256": "0b2c54bcee0a515f66cf821b5170a5bf3e1aa1447ed511d77471ca0360f17c31"
+      "sha256": "9374c708aba03d0dce7fd54ff8fbe84627a290ae0f0017f969e5fa00e1501300"
     },
     {
       "path": "tui_card.py",

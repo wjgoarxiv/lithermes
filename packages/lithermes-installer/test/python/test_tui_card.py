@@ -361,6 +361,15 @@ class RoundCaps(unittest.TestCase):
             Path(home, "fonts", "HackNerdFont-Regular.ttf").touch()
             self.assertFalse(rule.has_icon_font({"XDG_DATA_HOME": home, "HOME": home}, "linux", 0), "the read is bounded")
 
+    def test_folders_that_are_not_known_are_left_out(self):
+        rule = _load_plugin_package().hud_card.round_caps
+        self.assertEqual(rule.saved_choice(None), "auto")
+        self.assertEqual(rule._folders({}, "win32"), [])
+        self.assertEqual(len(rule._folders({"WINDIR": "W"}, "win32")), 1)
+        self.assertEqual(len(rule._folders({"LOCALAPPDATA": "L", "WINDIR": "W"}, "win32")), 2)
+        home = {"HOME": "/h", "XDG_DATA_HOME": "data"}
+        self.assertEqual(rule._folders(home, "linux")[0], os.path.join("/h", ".local", "share", "fonts"))
+
     def test_the_saved_choice_and_one_read_per_process(self):
         rule = _load_plugin_package().hud_card.round_caps
         with tempfile.TemporaryDirectory() as home:

@@ -77,7 +77,7 @@ Without `--yes`, an install in a terminal asks its questions on cards: the provi
 
 `--yes` shows `PREPARING INSTALL` and finishes with an `INSTALL RECEIPT` or an actionable `INSTALL STOPPED` panel. With `NO_COLOR` the cards stay, without colour. For plain numbered prompts, for example with a screen reader, add `--no-spinner`; a dumb terminal or a window under 40 columns or 12 rows gets them too. Redirected output, CI, dry-run, and `--no-spinner` remain plain and script-safe.
 
-Add `--no-style` to skip the style picker on a TTY as well.
+`--yes` asks nothing, also in a terminal: the reply style and the HUD accent stay as they are unless `--style ID` or `--hud <accent>` names one. `--round` and `--glyphs` set the [ends of pills and gauges](./install.md#install), and every install ends with a `ROUND_ENDS:` line.
 
 ## First use
 
@@ -236,10 +236,9 @@ Inside a Hermes session, `/skin lithermes-<accent>` switches immediately;
 restart Hermes after `lithermes hud <accent>` to apply it everywhere. The
 interactive installer also offers these skins on a card after a confirmed install.
 `lithermes hud` selects Ignition by name; its ten numbered choices are unchanged.
-On a fresh interactive color-capable `--yes` install, Ignition is selected only
-when `display.skin` is absent. Existing values, including an empty value, are
-preserved. `--no-hud` skips selection; `--no-style` only skips the reply-writing
-style picker. Neither the presence of a YAML file nor the configuration value
+An install with `--yes` picks no accent: `display.skin` changes only when you
+answer the card or name one with `--hud <accent>`. `--no-hud` takes the question
+off the cards; `--no-style` does the same for the reply-writing style. Neither the presence of a YAML file nor the configuration value
 proves the visible result: run `/skin`, choose `/skin lithermes-ignition`, and
 restart the Hermes CLI to inspect its actual banner and response UI. Gateway
 messages do not display the CLI Skin. See the native
@@ -288,11 +287,13 @@ a narrow card or beside a long line the sun stays away, so it never covers a
 word. A window under 48 columns or 20 rows shows no card.
 
 Pills and gauges have round ends when your terminal can draw them and square ends
-otherwise, never a mix. Your saved choice comes first. Without one, they are round
+otherwise, never a mix. `LITHERMES_HUD_GLYPHS` (`auto`, `round`, `nerd`, `square` or `basic`)
+comes first, then your saved choice. Without either, they are round
 in Windows Terminal, VS Code, WezTerm, Ghostty and kitty; square over SSH, where
 the fonts on this machine are not the ones on your screen; and elsewhere round
 when a Nerd Font is installed, which is told by file names alone. If the ends show
-as boxes, set `lithermes hud caps square`. The installer's cards and the classic
+as boxes, set `lithermes hud caps square`; `install --glyphs` saves the same
+choice, and `install --round` adds an icon font where there is none. The installer's cards and the classic
 HUD card follow the same rule.
 
 ```text

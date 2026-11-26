@@ -7,16 +7,17 @@ const { checkLitHermes, doctorLitHermes } = require("./lib/check");
 const { cardTerminal, cardWidth, createCards } = require("./lib/cards");
 const { INSTALL_STEPS, createSpinner, receiptSections, renderInstallReceipt, shouldUseSpinner, stepTarget } = require("./lib/spinner");
 const { listHud, applyHud, clearHud, previewClearHud, previewHud, hudCaps, hudCard, pickAccent, promptAccent, resolveHome } = require("./lib/hud");
-const { readSettings, widgetSource } = require("./lib/tuiCard");
-const { supportsColor, findAccent, skinName } = require("./lib/skins");
+const { CAPS, applyCaps, readSettings, widgetSource } = require("./lib/tuiCard");
+const { HELP_LINE, POINTER, agentGuide } = require("./lib/agentGuide");
+const { addIconFont, planIconFont } = require("./lib/iconFont");
+const { roundEndsLine, rules } = require("./lib/roundEnds");
+const { supportsColor, findAccent } = require("./lib/skins");
 const {
   readConfig,
   readBellOnCompleteConfig,
   setBellOnCompleteConfig,
-  clearDisplaySkinConfig,
   readDisplaySkinConfig,
   readOutputStyleConfig,
-  setDisplaySkinConfig,
   setOutputStyleConfig,
   writeConfig,
 } = require("./lib/config");
@@ -31,8 +32,10 @@ const {
 // Every option the CLI understands. A flag is a boolean switch unless it is listed in VALUE_FLAGS.
 const VALUE_FLAGS = new Set([
   "hermes-home", "hermes-repo", "provider", "model", "effort", "child-provider", "child-model", "child-effort",
-  "hud", "style", "installed-version", "from", "family", "older-than",
+  "hud", "style", "glyphs", "installed-version", "from", "family", "older-than",
 ]);
+
+const CAPS_USAGE = "auto|round|square";
 
 // What each command accepts, and how help shows it. A command refuses anything not listed here.
 const HOME = { "hermes-home": "PATH" };
@@ -44,6 +47,7 @@ const COMMAND_SPECS = {
       yes: "", "dry-run": "", offline: "", json: "", force: "", "reconfigure-model": "",
       provider: "ID", model: "ID", effort: "LEVEL", "child-provider": "ID", "child-model": "ID", "child-effort": "LEVEL",
       spinner: "", "no-spinner": "", hud: "<accent>", "no-hud": "", style: "ID", "no-style": "", bell: "", "no-bell": "",
+      round: "", glyphs: CAPS_USAGE, agent: "",
       "patch-installed-hermes": "", "no-patch-installed-hermes": "", "no-auto-update": "", ...HOME, "hermes-repo": "PATH",
     },
   },
@@ -142,6 +146,7 @@ function validateArgs({ command, flags, positionals, problems }) {
   for (const key of Object.keys(flags)) {
     if (!Object.prototype.hasOwnProperty.call(spec.flags, key)) issues.push(`unknown option '--${key}'`);
   }
+  if (flags.glyphs !== undefined && !CAPS.includes(flags.glyphs)) issues.push(`option '--glyphs' expects auto, round or square, not '${flags.glyphs}'`);
   const extra = positionals.slice(1);
   const [min, max] = spec.positionals;
   if (extra.length > max) issues.push(`unexpected argument '${extra[max]}'`);
@@ -151,7 +156,7 @@ function validateArgs({ command, flags, positionals, problems }) {
 }
 
 function helpText() {
-  const lines = ["lithermes commands:"];
+  const lines = [HELP_LINE, "", "lithermes commands:"];
   for (const spec of Object.values(COMMAND_SPECS)) {
     if (spec.hidden) continue;
     const options = Object.entries(spec.flags).map(([key, value]) => `[--${key}${value ? ` ${value}` : ""}]`);
@@ -186,12 +191,17 @@ function printCommandBanner(command, flags, runtime = {}) {
   const env = runtime.env || process.env;
   const streams = runtime.streams || { stdout: process.stdout };
   const output = streams.stdout || process.stdout;
+  const input = streams.stdin || process.stdin;
   const version = require(path.join(__dirname, "..", "package.json")).version;
-  output.write(`${renderInstallBanner({
+  const rows = renderInstallBanner({
     version, env, stream: output,
-    over: command === "install" && cardTerminal({ input: streams.stdin || process.stdin, output, env, flags }) ? cardWidth(output.columns || 80) : 0,
+    over: command === "install" && cardTerminal({ input, output, env, flags }) ? cardWidth(output.columns || 80) : 0,
     color: !flags.yes && !flags["dry-run"] && supportsColor({ stream: output, env }),
-  })}\n`);
+  }).split("\n");
+  const person = (runtime.isInteractive ?? Boolean(input.isTTY && output.isTTY)) && !("CI" in env);
+  // Under the first line of the plain banner; a drawn mark stays whole.
+  if (!person && (command === "install" || command === "help")) rows.splice(rows.length === 2 ? 1 : rows.length, 0, POINTER);
+  output.write(`${rows.join("\n")}\n`);
 }
 
 function scheduleUpdateSafely(command, flags, runtime = {}) {
@@ -296,7 +306,7 @@ const STYLE_MENU = [
 
 const logLine = (label, text) => console.log(text);
 
-async function maybePickOutputStyle(flags, { cards = null, report = logLine } = {}) {
+async function maybePickOutputStyle(flags, { prompt = false, cards = null, report = logLine } = {}) {
   if (flags["dry-run"]) return;
   const home = resolveHome(flags);
   const current = readOutputStyleConfig(readConfig(home));
@@ -308,7 +318,7 @@ async function maybePickOutputStyle(flags, { cards = null, report = logLine } = 
       return;
     }
     chosen = styleId;
-  } else if (flags["no-style"]) {
+  } else if (flags["no-style"] || !prompt) {
     return;
   } else if (cards) {
     const index = await cards.pick({
@@ -321,7 +331,7 @@ async function maybePickOutputStyle(flags, { cards = null, report = logLine } = 
       ctrlCSkips: supportsColor(),
     });
     chosen = index ? STYLE_MENU[index - 1].id : null;
-  } else if (process.stdin.isTTY && process.stdout.isTTY && !("CI" in process.env)) {
+  } else {
     chosen = await (new Promise((resolve) => {
       process.stdout.write("Choose an output style:\n");
       process.stdout.write(`   0. None / keep current${current ? ` (${current})` : ""}\n`);
@@ -337,8 +347,6 @@ async function maybePickOutputStyle(flags, { cards = null, report = logLine } = 
         rl.close();
       });
     }));
-  } else {
-    return;
   }
   if (chosen) {
     const before = readConfig(home);
@@ -348,9 +356,7 @@ async function maybePickOutputStyle(flags, { cards = null, report = logLine } = 
   }
 }
 
-// Keep explicit HUD choices manual. On the prompted install path the accent
-// picker runs; the --yes path auto-applies the named Ignition skin on
-// a fresh interactive color-capable install.
+// A HUD accent is set by --hud or by an answer to the question; --yes picks none.
 async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false, cards = null, report = logLine } = {}) {
   if (flags["dry-run"]) return;
   let entry = null;
@@ -375,26 +381,6 @@ async function maybePickHudAccent(flags, runtime = {}, { promptForAccent = false
     if (chosen) {
       report("HUD accent", applyHud(chosen.accent, flags));
     }
-    return;
-  } else {
-    const env = runtime.env || process.env;
-    const streams = runtime.streams || { stdin: process.stdin, stdout: process.stdout };
-    const input = streams.stdin || process.stdin;
-    const output = streams.stdout || process.stdout;
-    const interactive = runtime.isInteractive ?? Boolean(input.isTTY && output.isTTY);
-    const color = supportsColor({ stream: output, env });
-    if (!interactive || env.CI || !color) return;
-
-    const home = resolveHome(flags);
-    const before = readConfig(home);
-    const normalized = `${before.replace(/\r\n/g, "\n").replace(/\n*$/, "")}\n`;
-    if (readDisplaySkinConfig(before) || clearDisplaySkinConfig(normalized) !== normalized) return;
-
-    entry = findAccent("ignition");
-    const name = skinName(entry.accent);
-    const after = setDisplaySkinConfig(before, name);
-    if (after !== before) writeConfig(home, after);
-    console.log(`LitHermes HUD set to ${entry.label} (${name}).`);
     return;
   }
   if (entry) report("HUD accent", applyHud(entry.accent, flags));
@@ -454,6 +440,32 @@ async function maybeOfferBell(flags, runtime = {}, { prompt = false, cards = nul
   say("Finish bell on: Hermes rings the terminal when a turn finishes (display.bell_on_complete).");
 }
 
+// --glyphs and --round, then the line that closes the run. Nothing here can fail an install that went through.
+async function settleRoundEnds(flags, runtime = {}, report = logLine) {
+  const home = resolveHome(flags);
+  const env = runtime.env || process.env;
+  const { hasIconFont } = await rules();
+  if (flags["dry-run"]) {
+    if (flags.glyphs) report("Rounded ends", `round ends: would save ${flags.glyphs}`);
+    if (flags.round) report("Icon font", planIconFont({ env, hasIconFont }));
+    return null;
+  }
+  if (flags.glyphs) {
+    try {
+      report("Rounded ends", applyCaps(flags.glyphs, home));
+    } catch (error) {
+      console.error(`Round caps: not saved (${error.message}).`);
+    }
+  }
+  let fontWhy = null;
+  if (flags.round) {
+    const font = await addIconFont({ home, env, hasIconFont, pins: runtime.iconFontPins });
+    fontWhy = font.why;
+    report("Icon font", font.line);
+  }
+  return roundEndsLine({ home, env, stream: runtime.streams?.stdout || process.stdout, fontWhy });
+}
+
 // The cards for this run, or null where the plain prompts stay. The step pill counts the questions
 // the flags and the config leave open: five for the model route, then skin, reply style and bell.
 async function installCards(flags, runtime = {}) {
@@ -470,8 +482,8 @@ async function installCards(flags, runtime = {}) {
   ];
   // Round or square is the TUI card's own answer, so every surface agrees; asked once for the run.
   const { hasRoundCaps, isRich } = await import(pathToFileURL(widgetSource).href);
-  const caps = isRich(env) && hasRoundCaps(env, readSettings(resolveHome(flags)).glyphs || "auto");
-  return createCards({ input, output, env, caps, total: 5 + asks.filter(Boolean).length });
+  const caps = isRich(env) && hasRoundCaps(env, flags.glyphs || readSettings(resolveHome(flags)).glyphs || "auto");
+  return createCards({ input, output, env, caps, hint: POINTER, total: 5 + asks.filter(Boolean).length });
 }
 
 // The confirmed install with cards: the steps, the questions left, then one card with what was done.
@@ -497,15 +509,17 @@ async function installWithCards(flags, runtime, cards) {
   }
   steps.finish();
   const answers = [];
+  let ends = null;
   const close = () => {
-    cards.summary(receiptSections(result.message, answers));
+    cards.summary(receiptSections(result.message, answers, ends));
     if (result.notice) cards.notice(result.notice);
   };
   cards.onStop(close);
   const report = (label, text) => answers.push({ label, text });
   try {
+    ends = await settleRoundEnds(flags, runtime, report);
     await maybePickHudAccent(flags, runtime, { promptForAccent: true, cards, report });
-    await maybePickOutputStyle(flags, { cards, report });
+    await maybePickOutputStyle(flags, { prompt: true, cards, report });
     await maybeOfferBell(flags, runtime, { prompt: true, cards, report });
   } finally {
     close();
@@ -515,6 +529,10 @@ async function installWithCards(flags, runtime, cards) {
 async function main(argv, runtime = {}) {
   const parsed = parseArgs(argv);
   const { command, flags, positionals } = parsed;
+  if (flags.agent && (command === "install" || command === "help")) {
+    process.stdout.write(`${agentGuide()}\n`);
+    return;
+  }
   if (parsed.helpRequested) {
     console.log(helpText());
     return;
@@ -568,6 +586,7 @@ async function main(argv, runtime = {}) {
       const needsAction = extensionsSummary({ "hermes-home": hermesHome }).count;
       console.log(extensionsNoticeLines({ upgradedFrom: lifecycle.currentVersion, leftovers: leftoverPaths(hermesHome), needsAction }).join("\n"));
     }
+    console.log(await settleRoundEnds(flags, runtime));
     return;
   }
   if (command === "install") {
@@ -600,8 +619,10 @@ async function main(argv, runtime = {}) {
       throw error;
     }
     await maybePickHudAccent(flags, runtime, { promptForAccent: prompted === "chosen" });
-    await maybePickOutputStyle(flags);
+    await maybePickOutputStyle(flags, { prompt: prompted === "chosen" });
     await maybeOfferBell(flags, runtime, { prompt: prompted === "chosen" });
+    const ends = await settleRoundEnds(flags, runtime);
+    if (ends) console.log(ends);
     scheduleUpdateSafely(command, flags, runtime);
     return;
   }
@@ -651,6 +672,7 @@ async function main(argv, runtime = {}) {
   if (command === "doctor") {
     const result = doctorLitHermes(flags);
     console.log(result.message);
+    console.log(await roundEndsLine({ home: resolveHome(flags), env: runtime.env, stream: runtime.streams?.stdout }));
 		if (result.ok === false) process.exitCode = 1;
     if (result.ok !== false) scheduleUpdateSafely(command, flags, runtime);
     return;
@@ -658,4 +680,4 @@ async function main(argv, runtime = {}) {
   console.log(helpText());
 }
 
-module.exports = { COMMAND_SPECS, helpText, main, maybeOfferBell, parseArgs, validateArgs };
+module.exports = { COMMAND_SPECS, STYLE_MENU, helpText, main, maybeOfferBell, parseArgs, validateArgs };

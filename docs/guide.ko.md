@@ -77,7 +77,7 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes
 
 `--yes`로 설치하면 `PREPARING INSTALL` 요약과 `INSTALL RECEIPT` 또는 조치 가능한 `INSTALL STOPPED` 패널을 보여줍니다. `NO_COLOR`에서는 카드가 색 없이 나옵니다. 화면 낭독기를 쓸 때처럼 번호만 묻는 plain 질문이 필요하면 `--no-spinner`를 붙이세요. dumb 터미널이나 가로 40칸, 세로 12줄보다 작은 창에서도 plain 질문이 나옵니다. redirect, CI, dry-run, `--no-spinner`에서는 plain하고 script-safe한 출력을 사용합니다.
 
-TTY에서 스타일 선택 질문도 생략하려면 `--no-style`을 함께 지정하세요.
+`--yes`는 터미널에서도 아무것도 묻지 않습니다. `--style ID`나 `--hud <accent>`로 정하지 않으면 답변 문체와 HUD 색상은 그대로입니다. `--round`와 `--glyphs`는 [배지와 막대 끝](./install.ko.md#설치)을 정하고, 설치는 언제나 `ROUND_ENDS:` 줄로 끝납니다.
 
 ## 첫 사용
 
@@ -290,9 +290,9 @@ Ignition은 `lithermes hud ignition`으로 선택합니다. `lithermes hud`의 �
 밝은 화면용 팔레트는 아이보리 바탕에 네이비 글자를 사용합니다. 터미널 앱의
 창 전체 배경을 바꾸는 기능은 아닙니다.
 
-색상을 지원하는 대화형 환경에서 `--yes`로 설치하면 `display.skin`이 없을 때만
-Ignition을 선택합니다. 빈 값을 포함한 기존 선택은 유지합니다. `--no-hud`는
-스킨 선택을, `--no-style`은 답변 문체 선택만 생략합니다. YAML과 설정값이
+`--yes`로 설치하면 스킨을 고르지 않습니다. `display.skin`은 카드에서 답하거나
+`--hud <accent>`로 정할 때만 바뀝니다. `--no-hud`는 스킨 질문을, `--no-style`은
+답변 문체 질문을 카드에서 뺍니다. YAML과 설정값이
 있다는 것만으로 화면 적용을 확인할 수는 없습니다. Hermes CLI에서 `/skin`으로
 목록을 확인하고 `/skin lithermes-ignition`을 선택한 뒤, 재시작해 실제 배너와
 응답 화면을 확인하세요. Gateway 메시지에는 CLI 스킨이 보이지 않습니다.
@@ -334,11 +334,13 @@ Hermes가 일하는 동안 스피너는 `lit-looping`, `planning`, `verifying` �
 비켜서므로 글자를 가리지 않습니다. 48칸 또는 20줄보다 작은 창에는 카드가 나오지
 않습니다.
 
-배지와 막대의 끝은 터미널이 그릴 수 있으면 모두 둥글고, 아니면 모두 네모입니다. 직접 정한
-값이 먼저입니다. 정하지 않았으면 Windows Terminal, VS Code, WezTerm, Ghostty, kitty에서는
+배지와 막대의 끝은 터미널이 그릴 수 있으면 모두 둥글고, 아니면 모두 네모입니다. 환경 변수
+`LITHERMES_HUD_GLYPHS`(`auto`, `round`, `nerd`, `square`, `basic`)가 먼저이고, 그다음이
+저장한 값입니다. 둘 다 없으면 Windows Terminal, VS Code, WezTerm, Ghostty, kitty에서는
 둥글고, 이 컴퓨터의 글꼴과 화면의 글꼴이 다른 SSH에서는 네모이며, 그 밖에는 Nerd Font가
 설치되어 있을 때 둥급니다. 글꼴은 파일 이름만 보고 알아냅니다. 끝이 빈 상자로 보이면
-`lithermes hud caps square`로 바꾸세요. 설치 카드와 클래식 HUD 카드도 같은 규칙을 따릅니다.
+`lithermes hud caps square`로 바꾸세요. `install --glyphs`도 같은 값을 저장하고,
+`install --round`는 아이콘 글꼴이 없을 때 하나를 추가합니다. 설치 카드와 클래식 HUD 카드도 같은 규칙을 따릅니다.
 
 ```text
 lithermes hud card         # 카드 상태 보기

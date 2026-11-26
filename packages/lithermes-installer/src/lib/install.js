@@ -30,6 +30,7 @@ const {
 } = require("./modelRoutePolicy");
 const { installSkins } = require("./skins");
 const { removeTuiCard, syncTuiCard, tuiCardStatus } = require("./tuiCard");
+const { previewRemoval, removeIconFont } = require("./iconFont");
 const { extensionsNoticeLines, leftoverPaths, removeNotice, writeNotice } = require("./sessionNotices");
 const { extensionsSummary } = require("./extensions");
 
@@ -919,7 +920,7 @@ function installLitHermes(flags = {}) {
     if (credentialWarning) lines.push(`warning: ${credentialWarning}`);
     if (skinFiles.length) lines.push(`HUD skins: ${skinFiles.length} accents installed — pick one with \`npx --package @litfamily/lithermes -- lithermes hud <accent>\``);
     if (tuiCard) lines.push(tuiCard);
-    lines.push("Restart any running Hermes gateway to load new plugins.");
+    lines.push("Restart any running Hermes gateway and every open Hermes CLI to load the plugin.");
     return {
       message: lines.join("\n"),
       notice: installedVersion !== packageVersion ? extensionsNoticeLines({ upgradedFrom, leftovers, needsAction }).join("\n") : null,
@@ -964,11 +965,17 @@ function uninstallLitHermes(flags = {}) {
     } catch {
       // A card file that cannot be removed must not strand the rest of the uninstall.
     }
+    let font = null;
+    try {
+      font = removeIconFont(hermesHome);
+    } catch (error) {
+      font = `icon font: not removed (${error.message})`;
+    }
     checkState();
     writeConfig(hermesHome, disableLitHermesConfig(readConfig(hermesHome)));
     checkState();
     fs.unlinkSync(manifestPath(hermesHome));
-    return { message: rollback ? `Uninstalled LitHermes\n${rollback.message}` : "Uninstalled LitHermes" };
+    return { message: ["Uninstalled LitHermes", rollback?.message, font].filter(Boolean).join("\n") };
   }, state);
 }
 
@@ -999,6 +1006,8 @@ function previewUninstall(flags = {}) {
     const config = readConfig(hermesHome);
     lines.push(`config: ${disableLitHermesConfig(config) === config ? "no change" : `would disable the plugin in ${path.join(hermesHome, "config.yaml")}`}`);
     lines.push(tuiCardStatus(hermesHome).startsWith("TUI card: FOREIGN") ? "TUI card: would keep a widget file LitHermes did not write" : "TUI card: would remove its widget and records");
+    const font = previewRemoval(hermesHome);
+    if (font) lines.push(font);
     lines.push(`manifest: would remove ${manifestPath(hermesHome)}`);
   }
   if (!flags.yes) lines.push("A real uninstall also needs --yes.");

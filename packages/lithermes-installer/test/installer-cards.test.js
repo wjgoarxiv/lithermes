@@ -11,6 +11,7 @@ const { pickAccent } = require("../src/lib/hud");
 const { pickModelRoute } = require("../src/lib/modelPrompt");
 const { ROUTE_CATALOG, managedRequest } = require("../src/lib/modelRoutePolicy");
 const { receiptSections } = require("../src/lib/spinner");
+const { POINTER, QUESTIONS } = require("../src/lib/agentGuide");
 
 const UP = "\x1b[A";
 const DOWN = "\x1b[B";
@@ -23,7 +24,7 @@ const TRUECOLOR = { TERM: "xterm-256color", COLORTERM: "truecolor", LANG: "en_US
 const strip = (text) => text.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "");
 
 // A terminal in memory: what is written, the raw-mode switches, and the rows now on screen.
-function terminal({ cols = 80, rows = 40, env = TRUECOLOR, total = 1, caps = false } = {}) {
+function terminal({ cols = 80, rows = 40, env = TRUECOLOR, total = 1, caps = false, hint } = {}) {
   const input = new PassThrough();
   const output = new PassThrough();
   const modes = [];
@@ -46,7 +47,7 @@ function terminal({ cols = 80, rows = 40, env = TRUECOLOR, total = 1, caps = fal
   const proc = Object.assign(new EventEmitter(), { pid: 4242, platform: "linux", killed: [] });
   proc.kill = (...args) => proc.killed.push(args);
   const clock = { ms: 0 };
-  const ui = createCards({ input, output, env, total, caps, proc, settleMs: 0, now: () => clock.ms });
+  const ui = createCards({ input, output, env, total, caps, hint, proc, settleMs: 0, now: () => clock.ms });
   const tick = () => new Promise((resolve) => setTimeout(resolve, 8));
   return {
     ui, input, output, modes, proc, clock,
@@ -615,6 +616,52 @@ test("flags that answer a question take it off the count", { skip: !python && "n
   assert.equal(run.status, 0, run.text.slice(-2000));
   assert.equal(run.typed, 5);
   assert.match(run.config, /outputStyle: eli5/);
+});
+
+test("--yes on a terminal asks nothing, picks no accent and ends by itself", { skip: !python && "needs python3 pty" }, (t) => {
+  for (const args of [["--yes"], ["--yes", "--style", "eli5"]]) {
+    // Anything asked gets an Enter, so a question shows as a typed step instead of a hang.
+    const run = onPty(sandbox(t), [["Pick 0-4", "\n"]], { args });
+    assert.equal(run.status, 0, run.text.slice(-2000));
+    assert.equal(run.typed, 0, "no question came up");
+    assert.doesNotMatch(run.config, /skin:/);
+    assert.equal(/outputStyle: eli5/.test(run.config), args.includes("--style"));
+    assert.match(run.text, /ROUND_ENDS: /);
+  }
+});
+
+test("the guide lists the questions the cards ask, and the first card and the closing card carry its lines", { skip: !python && "needs python3 pty" }, (t) => {
+  const run = onPty(sandbox(t), [...ROUTE, ["LIT 6/8", ENTER], ["LIT 7/8", ENTER], ["LIT 8/8", ENTER]], { env: { NO_COLOR: "1" }, cols: 100, rows: 40 });
+  assert.equal(run.status, 0, run.text.slice(-2000));
+  const titles = new Map([...run.text.matchAll(/\[LIT (\d)\/8\] · ([A-Z][A-Za-z ]+?) (?:─|\[)/gu)].map(([, n, title]) => [n, title]));
+  assert.deepEqual([...titles.values()], QUESTIONS.map(({ title }) => title));
+  const second = run.text.indexOf("LIT 2/8");
+  assert.ok(run.text.slice(0, second).includes(`│ ${POINTER}`));
+  assert.equal(run.text.slice(second).includes(POINTER), false, "on the first card only");
+  assert.match(run.text, /ROUND_ENDS: +square \(NO_COLOR is set here/);
+});
+
+test("the agent row stands in a row the first card already has, in every window", async () => {
+  for (const cols of [40, 60, 80, 120]) {
+    for (const rows of [12, 16, 24, 60]) {
+      const heights = [];
+      for (const hint of [undefined, POINTER]) {
+        const t = terminal({ cols, rows, total: 2, hint });
+        const answer = pickThree(t);
+        await t.press();
+        heights.push(t.screen().length);
+        if (hint && cols >= 80 && rows >= 16) assert.ok(t.text().includes(hint), `${cols}x${rows}`);
+        await t.press(ENTER);
+        await answer;
+        const second = pickThree(t);
+        await t.press();
+        assert.equal(hint ? t.text().includes(hint) : false, false, "only the first card has it");
+        await t.press(ENTER);
+        await second;
+      }
+      assert.equal(heights[0], heights[1], `${cols}x${rows}`);
+    }
+  }
 });
 
 test("a failed install stops the card in red, says why, and keeps the exit code", { skip: !python && "needs python3 pty" }, (t) => {

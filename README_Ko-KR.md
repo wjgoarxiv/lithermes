@@ -81,7 +81,7 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 | 플러그인 | Python 플러그인을 Hermes 홈에 복사하고, `config.yaml`을 백업한 뒤 그 파일에서 플러그인을 켭니다 |
 | 모델 경로 | 새 홈이라면 계획과 리뷰용 하나, 도우미용 하나를 씁니다. 이미 골라 둔 모델은 그대로 둡니다 |
 | 스킨 | Ignition 스킨과 LIT 스킨 열두 개를 더합니다 |
-| `--yes`, `--no-style` | 중간에 묻지 않고 끝까지 진행하고, 답변 문체를 묻는 단계를 건너뜁니다 |
+| `--yes`, `--no-style` | 중간에 묻지 않고 끝까지 진행하고, 답변 문체는 그대로 둡니다 |
 
 끝나면 Hermes CLI와 실행 중인 gateway를 다시 시작하세요. Hermes는 시작할 때만 새 플러그인을 불러옵니다.
 
@@ -173,7 +173,7 @@ LitHermes는 프로젝트에 저장된 계획, 실행 기록, litgoal 기준을 
 *Ignition 스킨을 고른 실제 Hermes 세션에서 얻은 출력입니다. 그림 속 줄 사이의 Hermes 배너, 팁, 경고는 잘랐습니다.*
 
 - **스피너와 도우미.** Hermes가 일하는 동안 스피너는 `(🔥 lit)` 같은 불꽃 얼굴로 돌며 `lit-looping`, `verifying` 같은 짧은 말로 하는 일을 알려 주고, `/agents`를 입력하면 Hermes가 `delegate_task`로 보낸 도우미들을 볼 수 있습니다.
-- **다른 스킨.** 처음 대화형으로 설치할 때 스킨이 정해져 있지 않으면 Ignition이 골라집니다. 다른 스킨은 `lithermes hud`로 볼 수 있고, 밝은 터미널에서는 `/skin lithermes-tokyonight-day`가 잘 읽힙니다.
+- **다른 스킨.** Ignition은 설치 중 HUD 색상 카드나 `install --hud ignition`으로 고릅니다. 다른 스킨은 `lithermes hud`로 볼 수 있고, 밝은 터미널에서는 `/skin lithermes-tokyonight-day`가 잘 읽힙니다.
 - **벨.** 긴 작업 중에 자리를 비운다면 설치할 때 `--bell`을 붙이세요. 턴이 끝날 때 터미널 벨이 울리고, 붙이지 않으면 꺼져 있으며, 이미 정해 둔 `display.bell_on_complete` 값은 그대로 둡니다.
 - **LIT 마크.** `lithermes install`, `doctor`, `--help`는 터미널 너비에 맞춘 큰 신스웨이브 LIT 마크와 그 아래 버전 줄로 시작합니다. 파이프, CI 로그, 에이전트의 도구 호출, UTF-8을 쓰지 않는 터미널에는 `LIT · hermes agent` 한 줄과 버전만 나옵니다. 배경이 어두운 truecolor 터미널의 클래식 CLI에서는 HUD 카드가 `🔥 LIT` 배지로 시작하는 테두리 카드로 나오고(명령을 gateway에서 실행하는 Hermes 0.23에서는 막대 줄 그대로입니다), 자리가 있으면 글 옆에 멈춘 노을 그림이 함께 나옵니다.
 - **`hermes --tui`의 목표 카드.** 세션에 lit 목표가 있으면 입력창 아래에 테두리 카드가 놓입니다. 지금 단계, 목표, 어디까지 증명했는지, 다음 할 일을 보여 줍니다. Hermes가 알려 주면 지금 도는 도구, 함께 일하는 도우미, 쓰고 있는 스킬, 컨텍스트가 찬 정도도 나옵니다. 카드의 빈자리에는 작은 바다 위로 해가 집니다. 해와 바다는 작업이 도는 동안에만 움직이고, 사용자 차례가 되면 멈춥니다. 목표가 없으면 카드는 한 줄도 차지하지 않습니다. `lithermes hud card still`은 움직임을 멈추고 `lithermes hud card off`는 카드를 없앱니다. 배지 모양은 `lithermes hud caps round`나 `square`로 직접 정할 수 있습니다.

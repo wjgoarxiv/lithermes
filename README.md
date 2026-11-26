@@ -81,7 +81,7 @@ npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-
 | Plugin | Copies the Python plugin into your Hermes home and switches it on in `config.yaml`, after saving a backup of that file |
 | Model routes | On a fresh home, writes one route for planning and review and one for helpers; a model you already chose is kept |
 | Skins | Adds the Ignition skin and twelve more LIT skins |
-| `--yes`, `--no-style` | Run it without stopping to ask, and skip the question about reply wording |
+| `--yes`, `--no-style` | Run it without stopping to ask, and keep the reply wording as it is |
 
 Then restart the Hermes CLI and any running gateway, because Hermes loads a new plugin only when it starts.
 
@@ -173,7 +173,7 @@ LitHermes builds the row from the plan, the run and the litgoal criteria saved i
 *Captured from a real Hermes session with the Ignition skin selected. The Hermes banner, tip and warnings between the pictured lines are cut.*
 
 - **Spinner and helpers.** While Hermes works, the spinner turns in flame faces such as `(🔥 lit)` with short verbs like `lit-looping` and `verifying`, and `/agents` shows the helpers Hermes sent out with `delegate_task`.
-- **Other skins.** A fresh interactive install picks Ignition only when you have no skin set; `lithermes hud` lists the others, and `/skin lithermes-tokyonight-day` reads well on a light terminal.
+- **Other skins.** Pick Ignition on the HUD accent card, or with `install --hud ignition`; `lithermes hud` lists the others, and `/skin lithermes-tokyonight-day` reads well on a light terminal.
 - **Bell.** If you step away during long work, add `--bell` to the install and Hermes rings the terminal bell when a turn ends; it stays off otherwise, and a `display.bell_on_complete` value you chose is kept.
 - **The LIT mark.** `lithermes install`, `doctor` and `--help` open with a large synthwave LIT mark sized to your terminal, with the version under it. A pipe, a CI log, an agent's tool call or a terminal without UTF-8 gets one plain line, `LIT · hermes agent`, and the version. In the classic CLI on a truecolor terminal, on a dark background, the HUD card is one framed card (Hermes 0.23, which runs commands in its gateway, keeps plain bar rows) that starts with a small `🔥 LIT` pill, with a still sunset beside its words when there is room.
 - **The goal card in `hermes --tui`.** While your session has a lit goal, a framed card sits under the prompt: the stage, the goal, how much is proven and what comes next, and, when Hermes reports them, the running tool, the helpers working in parallel, the skills in use and how full the context is. A sun sets over a small sea in the empty part of the card. It moves only while a turn runs, stands still when it is your turn, and takes no rows at all when there is no goal. `lithermes hud card still` stops the motion, `lithermes hud card off` removes the card, and `lithermes hud caps round` or `square` sets the pill shape yourself.

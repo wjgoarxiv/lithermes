@@ -133,9 +133,10 @@ function code(color, layer, depth) {
  * `total` is how many questions this run will ask, for the step pill. `proc` and `settleMs` exist
  * for tests. A question returns null when the input ends (Ctrl+D, a closed terminal), as the plain
  * prompts do; Ctrl+C interrupts the process unless the question says it only skips. `caps` asks for
- * the round form, decided once for the run; without truecolor or UTF-8 every card is square.
+ * the round form, decided once for the run; without truecolor or UTF-8 every card is square. `hint` is one dim line
+ * for the first card, in a row that card has anyway: the gap over its key hints, or beside them.
  */
-function createCards({ input, output, env = process.env, total = 1, caps = false, proc = process, settleMs = SETTLE_MS, now = Date.now }) {
+function createCards({ input, output, env = process.env, total = 1, caps = false, hint = "", proc = process, settleMs = SETTLE_MS, now = Date.now }) {
   const depth = colorDepth(env, output);
   const ascii = !utf8Terminal(env);
   const round = caps && depth === "truecolor" && !ascii;
@@ -197,10 +198,17 @@ function createCards({ input, output, env = process.env, total = 1, caps = false
     ].map((row) => ` ${row}`);
   }
 
+  function beside(rows, text) {
+    const row = `${rows[rows.length - 1]}   ${text}`;
+    return text && cells(row) <= inner() ? [...rows.slice(0, -1), row] : rows;
+  }
+
   // Sections of rows, with air between and around them while the window has room for it.
   function spaced(tag, title, sections, stops) {
     const groups = sections.filter((rows) => rows.length);
-    const join = (gap) => groups.flatMap((rows, i) => (i && gap ? ["", ...rows] : rows));
+    const last = groups.length - 1;
+    const aside = asked === 1 && hint && cells(say(hint)) <= inner() ? quiet(hint) : "";
+    const join = (gap) => groups.flatMap((rows, i) => (i && gap ? [i === last ? aside : "", ...rows] : i === last && !gap ? beside(rows, aside) : rows));
     const layouts = [
       () => ["", ...frame(tag, title, ["", ...join(true)], stops)],
       () => frame(tag, title, ["", ...join(true)], stops),

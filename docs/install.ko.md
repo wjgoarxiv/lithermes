@@ -12,7 +12,9 @@ Hermes Agent와 Node.js 18 이상, 그리고 Hermes 홈(기본 `~/.hermes`)에 �
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
 ```
 
-이 한 줄이 설치 프로그램을 받아 오고, 플러그인을 Hermes 홈에 넣고, 플러그인이 불러와지도록 Hermes 설정을 고칩니다. 중간에 승인을 묻느라 멈추지 않게 만든 명령이라 `--yes`가 두 번 들어갑니다. 앞의 것은 npx에게 패키지를 실행해도 된다고 알리고, 뒤의 것은 설정 변경을 승인합니다. `--no-style`은 답변 문체를 고르는 화면을 건너뜁니다. 이 옵션이 없으면 터미널에서는 그 화면이 여전히 뜹니다. Ignition 스킨은 어느 쪽이든 설치됩니다. 턴이 끝날 때 Hermes가 울리는 벨은 `--bell`을 붙이거나 대화형 설치의 질문에 yes라고 답할 때만 켜집니다. 이미 정해 둔 `display.bell_on_complete` 값은 그대로 두고, `--no-bell`을 붙이면 질문을 건너뜁니다. 설치하는 동안 Telegram에는 연결하지 않습니다.
+이 한 줄이 설치 프로그램을 받아 오고, 플러그인을 Hermes 홈에 넣고, 플러그인이 불러와지도록 Hermes 설정을 고칩니다. 중간에 승인을 묻느라 멈추지 않게 만든 명령이라 `--yes`가 두 번 들어갑니다. 앞의 것은 npx에게 패키지를 실행해도 된다고 알리고, 뒤의 것은 설정 변경을 승인합니다. `--yes`를 쓰면 아무것도 묻지 않으므로 지금 쓰는 스킨과 답변 문체가 그대로 남습니다. 바꾸려면 `--hud <accent>`와 `--style ID`를 쓰고, `--no-style`은 아직 문체를 묻던 예전 버전에서 그 질문을 건너뛸 때 씁니다. Ignition을 포함한 스킨 파일은 어느 쪽이든 설치됩니다. 턴이 끝날 때 Hermes가 울리는 벨은 `--bell`을 붙이거나 대화형 설치의 질문에 yes라고 답할 때만 켜집니다. 이미 정해 둔 `display.bell_on_complete` 값은 그대로 두고, `--no-bell`을 붙이면 질문을 건너뜁니다. 설치하는 동안 Telegram에는 연결하지 않습니다.
+
+배지와 막대 끝을 둥글게 하려면 `--round`를 붙이세요. 이 컴퓨터에 아이콘 글꼴이 없으면 `SymbolsNerdFontMono-Regular.ttf` 한 개(Nerd Fonts 3.5.1, 라이선스 파일 포함)를 macOS에서는 `~/Library/Fonts`, Linux에서는 `${XDG_DATA_HOME:-~/.local/share}/fonts`에 추가합니다. 이미 있는 파일은 절대 덮어쓰지 않습니다. Windows Terminal과 VS Code는 둥근 끝을 스스로 그리므로 Windows에는 글꼴을 넣지 않습니다. `--glyphs auto|round|square`는 끝 모양을 저장합니다. 설치와 `doctor`의 마지막 줄 `ROUND_ENDS:`가 상태를 알려 줍니다. `shown`, `ready`, `check`(배지를 보고 정하기), 이유와 해결 방법이 하나씩 붙은 `square` 가운데 하나입니다. 아이콘 글꼴이 설치돼 있어도 터미널이 그 글꼴을 써야 합니다. 터미널 글꼴을 Nerd Font로 바꾸거나 심볼 글꼴을 대체 글꼴로 더하세요(iTerm2의 Non-ASCII Font, VS Code의 `fontFamily`, kitty의 `symbol_map`). Terminal.app에는 대체 글꼴 설정이 없어서 글꼴 자체를 Nerd Font로 바꿔야 합니다. `LITHERMES_HUD_GLYPHS`(`auto`, `round`, `nerd`, `square`, `basic`)는 그 셸에서만 적용되고 저장한 값보다 먼저 봅니다.
 
 모델과 스킨, 답변 문체를 직접 고르고 싶다면 `install` 뒤의 `--yes`와 `--no-style`을 빼세요. 터미널에서 질문이 한 장씩 카드로 나오고, `Enter`는 표시된 기본값을 고르며, 모델 경로를 확인하기 전에는 아무것도 쓰지 않습니다.
 
@@ -44,26 +46,45 @@ npm exec --yes --package "$LITHERMES_PACK" -- lithermes hud off
 
 ## 코딩 에이전트에게 설치 맡기기
 
-코딩 에이전트에게 설치를 맡길 수도 있습니다. 아래 프롬프트를 주면 환경을 확인하고, 승인을 기다렸다가 공식 패키지를 설치하고, 오프라인 점검 결과를 알려 준 뒤 재시작은 사용자에게 남겨 둡니다.
+코딩 에이전트에게 설치를 맡길 수도 있습니다. 아래 프롬프트를 주면 환경을 확인하고, 미리보기를 보여 주고, 질문에 답을 받은 뒤 승인을 기다렸다가 공식 패키지를 설치합니다. 그다음 오프라인 점검 결과를 알려 주고 재시작은 사용자에게 남겨 둡니다. `lithermes install --agent`도 같은 순서를 에이전트가 읽을 수 있게 출력합니다.
 
 ```text
 이 컴퓨터에 Hermes Agent용 lit 워크플로 플러그인 LitHermes를 설치해줘.
 
 1. 먼저 확인해줘: Hermes Agent가 설치되어 있는지(hermes --version), Node.js가 18 이상인지
    (node --version), 내 Hermes 홈(~/.hermes, HERMES_HOME이 설정되어 있으면 그 경로)에 쓸 수 있는지.
-2. 무엇이든 바꾸기 전에 계획과 실행할 명령을 그대로 보여 주고 내 승인을 기다려줘.
-   아무것도 바꾸지 않는 미리보기는 먼저 실행해도 돼:
-   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run
-3. 공식 npm 패키지 @litfamily/lithermes만 써줘. 저장소를 clone하거나, 플러그인 파일을
-   손으로 복사하거나, 다른 패키지를 설치하지 마. 설치 명령:
-   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style
-4. 확인 명령:
-   npx --package @litfamily/lithermes -- lithermes doctor --offline
-   결과를 알려 주고, PASS가 아닌 줄은 빠짐없이 보여줘. 오프라인에서는 "loaded plugin:
-   PARTIAL"이 정상이고, 모델 경로가 unavailable로 나올 수 있어.
-5. Hermes나 gateway를 직접 다시 시작하지는 마. 플러그인이 불러와지도록 Hermes CLI와 실행 중인
-   Hermes gateway(Telegram, Discord 등)를 다시 시작하라고 알려 주고, 그다음 요청 앞에 lit을
-   붙여 작업을 시작하면 된다고 말해줘.
+2. 설치를 미리 보고 무엇이 바뀌는지 보여줘. 아무것도 바꾸지 않는 명령이야:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --dry-run --round
+3. 나에게 물어봐. 첫 번째 보기는 "모두 기본값"이야. 질문과 기본값, 다르게 답할 때 붙일 옵션은 이래:
+   - 에이전트 제공자: 지금 Hermes에 있는 값, --provider ID
+   - 리드 모델: 지금 Hermes에 있는 값, --model ID --effort LEVEL
+   - 도우미 제공자: 리드와 같은 제공자, --child-provider ID
+   - 도우미 모델: 지금 Hermes에 있는 값, --child-model ID --child-effort LEVEL
+   - 모델 경로 확인: 그대로 진행. 나중에 hermes model로 바꿀 수 있어
+   - HUD 색상: 지금 스킨 그대로, --hud <accent>
+   - 답변 문체: 지금 문체 그대로, --style ID
+   - 완료 벨: 끔, --bell
+   이미 모델 경로가 있는 Hermes에서 다른 경로로 바꾸려면 --reconfigure-model도 붙여야 해.
+   아이콘 글꼴: --round는 아이콘 글꼴이 하나도 없을 때만 SymbolsNerdFontMono-Regular.ttf와 라이선스 파일을
+   macOS에서는 ~/Library/Fonts, Linux에서는 ${XDG_DATA_HOME:-~/.local/share}/fonts에 추가해.
+   보이는 화면: hermes --tui의 목표 카드와 클래식 CLI의 HUD 카드. 둘 다 기본으로 켜져 있어.
+4. 내가 좋다고 할 때까지 아무것도 바꾸지 말고 기다려줘. 공식 npm 패키지 @litfamily/lithermes만 쓰고, 다른 출처를
+   더하거나 저장소를 clone하거나 플러그인 파일을 손으로 복사하지 마. 훅, 신뢰, 로그인을 나 대신 승인하지도 마.
+5. 설치 명령이야. 내가 다르게 답한 옵션은 끝에 붙여줘:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --round
+   나중에 업데이트할 때도 같은 줄을 쓰면 되고, 저장한 선택은 그대로 남아.
+6. 확인 명령:
+   npx --yes --package @litfamily/lithermes@latest -- lithermes doctor --offline
+   PASS가 아닌 줄은 빠짐없이 보여줘. 오프라인에서는 "loaded plugin: PARTIAL"이 정상이고, 모델 경로가 unavailable로
+   나올 수 있어. 설치 출력에는 ROUND_ENDS:로 시작하는 줄이 있어야 해. 한 단계라도 실패하면 그 줄을 보여 주고 멈춰.
+7. 이걸 보여 주고 양쪽 끝이 둥근지 물어봐:  LIT 
+   둘 다 둥글면 설치 줄에 --glyphs round를 붙여 다시 실행해. 네모 상자로 보이면 --glyphs square를 붙여줘. 나중에
+   둥글게 하려면 내가 터미널 글꼴을 전체 Nerd Font(full Nerd Font)로 바꾸거나 Symbols Nerd Font Mono를 대체 글꼴로
+   더하면 돼(iTerm2: Non-ASCII Font, VS Code: fontFamily, kitty: symbol_map). Terminal.app에는 대체 글꼴 설정이 없어서
+   글꼴 자체를 전체 Nerd Font로 바꿔야 해. SSH나 휴대폰에서 보고 있다면 그대로 둬. 되돌릴 때는 --glyphs auto야.
+8. Hermes나 gateway를 직접 다시 시작하지는 마. 플러그인이 불러와지도록 Hermes CLI를 껐다 켜고 실행 중인 Hermes
+   gateway(Telegram, Discord 등)를 다시 시작하라고 알려 주고, 로그인이 필요하면 hermes model로 하면 된다고, 그다음
+   요청 앞에 lit을 붙여 작업을 시작하면 된다고 말해줘.
 ```
 
 ## 업데이트
@@ -130,4 +151,4 @@ Hermes 로그에 import 오류가 보이면 플러그인을 불러오지 못한 
 npx --package @litfamily/lithermes -- lithermes uninstall --yes
 ```
 
-설치 프로그램이 Hermes에 호환성 수정을 했다면 `--rollback-patches`를 붙여 되돌리세요. 삭제하면 TUI 목표 카드와 그 기록은 지워지고, 스킨 파일과 `display.skin` 선택, 저장해 둔 `hud card off`·`still`은 남습니다. Hermes 기본 모습으로 돌아가려면 같은 프로필에서 `npx --package @litfamily/lithermes -- lithermes hud off`를 실행하세요. 선택만 지우고, 스킨 파일과 다른 설정은 그대로 둡니다.
+설치 프로그램이 Hermes에 호환성 수정을 했다면 `--rollback-patches`를 붙여 되돌리세요. 삭제하면 TUI 목표 카드와 그 기록은 지워지고, 스킨 파일과 `display.skin` 선택, 저장해 둔 `hud card off`·`still`은 남습니다. `--round`가 추가한 아이콘 글꼴도 내용이 바뀌지 않았다면 지우며, 그 뒤 다른 제품에서는 끝이 네모로 보일 수 있습니다. Hermes 기본 모습으로 돌아가려면 같은 프로필에서 `npx --package @litfamily/lithermes -- lithermes hud off`를 실행하세요. 선택만 지우고, 스킨 파일과 다른 설정은 그대로 둡니다.

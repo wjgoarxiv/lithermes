@@ -493,10 +493,10 @@ export const isRich = (env, textColor) => {
   return !/^#[0-9a-f]{6}$/i.test(textColor ?? "") || brightness(textColor) >= 128;
 };
 
-// Whether pills and gauges end in round caps (U+E0B6, U+E0B4). The saved choice wins, then a terminal
-// that draws the caps itself; over SSH the fonts here are not the ones on screen; else an icon font
-// installed on this machine, told by file names alone. `round_caps.py` answers the same for the
-// classic CLI, and one test runs both through one table.
+// Whether pills and gauges end in round caps (U+E0B6, U+E0B4). LITHERMES_HUD_GLYPHS wins, then the
+// saved choice, then a terminal that draws the caps itself; over SSH the fonts here are not the ones on
+// screen; else an icon font installed on this machine, told by file names alone. `round_caps.py`
+// answers the same for the classic CLI, and one test runs both through one table.
 const ICON_FONT = /(?:nerd[ _-]?font|[a-z0-9]NF[MP]?[ _.-]).*\.(?:ttf|otf|ttc)$/i;
 const fontFolders = (env, platform) => {
   const home = env.HOME || env.USERPROFILE || os.homedir();
@@ -504,7 +504,7 @@ const fontFolders = (env, platform) => {
   if (platform === "win32") {
     return [env.LOCALAPPDATA && path.join(env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"), env.WINDIR && path.join(env.WINDIR, "Fonts")].filter(Boolean);
   }
-  return [path.join(env.XDG_DATA_HOME || path.join(home, ".local", "share"), "fonts"), path.join(home, ".fonts"), "/usr/local/share/fonts", "/usr/share/fonts"];
+  return [path.join(path.isAbsolute(env.XDG_DATA_HOME ?? "") ? env.XDG_DATA_HOME : path.join(home, ".local", "share"), "fonts"), path.join(home, ".fonts"), "/usr/local/share/fonts", "/usr/share/fonts"];
 };
 export const hasIconFont = (env, platform = process.platform, limit = 4000) => {
   let left = limit;
@@ -528,7 +528,10 @@ export const hasIconFont = (env, platform = process.platform, limit = 4000) => {
   }
   return false;
 };
-export const hasRoundCaps = (env, glyphs = "auto", iconFont = () => hasIconFont(env)) => {
+const GLYPH_WORDS = new Map([["auto", "auto"], ["round", "round"], ["nerd", "round"], ["square", "square"], ["basic", "square"]]);
+export const glyphSetting = (env) => GLYPH_WORDS.get((env.LITHERMES_HUD_GLYPHS ?? "").trim().toLowerCase()) ?? null;
+export const hasRoundCaps = (env, saved = "auto", iconFont = () => hasIconFont(env)) => {
+  const glyphs = glyphSetting(env) ?? saved;
   if (glyphs === "round" || glyphs === "square") return glyphs === "round";
   if (env.WT_SESSION || /^(?:vscode|wezterm|ghostty)$/i.test(env.TERM_PROGRAM ?? "")) return true;
   if (env.TERM === "xterm-kitty" || env.KITTY_WINDOW_ID) return true;
