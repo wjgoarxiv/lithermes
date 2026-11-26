@@ -1,14 +1,14 @@
-<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 노을빛 터미널 화면입니다. LitHermes의 모서리가 둥근 목표 카드가 단계 지도, 증명 게이지, 목표, 실행 기록, 게이트와 함께 화면을 두르고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다." /></picture></p>
+<p align="center"><picture><source media="(prefers-reduced-motion: reduce)" srcset="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/cover-motion-still.webp" /><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/cover-motion.webp" width="100%" alt="LitFamily 모션 커버: 노을빛 터미널 화면입니다. LitHermes의 모서리가 둥근 목표 카드가 단계 지도, 증명 게이지, 목표, 실행 기록, 게이트와 함께 화면을 두르고, 가운데는 픽셀 글자 LITFAMILY와 줄무늬 해가 채우며, 일곱 제품 이름 줄에서 LITHERMES가 켜지고, 아래에서는 Hermes 프롬프트에 요청이 입력됩니다." /></picture></p>
 
 <p align="center">
-<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/badge-version.svg" alt="1.0.49" /></a>
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/badge-license.svg" alt="MIT license" /></a>
+<a href="#설치"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/badge-version.svg" alt="1.0.50" /></a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/badge-license.svg" alt="MIT license" /></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-book-open.svg" width="16" alt="" /> 안내</a> &nbsp;
-<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> &nbsp;
-<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/docs/guide.ko.md"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/lucide-book-open.svg" width="16" alt="" /> 안내</a> &nbsp;
+<a href="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/ignition-film.mp4"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/lucide-play.svg" width="16" alt="" /> Ignition 영상</a> &nbsp;
+<a href="https://github.com/wjgoarxiv/lithermes/blob/main/LICENSE"><img src="https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/readme-assets/lucide-shield-check.svg" width="16" alt="" /> MIT</a>
 </p>
 
 # LitHermes
@@ -19,7 +19,7 @@ LitHermes는 [Hermes Agent](https://github.com/NousResearch/hermes-agent)에 붙
 
 Hermes에게 기능 하나를 맡기면 코드를 쓰고 끝났다고 말합니다. 그런데 다음 날 보면 테스트는 한 번도 돌지 않았고, 새 세션을 열면 프로젝트 설명을 처음부터 다시 해야 합니다. LitHermes가 있으면 같은 요청에 `lit`만 붙이면 됩니다. Hermes는 이 작업에서 "끝났다"가 무슨 뜻인지부터 적고, 실패하는 테스트를 추가해 통과시킨 다음, 무엇을 확인했고 무엇은 확인하지 못했는지 알려 줍니다. 세션이 닫힐 때는 핸드오프 메모를 남기고, 같은 프로젝트의 다음 세션이 그 메모를 읽고 이어서 일합니다.
 
-**[GitHub의 README와 문서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.49/README.md)
+**[GitHub의 README와 문서](https://github.com/wjgoarxiv/lithermes/blob/main/README_Ko-KR.md)** · [English](https://cdn.jsdelivr.net/npm/@litfamily/lithermes@1.0.50/README.md)
 
 ## 설치
 
