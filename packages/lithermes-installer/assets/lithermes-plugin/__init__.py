@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from . import auto_handoff
+from . import autopilot
 from . import core
 from . import bounded_work
 from . import bounded_work_tools
@@ -25,6 +26,7 @@ from . import knowledge_tools
 from . import lit_mark
 from . import park_ping
 from . import scientific_visualization
+from . import suggestions
 from .litgoal import cli as litgoal_cli
 from .litgoal import hook as litgoal_hook
 from .litgoal import runs as litgoal_runs
@@ -485,12 +487,68 @@ def _prepend_context(result: dict[str, str] | None, note: str | None) -> dict[st
     return {"context": note}
 
 
+# Set by register(): a host without session prompt sections never shows the skill
+# index, so a plain prompt that fires no suggestion rule carries the catalog line.
+_CATALOG_PER_PROMPT = False
+
+
+def _append_context(result: dict[str, str] | None, extra: str) -> dict[str, str] | None:
+    """Add an optional block after this turn's context, only while it fits the host cap."""
+    if not extra:
+        return result
+    if not isinstance(result, dict) or not result.get("context"):
+        return {**(result or {}), "context": extra}
+    combined = f"{result['context']}\n\n{extra}"
+    if _context_bytes(combined) <= MAX_HOST_CONTEXT_BYTES:
+        return {**result, "context": combined}
+    return result
+
+
+def _with_run_context(result: dict[str, str] | None, run_context: str) -> dict[str, str] | None:
+    """The start-work run's own block always reaches the model; other context is cut to fit."""
+    if not run_context:
+        return result
+    if not isinstance(result, dict) or not result.get("context"):
+        return {**(result or {}), "context": run_context}
+    combined = f"{run_context}\n\n{result['context']}"
+    if _context_bytes(combined) <= MAX_HOST_CONTEXT_BYTES:
+        return {**result, "context": combined}
+    room = MAX_HOST_CONTEXT_BYTES - _context_bytes(run_context) - 2
+    kept = _bounded_lines(str(result["context"]), max(room, 0))
+    return {**result, "context": f"{run_context}\n\n{kept}" if kept else run_context}
+
+
+def _suggestion_block(user_message: str) -> str:
+    """Feature B: gated skill suggestions for a prompt without `lit`, or the catalog line."""
+    try:
+        if not suggestions.eligible(user_message):
+            return ""
+        return suggestions.suggestion(user_message) or (suggestions.catalog_line() if _CATALOG_PER_PROMPT else "")
+    except Exception:  # noqa: BLE001 - a suggestion is advisory and never costs the turn
+        return ""
+
+
+def _autopilot_prompt(kwargs: dict[str, Any]) -> tuple[bool, str]:
+    """Approval words and the queued nudge for this session's start-work run.
+
+    A scheduled cron prompt is not the user, so it never answers a run.
+    """
+    if str(kwargs.get("platform") or "").strip().lower() == "cron":
+        return False, ""
+    try:
+        return autopilot.prompt_turn(kwargs.get("session_id"), kwargs.get("user_message"))
+    except Exception:  # noqa: BLE001 - a broken run state must not cost the turn its routes
+        return False, ""
+
+
 def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     """Compose the Litwork directive and the active-litgoal snapshot.
 
     Hermes appends a returned ``{"context": ...}`` to the user message. We merge
     both injections so the model sees the litwork loop discipline and the live
-    goal/criteria/evidence gate in one block.
+    goal/criteria/evidence gate in one block. A start-work run bound to this
+    session answers its approval words first; a plain prompt with no run block
+    may get the skill suggestion last.
     """
     session_id = str(kwargs.get("session_id") or "")
     # A receipt left by a vetoed turn must not replace the next reply.
@@ -502,6 +560,17 @@ def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
     if core.is_delegate_child_platform(str(kwargs.get("platform") or "")):
         core.release_browser_drive_state(kwargs.get("session_id"))
         return None
+    handled, run_context = _autopilot_prompt(kwargs)
+    if handled:
+        return {"context": run_context}
+    if run_context:
+        return _with_run_context(_pre_llm_call_routes(kwargs), run_context)
+    return _append_context(_pre_llm_call_routes(kwargs), _suggestion_block(str(kwargs.get("user_message") or "")))
+
+
+def _pre_llm_call_routes(kwargs: dict[str, Any]) -> dict[str, str] | None:
+    """Every LitHermes route for a typed prompt: lit words, activations, routes and snapshots."""
+    session_id = str(kwargs.get("session_id") or "")
     token = _prompt_token(kwargs)
     if token:
         workspace = _session_workspace(kwargs) or bounded_work.locate_workspace(
@@ -800,7 +869,22 @@ def _transform_llm_output(**kwargs: Any) -> str | None:
 
 
 def _pre_verify(**kwargs: Any) -> dict[str, str] | None:
-    return litgoal_hook.hold_finish(**kwargs)
+    held = litgoal_hook.hold_finish(**kwargs)
+    if held is not None or core.is_delegate_child_platform(str(kwargs.get("platform") or "")):
+        return held
+    # The one keep-going Hermes offers: a turn that edited code goes on while its start-work run has open rows.
+    try:
+        return autopilot.verify_hold(kwargs.get("session_id"))
+    except Exception:  # noqa: BLE001 - the answer still goes out; the turn end shows what is open
+        return None
+
+
+def _autopilot_turn_end(kwargs: dict[str, Any]) -> str | None:
+    """The start-work run's completion line, wrap-up list or still-open note for this reply."""
+    try:
+        return autopilot.turn_end(kwargs.get("session_id"))
+    except Exception:  # noqa: BLE001 - a display row never costs the reply
+        return None
 
 
 def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
@@ -814,6 +898,7 @@ def _transform_llm_output_with_offer(**kwargs: Any) -> str | None:
         return receipt
     named = _transform_llm_output(**kwargs)
     for row in (
+        _autopilot_turn_end(kwargs),
         core._lit_reentry.take_visible(_goal_resume_session(kwargs)),
         _parked_row(kwargs),
         install_notices.take_visible(platform=kwargs.get("platform"), response_text=kwargs.get("response_text")),
@@ -851,6 +936,9 @@ def _pre_tool_call(**kwargs: Any) -> dict[str, str] | None:
     )
     if humanizer_denial is not None:
         return humanizer_denial
+    autopilot_denial = _autopilot_guard(kwargs)
+    if autopilot_denial is not None:
+        return autopilot_denial
     if knowledge_tools.pre_tool_call(**kwargs):
         return None
     denial = bounded_work_tools.pre_tool_call(**kwargs)
@@ -871,6 +959,23 @@ def _subagent_start(**kwargs: Any) -> None:
 def _subagent_stop(**kwargs: Any) -> None:
     tui_card.lane_stopped(kwargs.get("child_session_id"), kwargs.get("child_status"))
     return core.subagent_stop(**kwargs)
+
+
+def _autopilot_guard(kwargs: dict[str, Any]) -> dict[str, str] | None:
+    """Park or refuse a call during a start-work run; fail closed only while one is live."""
+    try:
+        return autopilot.guard(kwargs.get("tool_name"), kwargs.get("args"), kwargs.get("session_id"))
+    except Exception:  # noqa: BLE001 - an unreadable run state never lets the call through unchecked
+        try:
+            guarded = autopilot._run_for_tool(str(kwargs.get("session_id") or ""))
+        except Exception:  # noqa: BLE001 - not knowing whether a run guards this call is no reason to allow it
+            guarded = autopilot.active_runs_exist()
+        if not guarded:
+            return None
+        return {
+            "action": "block",
+            "message": "LitHermes start-work could not check this call, so it did not run. Carry on with the next open row.",
+        }
 
 
 def _post_tool_call(**kwargs: Any) -> None:
@@ -914,6 +1019,11 @@ def _release_bounded_session(**kwargs: Any) -> None:
     core.release_browser_drive_state(raw_session_id)
     session_id = raw_session_id if isinstance(raw_session_id, str) else ""
     bounded_work.release_bounded_session(session_id)
+    # A finished start-work run closes here when no turn end saw it finish.
+    try:
+        autopilot.session_finalize(session_id)
+    except Exception:  # noqa: BLE001 - finalizing must release the other state too
+        pass
     auto_handoff.release_session(session_id)
     # A finalized/reset session must not leave its rule dedup ledger behind: the
     # next session reusing the id would see every rule as "already injected".
@@ -1160,6 +1270,8 @@ def register(ctx) -> None:
         )
     # Hosts without session prompt sections still load each skill by exact name.
     register_section = getattr(ctx, "register_system_prompt_section", None)
+    global _CATALOG_PER_PROMPT
+    _CATALOG_PER_PROMPT = not callable(register_section)
     if callable(register_section):
         register_section(
             SKILL_INDEX_SECTION_ID,

@@ -208,6 +208,44 @@ While a run is live, secrets and Hermes settings are refused outright for reads 
 Async delegation uses per-child re-entry receipts. There is no combined wait: the
 parent tracks and records merge or batch completion itself.
 
+### Start-work autopilot
+
+A typed `/start-work <plan>` now drives itself. Work that needs you is set aside in one list instead of stopping the run, you answer that list once, and the run closes on its own when every row is ticked and the plan's `## Done when` check passes. No message from the run asks you to cancel it.
+
+While the run is live, `pre_tool_call` lets reads, a bare in-project `node <file>`, `node --test`, pytest and edits inside the project run. Any other shell call is parked with its exact text and folder, and the model is told to carry on with the next row. A reader counts only while none of its flags can write or start a program: `sed` scripts limited to `p`, `d`, `q` and `s` without `w` or `e`, `git branch` only for listing, and no `--output`, `-o` on `sort` or `tree`, `--pre`, `sort --compress-program`, `find -fprint*`, second `uniq` operand or `grep`/`rg -f` pattern file outside the folder, counting abbreviated long options (`--out`) and short clusters (`sort -uo`) the same way. A recursive reader (`grep -r`, `rg`, `find`, `ls -R`, `tree`) over a home folder or a folder above one is refused, with `cd` followed. Secrets, host homes (every hidden folder in the home, `~/.config` and the Hermes home), `.git` internals and the run's own `autopilot.json` are refused outright and never listed; the session's own Hermes `sessions`, `cache/spillover`, `cache/terminal-output` and `hook_outputs` folders stay readable. `execute_code` is refused while a run is live, because the guard cannot read what it would do; use the terminal tool instead. The repo's own `npm test` and `npm run test|check|lint|build|typecheck`, run bare from a folder with a `package.json`, also run without parking; a script inside the project can do whatever its author wrote, including a push, and that is the one residual the autopilot accepts. Every other verb parks, and a `name=value` operand is checked as a path. A write that names the run's own folder or anything inside `.git` (hooks, config, `HEAD`, refs, the index) is refused, never parked, and so is a move, removal or mode change of a folder that holds the run folder (`mv .hermes x`, `rm -rf .hermes`). `git show REV:path` is checked as a path, and a Hermes session file counts as readable only when both its written path and the path its links reach lie in those folders; and links are followed to their end, with a loop counted as protected. A command longer than 4096 bytes is refused without being stored. If the run's state file cannot be read or has the wrong shape, every guarded call is blocked rather than let through, `/start-work --resume` leaves it untouched instead of starting over (so denied commands are never forgotten), and `lit cancel` ends that run. The wrap-up list shows a short digest; an answer replays only a list whose digest still matches the one LitHermes recorded, and otherwise runs nothing and shows the list again. Once the Hermes process has drawn a list, only a digest it holds in memory counts; the copy in the state file is used only after Hermes restarts. After an answer whose steps ran, the model is told which `BLOCKED` rows may now be unblocked: remove the `BLOCKED:` line, check the row, tick it when it passes and keep going. That restart case is a BLOCKED residual: a write that got past the guard could forge both the list and its stored digest. This guard is separate from the bounded-work grants above and lives beside them.
+
+Which turns keep going:
+
+- A turn keeps going when Hermes fires `pre_verify` for it (that is, the turn edited code), the run is active and not paused, a row is still open, the litgoal gate is not already holding the turn, and the plan has had fewer than two holds since it last changed. LitHermes then answers `continue` with the next open row. Hermes also caps these holds per turn with `agent.max_verify_nudges`.
+- BLOCKED, the turn ends: a turn that edited no code (Hermes fires no hook that can continue it), a delegated child's turn, a paused run, and the third hold for an unchanged plan. Those turns end with the still-open line or the wrap-up list, and your next message carries the run on.
+
+At the end of each reply, LitHermes adds at most one block under it: the completion line, a short "row N is still open" note, or the wrap-up list. The list shows each parked command in full, marked `[B]` (local and undoable: `cd`, `touch`, `mkdir`, `cp`, `mv`, `git add` inside the project) or `[X]` (everything else). Held steps, such as a command led by `time` or `sudo`, are listed and never run. Answer with the whole prompt:
+
+| You type | What happens |
+| --- | --- |
+| `lit approve` (or `lit 승인`) | Grants every parked path boundary, including one parked after the list was shown, and runs the listed `[B]` steps, in Python, with no shell. A boundary is a write grant, not a command. |
+| `lit approve x` | Runs the listed `[X]` steps. Only this exact text counts; a trailing space or extra word runs nothing. |
+| `lit deny` (or `lit 거절`) | Drops every parked step and keeps those commands refused for this run. |
+| `lit skip-row [N]` | Ticks a `BLOCKED:` or `IMPOSSIBLE:` row as skipped and drops only the steps parked under it. |
+| `lit pause` / `lit resume` | Stops or restarts the driving; the guard stays on. |
+| `lit cancel` (or `lit 취소`) | Ends the start-work run and drops its parked steps unrun. |
+
+Approvals replay only the list you were shown, each step in its own folder, within 20 seconds, because Hermes fails a prompt hook open after 30. Replays get the plugin's minimal environment, with no provider keys and no SSH agent socket, so a step that needs one fails, stays parked, and is yours to run by hand. The Done-when check gets the same 20-second cap, runs without a shell, and runs only when it is a bare in-project `node <file>`, `node --test ...` or pytest command. A plan line `Run charter: commit on <branch> in <repo>` lets the run make local commits of named files on that branch. It is read when you type `/start-work`, and it never grants push, tag, publish or reset.
+
+A one-line park ping under the reply names each step parked in that turn. It is on by default for start-work runs and approves nothing; `LITHERMES_PARK_PING=0` turns it off. The gateway message from `/lit-loop ping on` is a separate switch for bounded work and stays off until you turn it on.
+
+Hermes cannot do three things here, so LitHermes says so instead of faking them:
+
+- BLOCKED: Hermes has no turn-end hook that can continue a turn without a code edit; the list above says which turns keep going. When a reply ends with rows open, you see one line saying so, and the run carries on with your next message (`continue` is enough).
+- BLOCKED: Hermes gives plugins no API to arm its native `/goal`. A plan with `goal: native` gets a ready `/goal` line in the `/start-work` reply that ends itself after 30 turns or on a `WAITING-ON-USER:` reply.
+- BLOCKED: Hermes reports when a delegated child stops but not when it starts, so the run cannot wait for lanes that are still running.
+
+Only the prompt of the session that owns the run answers it, and no LitHermes message asks another session or a pane tool to type an answer. A `lit approve x` that another program types into your prompt still looks exactly like you typing it, so the trust boundary is the same as for Hermes' own permission prompts.
+
+### Skill suggestions without `lit`
+
+A plain request that clearly fits a LitHermes skill gets a short note to the model naming that skill and "none"; the model decides, and nothing loads by itself. Two rules ship: plotting data (`lit-scientific-visualization`) and drawing diagrams (`lit-diagram-drawer`). Each scored recall 1.00 and near-miss 0.00 on both the dev half and the sealed held-out half of `packages/lithermes-installer/test/fixtures/routing-eval` (the bar is recall 0.85 and near-miss 0.10). Brainstorm and deep-interview rules were tried and missed that bar, so they stay out and appear only in the catalog line. A prompt with `lit` or a slash command never gets a suggestion. Hosts that render the LitHermes skill index (Hermes 0.21 and later) pay nothing extra on other prompts; older hosts get one catalog line of about 300 bytes.
+
 Legacy skill-review state from earlier LitHermes versions is inert. Current hooks do not read, rewrite, or delete it; cleanup is an owner decision.
 
 ## HUD skins and helper-agent visibility

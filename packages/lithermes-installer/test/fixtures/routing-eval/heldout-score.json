@@ -1,0 +1,37 @@
+{
+  "candidates": {
+    "deep-interview": {
+      "expected": 3,
+      "near_miss_fp": 0.0,
+      "near_misses": 2,
+      "recall": 0.667,
+      "skill": "deep-interview"
+    },
+    "lit-brainstorm": {
+      "expected": 4,
+      "near_miss_fp": 0.5,
+      "near_misses": 2,
+      "recall": 0.75,
+      "skill": "lit-brainstorm"
+    }
+  },
+  "candidates_fingerprint": "1fc4bb971aa715f4ffc1364597695b6833a935b605eace95316b4335c11f651a",
+  "heldout_sha256": "7e0891a993982a45c953baba899609a4bd6277207d970e9d8a39d5ebfb6d7a46",
+  "rules_fingerprint": "1988e675a6c259c9846a3ce9540c0668cbadb3272b8c965185c5515824805b22",
+  "shipped": {
+    "lit-diagram-drawer": {
+      "expected": 9,
+      "near_miss_fp": 0.0,
+      "near_misses": 5,
+      "recall": 1.0,
+      "skill": "lit-diagram-drawer"
+    },
+    "lit-scientific-visualization": {
+      "expected": 10,
+      "near_miss_fp": 0.0,
+      "near_misses": 6,
+      "recall": 1.0,
+      "skill": "lit-scientific-visualization"
+    }
+  }
+}

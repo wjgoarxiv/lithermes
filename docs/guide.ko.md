@@ -211,6 +211,44 @@ lit deny       (또는 lit 거절. 선택)
 비동기 위임은 child별 `per-child re-entry receipt`를 사용합니다. 통합 대기는
 없으며, parent가 merge 또는 batch completion을 직접 추적하고 기록합니다.
 
+### Start-work 자동 진행
+
+이제 `/start-work <plan>`을 입력하면 실행이 스스로 굴러갑니다. 내가 정해야 할 일은 실행을 멈추는 대신 목록 하나로 모이고, 그 목록에 한 번만 답하면 됩니다. 모든 행에 체크가 들어가고 계획의 `## Done when` 검사가 통과하면 실행은 알아서 닫힙니다. 실행이 보내는 메시지 가운데 취소하라고 권하는 것은 없습니다.
+
+실행 중에 `pre_tool_call`은 읽기 명령, 프로젝트 안 파일을 인자 없이 돌리는 `node <file>`, `node --test`, pytest, 프로젝트 안 편집만 바로 통과시킵니다. 다른 셸 호출은 정확한 명령과 폴더를 그대로 적어 두고(parking), 모델에게는 다음 행으로 넘어가라고 알립니다. 읽기 명령으로 치는 것은 파일을 쓰거나 프로그램을 띄울 플래그가 하나도 없을 때뿐입니다. `sed` 스크립트는 `w`, `e` 없는 `p`, `d`, `q`, `s`만, `git branch`는 목록 보기만 됩니다. `--output`, `sort`와 `tree`의 `-o`, `--pre`, `sort --compress-program`, `find -fprint*`, `uniq`의 두 번째 피연산자, 폴더 밖 파일을 쓰는 `grep`/`rg -f`는 읽기로 치지 않습니다. 줄여 쓴 긴 옵션(`--out`)과 묶어 쓴 짧은 옵션(`sort -uo`)도 같게 봅니다. 홈 폴더나 그 위 폴더를 재귀로 훑는 읽기 명령(`grep -r`, `rg`, `find`, `ls -R`, `tree`)은 `cd`까지 따라가서 거절합니다. 비밀 파일, 호스트 홈(홈의 모든 숨김 폴더, `~/.config`, Hermes 홈), `.git` 내부, 실행 자신의 `autopilot.json`은 아예 거절하고 목록에도 올리지 않습니다. 다만 세션 자신의 Hermes `sessions`, `cache/spillover`, `cache/terminal-output`, `hook_outputs` 폴더는 읽을 수 있습니다. 실행 중에는 `execute_code`도 거절합니다. guard가 그 코드가 무엇을 할지 읽을 수 없기 때문이니, terminal 도구를 쓰세요. `package.json`이 있는 폴더에서 인자 없이 돌리는 저장소 자신의 `npm test`, `npm run test|check|lint|build|typecheck`도 보류 없이 실행됩니다. 프로젝트 안의 스크립트는 작성자가 적어 둔 일을 무엇이든(push까지) 할 수 있고, 자동 진행이 받아들이는 한계는 이것 하나입니다. 그 밖의 명령은 모두 보류되고, `name=value` 형태의 인자는 경로로 검사합니다. 실행 자신의 폴더와 `.git` 안(hooks, config, `HEAD`, refs, index)에 쓰는 명령은 보류 없이 거절합니다. 실행 폴더를 품은 폴더를 옮기거나 지우거나 권한을 바꾸는 명령(`mv .hermes x`, `rm -rf .hermes`)도 거절합니다. `git show REV:path`의 경로도 검사하고, Hermes 세션 파일은 적힌 경로와 링크가 닿는 경로가 둘 다 그 폴더 안일 때만 읽을 수 있습니다. 링크는 끝까지 따라가고 순환 링크는 보호 경로로 칩니다. 4096바이트보다 긴 명령은 저장하지 않고 바로 거절합니다. 실행의 상태 파일을 읽을 수 없거나 모양이 틀리면 guard가 지키는 호출을 통과시키지 않고 모두 막습니다. `/start-work --resume`도 그 파일을 새로 덮어쓰지 않으니 거절된 명령을 잊지 않으며, `lit cancel`로 그 실행을 끝낼 수 있습니다. 마무리 목록에는 짧은 digest가 붙습니다. 답은 LitHermes가 기록해 둔 digest와 여전히 같은 목록만 다시 실행하고, 다르면 아무것도 실행하지 않은 채 목록을 다시 보여 줍니다. Hermes 프로세스가 목록을 한 번 그린 뒤에는 메모리에 든 digest만 인정하고, 상태 파일의 사본은 Hermes를 다시 시작한 뒤에만 씁니다. 답으로 단계가 실행되면 모델에게 풀렸을 수 있는 `BLOCKED` 행을 알려 주고, `BLOCKED:` 줄을 지우고 행을 확인해 통과하면 체크한 뒤 계속하라고 합니다. 이 재시작 경우는 BLOCKED로 남는 한계입니다. guard를 빠져나간 쓰기가 있다면 목록과 저장된 digest를 함께 위조할 수 있습니다. 이 guard는 위의 bounded work grant와 따로 있으며 나란히 동작합니다.
+
+어떤 턴이 이어지는지는 다음과 같습니다.
+
+- Hermes가 그 턴에 `pre_verify`를 부르면(곧 그 턴이 코드를 고쳤으면) 턴이 이어집니다. 단, 실행이 켜져 있고 멈춰 있지 않으며, 열린 행이 남아 있고, litgoal 게이트가 먼저 그 턴을 붙잡지 않았고, 계획이 마지막으로 바뀐 뒤 붙잡은 횟수가 두 번 미만이어야 합니다. 그러면 LitHermes가 다음 열린 행을 적어 `continue`로 답합니다. 턴마다 붙잡는 횟수의 상한은 Hermes의 `agent.max_verify_nudges`가 따로 정합니다.
+- BLOCKED, 턴이 끝나는 경우: 코드를 고치지 않은 턴(이어 갈 수 있는 훅을 Hermes가 부르지 않습니다), 위임한 child의 턴, 멈춘 실행, 계획이 그대로인데 세 번째로 붙잡으려는 경우입니다. 이런 턴은 "아직 열려 있음" 한 줄이나 마무리 목록으로 끝나고, 다음 메시지에서 실행이 이어집니다.
+
+답장이 끝날 때마다 LitHermes는 그 아래에 많아야 한 덩어리를 붙입니다. 완료 한 줄, "N번 행이 아직 열려 있음" 한 줄, 또는 마무리 목록입니다. 목록에는 보류된 명령이 잘림 없이 나오고, `[B]`(프로젝트 안에서 되돌릴 수 있는 `cd`, `touch`, `mkdir`, `cp`, `mv`, `git add`) 또는 `[X]`(그 밖의 모든 것)로 표시됩니다. `time`이나 `sudo`로 시작하는 명령처럼 읽을 수 없는 단계는 held로 표시되고, 목록에만 나올 뿐 실행되지 않습니다. 답은 프롬프트 전체로 입력합니다.
+
+| 입력 | 결과 |
+| --- | --- |
+| `lit approve` (또는 `lit 승인`) | 목록을 보여 준 뒤에 보류된 것까지 포함해 보류된 경로 경계를 모두 허용하고, `[B]` 단계를 셸 없이 Python으로 실행합니다. 경계는 쓰기 허가이지 명령 실행이 아닙니다. |
+| `lit approve x` | 목록의 `[X]` 단계를 실행합니다. 이 글자 그대로일 때만 통하고, 뒤에 공백이나 단어가 붙으면 아무것도 실행하지 않습니다. |
+| `lit deny` (또는 `lit 거절`) | 보류된 단계를 모두 버리고, 이번 실행 동안 같은 명령을 계속 거절합니다. |
+| `lit skip-row [N]` | `BLOCKED:`나 `IMPOSSIBLE:`가 달린 행을 건너뛴 것으로 체크하고, 그 행 아래 보류된 단계만 버립니다. |
+| `lit pause` / `lit resume` | 자동 진행을 멈추거나 다시 켭니다. guard는 그대로 켜져 있습니다. |
+| `lit cancel` (또는 `lit 취소`) | start-work 실행을 끝내고 보류된 단계를 실행하지 않은 채 버립니다. |
+
+승인은 내게 보여 준 목록만, 단계마다 적어 둔 폴더에서, 20초 안에 다시 실행합니다. Hermes가 프롬프트 훅을 30초 뒤에 그냥 통과시키기 때문입니다. 다시 실행할 때는 플러그인의 최소 환경만 넘기므로 provider 키와 SSH agent 소켓이 빠집니다. 그런 것이 필요한 단계는 실패한 채 보류 목록에 남고, 직접 실행하면 됩니다. Done-when 검사도 같은 20초 제한을 받고, 셸 없이, 프로젝트 안의 인자 없는 `node <file>`, `node --test ...`, pytest 명령일 때만 실행합니다. 계획에 `Run charter: commit on <branch> in <repo>` 줄이 있으면 그 브랜치에서 이름을 적은 파일만 로컬 커밋할 수 있습니다. 이 줄은 `/start-work`를 입력할 때 한 번 읽히며, push, tag, publish, reset은 절대 허용하지 않습니다.
+
+답장 아래의 한 줄 알림(park ping)이 그 턴에 보류된 단계를 알려 줍니다. start-work 실행에서는 기본으로 켜져 있고 아무것도 승인하지 않습니다. 끄려면 `LITHERMES_PARK_PING=0`을 설정하세요. `/lit-loop ping on`으로 켜는 게이트웨이 메시지는 bounded work용 별도 스위치이며, 직접 켜기 전에는 꺼져 있습니다.
+
+Hermes가 못 하는 일은 흉내 내지 않고 그대로 적습니다.
+
+- BLOCKED: Hermes에는 코드 수정이 없는 턴을 이어 가게 하는 턴 종료 훅이 없습니다. 어떤 턴이 이어지는지는 위 목록에 있습니다. 행이 남은 채 답장이 끝나면 한 줄로 알려 주고, 다음 메시지(`continue`면 충분합니다)에서 실행이 이어집니다.
+- BLOCKED: Hermes는 플러그인이 네이티브 `/goal`을 켤 API를 주지 않습니다. `goal: native` 줄이 있는 계획이면 `/start-work` 답에 30턴 뒤나 `WAITING-ON-USER:` 답장에서 스스로 끝나는 `/goal` 줄을 보여 줍니다.
+- BLOCKED: Hermes는 위임한 child가 끝날 때만 알려 주고 시작은 알려 주지 않으므로, 아직 도는 lane을 기다릴 수 없습니다.
+
+실행에 답할 수 있는 것은 그 실행을 가진 세션의 프롬프트뿐이고, 다른 세션이나 pane 도구에게 답을 입력하라고 하는 LitHermes 메시지는 없습니다. 그래도 다른 프로그램이 내 프롬프트에 입력한 `lit approve x`는 내가 직접 입력한 것과 구별되지 않습니다. 그래서 신뢰 경계는 Hermes 자체의 권한 확인과 같습니다.
+
+### `lit` 없이 받는 스킬 제안
+
+`lit` 없는 평범한 요청이 LitHermes 스킬과 분명히 맞으면, 모델에게 그 스킬과 "none"을 적은 짧은 메모가 갑니다. 고르는 것은 모델이고, 저절로 불러오는 것은 없습니다. 지금 들어간 규칙은 데이터 플롯(`lit-scientific-visualization`)과 다이어그램(`lit-diagram-drawer`) 두 가지입니다. 둘 다 `packages/lithermes-installer/test/fixtures/routing-eval`의 dev 절반과 봉인된 held-out 절반 모두에서 recall 1.00, near-miss 0.00이 나왔습니다(기준은 recall 0.85 이상, near-miss 0.10 이하). brainstorm과 deep-interview 규칙은 시험했지만 기준에 못 미쳐 빠졌고, 카탈로그 한 줄에만 나옵니다. `lit`이나 슬래시 명령이 들어간 프롬프트에는 제안이 붙지 않습니다. LitHermes 스킬 목록을 보여 주는 호스트(Hermes 0.21 이상)에서는 다른 프롬프트에 추가 비용이 없고, 오래된 호스트에서는 300바이트 남짓한 카탈로그 한 줄이 붙습니다.
+
 ## 모델 라우팅
 
 새 설치는 planning, review 등 lead 역할에 `gpt-6-astra`와 `xhigh`를

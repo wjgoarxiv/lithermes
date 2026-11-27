@@ -630,12 +630,12 @@
     },
     "start-work": {
       "skillMd": {
-        "bytes": 28260,
-        "sha256": "da7507ca67453225a657dddef3ef41f1da5664e076a563c823e4ba408ba8aac2"
+        "bytes": 33364,
+        "sha256": "f698fd9b14b0877d124be99113e0d0cdb42407df2d6dcecb24b0c8a692233ed7"
       },
       "files": 1,
-      "bytes": 28260,
-      "sha256": "f8e3fc79a95afdc10e6dc1950500561fae9f5c5eb1d7c5f91c7eb524fc73ffa2"
+      "bytes": 33364,
+      "sha256": "5d9df84e85fd58e5a98e094e001685db4e5ea5777a9013e09a4161a49aff9a8c"
     },
     "structural-search": {
       "skillMd": {
@@ -683,6 +683,8 @@
     "assets/lithermes-plugin/__init__.py",
     "assets/lithermes-plugin/adhd_stack.py",
     "assets/lithermes-plugin/auto_handoff.py",
+    "assets/lithermes-plugin/autopilot.py",
+    "assets/lithermes-plugin/autopilot_shell.py",
     "assets/lithermes-plugin/bounded_work.py",
     "assets/lithermes-plugin/bounded_work_tools.py",
     "assets/lithermes-plugin/child_env.py",
@@ -1087,6 +1089,7 @@
     "assets/lithermes-plugin/skills/wikify/modes/query/SKILL.md",
     "assets/lithermes-plugin/skills/wikify/modes/save/SKILL.md",
     "assets/lithermes-plugin/skills/wikify/references/full-contract.md",
+    "assets/lithermes-plugin/suggestions.py",
     "assets/lithermes-plugin/sunset.py",
     "assets/lithermes-plugin/tui-widgets/lit-card.mjs",
     "assets/lithermes-plugin/tui_card.py",

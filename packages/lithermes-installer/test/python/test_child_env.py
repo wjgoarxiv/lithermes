@@ -251,7 +251,9 @@ class InventoryGuardTests(unittest.TestCase):
         # fingerprint.py runs git for the litgoal run fingerprint with its own four-name
         # allowlist (PATH, HOME, LANG, LC_ALL): it must stay importable by file path in the
         # gateway, where child_env is not reachable, and the allowlist is stricter.
-        known = {"core_review.py", "deliverable_hedge_guard.py", "fingerprint.py"}
+        # autopilot.py runs the plan's Done-when check and the steps the user approved by name,
+        # each with the scrubbed environment.
+        known = {"autopilot.py", "core_review.py", "deliverable_hedge_guard.py", "fingerprint.py"}
         actual = {path.name for path in self._plugin_python_files() if _spawn_calls(path)}
         self.assertEqual(actual, known)
 

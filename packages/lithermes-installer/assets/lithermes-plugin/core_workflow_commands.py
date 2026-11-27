@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 try:
+    from . import autopilot
     from .core_commands import _join_positional
     from .core_contract import (
         LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
@@ -12,6 +13,7 @@ try:
     from .core_runs import build_run_agent_message, find_plan, latest_start_work_run, load_run_state, write_run_state
     from .core_runtime import _clamp_task, lithermes_dir, parse_args, plan_dir, slugify, workspace_from_option
 except (ImportError, ModuleNotFoundError):
+    import autopilot
     from core_commands import _join_positional
     from core_contract import (
         LITGOAL_MEANING, _skill_body_block, conditional_uiux_skill_blocks, contract_route_block,
@@ -164,10 +166,12 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
         if not run_dir:
             raise ValueError(f"BLOCKED: /start-work --resume found no prior run for {plan}.")
         first_items = "\n".join(f"- {item}" for item in open_items[:5]) or "- no unchecked items found"
+        pilot, token = autopilot.arm(run_dir, plan=plan, worktree=workspace)
         display = (
             f"Resumed LitHermes work run from approved plan: {run_dir}\n"
             f"Plan: {plan}\n"
-            f"Open items:\n{first_items}"
+            f"Open items:\n{first_items}\n"
+            f"{autopilot.start_display(pilot)}"
         )
         return {
             "display": display,
@@ -180,6 +184,7 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
                         return_mode_authority=reader_args.authority,
                     ),
                     conditional_uiux,
+                    autopilot.envelope(run_dir, token),
                 )
                 if part
             ),
@@ -191,11 +196,14 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
         command="start-work",
         plan=plan,
     )
+    # A typed /start-work approves the plan as it stands; its charter is read once here.
+    pilot, token = autopilot.arm(run_dir, plan=plan, worktree=workspace)
     first_items = "\n".join(f"- {item}" for item in open_items[:5]) or "- no unchecked items found"
     display = (
         f"Started LitHermes work run from approved plan: {run_dir}\n"
         f"Plan: {plan}\n"
-        f"Open items:\n{first_items}{scope_note}"
+        f"Open items:\n{first_items}{scope_note}\n"
+        f"{autopilot.start_display(pilot)}"
     )
     return {
         "display": display,
@@ -208,6 +216,7 @@ def command_start_work(raw_args: str) -> str | dict[str, str]:
                     return_mode_authority=reader_args.authority,
                 ),
                 conditional_uiux,
+                autopilot.envelope(run_dir, token),
             )
             if part
         ),

@@ -1,0 +1,42 @@
+{"prompt": "plot these results", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "Graph the time series in sensors.csv", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "make a line chart of the experimental values per day", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "Visualize the dataset: one box plot per sample group", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "논문에 넣을 결과 그래프 만들어줘", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "데이터 시각화 해줘, 히스토그램으로", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "Chart the measurements from yesterday's run", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "I need a figure of the xlsx columns A vs C", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "scatter plot of these samples, log scale on y", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "측정 결과로 차트 그려줘", "expect": ["lit-scientific-visualization"], "near_miss_of": []}
+{"prompt": "Create an HTML landing page with an animated chart of our data", "expect": [], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "How does a heatmap encode values?", "expect": [], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "Fix the graph database migration script", "expect": [], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "그래프 이론에서 최단 경로가 뭐야?", "expect": [], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "Draw a flowchart of the build results pipeline", "expect": ["lit-diagram-drawer"], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "Update the chart dependency version in package.json", "expect": [], "near_miss_of": ["lit-scientific-visualization"]}
+{"prompt": "Create an architecture diagram for the ingestion service", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "draw a diagram showing how the cache and DB interact", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "Make an ER diagram of the users and orders tables", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "배포 흐름도 그려줘", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "전체 구조도를 만들어줘", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "I want a system map of all our microservices", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "Design a state machine diagram for the order lifecycle", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "개요도 하나 그려줘 프로젝트 모듈 관계로", "expect": ["lit-diagram-drawer"], "near_miss_of": []}
+{"prompt": "Draw the PFD for the gas plant", "expect": [], "near_miss_of": ["lit-diagram-drawer"]}
+{"prompt": "Explain what a block diagram shows", "expect": [], "near_miss_of": ["lit-diagram-drawer"]}
+{"prompt": "isometric cutaway of the heat exchanger please", "expect": [], "near_miss_of": ["lit-diagram-drawer"]}
+{"prompt": "장치도 그려줘 반응기 포함", "expect": [], "near_miss_of": ["lit-diagram-drawer"]}
+{"prompt": "The flowchart renderer has a memory leak", "expect": [], "near_miss_of": ["lit-diagram-drawer"]}
+{"prompt": "What are my options for deploying this?", "expect": ["lit-brainstorm"], "near_miss_of": []}
+{"prompt": "come up with alternatives to the current retry design", "expect": ["lit-brainstorm"], "near_miss_of": []}
+{"prompt": "가능한 대안 알려줘, 로그 저장 방식", "expect": ["lit-brainstorm"], "near_miss_of": []}
+{"prompt": "give me some directions for the landing copy", "expect": ["lit-brainstorm"], "near_miss_of": []}
+{"prompt": "Parse the options object in config.ts", "expect": [], "near_miss_of": ["lit-brainstorm"]}
+{"prompt": "Give me the list of approaches already in docs/design.md", "expect": [], "near_miss_of": ["lit-brainstorm"]}
+{"prompt": "I'd like a tool for my notes, not sure how", "expect": ["deep-interview"], "near_miss_of": []}
+{"prompt": "build me something cool", "expect": ["deep-interview"], "near_miss_of": []}
+{"prompt": "앱 하나 만들고 싶어 도와줘", "expect": ["deep-interview"], "near_miss_of": []}
+{"prompt": "Help me read the stack trace in app.log", "expect": [], "near_miss_of": ["deep-interview"]}
+{"prompt": "I want the tool to print JSON", "expect": [], "near_miss_of": ["deep-interview"]}
+{"prompt": "excel at plotting? no, just write the docx summary", "expect": [], "near_miss_of": []}
+{"prompt": "Add a unit test for the date parser", "expect": [], "near_miss_of": []}

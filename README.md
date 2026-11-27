@@ -219,7 +219,7 @@ LitHermes installs 41 skills, their slash commands and the `goal_*` work tools. 
 | Start with | What you get |
 | --- | --- |
 | `lit fix the failing login test` | Each criterion taken from a failing test to a passing one and a check of the running result, then a list of what was verified |
-| `lit plan add CSV export to the reports page` | A plan file and no code change, ending in one test command that decides when it is done; answer `yes` and you get the `/goal` lines to paste. `/start-work <the plan file it wrote>` then runs it row by row |
+| `lit plan add CSV export to the reports page` | A plan file and no code change, ending in one test command that decides when it is done; answer `yes` and you get the `/goal` lines to paste. `/start-work <the plan file it wrote>` then runs it row by row and closes itself when the check passes. A step that needs you, such as a push, waits in one list you answer once: `lit approve` runs the local, undoable steps and only `lit approve x` runs the rest ([autopilot](./docs/guide.md#start-work-autopilot); BLOCKED: Hermes has no turn-end hook that can continue a turn without a code edit, so an open run goes on with your next message) |
 | `lit review the changes on this branch` | A plan review, or five reviewers who read the finished change separately and lead with what they found |
 | `lit research how do popular CLIs migrate old config files?` | An answer whose every claim carries its source; it stops at logins and paywalls |
 | `humanizer 이 문단을 자연스러운 한국어로 다듬어줘: …` | Stiff Korean or English prose rewritten with facts, hedges and register kept, and your files left alone |

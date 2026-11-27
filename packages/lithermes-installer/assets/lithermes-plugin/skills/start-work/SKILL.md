@@ -20,7 +20,7 @@ identity:
 surfaces:
   manifest: plugin.yaml
   python_entrypoints: ["__init__.py:register", "core.py route builders"]
-  hooks: [pre_llm_call, pre_tool_call, subagent_stop, transform_llm_output, on_session_finalize, on_session_reset]
+  hooks: [pre_llm_call, pre_tool_call, pre_verify, subagent_stop, transform_llm_output, on_session_finalize, on_session_reset]
   tools: [goal_*, lithermes_work_progress]
 state:
   durable_root: .hermes/lithermes/
@@ -177,7 +177,7 @@ authority. When the trusted user explicitly chooses bounded lifecycle control,
 initialize it through `/lit-loop init <plan> --grant ACTION@ROOT[,ACTION@ROOT]
 [--worktree PATH]`; then use only exact `/lit-loop status`, `/lit-loop resume`,
 `/lit-loop cancel`, and `/lit-loop complete` routes, plus the user's whole-prompt
-`lit cancel`, `lit approve` and `lit deny`. Natural text and copied slash commands,
+`lit approve` and `lit deny`. Natural text and copied slash commands,
 quotes, and fenced examples are inert and never activate or resume work.
 
 Inside that envelope, report genuine checkbox changes with
@@ -205,9 +205,7 @@ secrets. A plan row that needs one gets `BLOCKED: needs <class>`.
 A progress boundary for a new, non-forbidden action/root pair is parked the same
 way (outcome `parked`) and never pauses the run. The user may settle the queue with
 `lit approve` (standing grants for every parked step) or `lit deny` (refused for the
-run), and ends the run from any session of the project, a nested folder or a linked
-worktree with `lit cancel`; all three are optional and belong to the user, and the
-cancelled session may only read until its user types again. Release, publish,
+run); both are optional and belong to the user, and so does ending the run. Release, publish,
 push, commit, tag, install, host-config, credential, destructive and version-bump
 actions stay refused and are never parked. `paused` now means only that the run's
 session ended: a trusted explicit user hands it on with `/lit-loop resume ...
@@ -385,8 +383,82 @@ After all five gates (and §3 if triggered) pass for a task:
    continues autonomously until every such row is done.
 
 Do not pause between tasks. Do not summarise progress mid-loop. Do not ask for
-confirmation. The only permitted pause is after 2 consecutive identical failures
-on the same gate — surface what was tried and ask before a third attempt.
+confirmation. After 2 consecutive identical failures on the same gate, stop
+retrying that row: write what was tried under it as `BLOCKED: <reason>` (or
+`IMPOSSIBLE: <reason>`, see §4a) and move to the next open row.
+
+---
+
+## §4a — Autopilot on Hermes (parking, one list, self-closing)
+
+A typed `/start-work <plan>` arms the autopilot for that run. The command reply
+says `Autopilot: on`, and the first model turn carries a
+`<lithermes-start-work-autopilot>` block. Five Hermes hooks carry it:
+
+| Hook | What it does in a run |
+| --- | --- |
+| `pre_tool_call` | Lets readers (`cat`, `rg`, `git status`, ...), a bare in-project `node <file>`, `node --test`, pytest, and `write_file`/`patch` inside the project run. Parks every other `terminal` call with its exact text and folder, and parks writes outside the project as a path boundary. Refuses secrets, host homes, `.git` internals and the run's own `autopilot.json` outright, and refuses `execute_code` (use `terminal`). A reader with a writing or program-starting flag (`sed w`/`e`, `git branch -D`, `--output`, `--pre`) counts as any other call and is parked. The repo's own `npm test` / `npm run test|check|lint|build|typecheck` run unparked; every other verb parks. Writes naming the run folder, `.git/hooks` or `.git/config` are refused, and so are moves or removals of a folder holding the run folder (`mv .hermes x`, `rm -rf .hermes`). |
+| `pre_verify` | On a turn that edited code, keeps the turn going while rows are open: at most two holds per plan state, then the wrap-up list. |
+| `transform_llm_output` | At the end of each reply: closes the run when every row is ticked and the `## Done when` check passes, or appends one "still open" note, or the one wrap-up list. |
+| `pre_llm_call` | Answers the approval words, hands you the nudge from the last turn end, and closes a finished run if the turn end missed it. |
+| `on_session_finalize` | Closes a finished run and releases the session. |
+
+BLOCKED: Hermes has no turn-end hook that can continue a turn without a code
+edit. `pre_verify` holds only a turn that edited code, and only as often as the
+host's `agent.max_verify_nudges` allows. When a reply ends with rows still open,
+the user sees one line saying so and the run carries on with their next message.
+So keep working inside the turn: do not end a reply to report progress or to ask.
+
+What you do:
+
+1. A refused call comes back as "parked ... carry on with the next open row".
+   It did not run. Do not retry it and do not stop; take the next row. The same
+   call asked again only bumps its count.
+2. A combined self-check such as `node check.mjs; echo $?` comes back with a
+   split hint. Run each named part as its own `terminal` call; the tool reports
+   the exit code.
+3. When a user answer can unblock a row, add an indented `BLOCKED: <reason>`
+   line under it. When no answer can, add `IMPOSSIBLE: <reason>`. Then move on
+   instead of ending the turn to ask.
+4. A reply that must wait on the user starts with `WAITING-ON-USER:` and stops.
+5. Tick a row (`- [x]`) only after its check passes. The run closes itself when
+   every row is ticked and the plan's `## Done when` line `check: <cmd>` exits 0.
+   The check runs without a shell, inside 20 seconds (Hermes fails a prompt hook
+   open after 30), and only when it is a bare in-project `node <file>`,
+   `node --test ...` or pytest command.
+
+The tiers the user sees in the wrap-up list:
+
+- `[B]`: every `&&` step is `cd`, `touch`, `mkdir [-p]`, `cp [-r|-R|-p]`, `mv` or
+  `git add <named files>` on real paths inside the project, outside `.git`, with no
+  overwrite. Plain `lit approve` replays these in Python, with no shell.
+- `[X]`: everything else (script runners with arguments, package scripts, push,
+  publish, tag, reset, deletes, network). Only the exact whole prompt
+  `lit approve x` runs them.
+- held: a prefix verb (`time`, `nice`, `sudo`, ...), an assignment, a glob, a
+  redirect, an expansion or a nested shell. Listed, never replayed.
+
+The user's answers, typed as the whole prompt: `lit approve` (also `lit 승인`),
+`lit approve x`, `lit deny` (also `lit 거절`), `lit skip-row [N]`, `lit pause`
+(also `lit 멈춤`), `lit resume` (also `lit 재개`). Each replays only the list the
+user was shown, within 20 seconds, and LitHermes prints the result under your
+reply, so do not repeat it. These words count only from the owner session's
+typed prompt; a scheduled cron prompt never answers a run.
+
+A plan line `Run charter: commit on <branch> in <repo>` outside code fences lets
+`git add <named files> && git commit -m "..."` run on that branch in that repo.
+The line is read once when `/start-work` is typed; editing it later grants
+nothing. Amend, `--no-verify`, `git -c`, `git -C`, aliases and every push, tag or
+reset stay parked.
+
+BLOCKED: Hermes gives plugins no API to arm its native `/goal`. A plan line
+`goal: native` makes the `/start-work` reply print a ready `/goal` line that ends
+itself (`..., or the latest reply starts with WAITING-ON-USER:, or after 30
+turns`); typing it stays the user's choice.
+
+BLOCKED: Hermes fires `subagent_stop` but no start event for a delegated child,
+so the run cannot count lanes that are still running. Child tool calls inside
+the project are still guarded and parked.
 
 ---
 
@@ -529,8 +601,9 @@ Leftover state disqualifies completion: a QA-spawned process still alive, a tmux
 session still listed by `tmux ls`, a browser context still open, a bound port, a
 temp file still on disk. Tear it down, record the receipt, then re-check.
 
-After 2 consecutive identical failures on the same gate, surface what was tried
-and ask the user before a third attempt. After 2 parallel exploration waves yield
+After 2 consecutive identical failures on the same gate, write what was tried as
+`BLOCKED: <reason>` under that row and move on; the user answers it once in the
+wrap-up list. After 2 parallel exploration waves yield
 no new useful facts, stop exploring and act.
 
 ---
@@ -565,5 +638,6 @@ no new useful facts, stop exploring and act.
   channel artifact + cleanup receipt.
 - Parallel tool calls for any independent work within a step; never parallelise
   RED and GREEN of the same criterion.
-- Plan files are read-only except for flipping `[ ]` → `[x]`. Do not add,
-  remove, or reorder tasks.
+- Plan files are read-only except for flipping `[ ]` → `[x]` and adding an
+  indented `BLOCKED: <reason>` or `IMPOSSIBLE: <reason>` line under a row. Do not
+  add, remove, or reorder tasks.

@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-11-26T05:05:14.601Z",
+  "syncedAt": "2026-11-27T04:55:01.115Z",
   "source": "bundled-payload",
-  "sourceHash": "3fe71e520cc2f199c787263b303c2f8997e6b10a08413aad6656907596541b1f",
+  "sourceHash": "5478f10938795222eaf61c4a3cf9821d00f879aa826e180f5cb226d43ece0c6f",
   "files": [
     {
       "path": "NOTICE.md",
@@ -13,7 +13,7 @@
     },
     {
       "path": "__init__.py",
-      "sha256": "b1b2addf0d52702368ab14cdcdd7c1c5931ffcf6a1c6f7f06365380c6b636424"
+      "sha256": "3fe9f7d13a2b5251a5b139259ab28b09ca4288361472cb85cc92b7dcda203e68"
     },
     {
       "path": "adhd_stack.py",
@@ -22,6 +22,14 @@
     {
       "path": "auto_handoff.py",
       "sha256": "526349fbccd7e674d9a6e30dee7839458f3585afd1718288cdef0ea82f762a22"
+    },
+    {
+      "path": "autopilot.py",
+      "sha256": "97dba09ad2972236a7d1a411961e426d515e3f8df67eab3251ac449031c00fa3"
+    },
+    {
+      "path": "autopilot_shell.py",
+      "sha256": "1fa685fb9b739d116fb38e6c0e8ccec103271274c9bc30df78dead1510d79cf5"
     },
     {
       "path": "bounded_work.py",
@@ -85,7 +93,7 @@
     },
     {
       "path": "core_workflow_commands.py",
-      "sha256": "734133dbfac98d98fff445c5787fab49899c94a9f72f5aace27665798765ee37"
+      "sha256": "96608ccb4f040aa87ce8287b480d1f6c2c8f21603bed0483cc8716ee3fdc7082"
     },
     {
       "path": "dashboard/manifest.json",
@@ -1549,7 +1557,7 @@
     },
     {
       "path": "skills/start-work/SKILL.md",
-      "sha256": "da7507ca67453225a657dddef3ef41f1da5664e076a563c823e4ba408ba8aac2"
+      "sha256": "f698fd9b14b0877d124be99113e0d0cdb42407df2d6dcecb24b0c8a692233ed7"
     },
     {
       "path": "skills/structural-search/SKILL.md",
@@ -1634,6 +1642,10 @@
     {
       "path": "skills/wikify/references/full-contract.md",
       "sha256": "27fec9e2143eda9af3cffc7e478f2fba16b9424062dd69b6b1e86455acde7e6b"
+    },
+    {
+      "path": "suggestions.py",
+      "sha256": "20dfc445b9ed0ecb122945076b9039edbe611ede7053e5b75b071f8326354249"
     },
     {
       "path": "sunset.py",
