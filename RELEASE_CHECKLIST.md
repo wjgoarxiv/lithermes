@@ -38,9 +38,9 @@ versions without direct user approval.
 Note: `payload-version.json` is a source-sync manifest, not a product version.
 Re-sync only if bundled plugin files changed.
 
-### 1.0.50 factual release scope
+### 1.0.51 factual release scope
 
-This checklist covers the 1.0.50 release.
+This checklist covers the 1.0.51 release.
 
 - [ ] The nine moved skills (`lit-pptx`, `lit-docx`, `lit-diagram-drawer`, `lit-schematic`, `lit-scientific-visualization`, `frontend-ui-ux`, `visual-qa`, `lit-typographic-motion`, `readme-studio`) ship as same-name stubs that name `variants/lithermes/<id>` in `wjgoarxiv-skills` and give the five install lines (check, move any old copy aside into `extension-backups/`, copy into the emptied folder, receipt) that the extension tests run in bash and zsh; every command, bare `lit` route, post-edit hand-off and doctor entry still reaches them, and `frontend-ui-ux` keeps the interface probe.
 - [ ] `lithermes extensions list|check|install|update|remove|prune-backups` works in a scratch Hermes home (`test/extensions-cli.test.js`): every write verb is a dry run without `--yes`, an old folder moves into `extension-backups/`, a same-name skill elsewhere stops the install, `remove` refuses a folder without a receipt, and a missing git or network stops before any change. The stubs, both notices, the READMEs, `docs/skills*.md`, help and doctor name the verbs.
@@ -364,7 +364,7 @@ Releases are published by hand from a maintainer machine; no CI workflow publish
 
 - [ ] Run from `packages/lithermes-installer` with `clean main` aligned to `live origin/main`.
 - [ ] Confirm `https://registry.npmjs.org/`, `npm whoami`, and a structured target-version `E404`
-  from `npm view @litfamily/lithermes@1.0.50 version`.
+  from `npm view @litfamily/lithermes@1.0.51 version`.
 - [ ] Run the full gates, both `scan-forbidden-tokens` modes, and `qa:real-surface`.
 - [ ] Record explicit approval. The `prepublishOnly` source-only guard repeats the gates and records
   a SHA-256 digest for its inspected preflight tarball. It is **not byte-identical** to the published
@@ -386,10 +386,10 @@ stop and diagnose; an existing version may mean publication succeeded despite th
 success, download and inspect the published artifact.
 
 ```sh
-  npm view @litfamily/lithermes@1.0.50 version --json --registry=https://registry.npmjs.org/
+  npm view @litfamily/lithermes@1.0.51 version --json --registry=https://registry.npmjs.org/
 VERIFY_DIR="$(mktemp -d)"
-  npm pack @litfamily/lithermes@1.0.50 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
-  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.50.tgz"
-  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.50.tgz"
+  npm pack @litfamily/lithermes@1.0.51 --pack-destination "$VERIFY_DIR" --registry=https://registry.npmjs.org/
+  tar -tzf "$VERIFY_DIR/litfamily-lithermes-1.0.51.tgz"
+  node test/scripts/scan-forbidden-tokens.js --pack-tar "$VERIFY_DIR/litfamily-lithermes-1.0.51.tgz"
 rm -rf "$VERIFY_DIR"
 ```

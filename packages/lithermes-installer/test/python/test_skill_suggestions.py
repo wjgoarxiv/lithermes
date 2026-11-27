@@ -203,9 +203,15 @@ class OrganicEnrollment(unittest.TestCase):
             self.assertIn("lit approve x", text, doc.name)
             self.assertIn("BLOCKED", text, doc.name)
         changelog = (REPO / "CHANGELOG.md").read_text(encoding="utf-8")
-        unreleased = changelog.split("## [Unreleased]", 1)[1].split("\n## [", 1)[0]
-        self.assertIn("autopilot", unreleased.lower())
-        self.assertIn("park ping", unreleased.lower())
+        # Accept the features in either the Unreleased section (pre-release) or the most
+        # recently versioned section (post-release bump); a release moves content between them.
+        import re as _re
+        sections = _re.split(r"\n## \[", changelog)
+        unreleased_body = next((s.split("]", 1)[1] for s in sections if s.startswith("Unreleased]")), "")
+        versioned_body = next((s.split("]", 1)[1] for s in sections if _re.match(r"\d+\.\d+\.\d+\]", s)), "")
+        recent = unreleased_body + versioned_body
+        self.assertIn("autopilot", recent.lower())
+        self.assertIn("park ping", recent.lower())
 
 
 if __name__ == "__main__":

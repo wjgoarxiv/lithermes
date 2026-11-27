@@ -70,7 +70,7 @@ It suits people who already use Hermes on work that has to hold up: code that mu
 
 ## Install
 
-You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.50`. Run this in any terminal:
+You need Hermes Agent, Node.js 18 or later, and write access to your Hermes home (normally `~/.hermes`). This page describes `@litfamily/lithermes@1.0.51`. Run this in any terminal:
 
 ```sh
 npx --yes --package @litfamily/lithermes@latest -- lithermes install --yes --no-style

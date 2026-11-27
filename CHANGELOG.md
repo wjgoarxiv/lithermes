@@ -6,6 +6,8 @@ identity or source-provenance tokens in tracked files.
 
 ## [Unreleased]
 
+## [1.0.51] - 2026-11-27
+
 - Start-work autopilot: `/start-work` runs drive themselves. Steps that need you are parked with their exact command and answered once from one wrap-up list (`lit approve`, or the exact prompt `lit approve x` for `[X]` steps); the run closes itself when every row is ticked and its `## Done when` check passes. A turn that edited code keeps going through `pre_verify`; BLOCKED: Hermes has no turn-end hook that can continue a turn without a code edit, and plugins cannot arm the native `/goal`. The park ping under the reply is on by default (`LITHERMES_PARK_PING=0` turns it off). See the guide.
 - A plain prompt without `lit` that asks for a data plot or a diagram gets a short note offering `lit-scientific-visualization` or `lit-diagram-drawer`, or none; the model decides.
 
